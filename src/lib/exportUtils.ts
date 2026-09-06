@@ -256,3 +256,53 @@ export function exportAllDataToExcel(
 
   downloadExcelCSV(`Relatorio_Completo_GilVicente${nameTag}_${dateStr}.csv`, headers, rows);
 }
+
+// 5. Export Weight Control Entries (PESO)
+export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: string, filenamePrefix: string = 'Controlo_Ponderal_PESO'): void {
+  const filtered = athleteFilter && athleteFilter !== 'ALL'
+    ? entries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    : entries;
+
+  const headers = [
+    'Data',
+    'Atleta',
+    'Peso Pré-Treino (kg)',
+    'Peso Pós-Treino (kg)',
+    'Perda de Peso no Treino (kg)',
+    '1º Peso Registado no Mês (kg)',
+    'Último Peso Registado no Mês (kg)',
+    'Variação Ponderal Mensal (kg)',
+    'Data de Registo'
+  ];
+
+  const rows = filtered.map((e) => {
+    const monthPrefix = e.date.substring(0, 7);
+    const monthEntries = entries
+      .filter((h) => h.athleteName.toLowerCase() === e.athleteName.toLowerCase() && h.date.startsWith(monthPrefix))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
+    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+
+    const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : '';
+    const lastWeightMonth = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : '';
+    const monthlyDiff = (typeof firstWeightMonth === 'number' && typeof lastWeightMonth === 'number')
+      ? +(lastWeightMonth - firstWeightMonth).toFixed(1)
+      : '';
+
+    return [
+      e.date,
+      e.athleteName,
+      e.preWeight || '',
+      e.postWeight || '',
+      e.weightLoss || '',
+      firstWeightMonth,
+      lastWeightMonth,
+      monthlyDiff,
+      e.createdAt ? new Date(e.createdAt).toLocaleString('pt-PT') : e.date
+    ];
+  });
+
+  const nameTag = athleteFilter && athleteFilter !== 'ALL' ? `_${athleteFilter}` : '';
+  downloadExcelCSV(`${filenamePrefix}${nameTag}_${new Date().toISOString().split('T')[0]}.csv`, headers, rows);
+}

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from '@/lib/types';
 import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus } from '@/lib/data';
 import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage } from '@/lib/storage';
-import { exportWellnessToExcel, exportRPEToExcel, exportHydrationToExcel, exportAllDataToExcel } from '@/lib/exportUtils';
+import { exportWellnessToExcel, exportRPEToExcel, exportHydrationToExcel, exportWeightToExcel, exportAllDataToExcel } from '@/lib/exportUtils';
 import { getStoredReminderConfig, saveReminderConfig, requestNotificationPermission, getNotificationPermission, sendMobileNotification, getPendingQuestionnairesStatus, ReminderConfig } from '@/lib/reminderUtils';
 import { useLanguage } from '@/context/LanguageContext';
 import { IndividualAthleteView } from './IndividualAthleteView';
@@ -94,7 +94,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [editFluids, setEditFluids] = useState<string>('');
 
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
-  const [exportDataType, setExportDataType] = useState<'ALL' | 'WELLNESS' | 'RPE' | 'HYDRATION'>('ALL');
+  const [exportDataType, setExportDataType] = useState<'ALL' | 'WELLNESS' | 'RPE' | 'HYDRATION' | 'WEIGHT'>('ALL');
   const [exportAthleteId, setExportAthleteId] = useState<string>('ALL');
 
   const [reminderConfig, setReminderConfig] = useState<ReminderConfig>(getStoredReminderConfig());
@@ -153,6 +153,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       exportRPEToExcel(allRpeList, athleteFilterName);
     } else if (exportDataType === 'HYDRATION') {
       exportHydrationToExcel(allHydrationList, athleteFilterName);
+    } else if (exportDataType === 'WEIGHT') {
+      exportWeightToExcel(allHydrationList, athleteFilterName);
     } else {
       exportAllDataToExcel(allWellnessList, allRpeList, allHydrationList, athleteFilterName);
     }
@@ -2056,6 +2058,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <span>💧 Pesagem & Hidratação</span>
                       </div>
                       <p className="text-[10px] opacity-75 mt-0.5">Pesos pré/pós, perda kg e reposição</p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setExportDataType('WEIGHT')}
+                      className={`p-3 text-left rounded-xl border transition-all text-xs font-bold ${
+                        exportDataType === 'WEIGHT'
+                          ? 'border-emerald-500 bg-emerald-950/60 text-emerald-200 ring-2 ring-emerald-500/40'
+                          : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="font-extrabold flex items-center space-x-1.5">
+                        <span>⚖️ Controlo Ponderal (PESO)</span>
+                      </div>
+                      <p className="text-[10px] opacity-75 mt-0.5">Peso pré/pós, 1º e último peso do mês e variação</p>
                     </button>
                   </div>
                 </div>
