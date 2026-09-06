@@ -777,7 +777,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <span className="text-[11px] font-bold uppercase">Submissões</span>
                     </div>
                     <span className="text-2xl font-black text-slate-100">
-                      {totalSubmissions} <span className="text-xs text-slate-500 font-normal">/ 27</span>
+                      {totalSubmissions} <span className="text-xs text-slate-500 font-normal">/ {INITIAL_ATHLETES.length}</span>
                     </span>
                   </div>
 
@@ -947,7 +947,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-center shadow-sm">
                     <span className="text-[11px] font-bold text-emerald-400 uppercase block">Submissões Wellness</span>
-                    <span className="text-2xl font-black text-slate-100">{totalWellness} <span className="text-xs text-slate-500">/ 27</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalWellness} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-brand-lime/30 bg-lime-950/20 p-3.5 text-center shadow-sm">
@@ -1083,7 +1083,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3.5 text-center">
                     <span className="text-[11px] font-bold text-cyan-400 uppercase block">Total PSE Submetidos</span>
-                    <span className="text-2xl font-black text-slate-100">{totalRPE} <span className="text-xs text-slate-500">/ 27</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalRPE} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
@@ -1220,7 +1220,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-blue-500/30 bg-blue-950/20 p-3.5 text-center">
                     <span className="text-[11px] font-bold text-blue-400 uppercase block">Atletas Registadas</span>
-                    <span className="text-2xl font-black text-slate-100">{totalHydration} <span className="text-xs text-slate-500">/ 27</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalHydration} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3.5 text-center">
