@@ -504,9 +504,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     ? +(hydrationList.reduce((acc, curr) => acc + curr.dehydrationRate, 0) / totalHydration).toFixed(2)
     : 0;
   const alertHydrationCount = hydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
-  const totalRefillLiters = totalHydration
-    ? +(hydrationList.reduce((acc, curr) => acc + curr.refillNeededLiters, 0)).toFixed(1)
-    : 0;
 
   // Helper for muscle fatigue tags
   const renderMuscleFatigueBadges = (map?: Record<string, number>) => {
@@ -1220,7 +1217,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
             {subTab === 'hydration' && (
               <div className="space-y-6 animate-fade-in">
                 {/* Hydration KPI Header Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-blue-500/30 bg-blue-950/20 p-3.5 text-center">
                     <span className="text-[11px] font-bold text-blue-400 uppercase block">Atletas Registadas</span>
                     <span className="text-2xl font-black text-slate-100">{totalHydration} <span className="text-xs text-slate-500">/ 27</span></span>
@@ -1236,11 +1233,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                     <span className={`text-2xl font-black ${alertHydrationCount > 0 ? 'text-rose-400' : 'text-slate-100'}`}>
                       {alertHydrationCount}
                     </span>
-                  </div>
-
-                  <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
-                    <span className="text-[11px] font-bold text-amber-400 uppercase block">Total Reposição (L)</span>
-                    <span className="text-2xl font-black text-amber-300">{totalRefillLiters} L</span>
                   </div>
                 </div>
 
