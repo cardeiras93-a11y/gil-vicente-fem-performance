@@ -78,7 +78,7 @@ CREATE POLICY "Acesso total ao Wellness" ON public.wellness_entries FOR ALL USIN
 CREATE POLICY "Acesso total ao RPE" ON public.rpe_entries FOR ALL USING (true);
 CREATE POLICY "Acesso total a Hidratacao" ON public.hydration_entries FOR ALL USING (true);
 
--- INSERÇÃO INICIAL DO PLANTEL OFICIAL GIL VICENTE FC (24 ATLETAS)
+-- INSERÇÃO INICIAL DO PLANTEL OFICIAL GIL VICENTE FC (25 ATLETAS)
 INSERT INTO public.athletes (id, name) VALUES
 ('ath-1', 'CARLOTA'),
 ('ath-2', 'CAROL'),
@@ -87,21 +87,22 @@ INSERT INTO public.athletes (id, name) VALUES
 ('ath-5', 'FAITH'),
 ('ath-6', 'LARA'),
 ('ath-7', 'LAURA'),
-('ath-8', 'LUANA MACEDO'),
-('ath-9', 'MAGUI'),
-('ath-10', 'MALTA'),
-('ath-11', 'MANU'),
-('ath-12', 'MARTHE'),
-('ath-13', 'MERIVA'),
-('ath-14', 'NICOLE'),
-('ath-15', 'RAMOS'),
-('ath-16', 'RIBEIRO'),
-('ath-17', 'RITA R.'),
-('ath-18', 'SARA ALVES'),
-('ath-19', 'SARA TEIXEIRA'),
-('ath-20', 'SERENA'),
-('ath-21', 'SIMÃES'),
-('ath-22', 'TICHA'),
-('ath-23', 'TITA'),
-('ath-24', 'VERÓNICA')
+('ath-8', 'LUANA CORREIA'),
+('ath-9', 'LUANA MACEDO'),
+('ath-10', 'MAGUI'),
+('ath-11', 'MALTA'),
+('ath-12', 'MANU'),
+('ath-13', 'MARTHE'),
+('ath-14', 'MERIVA'),
+('ath-15', 'NICOLE'),
+('ath-16', 'RAMOS'),
+('ath-17', 'RIBEIRO'),
+('ath-18', 'RITA R.'),
+('ath-19', 'SARA ALVES'),
+('ath-20', 'SARA TEIXEIRA'),
+('ath-21', 'SERENA'),
+('ath-22', 'SIMÃES'),
+('ath-23', 'TICHA'),
+('ath-24', 'TITA'),
+('ath-25', 'VERÓNICA')
 ON CONFLICT (id) DO NOTHING;
