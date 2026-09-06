@@ -17,7 +17,7 @@ import { HeartPulse, Dumbbell, Droplet, User, Smartphone, Shield, Stethoscope } 
 function MainAppContent() {
   const { t } = useLanguage();
   const [activeAthlete, setActiveAthlete] = useState<Athlete | null>(null);
-  const [isChangingAthlete, setIsChangingAthlete] = useState<boolean>(false);
+  const [isChangingAthlete, setIsChangingAthlete] = useState<boolean>(true);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isPhysioOpen, setIsPhysioOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'wellness' | 'rpe' | 'hydration'>('wellness');
@@ -25,13 +25,8 @@ function MainAppContent() {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // Load persisted athlete
-    const stored = getStoredActiveAthlete();
-    if (stored) {
-      setActiveAthlete(stored);
-    } else {
-      setIsChangingAthlete(true);
-    }
+    // Always start on the main menu / athlete selection screen on app open
+    setIsChangingAthlete(true);
     setIsLoaded(true);
 
     // Online / Offline listener

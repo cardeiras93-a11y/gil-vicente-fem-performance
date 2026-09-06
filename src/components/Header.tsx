@@ -25,9 +25,14 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-0 z-40 border-b border-red-900/60 bg-dark-bg/95 backdrop-blur-md px-4 py-3 shadow-lg">
       <div className="mx-auto flex max-w-lg items-center justify-between">
-        {/* Gil Vicente Official Crest & Title */}
-        <div className="flex items-center space-x-3">
-          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-dark-card/90 p-1 border border-red-500/50 shadow-md shadow-red-900/30">
+        {/* Gil Vicente Official Crest & Title (Clickable Home Button) */}
+        <button
+          type="button"
+          onClick={onChangeAthlete}
+          title="Menu Principal / Seleção de Jogadoras"
+          className="flex items-center space-x-3 text-left focus:outline-none group cursor-pointer"
+        >
+          <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-dark-card/90 p-1 border border-red-500/50 shadow-md shadow-red-900/30 group-hover:border-amber-400 transition-all">
             <img
               src="/gil-vicente-crest.png"
               alt="Gil Vicente Futebol Clube"
@@ -35,14 +40,14 @@ export const Header: React.FC<HeaderProps> = ({
             />
           </div>
           <div>
-            <h1 className="text-xs font-black tracking-wider text-slate-100 uppercase leading-tight">
+            <h1 className="text-xs font-black tracking-wider text-slate-100 uppercase leading-tight group-hover:text-amber-400 transition-colors">
               Gil Vicente FC <span className="text-red-500 font-extrabold">(Futebol Feminino)</span>
             </h1>
             <p className="text-[9px] font-extrabold text-amber-400 uppercase tracking-tight">
               {t.header.subtitle}
             </p>
           </div>
-        </div>
+        </button>
 
         {/* Right side: Language Selector + Physio Button + Admin Button + Active Athlete Profile */}
         <div className="flex items-center space-x-1.5">
