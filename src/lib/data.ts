@@ -8,7 +8,6 @@ export const ROSTER_NAMES: string[] = [
   'FAITH',
   'LARA',
   'LAURA',
-  'LUANA CORREIA',
   'LUANA MACEDO',
   'MAGUI',
   'MALTA',
