@@ -15,9 +15,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   onSubmitSuccess,
 }) => {
   const { t } = useLanguage();
-  const [menstrualCycle, setMenstrualCycle] = useState<MenstrualCyclePhase>(
-    '2ª Semana após a menstruação'
-  );
+  const [menstrualCycle, setMenstrualCycle] = useState<MenstrualCyclePhase | null>(null);
   const [sleepQuality, setSleepQuality] = useState<number | null>(null);
   const [sleepDuration, setSleepDuration] = useState<number | null>(null);
   const [mood, setMood] = useState<number | null>(null);
@@ -45,6 +43,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     setError('');
 
     if (
+      menstrualCycle === null ||
       sleepQuality === null ||
       sleepDuration === null ||
       mood === null ||
@@ -53,7 +52,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       soreness === null ||
       heavyLegs === null
     ) {
-      setError('Por favor seleciona todas as classificações de 1 a 5 antes de submeter.');
+      setError('Por favor seleciona a fase do ciclo menstrual e todas as classificações de 1 a 5 antes de submeter.');
       return;
     }
 
@@ -256,9 +255,14 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
 
       {/* 1. Ciclo Menstrual */}
       <div className="space-y-3 rounded-xl border border-dark-border bg-dark-card p-4 shadow-sm">
-        <div className="flex items-center space-x-2 text-slate-200">
-          <HeartPulse className="h-5 w-5 text-rose-400" />
-          <h3 className="text-sm font-bold">{t.wellness.menstrualCycleTitle}</h3>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-slate-200">
+            <HeartPulse className="h-5 w-5 text-rose-400" />
+            <h3 className="text-sm font-bold">{t.wellness.menstrualCycleTitle}</h3>
+          </div>
+          <span className="text-xs font-extrabold text-rose-400 bg-slate-900 px-2.5 py-0.5 rounded-full border border-rose-500/30">
+            {menstrualCycle ? menstrualCycle : '-'}
+          </span>
         </div>
 
         <div className="flex flex-wrap gap-2">
