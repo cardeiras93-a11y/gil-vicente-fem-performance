@@ -1,0 +1,22 @@
+{
+  "name": "GIL VICENTE FC (FUTEBOL FEMININO)",
+  "short_name": "GIL VICENTE FC",
+  "description": "Aplicação Oficial de Wellness, RPE e Pesagem - Gil Vicente FC Futebol Feminino",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#a3e635",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
