@@ -70,14 +70,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     }
   };
 
-  const [subTab, setSubTabState] = useState<'general' | 'wellness' | 'rpe' | 'hydration'>(() => {
+  const [subTab, setSubTabState] = useState<'general' | 'wellness' | 'rpe' | 'hydration' | 'weight'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_admin_sub_tab') as any) || 'general';
     }
     return 'general';
   });
 
-  const setSubTab = (tab: 'general' | 'wellness' | 'rpe' | 'hydration') => {
+  const setSubTab = (tab: 'general' | 'wellness' | 'rpe' | 'hydration' | 'weight') => {
     setSubTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_sub_tab', tab);
@@ -853,6 +853,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   {hydrationList.length}
                 </span>
               </button>
+
+              <button
+                type="button"
+                onClick={() => setSubTab('weight')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all ${
+                  subTab === 'weight'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Scale className="h-3.5 w-3.5 text-amber-400" />
+                <span>{t.admin?.subTabs?.weight || 'PESO'}</span>
+                <span className="ml-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300 font-extrabold">
+                  {INITIAL_ATHLETES.length}
+                </span>
+              </button>
             </div>
 
             {/* SUB-VIEW 1: GENERAL OVERVIEW (SECÇÃO GERAL) */}
@@ -949,9 +965,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <thead>
                         <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                           <th className="py-2.5 px-3">Atleta</th>
-                          <th className="py-2.5 px-3">Peso Pré-Treino</th>
-                          <th className="py-2.5 px-3">1º Peso do Mês</th>
-                          <th className="py-2.5 px-3">Último Peso do Mês</th>
                           <th className="py-2.5 px-3">Questionário Wellness</th>
                           <th className="py-2.5 px-3">Wellness Total</th>
                           <th className="py-2.5 px-3">Questionário PSE</th>
@@ -964,51 +977,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           const name = ath.name;
                           const wellness = wellnessList.find((w) => w.athleteName === name);
                           const rpe = rpeList.find((r) => r.athleteName === name);
-                          const wMetrics = getAthleteWeightMetrics(name);
 
                           return (
                             <tr key={name} className="hover:bg-slate-800/40">
                               {/* 1. Atleta */}
                               <td className="py-3 px-3 font-bold text-slate-100">{name}</td>
-
-                              {/* 2. Peso Pré-Treino (Hoje) */}
-                              <td className="py-3 px-3">
-                                {wMetrics.preWeightToday ? (
-                                  <span className="font-extrabold text-blue-400 bg-blue-950/30 px-2 py-0.5 rounded-lg border border-blue-500/20">
-                                    {wMetrics.preWeightToday} kg
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-500 italic text-[11px]">Não medido</span>
-                                )}
-                              </td>
-
-                              {/* 3. 1º Peso do Mês */}
-                              <td className="py-3 px-3">
-                                {wMetrics.firstWeightMonth ? (
-                                  <span className="text-slate-200 font-bold">
-                                    {wMetrics.firstWeightMonth} kg{' '}
-                                    <span className="text-[10px] text-slate-400 font-normal">
-                                      ({wMetrics.firstWeightDate})
-                                    </span>
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-500">-</span>
-                                )}
-                              </td>
-
-                              {/* 4. Último Peso do Mês */}
-                              <td className="py-3 px-3">
-                                {wMetrics.lastWeightMonth ? (
-                                  <span className="text-cyan-300 font-bold">
-                                    {wMetrics.lastWeightMonth} kg{' '}
-                                    <span className="text-[10px] text-slate-400 font-normal">
-                                      ({wMetrics.lastWeightDate})
-                                    </span>
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-500">-</span>
-                                )}
-                              </td>
 
                               {/* 5. Questionário Wellness Status */}
                               <td className="py-3 px-3">
@@ -1368,47 +1341,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   </div>
                 </div>
 
-                {/* Tópico de Resumo Ponderal do Plantel no Mês */}
-                <div className="rounded-2xl border border-amber-500/30 bg-amber-950/10 p-4 shadow-lg space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center space-x-2 text-amber-300">
-                      <Scale className="h-5 w-5 text-amber-400" />
-                      <h3 className="text-sm font-extrabold uppercase tracking-wider">
-                        Resumo Ponderal do Plantel — Controlo Mensal ({selectedDate.substring(0, 7)})
-                      </h3>
-                    </div>
-                    <span className="text-[11px] font-bold text-slate-400">
-                      Consulta de Peso Pré-Treino, 1º e Último Peso do Mês
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
-                      <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês</span>
-                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgFirstMonthWeight ? `${squadWeightAverages.avgFirstMonthWeight} kg` : '-'}</span>
-                    </div>
-
-                    <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
-                      <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês</span>
-                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgLastMonthWeight ? `${squadWeightAverages.avgLastMonthWeight} kg` : '-'}</span>
-                    </div>
-
-                    <div className="rounded-xl border border-emerald-500/20 bg-dark-card p-3 text-center">
-                      <span className="text-[11px] font-bold text-emerald-400 uppercase block">Peso Pré-Treino Médio (Hoje)</span>
-                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgPreWeightToday ? `${squadWeightAverages.avgPreWeightToday} kg` : '-'}</span>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Hydration Table View */}
                 <div className="space-y-4 rounded-2xl border border-blue-500/30 bg-dark-card p-4 shadow-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
                         <Droplets className="h-4 w-4 text-blue-400" />
-                        <span>Relatório Detalhado de Hidratação & Pesagens ({selectedDate})</span>
+                        <span>Relatório Detalhado de Hidratação ({selectedDate})</span>
                       </h3>
-                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, 1º/último peso do mês e reposição recomendada.</p>
+                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, perda líquida e reposição recomendada.</p>
                     </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -1436,8 +1377,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             <th className="py-2.5 px-3">Atleta</th>
                             <th className="py-2.5 px-3">Peso Pré-Treino (kg)</th>
                             <th className="py-2.5 px-3">Peso Pós-Treino (kg)</th>
-                            <th className="py-2.5 px-3">1º Peso do Mês</th>
-                            <th className="py-2.5 px-3">Último Peso do Mês</th>
                             <th className="py-2.5 px-3">Perda Líquida</th>
                             <th className="py-2.5 px-3">Ingestão Líquidos</th>
                             <th className="py-2.5 px-3">Taxa Desidratação</th>
@@ -1450,8 +1389,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           {hydrationList
                             .filter((h) => h.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
                             .map((h) => {
-                              const wMetrics = getAthleteWeightMetrics(h.athleteName);
-
                               return (
                                 <tr key={h.id} className="hover:bg-slate-800/40">
                                   <td className="py-3 px-3 font-bold text-slate-100">{h.athleteName}</td>
@@ -1461,12 +1398,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                     </span>
                                   </td>
                                   <td className="py-3 px-3 text-slate-300">{h.postWeight} kg</td>
-                                  <td className="py-3 px-3 text-slate-300">
-                                    {wMetrics.firstWeightMonth ? `${wMetrics.firstWeightMonth} kg (${wMetrics.firstWeightDate})` : '-'}
-                                  </td>
-                                  <td className="py-3 px-3 text-cyan-300 font-bold">
-                                    {wMetrics.lastWeightMonth ? `${wMetrics.lastWeightMonth} kg (${wMetrics.lastWeightDate})` : '-'}
-                                  </td>
                                   <td className="py-3 px-3 font-bold text-amber-400">-{h.weightLoss} kg</td>
                                   <td className="py-3 px-3 text-slate-300">{h.fluidsIntake} L</td>
 
@@ -1593,6 +1524,172 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                     </form>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* SUB-VIEW 5: WEIGHT CONTROL (ESPAÇO PESO) */}
+            {subTab === 'weight' && (
+              <div className="space-y-6 animate-fade-in">
+                {/* Squad Monthly Weight Averages Banner */}
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-950/10 p-4 space-y-3 shadow-md">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2 text-amber-300">
+                      <Scale className="h-5 w-5 text-amber-400" />
+                      <h3 className="text-sm font-extrabold uppercase tracking-wider">
+                        Resumo Ponderal do Plantel — Controlo Mensal ({selectedDate.substring(0, 7)})
+                      </h3>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-400">
+                      Consulta de Peso Pré-Treino, Peso Pós-Treino, 1º e Último Peso do Mês
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês (Média)</span>
+                      <span className="text-xl font-black text-slate-100">
+                        {squadWeightAverages.avgFirstMonthWeight ? `${squadWeightAverages.avgFirstMonthWeight} kg` : '-'}
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês (Média)</span>
+                      <span className="text-xl font-black text-slate-100">
+                        {squadWeightAverages.avgLastMonthWeight ? `${squadWeightAverages.avgLastMonthWeight} kg` : '-'}
+                      </span>
+                    </div>
+
+                    <div className="rounded-xl border border-emerald-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-emerald-400 uppercase block">Peso Pré-Treino Médio (Hoje)</span>
+                      <span className="text-xl font-black text-slate-100">
+                        {squadWeightAverages.avgPreWeightToday ? `${squadWeightAverages.avgPreWeightToday} kg` : '-'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Roster Weight Table */}
+                <div className="space-y-4 rounded-2xl border border-amber-500/30 bg-dark-card p-4 shadow-lg">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
+                        <Scale className="h-4 w-4 text-amber-400" />
+                        <span>Registo de Controlo Ponderal do Plantel ({selectedDate})</span>
+                      </h3>
+                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, 1º/último peso do mês e variação.</p>
+                    </div>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Pesquisar jogadora..."
+                        value={searchFilter}
+                        onChange={(e) => setSearchFilter(e.target.value)}
+                        className="rounded-xl border border-slate-700 bg-dark-bg py-1.5 pl-8 pr-3 text-xs font-medium text-slate-100 placeholder-slate-500 focus:border-amber-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
+                          <th className="py-2.5 px-3">Atleta</th>
+                          <th className="py-2.5 px-3">Peso Pré-Treino (kg)</th>
+                          <th className="py-2.5 px-3">Peso Pós-Treino (kg)</th>
+                          <th className="py-2.5 px-3">1º Peso do Mês</th>
+                          <th className="py-2.5 px-3">Último Peso do Mês</th>
+                          <th className="py-2.5 px-3">Variação Mensal</th>
+                          <th className="py-2.5 px-3 text-center">Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 font-medium">
+                        {filteredAthletes.map((ath) => {
+                          const name = ath.name;
+                          const wMetrics = getAthleteWeightMetrics(name);
+                          const diff = (wMetrics.lastWeightMonth && wMetrics.firstWeightMonth)
+                            ? +(wMetrics.lastWeightMonth - wMetrics.firstWeightMonth).toFixed(1)
+                            : null;
+
+                          return (
+                            <tr key={name} className="hover:bg-slate-800/40">
+                              <td className="py-3 px-3 font-bold text-slate-100">{name}</td>
+                              
+                              <td className="py-3 px-3">
+                                {wMetrics.preWeightToday ? (
+                                  <span className="font-extrabold text-blue-400 bg-blue-950/30 px-2 py-0.5 rounded-lg border border-blue-500/20">
+                                    {wMetrics.preWeightToday} kg
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500 italic text-[11px]">-</span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3 text-slate-300">
+                                {wMetrics.postWeightToday ? `${wMetrics.postWeightToday} kg` : '-'}
+                              </td>
+
+                              <td className="py-3 px-3">
+                                {wMetrics.firstWeightMonth ? (
+                                  <span className="text-amber-300 font-bold">
+                                    {wMetrics.firstWeightMonth} kg{' '}
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                      ({wMetrics.firstWeightDate})
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3">
+                                {wMetrics.lastWeightMonth ? (
+                                  <span className="text-cyan-300 font-bold">
+                                    {wMetrics.lastWeightMonth} kg{' '}
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                      ({wMetrics.lastWeightDate})
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3 font-bold">
+                                {diff !== null ? (
+                                  <span className={`px-2 py-0.5 rounded-md text-[11px] ${
+                                    diff > 0 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20' :
+                                    diff < 0 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' :
+                                    'text-slate-400'
+                                  }`}>
+                                    {diff > 0 ? `+${diff} kg` : `${diff} kg`}
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3 text-center">
+                                {wMetrics.todayEntry ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleStartEditHydration(wMetrics.todayEntry!)}
+                                    title="Editar Pesagem"
+                                    className="rounded-lg p-1.5 text-cyan-400 hover:bg-cyan-500/20 transition-all inline-flex items-center space-x-1"
+                                  >
+                                    <Pencil className="h-3.5 w-3.5" />
+                                  </button>
+                                ) : (
+                                  <span className="text-slate-600">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             )}
           </div>

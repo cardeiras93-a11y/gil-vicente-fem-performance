@@ -170,6 +170,7 @@ export interface Translations {
       wellness: string;
       rpe: string;
       hydration: string;
+      weight: string;
     };
     fines?: {
       tabFines: string;
@@ -358,6 +359,7 @@ export const translations: Record<Language, Translations> = {
         wellness: 'Questionário Wellness',
         rpe: 'PSE Pós-Treino',
         hydration: 'Hidratação',
+        weight: 'PESO',
       },
     },
   },
@@ -524,6 +526,7 @@ export const translations: Record<Language, Translations> = {
         wellness: 'Wellness Questionnaire',
         rpe: 'Post-Workout RPE',
         hydration: 'Hydration',
+        weight: 'WEIGHT',
       },
       fines: {
         tabFines: 'Fines & Non-Compliance Tally',
@@ -711,6 +714,7 @@ export const translations: Record<Language, Translations> = {
         wellness: 'Questionnaire Wellness',
         rpe: 'RPE Post-Entraînement',
         hydration: 'Hydratation',
+        weight: 'POIDS',
       },
       fines: {
         tabFines: 'Décompte des Amendes & Absences',
