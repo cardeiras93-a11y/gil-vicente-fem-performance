@@ -52,44 +52,79 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   }
 }
 
+export interface NotificationResult {
+  success: boolean;
+  reason?: string;
+}
+
 // Send native notification on smartphone or desktop
-export async function sendMobileNotification(title: string, body: string, tag: string = 'femperf-reminder'): Promise<boolean> {
-  if (typeof window === 'undefined' || !('Notification' in window)) {
-    return false;
+export async function sendMobileNotification(
+  title: string,
+  body: string,
+  tag: string = 'femperf-reminder'
+): Promise<NotificationResult> {
+  if (typeof window === 'undefined') {
+    return { success: false, reason: 'Ambiente de servidor sem janela disponível.' };
   }
 
-  if (Notification.permission !== 'granted') {
-    return false;
+  if (!('Notification' in window)) {
+    return {
+      success: false,
+      reason: 'O navegador/dispositivo não suporta notificações de sistema. No iPad/iPhone, adiciona a app ao Ecrã Principal primeiro.'
+    };
+  }
+
+  let permission = Notification.permission;
+  if (permission === 'default') {
+    permission = (await requestNotificationPermission()) as NotificationPermission;
+  }
+
+  if (permission !== 'granted') {
+    return {
+      success: false,
+      reason: 'As notificações estão bloqueadas nas definições do iPad/Telemóvel. Acede a Definições ➔ Notificações ➔ Safari/Chrome e clica em Permitir.'
+    };
   }
 
   try {
-    // Try using active Service Worker registration (ideal for smartphones / PWAs)
+    // Try using active Service Worker registration (ideal for iPad/iPhone PWA)
     if ('serviceWorker' in navigator) {
-      const reg = await navigator.serviceWorker.ready;
-      if (reg && reg.showNotification) {
-        await reg.showNotification(title, {
-          body,
-          icon: '/icon-192.png',
-          badge: '/icon-192.png',
-          tag,
-          vibrate: [200, 100, 200],
-          data: { url: '/' },
-        } as NotificationOptions);
-        return true;
+      try {
+        const reg = await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1500))
+        ]);
+
+        if (reg && reg.showNotification) {
+          await reg.showNotification(title, {
+            body,
+            icon: '/icon-192.png',
+            badge: '/icon-192.png',
+            tag,
+            vibrate: [200, 100, 200],
+            data: { url: '/' },
+          } as NotificationOptions);
+          return { success: true };
+        }
+      } catch (swErr) {
+        console.warn('Falha na notificação via ServiceWorker, a tentar fallback:', swErr);
       }
     }
 
     // Fallback to standard Notification API
-    new Notification(title, {
+    const notif = new Notification(title, {
       body,
       icon: '/icon-192.png',
       badge: '/icon-192.png',
       tag,
     });
-    return true;
-  } catch (e) {
+    return { success: true };
+  } catch (e: any) {
     console.error('Erro ao emitir notificação no telemóvel:', e);
-    return false;
+    return {
+      success: false,
+      reason: `Restrição do sistema iPadOS/iOS (${e?.message || 'abrir a partir do Ecrã Principal'}).`
+    };
   }
 }
 

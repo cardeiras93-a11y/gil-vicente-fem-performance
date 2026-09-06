@@ -64,23 +64,55 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
     return () => cleanup();
   }, [activeAthlete.id, activeAthlete.name, status.isComplete]);
 
+  const [testFeedback, setTestFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const handleEnableMobileNotifications = async () => {
+    setTestFeedback(null);
     const res = await requestNotificationPermission();
     setPermission(res);
 
     if (res === 'granted') {
-      sendMobileNotification(
+      const result = await sendMobileNotification(
         '⚽ Gil Vicente FC',
         `Lembretes no telemóvel ativados para ${activeAthlete.name.split(' ')[0]}.`
       );
+      if (result.success) {
+        setTestFeedback({
+          type: 'success',
+          message: '🔔 Notificações ativadas! Notificação de boas-vindas enviada para o teu dispositivo.',
+        });
+      } else {
+        setTestFeedback({
+          type: 'error',
+          message: result.reason || 'Não foi possível emitir notificação no teu dispositivo.',
+        });
+      }
+    } else {
+      setTestFeedback({
+        type: 'error',
+        message: 'Permissão não concedida. No iPad/iPhone, adiciona a app ao Ecrã Principal e aceita as Notificações nas Definições.',
+      });
     }
   };
 
   const handleSendTestNotification = async () => {
-    await sendMobileNotification(
+    setTestFeedback(null);
+    const result = await sendMobileNotification(
       '⚽ Teste Gil Vicente FC',
       `Notificação de teste recebida com sucesso no teu dispositivo (${activeAthlete.name.split(' ')[0]})! 🎉`
     );
+
+    if (result.success) {
+      setTestFeedback({
+        type: 'success',
+        message: '🔔 Notificação de teste enviada com sucesso! Verifica o cimo do teu ecrã.',
+      });
+    } else {
+      setTestFeedback({
+        type: 'error',
+        message: result.reason || 'Erro ao enviar notificação para o teu dispositivo.',
+      });
+    }
   };
 
   return (
@@ -111,6 +143,19 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
           </button>
         ) : null}
       </div>
+
+      {testFeedback && (
+        <div
+          className={`p-2.5 rounded-xl border text-xs font-bold animate-fade-in flex items-start space-x-2 ${
+            testFeedback.type === 'success'
+              ? 'border-emerald-500/50 bg-emerald-950/40 text-emerald-300'
+              : 'border-rose-500/50 bg-rose-950/40 text-rose-300'
+          }`}
+        >
+          <span className="shrink-0">{testFeedback.type === 'success' ? '✅' : '⚠️'}</span>
+          <span>{testFeedback.message}</span>
+        </div>
+      )}
 
       {/* 3 Simple Status Pills */}
       <div className="grid grid-cols-3 gap-2">
