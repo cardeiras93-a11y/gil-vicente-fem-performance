@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from '@/lib/types';
 import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus } from '@/lib/data';
 import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage } from '@/lib/storage';
@@ -17,7 +17,7 @@ import {
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
-  Download, FileSpreadsheet, FileText, Bell, Smartphone
+  Download, FileSpreadsheet, FileText, Bell, Smartphone, Scale
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -219,6 +219,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       return () => clearInterval(intervalId);
     }
   }, [isOpen, isAuthenticated, selectedDate]);
+
+  // Squad monthly weight averages
+  const squadWeightAverages = useMemo(() => {
+    const allHydration = getHydrationLocally();
+    const monthPrefix = selectedDate.substring(0, 7);
+
+    const firstWeights: number[] = [];
+    const lastWeights: number[] = [];
+    const preWeightsToday: number[] = [];
+
+    INITIAL_ATHLETES.forEach((ath) => {
+      const monthEntries = allHydration
+        .filter(
+          (h) =>
+            h.athleteName.toLowerCase() === ath.name.toLowerCase() &&
+            h.date.startsWith(monthPrefix)
+        )
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      const todayEntry = hydrationList.find(
+        (h) => h.athleteName.toLowerCase() === ath.name.toLowerCase()
+      );
+
+      if (monthEntries.length > 0) {
+        const fw = monthEntries[0].preWeight || monthEntries[0].postWeight;
+        const lw = monthEntries[monthEntries.length - 1].postWeight || monthEntries[monthEntries.length - 1].preWeight;
+        if (fw) firstWeights.push(fw);
+        if (lw) lastWeights.push(lw);
+      }
+
+      if (todayEntry && todayEntry.preWeight > 0) {
+        preWeightsToday.push(todayEntry.preWeight);
+      }
+    });
+
+    const avgFirstMonthWeight = firstWeights.length
+      ? +(firstWeights.reduce((a, b) => a + b, 0) / firstWeights.length).toFixed(1)
+      : null;
+
+    const avgLastMonthWeight = lastWeights.length
+      ? +(lastWeights.reduce((a, b) => a + b, 0) / lastWeights.length).toFixed(1)
+      : null;
+
+    const avgPreWeightToday = preWeightsToday.length
+      ? +(preWeightsToday.reduce((a, b) => a + b, 0) / preWeightsToday.length).toFixed(1)
+      : null;
+
+    return { avgFirstMonthWeight, avgLastMonthWeight, avgPreWeightToday };
+  }, [selectedDate, hydrationList]);
 
   const loadAllData = () => {
     const w = getWellnessLocally();
@@ -504,6 +553,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     ? +(hydrationList.reduce((acc, curr) => acc + curr.dehydrationRate, 0) / totalHydration).toFixed(2)
     : 0;
   const alertHydrationCount = hydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
+
+  // Helper for monthly weight tracking (1º peso do mês, último peso do mês, peso pré-treino)
+  const getAthleteWeightMetrics = (athleteName: string) => {
+    const monthPrefix = selectedDate.substring(0, 7); // e.g. "2026-09"
+    const allHydration = getHydrationLocally();
+
+    const monthEntries = allHydration
+      .filter(
+        (h) =>
+          h.athleteName.toLowerCase() === athleteName.toLowerCase() &&
+          h.date.startsWith(monthPrefix)
+      )
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const todayEntry = hydrationList.find(
+      (h) => h.athleteName.toLowerCase() === athleteName.toLowerCase()
+    );
+
+    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
+    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+
+    const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
+    const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    const lastWeightMonth = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : null;
+    const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    const preWeightToday = todayEntry ? todayEntry.preWeight : null;
+    const postWeightToday = todayEntry ? todayEntry.postWeight : null;
+
+    return {
+      preWeightToday,
+      postWeightToday,
+      firstWeightMonth,
+      firstWeightDate,
+      lastWeightMonth,
+      lastWeightDate,
+      todayEntry,
+    };
+  };
 
   // Helper for muscle fatigue tags
   const renderMuscleFatigueBadges = (map?: Record<string, number>) => {
@@ -860,6 +949,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <thead>
                         <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                           <th className="py-2.5 px-3">Atleta</th>
+                          <th className="py-2.5 px-3">Peso Pré-Treino</th>
+                          <th className="py-2.5 px-3">1º Peso do Mês</th>
+                          <th className="py-2.5 px-3">Último Peso do Mês</th>
                           <th className="py-2.5 px-3">Questionário Wellness</th>
                           <th className="py-2.5 px-3">Wellness Total</th>
                           <th className="py-2.5 px-3">Questionário PSE</th>
@@ -872,13 +964,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           const name = ath.name;
                           const wellness = wellnessList.find((w) => w.athleteName === name);
                           const rpe = rpeList.find((r) => r.athleteName === name);
+                          const wMetrics = getAthleteWeightMetrics(name);
 
                           return (
                             <tr key={name} className="hover:bg-slate-800/40">
                               {/* 1. Atleta */}
                               <td className="py-3 px-3 font-bold text-slate-100">{name}</td>
 
-                              {/* 2. Questionário Wellness Status */}
+                              {/* 2. Peso Pré-Treino (Hoje) */}
+                              <td className="py-3 px-3">
+                                {wMetrics.preWeightToday ? (
+                                  <span className="font-extrabold text-blue-400 bg-blue-950/30 px-2 py-0.5 rounded-lg border border-blue-500/20">
+                                    {wMetrics.preWeightToday} kg
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500 italic text-[11px]">Não medido</span>
+                                )}
+                              </td>
+
+                              {/* 3. 1º Peso do Mês */}
+                              <td className="py-3 px-3">
+                                {wMetrics.firstWeightMonth ? (
+                                  <span className="text-slate-200 font-bold">
+                                    {wMetrics.firstWeightMonth} kg{' '}
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                      ({wMetrics.firstWeightDate})
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              {/* 4. Último Peso do Mês */}
+                              <td className="py-3 px-3">
+                                {wMetrics.lastWeightMonth ? (
+                                  <span className="text-cyan-300 font-bold">
+                                    {wMetrics.lastWeightMonth} kg{' '}
+                                    <span className="text-[10px] text-slate-400 font-normal">
+                                      ({wMetrics.lastWeightDate})
+                                    </span>
+                                  </span>
+                                ) : (
+                                  <span className="text-slate-500">-</span>
+                                )}
+                              </td>
+
+                              {/* 5. Questionário Wellness Status */}
                               <td className="py-3 px-3">
                                 {wellness ? (
                                   <span className="inline-flex items-center space-x-1 text-emerald-400 font-bold">
@@ -890,7 +1022,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 )}
                               </td>
 
-                              {/* 3. Wellness Total Score */}
+                              {/* 6. Wellness Total Score */}
                               <td className="py-3 px-3">
                                 {wellness ? (
                                   renderWellnessTotalBadge(getWellnessTotalScore(wellness))
@@ -899,7 +1031,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 )}
                               </td>
 
-                              {/* 4. Questionário PSE Status */}
+                              {/* 7. Questionário PSE Status */}
                               <td className="py-3 px-3">
                                 {rpe ? (
                                   <span className="inline-flex items-center space-x-1 text-cyan-400 font-bold">
@@ -911,7 +1043,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 )}
                               </td>
 
-                              {/* 5. Fadiga Após Treino */}
+                              {/* 8. Fadiga Após Treino */}
                               <td className="py-3 px-3">
                                 {rpe ? (
                                   renderFatigueBadge(rpe.postFatigue)
@@ -920,7 +1052,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                 )}
                               </td>
 
-                              {/* 6. Fisioterapia */}
+                              {/* 9. Fisioterapia */}
                               <td className="py-3 px-3 text-right">
                                 {wellness?.needsPhysio ? (
                                   <span className="font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/30">
@@ -1236,15 +1368,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   </div>
                 </div>
 
+                {/* Tópico de Resumo Ponderal do Plantel no Mês */}
+                <div className="rounded-2xl border border-amber-500/30 bg-amber-950/10 p-4 shadow-lg space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex items-center space-x-2 text-amber-300">
+                      <Scale className="h-5 w-5 text-amber-400" />
+                      <h3 className="text-sm font-extrabold uppercase tracking-wider">
+                        Resumo Ponderal do Plantel — Controlo Mensal ({selectedDate.substring(0, 7)})
+                      </h3>
+                    </div>
+                    <span className="text-[11px] font-bold text-slate-400">
+                      Consulta de Peso Pré-Treino, 1º e Último Peso do Mês
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês</span>
+                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgFirstMonthWeight ? `${squadWeightAverages.avgFirstMonthWeight} kg` : '-'}</span>
+                    </div>
+
+                    <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês</span>
+                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgLastMonthWeight ? `${squadWeightAverages.avgLastMonthWeight} kg` : '-'}</span>
+                    </div>
+
+                    <div className="rounded-xl border border-emerald-500/20 bg-dark-card p-3 text-center">
+                      <span className="text-[11px] font-bold text-emerald-400 uppercase block">Peso Pré-Treino Médio (Hoje)</span>
+                      <span className="text-xl font-black text-slate-100">{squadWeightAverages.avgPreWeightToday ? `${squadWeightAverages.avgPreWeightToday} kg` : '-'}</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Hydration Table View */}
                 <div className="space-y-4 rounded-2xl border border-blue-500/30 bg-dark-card p-4 shadow-lg">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
                         <Droplets className="h-4 w-4 text-blue-400" />
-                        <span>Relatório Detalhado de Hidratação ({selectedDate})</span>
+                        <span>Relatório Detalhado de Hidratação & Pesagens ({selectedDate})</span>
                       </h3>
-                      <p className="text-xs text-slate-400">Variação de peso pré e pós-treino, taxa de desidratação e volume de reposição obrigatória.</p>
+                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, 1º/último peso do mês e reposição recomendada.</p>
                     </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -1270,8 +1434,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <thead>
                           <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                             <th className="py-2.5 px-3">Atleta</th>
-                            <th className="py-2.5 px-3">Peso Pré (kg)</th>
-                            <th className="py-2.5 px-3">Peso Pós (kg)</th>
+                            <th className="py-2.5 px-3">Peso Pré-Treino (kg)</th>
+                            <th className="py-2.5 px-3">Peso Pós-Treino (kg)</th>
+                            <th className="py-2.5 px-3">1º Peso do Mês</th>
+                            <th className="py-2.5 px-3">Último Peso do Mês</th>
                             <th className="py-2.5 px-3">Perda Líquida</th>
                             <th className="py-2.5 px-3">Ingestão Líquidos</th>
                             <th className="py-2.5 px-3">Taxa Desidratação</th>
@@ -1283,17 +1449,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <tbody className="divide-y divide-slate-800/60 font-medium">
                           {hydrationList
                             .filter((h) => h.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
-                            .map((h) => (
-                              <tr key={h.id} className="hover:bg-slate-800/40">
-                                <td className="py-3 px-3 font-bold text-slate-100">{h.athleteName}</td>
-                                <td className="py-3 px-3 text-slate-300">{h.preWeight} kg</td>
-                                <td className="py-3 px-3 text-slate-300">{h.postWeight} kg</td>
-                                <td className="py-3 px-3 font-bold text-amber-400">-{h.weightLoss} kg</td>
-                                <td className="py-3 px-3 text-slate-300">{h.fluidsIntake} L</td>
+                            .map((h) => {
+                              const wMetrics = getAthleteWeightMetrics(h.athleteName);
 
-                                <td className="py-3 px-3 font-black text-slate-100">
-                                  {h.dehydrationRate}%
-                                </td>
+                              return (
+                                <tr key={h.id} className="hover:bg-slate-800/40">
+                                  <td className="py-3 px-3 font-bold text-slate-100">{h.athleteName}</td>
+                                  <td className="py-3 px-3">
+                                    <span className="font-extrabold text-blue-400 bg-blue-950/30 px-2 py-0.5 rounded-lg border border-blue-500/20">
+                                      {h.preWeight} kg
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-3 text-slate-300">{h.postWeight} kg</td>
+                                  <td className="py-3 px-3 text-slate-300">
+                                    {wMetrics.firstWeightMonth ? `${wMetrics.firstWeightMonth} kg (${wMetrics.firstWeightDate})` : '-'}
+                                  </td>
+                                  <td className="py-3 px-3 text-cyan-300 font-bold">
+                                    {wMetrics.lastWeightMonth ? `${wMetrics.lastWeightMonth} kg (${wMetrics.lastWeightDate})` : '-'}
+                                  </td>
+                                  <td className="py-3 px-3 font-bold text-amber-400">-{h.weightLoss} kg</td>
+                                  <td className="py-3 px-3 text-slate-300">{h.fluidsIntake} L</td>
+
+                                  <td className="py-3 px-3 font-black text-slate-100">
+                                    {h.dehydrationRate}%
+                                  </td>
 
                                 <td className="py-3 px-3">
                                   <span
@@ -1334,7 +1513,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                   </div>
                                 </td>
                               </tr>
-                            ))}
+                            );
+                          })}
                         </tbody>
                       </table>
                     </div>

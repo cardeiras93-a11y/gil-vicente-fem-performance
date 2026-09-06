@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
 import { INITIAL_ATHLETES, BORG_SCALE } from '@/lib/data';
 import { useLanguage } from '@/context/LanguageContext';
+import { getHydrationLocally } from '@/lib/storage';
 import { exportAllDataToExcel } from '@/lib/exportUtils';
 import {
   Activity, Calendar, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
@@ -200,6 +201,47 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
     });
   }, [athleteHistory]);
 
+  // Weight metrics for selected athlete
+  const weightMetrics = useMemo(() => {
+    const allHydration = getHydrationLocally();
+    const monthPrefix = selectedDate.substring(0, 7);
+
+    const monthEntries = allHydration
+      .filter(
+        (h) =>
+          h.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() &&
+          h.date.startsWith(monthPrefix)
+      )
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    const todayEntry = allHydration.find(
+      (h) =>
+        h.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() &&
+        h.date === selectedDate
+    );
+
+    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
+    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+
+    const firstWeight = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
+    const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    const lastWeight = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : null;
+    const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    const preWeightToday = todayEntry ? todayEntry.preWeight : null;
+    const postWeightToday = todayEntry ? todayEntry.postWeight : null;
+
+    return {
+      firstWeight,
+      firstWeightDate,
+      lastWeight,
+      lastWeightDate,
+      preWeightToday,
+      postWeightToday,
+    };
+  }, [selectedAthlete.name, selectedDate]);
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 1. Athlete Selector & Filter Bar */}
@@ -340,6 +382,48 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
           </div>
 
           {getACWRBadge(acwrMetrics.shortACWR, 'ACWR Curto')}
+        </div>
+      </div>
+
+      {/* Controlo Ponderal Individual do Mês */}
+      <div className="rounded-2xl border border-blue-500/30 bg-blue-950/10 p-4 space-y-3 shadow-md">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2 text-blue-300">
+            <Scale className="h-5 w-5 text-blue-400" />
+            <h3 className="text-sm font-extrabold uppercase">Controlo Ponderal de {selectedAthlete.name} ({selectedDate.substring(0, 7)})</h3>
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 bg-dark-bg px-2 py-0.5 rounded border border-slate-800">
+            Pesagem Pré-Treino & Histórico
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="rounded-xl border border-blue-500/20 bg-dark-card p-3 text-center">
+            <span className="text-[11px] font-bold text-blue-400 uppercase block">Peso Pré-Treino (Hoje)</span>
+            <span className="text-xl font-black text-slate-100">
+              {weightMetrics.preWeightToday ? `${weightMetrics.preWeightToday} kg` : '-'}
+            </span>
+          </div>
+
+          <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
+            <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês</span>
+            <span className="text-xl font-black text-slate-100">
+              {weightMetrics.firstWeight ? `${weightMetrics.firstWeight} kg` : '-'}
+            </span>
+            {weightMetrics.firstWeightDate && (
+              <span className="text-[10px] text-slate-400 block mt-0.5">({weightMetrics.firstWeightDate})</span>
+            )}
+          </div>
+
+          <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
+            <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês</span>
+            <span className="text-xl font-black text-slate-100">
+              {weightMetrics.lastWeight ? `${weightMetrics.lastWeight} kg` : '-'}
+            </span>
+            {weightMetrics.lastWeightDate && (
+              <span className="text-[10px] text-slate-400 block mt-0.5">({weightMetrics.lastWeightDate})</span>
+            )}
+          </div>
         </div>
       </div>
 
