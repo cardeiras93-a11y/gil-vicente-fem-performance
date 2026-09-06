@@ -76,6 +76,13 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
     }
   };
 
+  const handleSendTestNotification = async () => {
+    await sendMobileNotification(
+      '⚽ Teste Gil Vicente FC',
+      `Notificação de teste recebida com sucesso no teu dispositivo (${activeAthlete.name.split(' ')[0]})! 🎉`
+    );
+  };
+
   return (
     <div className="rounded-2xl border border-slate-800 bg-dark-card p-3 space-y-2 shadow-md">
       <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 text-[11px]">
@@ -83,16 +90,26 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
           Estado dos Questionários de Hoje ({todayStr})
         </span>
 
-        {permission !== 'granted' && permission !== 'unsupported' && (
+        {permission === 'granted' ? (
+          <button
+            type="button"
+            onClick={handleSendTestNotification}
+            title="Enviar notificação de teste para o teu dispositivo"
+            className="flex items-center space-x-1 font-extrabold text-emerald-400 hover:text-emerald-300 transition-all active:scale-95 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30"
+          >
+            <Smartphone className="h-3 w-3" />
+            <span>Testar Notificação</span>
+          </button>
+        ) : permission !== 'unsupported' ? (
           <button
             type="button"
             onClick={handleEnableMobileNotifications}
-            className="flex items-center space-x-1 font-extrabold text-amber-400 hover:text-amber-300 transition-all"
+            className="flex items-center space-x-1 font-extrabold text-amber-400 hover:text-amber-300 transition-all active:scale-95 bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-500/30"
           >
             <Smartphone className="h-3 w-3" />
             <span>Ativar Alertas</span>
           </button>
-        )}
+        ) : null}
       </div>
 
       {/* 3 Simple Status Pills */}
