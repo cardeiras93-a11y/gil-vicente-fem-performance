@@ -73,13 +73,13 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
 
     if (res === 'granted') {
       const result = await sendMobileNotification(
-        '⚽ Gil Vicente FC',
-        `Lembretes no telemóvel ativados para ${activeAthlete.name.split(' ')[0]}.`
+        '⚽ Gil Vicente FC (Futebol Feminino)',
+        'Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente'
       );
       if (result.success) {
         setTestFeedback({
           type: 'success',
-          message: '🔔 Notificações ativadas! Notificação de boas-vindas enviada para o teu dispositivo.',
+          message: '🔔 Notificações ativadas! Notificação enviada: "Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente"',
         });
       } else {
         setTestFeedback({
@@ -98,14 +98,14 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
   const handleSendTestNotification = async () => {
     setTestFeedback(null);
     const result = await sendMobileNotification(
-      '⚽ Teste Gil Vicente FC',
-      `Notificação de teste recebida com sucesso no teu dispositivo (${activeAthlete.name.split(' ')[0]})! 🎉`
+      '⚽ Gil Vicente FC (Futebol Feminino)',
+      'Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente'
     );
 
     if (result.success) {
       setTestFeedback({
         type: 'success',
-        message: '🔔 Notificação de teste enviada com sucesso! Verifica o cimo do teu ecrã.',
+        message: '🔔 Notificação enviada: "Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente"',
       });
     } else {
       setTestFeedback({
