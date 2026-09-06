@@ -275,6 +275,80 @@ export function checkAutomaticScheduledReminders(
   checkSlot('postHydration', config.postHydrationTime, !status.hasPostHydration, 'Pesagem Pós-Treino');
 }
 
+// GLOBAL AUTOMATIC SCHEDULED REMINDERS
+// Evaluates current time and sends notifications to the device even when NO athlete profile is selected yet.
+export function checkGlobalAutomaticScheduledReminders(): void {
+  if (typeof window === 'undefined') return;
+  if (getNotificationPermission() !== 'granted') return;
+
+  const config = getStoredReminderConfig();
+  if (!config.enabled) return;
+
+  const now = new Date();
+  const dateStr = now.toISOString().split('T')[0];
+  const currentHHMM = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  const checkGlobalSlot = (
+    slotName: 'wellness' | 'rpe' | 'preHydration' | 'postHydration',
+    slotTime: string,
+    label: string,
+    message: string
+  ) => {
+    if (currentHHMM >= slotTime) {
+      const trackingKey = `femperf_global_notified_${dateStr}_${slotName}`;
+      if (!localStorage.getItem(trackingKey)) {
+        const title = `⚽ Gil Vicente FC • Lembrete de ${label}`;
+        sendMobileNotification(title, message, `global-remind-${slotName}-${dateStr}`).then((sent) => {
+          if (sent) {
+            localStorage.setItem(trackingKey, 'true');
+          }
+        });
+      }
+    }
+  };
+
+  checkGlobalSlot(
+    'wellness',
+    config.wellnessTime,
+    'Wellness',
+    'Olá! Está na hora de preencher o teu Questionário Wellness de hoje. Abre a aplicação e seleciona o teu nome.'
+  );
+
+  checkGlobalSlot(
+    'preHydration',
+    config.preHydrationTime,
+    'Pesagem Pré-Treino',
+    'Lembrete de Pesagem Pré-Treino! Abre a aplicação, escolhe o teu nome e regista a tua pesagem inicial.'
+  );
+
+  checkGlobalSlot(
+    'postHydration',
+    config.postHydrationTime,
+    'Pesagem Pós-Treino',
+    'Lembrete de Pesagem Pós-Treino! Abre a aplicação, escolhe o teu nome e regista a tua pesagem final.'
+  );
+
+  checkGlobalSlot(
+    'rpe',
+    config.rpeTime,
+    'PSE (RPE Pós-Treino)',
+    'Está na hora de preencher o teu registo de PSE (Perceção Subjetiva do Esforço). Entra na aplicação e escolhe o teu perfil.'
+  );
+}
+
+// Start background automatic reminder scheduler globally on app landing page
+export function startGlobalAutomaticReminderScheduler(): () => void {
+  if (typeof window === 'undefined') return () => {};
+
+  checkGlobalAutomaticScheduledReminders();
+
+  const intervalId = setInterval(() => {
+    checkGlobalAutomaticScheduledReminders();
+  }, 60000);
+
+  return () => clearInterval(intervalId);
+}
+
 // Start background automatic reminder scheduler (polling every 60s)
 export function startAutomaticReminderScheduler(
   athleteId: string,

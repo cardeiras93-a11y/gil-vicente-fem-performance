@@ -12,6 +12,7 @@ import { AdminDashboard } from '@/components/AdminDashboard';
 import { PhysioDashboard } from '@/components/PhysioDashboard';
 import { ReminderBanner } from '@/components/ReminderBanner';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
+import { startGlobalAutomaticReminderScheduler } from '@/lib/reminderUtils';
 import { HeartPulse, Dumbbell, Droplet, User, Smartphone, Shield, Stethoscope } from 'lucide-react';
 
 function MainAppContent() {
@@ -29,6 +30,9 @@ function MainAppContent() {
     setIsChangingAthlete(true);
     setIsLoaded(true);
 
+    // Start global automatic scheduled reminders (works even when no athlete profile is selected yet)
+    const cleanupReminders = startGlobalAutomaticReminderScheduler();
+
     // Online / Offline listener
     const updateOnlineStatus = () => setIsOnline(navigator.onLine);
     setIsOnline(navigator.onLine);
@@ -36,6 +40,7 @@ function MainAppContent() {
     window.addEventListener('offline', updateOnlineStatus);
 
     return () => {
+      cleanupReminders();
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
     };
