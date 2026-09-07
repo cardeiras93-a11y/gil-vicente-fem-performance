@@ -102,8 +102,9 @@ export async function POST(request: Request) {
     }
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('hydration_entries').insert([
+      const { data, error } = await supabase.from('hydration_entries').upsert([
         {
+          id: entryToSave.id,
           athlete_id: athleteId,
           athlete_name: athleteName,
           date: entryDate,
@@ -118,7 +119,7 @@ export async function POST(request: Request) {
           recommendation: calc.recommendation,
           biological_impact: calc.biologicalImpact,
         },
-      ]).select();
+      ], { onConflict: 'id' }).select();
 
       if (error) {
         console.error('Supabase error:', error);

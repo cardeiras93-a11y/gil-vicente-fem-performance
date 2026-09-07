@@ -113,8 +113,9 @@ export async function POST(request: Request) {
     saveEntryToFile(entryToSave);
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from('rpe_entries').insert([
+      const { data, error } = await supabase.from('rpe_entries').upsert([
         {
+          id: entryToSave.id,
           athlete_id: athleteId,
           athlete_name: athleteName,
           date,
@@ -124,7 +125,7 @@ export async function POST(request: Request) {
           pre_workout_plans: preWorkoutPlans || [],
           comments: comments || null,
         },
-      ]).select();
+      ], { onConflict: 'id' }).select();
 
       if (error) {
         console.error('Supabase error:', error);
