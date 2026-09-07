@@ -72,15 +72,7 @@ export async function GET(request: Request) {
           physioReason: item.physio_reason || null,
           createdAt: item.created_at || item.date,
         }));
-        return NextResponse.json({
-          success: true,
-          data: mapped,
-          debug: {
-            isSupabaseConfigured,
-            hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL),
-            hasKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
-          }
-        });
+        return NextResponse.json({ success: true, data: mapped });
       }
     }
 
@@ -88,15 +80,7 @@ export async function GET(request: Request) {
     if (athleteId) {
       entries = entries.filter((e) => e.athleteId === athleteId);
     }
-    return NextResponse.json({
-      success: true,
-      data: entries,
-      debug: {
-        isSupabaseConfigured,
-        hasUrl: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL),
-        hasKey: Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY),
-      }
-    });
+    return NextResponse.json({ success: true, data: entries });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Erro no servidor' }, { status: 500 });
   }
