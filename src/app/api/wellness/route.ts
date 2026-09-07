@@ -3,7 +3,7 @@ import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import fs from 'fs';
 import path from 'path';
 
-const DATA_DIR = path.join(process.cwd(), 'data');
+const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'wellness_entries.json');
 
 function ensureFileExists() {
