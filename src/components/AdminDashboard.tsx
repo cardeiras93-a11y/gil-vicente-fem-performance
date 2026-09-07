@@ -25,6 +25,14 @@ interface AdminDashboardProps {
   onClose: () => void;
 }
 
+const getTodayLocalDateStr = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose }) => {
   const { t, language } = useLanguage();
 
@@ -42,9 +50,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   const [selectedDate, setSelectedDateState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_admin_selected_date') || new Date().toISOString().split('T')[0];
+      return localStorage.getItem('femperf_admin_selected_date') || getTodayLocalDateStr();
     }
-    return new Date().toISOString().split('T')[0];
+    return getTodayLocalDateStr();
   });
 
   const setSelectedDate = (date: string) => {
@@ -113,7 +121,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   const handleSendBroadcastReminder = async () => {
     let pendingCount = 0;
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getTodayLocalDateStr();
 
     INITIAL_ATHLETES.forEach((ath) => {
       const st = getPendingQuestionnairesStatus(ath.id, todayStr, allWellnessList, allRpeList, allHydrationList);

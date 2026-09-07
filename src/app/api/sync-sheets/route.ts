@@ -1,19 +1,37 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+const DATA_DIR = path.join(process.cwd(), 'data');
+
+function getStoredEntries(filename: string): any[] {
+  try {
+    const filePath = path.join(DATA_DIR, filename);
+    if (!fs.existsSync(filePath)) return [];
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const customUrl = searchParams.get('url');
-    const readUrl = customUrl || process.env.GOOGLE_SHEETS_READ_URL || process.env.GOOGLE_SHEETS_WEBHOOK_URL;
+    const readUrl = customUrl || process.env.GOOGLE_SHEETS_READ_URL;
 
     if (!readUrl) {
+      const wellness = getStoredEntries('wellness_entries.json');
+      const rpe = getStoredEntries('rpe_entries.json');
+      const hydration = getStoredEntries('hydration_entries.json');
       return NextResponse.json({
         success: true,
-        message: 'Endpoint de leitura do Google Sheets ativo. Configure GOOGLE_SHEETS_READ_URL nas variáveis de ambiente Vercel para carregar a folha em tempo real.',
-        count: 0,
-        wellness: [],
-        rpe: [],
-        hydration: []
+        data: {
+          wellness,
+          rpe,
+          hydration
+        }
       });
     }
 
@@ -65,3 +83,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err?.message || 'Erro na sincronização' }, { status: 500 });
   }
 }
+
