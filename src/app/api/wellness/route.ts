@@ -53,7 +53,26 @@ export async function GET(request: Request) {
       }
       const { data, error } = await query;
       if (!error && data) {
-        return NextResponse.json({ success: true, data });
+        const mapped = data.map((item: any) => ({
+          id: item.id || `wel-${item.athlete_id}-${item.date}`,
+          athleteId: item.athlete_id,
+          athleteName: item.athlete_name,
+          date: item.date,
+          menstrualCycle: item.menstrual_cycle,
+          sleepQuality: Number(item.sleep_quality),
+          sleepDuration: Number(item.sleep_duration),
+          mood: Number(item.mood),
+          stress: Number(item.stress),
+          fatigue: Number(item.fatigue),
+          soreness: Number(item.soreness),
+          heavyLegs: Number(item.heavy_legs),
+          wellnessTotal: Number(item.sleep_quality + item.sleep_duration + item.mood + item.stress + item.fatigue + item.soreness + item.heavy_legs),
+          muscleFatigue: item.muscle_fatigue || {},
+          needsPhysio: Boolean(item.needs_physio),
+          physioReason: item.physio_reason || null,
+          createdAt: item.created_at || item.date,
+        }));
+        return NextResponse.json({ success: true, data: mapped });
       }
     }
 

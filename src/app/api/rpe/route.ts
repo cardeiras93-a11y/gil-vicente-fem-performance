@@ -53,7 +53,19 @@ export async function GET(request: Request) {
       }
       const { data, error } = await query;
       if (!error && data) {
-        return NextResponse.json({ success: true, data });
+        const mapped = data.map((item: any) => ({
+          id: item.id || `rpe-${item.athlete_id}-${item.date}`,
+          athleteId: item.athlete_id,
+          athleteName: item.athlete_name,
+          date: item.date,
+          physicalDemand: Number(item.physical_demand),
+          postFatigue: Number(item.post_fatigue),
+          muscleFatigue: item.muscle_fatigue || {},
+          preWorkoutPlans: item.pre_workout_plans || [],
+          comments: item.comments || null,
+          createdAt: item.created_at || item.date,
+        }));
+        return NextResponse.json({ success: true, data: mapped });
       }
     }
 

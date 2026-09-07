@@ -146,7 +146,24 @@ export async function GET(request: Request) {
       }
       const { data, error } = await query;
       if (!error && data) {
-        return NextResponse.json({ success: true, data });
+        const mapped = data.map((item: any) => ({
+          id: item.id || `hyd-${item.athlete_id}-${item.date}`,
+          athleteId: item.athlete_id,
+          athleteName: item.athlete_name,
+          date: item.date,
+          durationMin: item.duration_min ? Number(item.duration_min) : 90,
+          preWeight: Number(item.pre_weight),
+          postWeight: Number(item.post_weight),
+          fluidsIntake: Number(item.fluids_intake || 0),
+          weightLoss: Number(item.weight_loss),
+          dehydrationRate: Number(item.dehydration_rate),
+          status: item.status,
+          refillNeededLiters: Number(item.refill_needed_liters),
+          recommendation: item.recommendation,
+          biologicalImpact: item.biological_impact,
+          createdAt: item.created_at || item.date,
+        }));
+        return NextResponse.json({ success: true, data: mapped });
       }
     }
 
