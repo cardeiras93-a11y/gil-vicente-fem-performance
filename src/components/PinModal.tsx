@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Lock, KeyRound, X, CheckCircle } from 'lucide-react';
 import { getAthletePin, setAthletePin } from '@/lib/storage';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface PinModalProps {
   athleteId: string;
@@ -19,6 +20,7 @@ export const PinModal: React.FC<PinModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { t } = useLanguage();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'verify' | 'setup'>('verify');
@@ -42,7 +44,7 @@ export const PinModal: React.FC<PinModalProps> = ({
           if (nextPin === existingPin) {
             onSuccess();
           } else {
-            setError('PIN Incorreto. Tenta novamente.');
+            setError(t.athleteSelector.wrongPin);
             setPin('');
           }
         }
@@ -61,7 +63,7 @@ export const PinModal: React.FC<PinModalProps> = ({
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-2 text-brand-lime">
             <Lock className="h-5 w-5" />
-            <span className="text-xs uppercase font-bold tracking-wider">Acesso Seguro</span>
+            <span className="text-xs uppercase font-bold tracking-wider">{t.athleteSelector.pinTitle}</span>
           </div>
           <button
             type="button"
@@ -77,7 +79,7 @@ export const PinModal: React.FC<PinModalProps> = ({
           <p className="text-xs text-slate-400 mt-1">
             {isSettingUp
               ? 'Cria um PIN de 4 dígitos para proteger o teu perfil'
-              : 'Introduz o teu PIN de 4 dígitos'}
+              : t.athleteSelector.pinSubtitle}
           </p>
         </div>
 
@@ -114,7 +116,7 @@ export const PinModal: React.FC<PinModalProps> = ({
             onClick={handleClear}
             className="h-14 rounded-xl border border-slate-800 bg-slate-900 text-xs font-semibold text-slate-400 hover:text-slate-200"
           >
-            Limpar
+            Clear
           </button>
           <button
             type="button"
@@ -125,13 +127,10 @@ export const PinModal: React.FC<PinModalProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => {
-              // Direct pass option if PIN is optional
-              onSuccess();
-            }}
-            className="h-14 rounded-xl border border-slate-800 bg-slate-900 text-[11px] font-semibold text-slate-400 hover:text-brand-lime"
+            onClick={onClose}
+            className="h-14 rounded-xl border border-slate-800 bg-slate-900 text-xs font-bold text-slate-400 hover:text-slate-200 active:scale-95"
           >
-            Ignorar
+            {t.athleteSelector.cancel}
           </button>
         </div>
       </div>

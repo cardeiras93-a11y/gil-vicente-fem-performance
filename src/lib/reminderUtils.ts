@@ -128,6 +128,15 @@ export async function sendMobileNotification(
   }
 }
 
+// Get today's local date string YYYY-MM-DD
+export function getTodayLocalDateStr(): string {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // Determine missing questionnaires for athlete on specified date
 export function getPendingQuestionnairesStatus(
   athleteId: string,
@@ -144,9 +153,9 @@ export function getPendingQuestionnairesStatus(
   const hasRPE = rList.some((r) => r.athleteId === athleteId && r.date === dateStr);
   const hEntry = hList.find((h) => h.athleteId === athleteId && h.date === dateStr);
 
-  const hasPreHydration = !!(hEntry && hEntry.preWeight > 0);
-  const hasPostHydration = !!(hEntry && hEntry.postWeight > 0);
-  const hasHydration = hasPreHydration && hasPostHydration;
+  const hasPreHydration = !!(hEntry && Number(hEntry.preWeight) > 0);
+  const hasPostHydration = !!(hEntry && Number(hEntry.postWeight) > 0);
+  const hasHydration = hasPreHydration || hasPostHydration;
 
   const missingNames: string[] = [];
   if (!hasWellness) missingNames.push('Wellness');
@@ -184,14 +193,32 @@ export function getStoredReminderConfig(): ReminderConfig {
   }
 }
 
-// Save reminder configuration
+// Save reminder configuration and sync to cloud
 export function saveReminderConfig(config: ReminderConfig): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(REMINDER_SETTINGS_KEY, JSON.stringify(config));
+    import('./authGuard').then(({ secureFetch }) => {
+      secureFetch('/api/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reminderConfig: config }),
+      }).catch(() => {});
+    });
   } catch (e) {
     console.error('Erro ao guardar configurações de lembretes:', e);
   }
+}
+
+// Helper: Check if current time (HH:MM) is within active notification window for a slot (0 to 30 mins after scheduled time)
+export function isTimeInSlotWindow(currentHHMM: string, slotTime: string, windowMinutes: number = 30): boolean {
+  if (!slotTime || !slotTime.includes(':')) return false;
+  const [cH, cM] = currentHHMM.split(':').map(Number);
+  const [sH, sM] = slotTime.split(':').map(Number);
+  const cTotal = cH * 60 + cM;
+  const sTotal = sH * 60 + sM;
+  const diff = cTotal - sTotal;
+  return diff >= 0 && diff <= windowMinutes;
 }
 
 // Check and trigger reminder notification if missing items exist and cooldown has passed
@@ -255,7 +282,7 @@ export function checkAutomaticScheduledReminders(
   const checkSlot = (slotName: 'wellness' | 'rpe' | 'hydration' | 'preHydration' | 'postHydration', slotTime: string, isMissing: boolean, label: string) => {
     if (!isMissing) return;
 
-    if (currentHHMM >= slotTime) {
+    if (isTimeInSlotWindow(currentHHMM, slotTime, 30)) {
       const trackingKey = `femperf_auto_notified_${dateStr}_${slotName}_${athleteId}`;
       if (!localStorage.getItem(trackingKey)) {
         const title = `⚽ Gil Vicente FC • Lembrete de ${label}`;
@@ -294,7 +321,7 @@ export function checkGlobalAutomaticScheduledReminders(): void {
     label: string,
     message: string
   ) => {
-    if (currentHHMM >= slotTime) {
+    if (isTimeInSlotWindow(currentHHMM, slotTime, 30)) {
       const trackingKey = `femperf_global_notified_${dateStr}_${slotName}`;
       if (!localStorage.getItem(trackingKey)) {
         const title = `⚽ Gil Vicente FC • Lembrete de ${label}`;

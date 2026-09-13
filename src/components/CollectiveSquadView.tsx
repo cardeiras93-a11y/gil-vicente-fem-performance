@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
-import { INITIAL_ATHLETES } from '@/lib/data';
+import { getDynamicAthletes } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
 import {
   Users, Activity, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
@@ -22,16 +22,27 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
 }) => {
   const { t } = useLanguage();
 
+  const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setAthletes(getDynamicAthletes());
+    };
+    handleUpdate();
+    window.addEventListener('femperf_credentials_updated', handleUpdate);
+    return () => window.removeEventListener('femperf_credentials_updated', handleUpdate);
+  }, []);
+
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [riskFilter, setRiskFilter] = useState<string>('ALL'); // ALL | DANGER | CAUTION font | OPTIMAL | UNDERLOAD
   const [sortKey, setSortKey] = useState<'acwr' | 'wellness' | 'fatigue' | 'name'>('acwr');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  // Compute 28-day analytics matrix for ALL 27 athletes concurrently
+  // Compute 28-day analytics matrix for ALL athletes concurrently
   const squadMetrics = useMemo(() => {
     const todayObj = new Date(selectedDate);
 
-    return INITIAL_ATHLETES.map((ath) => {
+    return athletes.map((ath) => {
       // Build 28-day history for athlete
       const days28: Array<{
         date: string;
@@ -419,6 +430,11 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
                         {item.athlete.name.charAt(0)}
                       </div>
                       <span>{item.athlete.name}</span>
+                      {item.athlete.position === 'GR' && (
+                        <span className="text-[9px] font-black text-purple-300 bg-purple-500/20 border border-purple-500/30 px-1.5 py-0.5 rounded">
+                          🧤 GR
+                        </span>
+                      )}
                     </div>
                   </td>
 

@@ -1,0 +1,3 @@
+# Bloqueio Total a Motores de Busca e Raspadores (Gil Vicente FC Performance & Saúde)
+User-agent: *
+Disallow: /

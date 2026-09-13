@@ -62,6 +62,28 @@ CREATE TABLE IF NOT EXISTS public.hydration_entries (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- 5. TABELA DE SESSÕES DE TREINO E CALENDÁRIO
+CREATE TABLE IF NOT EXISTS public.training_sessions (
+    date DATE PRIMARY KEY,
+    day_type TEXT NOT NULL DEFAULT 'training',
+    match_day_offset TEXT,
+    start_time TEXT,
+    end_time TEXT,
+    temp_start NUMERIC(4,1),
+    temp_end NUMERIC(4,1),
+    location_time TEXT,
+    focus_notes TEXT,
+    athlete_statuses JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. TABELA DE CREDENCIAIS E PINS DO CLUBE (PERSISTÊNCIA DEFINITIVA)
+CREATE TABLE IF NOT EXISTS public.app_credentials (
+    key TEXT PRIMARY KEY,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ÍNDICES PARA CONSULTAS RÁPIDAS
 CREATE INDEX IF NOT EXISTS idx_wellness_athlete_date ON public.wellness_entries(athlete_id, date);
 CREATE INDEX IF NOT EXISTS idx_rpe_athlete_date ON public.rpe_entries(athlete_id, date);
@@ -72,16 +94,23 @@ ALTER TABLE public.athletes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wellness_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.rpe_entries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.hydration_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.training_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.app_credentials ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Acesso total as Credenciais" ON public.app_credentials;
+CREATE POLICY "Acesso total as Credenciais" ON public.app_credentials FOR ALL USING (true) WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Acesso total aos Atletas" ON public.athletes;
 DROP POLICY IF EXISTS "Acesso total ao Wellness" ON public.wellness_entries;
 DROP POLICY IF EXISTS "Acesso total ao RPE" ON public.rpe_entries;
 DROP POLICY IF EXISTS "Acesso total a Hidratacao" ON public.hydration_entries;
+DROP POLICY IF EXISTS "Acesso total as Sessoes" ON public.training_sessions;
 
 CREATE POLICY "Acesso total aos Atletas" ON public.athletes FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Acesso total ao Wellness" ON public.wellness_entries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Acesso total ao RPE" ON public.rpe_entries FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Acesso total a Hidratacao" ON public.hydration_entries FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Acesso total as Sessoes" ON public.training_sessions FOR ALL USING (true) WITH CHECK (true);
 
 -- INSERÇÃO INICIAL DO PLANTEL OFICIAL GIL VICENTE FC (25 ATLETAS)
 INSERT INTO public.athletes (id, name) VALUES
@@ -111,4 +140,3 @@ INSERT INTO public.athletes (id, name) VALUES
 ('ath-24', 'TITA'),
 ('ath-25', 'VERÓNICA')
 ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name;
-

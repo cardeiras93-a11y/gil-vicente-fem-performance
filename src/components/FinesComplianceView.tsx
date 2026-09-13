@@ -1,13 +1,20 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { WellnessEntry, RPEEntry, HydrationEntry, AthleteComplianceReport } from '@/lib/types';
-import { INITIAL_ATHLETES } from '@/lib/data';
+import { WellnessEntry, RPEEntry, HydrationEntry, AthleteComplianceReport, Athlete } from '@/lib/types';
+import { getDynamicAthletes } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
-import { getStoredCalendarSchedule, saveCalendarSchedule, CalendarDayType } from '@/lib/storage';
+import {
+  getStoredCalendarSchedule,
+  saveCalendarSchedule,
+  CalendarDayType,
+  getStoredFinesEnabledDays,
+  saveFinesEnabledDays
+} from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
 import {
   AlertTriangle, Calendar, CheckCircle2, ChevronDown, ChevronUp, Copy,
-  Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy
+  Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy, Check, X
 } from 'lucide-react';
 
 interface FinesComplianceViewProps {
@@ -22,6 +29,17 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   hydrationList,
 }) => {
   const { t } = useLanguage();
+
+  const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setAthletes(getDynamicAthletes());
+    };
+    handleUpdate();
+    window.addEventListener('femperf_credentials_updated', handleUpdate);
+    return () => window.removeEventListener('femperf_credentials_updated', handleUpdate);
+  }, []);
 
   const [selectedMonth, setSelectedMonth] = useState<string>(
     new Date().toISOString().substring(0, 7) // YYYY-MM
@@ -48,8 +66,35 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Saved manual calendar schedule overrides (dateStr -> 'training' | 'match' | 'rest')
   const [manualDayTypes, setManualDayTypes] = useState<Record<string, CalendarDayType>>({});
 
+  // Fine enabled status per date (dateStr -> boolean)
+  const [finesEnabledDays, setFinesEnabledDays] = useState<Record<string, boolean>>({});
+
   useEffect(() => {
     setManualDayTypes(getStoredCalendarSchedule());
+    setFinesEnabledDays(getStoredFinesEnabledDays());
+
+    const handleDataUpdate = () => {
+      setManualDayTypes(getStoredCalendarSchedule());
+      setFinesEnabledDays(getStoredFinesEnabledDays());
+    };
+
+    window.addEventListener('femperf_credentials_updated', handleDataUpdate);
+    window.addEventListener('femperf_data_updated', handleDataUpdate);
+
+    secureFetch('/api/training-sessions')
+      .then((res) => res.json())
+      .then((data) => {
+        const remoteSchedule = data?.schedule || data?.data?.schedule;
+        if (remoteSchedule) {
+          setManualDayTypes((prev) => ({ ...prev, ...remoteSchedule }));
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      window.removeEventListener('femperf_credentials_updated', handleDataUpdate);
+      window.removeEventListener('femperf_data_updated', handleDataUpdate);
+    };
   }, []);
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
@@ -97,15 +142,28 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     return map;
   }, [datesInMonth, manualDayTypes, wellnessList, rpeList, hydrationList]);
 
-  // All active activity dates (training or match) in month
-  const activeDates = useMemo(() => {
-    return datesInMonth.filter((dateStr) => dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match');
-  }, [datesInMonth, dayTypesMap]);
+  // Fine status map per date (explicit boolean or default: training/match = true, rest = false)
+  const finesEnabledMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    datesInMonth.forEach((dateStr) => {
+      if (finesEnabledDays[dateStr] !== undefined) {
+        map[dateStr] = finesEnabledDays[dateStr];
+      } else {
+        map[dateStr] = dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match';
+      }
+    });
+    return map;
+  }, [datesInMonth, finesEnabledDays, dayTypesMap]);
 
-  // Activity dates up to today (for fine/compliance calculation)
-  const pastAndTodayActiveDates = useMemo(() => {
-    return activeDates.filter((dateStr) => dateStr <= todayStr);
-  }, [activeDates, todayStr]);
+  // All dates where fines are active in month
+  const fineActiveDates = useMemo(() => {
+    return datesInMonth.filter((dateStr) => finesEnabledMap[dateStr] === true);
+  }, [datesInMonth, finesEnabledMap]);
+
+  // Fine active dates up to today (for fine/compliance calculation)
+  const pastAndTodayFineActiveDates = useMemo(() => {
+    return fineActiveDates.filter((dateStr) => dateStr <= todayStr);
+  }, [fineActiveDates, todayStr]);
 
   const totalTrainingsCount = useMemo(() => {
     return datesInMonth.filter((dStr) => dayTypesMap[dStr] === 'training').length;
@@ -127,24 +185,60 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       next = 'training';
     }
 
-    const updated = {
+    const updatedSchedule = {
       ...manualDayTypes,
       [dateStr]: next,
     };
 
-    setManualDayTypes(updated);
-    saveCalendarSchedule(updated);
+    setManualDayTypes(updatedSchedule);
+    saveCalendarSchedule(updatedSchedule);
   };
 
-  // Build compliance report for all athletes across past & today active days
+  // Toggle fine active status for a specific date
+  const toggleFineStatus = (dateStr: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const current = finesEnabledMap[dateStr];
+    const updated = {
+      ...finesEnabledDays,
+      [dateStr]: !current,
+    };
+    setFinesEnabledDays(updated);
+    saveFinesEnabledDays(updated);
+  };
+
+  // Bulk action: Enable fines for all training and match days in month
+  const enableAllFinesForActivityDays = () => {
+    const updated = { ...finesEnabledDays };
+    datesInMonth.forEach((dateStr) => {
+      if (dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match') {
+        updated[dateStr] = true;
+      } else {
+        updated[dateStr] = false;
+      }
+    });
+    setFinesEnabledDays(updated);
+    saveFinesEnabledDays(updated);
+  };
+
+  // Bulk action: Exempt all dates in month from fines
+  const exemptAllFinesInMonth = () => {
+    const updated = { ...finesEnabledDays };
+    datesInMonth.forEach((dateStr) => {
+      updated[dateStr] = false;
+    });
+    setFinesEnabledDays(updated);
+    saveFinesEnabledDays(updated);
+  };
+
+  // Build compliance report for all athletes across past & today fine active days
   const complianceReports: AthleteComplianceReport[] = useMemo(() => {
-    return INITIAL_ATHLETES.map((ath) => {
+    return athletes.map((ath) => {
       let missingWellnessCount = 0;
       let missingRpeCount = 0;
       let missingHydrationCount = 0;
       const failedDates: AthleteComplianceReport['failedDates'] = [];
 
-      pastAndTodayActiveDates.forEach((dateStr) => {
+      pastAndTodayFineActiveDates.forEach((dateStr) => {
         const hasWellness = wellnessList.some(
           (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name)
         );
@@ -189,7 +283,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         failedDates,
       };
     }).sort((a, b) => b.totalFineEuros - a.totalFineEuros);
-  }, [pastAndTodayActiveDates, wellnessList, rpeList, hydrationList, finePerFault]);
+  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault]);
 
   // Overall KPIs
   const totalSquadFinesEuros = useMemo(
@@ -197,7 +291,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     [complianceReports]
   );
 
-  const totalPossibleSubmissions = pastAndTodayActiveDates.length * INITIAL_ATHLETES.length * 3;
+  const totalPossibleSubmissions = pastAndTodayFineActiveDates.length * athletes.length * 3;
   const totalActualFails = useMemo(
     () => complianceReports.reduce((acc, curr) => acc + curr.totalFails, 0),
     [complianceReports]
@@ -220,7 +314,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
     let text = `⚽ *GIL VICENTE FC - MAPA DE MULTAS & FALTAS DE PREENCHIMENTO*\n`;
     text += `📅 Mês: ${formattedMonth.toUpperCase()}\n`;
-    text += `🎯 Dias de Atividade Considerados: ${activeDates.length} (${totalTrainingsCount} Treinos ⚽, ${totalMatchesCount} Jogos 🏆)\n`;
+    text += `🎯 Dias de Atividade com Multa: ${fineActiveDates.length} dias (${pastAndTodayFineActiveDates.length} avaliados até hoje)\n`;
     text += `💰 Multa Unitária por Falta: ${finePerFault.toFixed(2)} €\n`;
     text += `--------------------------------------------------\n`;
 
@@ -258,7 +352,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            {t.admin?.fines?.finesSub || 'Contabilização de ausências aos questionários apenas em dias de treino.'}
+            {t.admin?.fines?.finesSub || 'Contabilização de ausências com seleção de dias com multa ou isenção.'}
           </p>
         </div>
 
@@ -320,17 +414,17 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           <p className="text-[11px] text-slate-400 mt-1 font-medium">{totalActualFails} falhas totais contabilizadas</p>
         </div>
 
-        {/* Active Activity Days */}
+        {/* Active Fine Days */}
         <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-dark-card to-blue-950/20 p-4 shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-400">Dias de Atividade Efetivos</span>
+            <span className="text-xs font-extrabold uppercase text-slate-400">Dias com Multa Ativa</span>
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
               <Dumbbell className="h-5 w-5" />
             </div>
           </div>
-          <p className="mt-2 text-2xl font-black text-blue-400">{activeDates.length} dias</p>
+          <p className="mt-2 text-2xl font-black text-blue-400">{fineActiveDates.length} dias</p>
           <p className="text-[11px] text-slate-400 mt-1 font-medium">
-            {totalTrainingsCount} Treinos ⚽ &bull; {totalMatchesCount} Jogos 🏆
+            {pastAndTodayFineActiveDates.length} avaliados até hoje
           </p>
         </div>
 
@@ -343,7 +437,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             </div>
           </div>
           <p className="mt-2 text-2xl font-black text-emerald-400">{squadComplianceRate}%</p>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">Taxa global de submissão</p>
+          <p className="text-[11px] text-slate-400 mt-1 font-medium">Taxa nos dias com multa</p>
         </div>
 
         {/* Top Missing Player */}
@@ -363,24 +457,51 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         </div>
       </div>
 
-      {/* Calendar Strip: Treino vs Jogo vs Folga Toggle */}
+      {/* Calendar Strip: Treino vs Jogo vs Folga + Fine Day Selection */}
       <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
           <div className="flex items-center space-x-2 text-slate-300">
             <Calendar className="h-4 w-4 text-brand-lime" />
-            <h3 className="text-xs font-extrabold uppercase">Dias do Mês & Calendário de Atividade</h3>
+            <h3 className="text-xs font-extrabold uppercase tracking-wide">Dias do Mês & Seleção de Multas por Dia</h3>
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-400">
-            <span>Clica em qualquer dia para alternar entre:</span>
-            <span className="bg-blue-950/60 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded-lg font-bold">⚽ Treino</span>
-            <span className="bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-lg font-bold">🏆 Jogo</span>
-            <span className="bg-slate-900 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-lg font-bold">🏖️ Folga</span>
+          
+          {/* Quick Bulk Actions */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={enableAllFinesForActivityDays}
+              className="px-2.5 py-1 text-[11px] font-extrabold rounded-xl border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/60 transition-all flex items-center space-x-1"
+            >
+              <span>💶 Ativar Multas em Treinos/Jogos</span>
+            </button>
+            <button
+              type="button"
+              onClick={exemptAllFinesInMonth}
+              className="px-2.5 py-1 text-[11px] font-extrabold rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all flex items-center space-x-1"
+            >
+              <span>🚫 Isentar Todas as Multas do Mês</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-medium text-slate-400">
+          <span>Clica no cartão para mudar o tipo de atividade (Treino ⚽ / Jogo 🏆 / Folga 🏖️) ou na etiqueta para ativar/isentar multas:</span>
+          <div className="flex items-center space-x-3 text-[10px]">
+            <span className="flex items-center space-x-1 text-emerald-400 font-bold">
+              <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <span>💶 Multa Ativa</span>
+            </span>
+            <span className="flex items-center space-x-1 text-slate-400 font-bold">
+              <span className="h-2 w-2 rounded-full bg-slate-500" />
+              <span>🚫 Dia Isento</span>
+            </span>
           </div>
         </div>
 
         <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
           {datesInMonth.map((dStr) => {
             const dayType = dayTypesMap[dStr] || 'rest';
+            const hasFine = finesEnabledMap[dStr] === true;
             const dayNum = dStr.split('-')[2];
             const isToday = dStr === todayStr;
 
@@ -403,21 +524,36 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             }
 
             return (
-              <button
+              <div
                 key={dStr}
-                type="button"
                 onClick={() => cycleDayType(dStr)}
-                title={`${dStr}: Clica para alternar (${label})`}
-                className={`flex flex-col items-center justify-center min-w-[46px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative ${style}`}
+                title={`${dStr}: Clica para alternar tipo (${label}). Clica na etiqueta para alternar multa.`}
+                className={`flex flex-col items-center justify-between min-w-[56px] min-h-[72px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative cursor-pointer ${style}`}
               >
-                <span className="text-[10px] opacity-75">{dayNum}</span>
-                <span className="text-sm font-black">{icon}</span>
-                {isToday && (
-                  <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
-                    Hoje
-                  </span>
-                )}
-              </button>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] opacity-75">{dayNum}</span>
+                  <span className="text-sm font-black">{icon}</span>
+                  {isToday && (
+                    <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
+                      Hoje
+                    </span>
+                  )}
+                </div>
+
+                {/* Interactive Fine Active Badge */}
+                <button
+                  type="button"
+                  onClick={(e) => toggleFineStatus(dStr, e)}
+                  title={hasFine ? 'Multa ATIVA. Clica para isentar.' : 'Isento de multa. Clica para ativar.'}
+                  className={`mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all flex items-center space-x-0.5 ${
+                    hasFine
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-rose-500/30 hover:text-rose-200 hover:border-rose-500/50'
+                      : 'bg-slate-800/90 text-slate-400 border border-slate-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-500/40'
+                  }`}
+                >
+                  {hasFine ? <span>💶 SIM</span> : <span>🚫 NÃO</span>}
+                </button>
+              </div>
             );
           })}
         </div>
@@ -430,7 +566,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             Contabilização do Plantel ({complianceReports.length} Jogadoras)
           </h3>
           <span className="text-xs font-bold text-slate-400">
-            {activeDates.length} dias de atividade avaliados
+            {pastAndTodayFineActiveDates.length} dias com multa avaliados até hoje
           </span>
         </div>
 

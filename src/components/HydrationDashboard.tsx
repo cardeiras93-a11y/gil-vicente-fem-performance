@@ -5,6 +5,8 @@ import { Athlete, HydrationEntry, HydrationStatus } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { calculateHydrationStatus } from '@/lib/data';
 import { saveHydrationLocally, getHydrationLocally } from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
+import { getTodayLocalDateStr } from '@/lib/reminderUtils';
 import {
   Droplet, AlertTriangle, CheckCircle, Scale, ChevronDown, ChevronUp,
   Activity, Plus, History, Check, ArrowRight, Sparkles, RefreshCw, Pencil
@@ -30,60 +32,108 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayLocalDateStr();
+
+  const [activeSubTab, setActiveSubTab] = useState<'pre' | 'post'>('pre');
 
   // Initialize and detect athlete state for today on mount
   useEffect(() => {
-    const list = getHydrationLocally(activeAthlete.id);
-    setHistory(list);
+    let isMounted = true;
 
-    const todayEntry = list.find((item) => item.date === todayStr);
+    const syncAndApplyData = (list: HydrationEntry[]) => {
+      if (!isMounted) return;
+      setHistory(list);
 
-    if (todayEntry) {
-      if (todayEntry.postWeight > 0) {
-        // Both pre and post completed
-        const calc = calculateHydrationStatus(
-          todayEntry.preWeight,
-          todayEntry.postWeight,
-          todayEntry.fluidsIntake,
-          language
-        );
-        setCurrentResult({
-          ...todayEntry,
-          recommendation: calc.recommendation,
-          biologicalImpact: calc.biologicalImpact,
-        });
-        setPreWeight(todayEntry.preWeight.toString());
-        setPostWeight(todayEntry.postWeight.toString());
-        setSavedPreWeight(todayEntry.preWeight);
-        setStep('completed');
+      const todayEntry = list.find((item) => item.date === todayStr);
+
+      if (todayEntry) {
+        if (Number(todayEntry.postWeight) > 0) {
+          // Both pre and post completed
+          const calc = calculateHydrationStatus(
+            todayEntry.preWeight,
+            todayEntry.postWeight,
+            todayEntry.fluidsIntake,
+            language
+          );
+          setCurrentResult({
+            ...todayEntry,
+            recommendation: calc.recommendation,
+            biologicalImpact: calc.biologicalImpact,
+          });
+          setPreWeight(todayEntry.preWeight.toString());
+          setPostWeight(todayEntry.postWeight.toString());
+          setSavedPreWeight(Number(todayEntry.preWeight));
+          setStep('completed');
+          setActiveSubTab('post');
+        } else {
+          // Pre-weight saved, waiting for post-weight
+          setSavedPreWeight(Number(todayEntry.preWeight));
+          setPreWeight(todayEntry.preWeight.toString());
+          setPostWeight((Number(todayEntry.preWeight) - 0.8).toFixed(2));
+          setStep('post');
+          setActiveSubTab('post');
+        }
+      } else if (list.length > 0) {
+        const last = list[0];
+        setPreWeight(last.preWeight.toString());
+        setPostWeight((Number(last.preWeight) - 0.8).toFixed(2));
+        setSavedPreWeight(null);
+        setStep('pre');
+        setActiveSubTab('pre');
       } else {
-        // Pre-weight saved, waiting for post-weight
-        setSavedPreWeight(todayEntry.preWeight);
-        setPreWeight(todayEntry.preWeight.toString());
-        setPostWeight((todayEntry.preWeight - 0.8).toFixed(2));
-        setStep('post');
+        setSavedPreWeight(null);
+        setStep('pre');
+        setActiveSubTab('pre');
       }
-    } else if (list.length > 0) {
-      const last = list[0];
-      setPreWeight(last.preWeight.toString());
-      setPostWeight((last.preWeight - 0.8).toFixed(2));
-      setSavedPreWeight(null);
-      setStep('pre');
-    } else {
-      setSavedPreWeight(null);
-      setStep('pre');
-    }
+    };
+
+    // 1. Initial render from local storage
+    const initialList = getHydrationLocally(activeAthlete.id);
+    syncAndApplyData(initialList);
+
+    // 2. Async fetch from Supabase to sync remote entries
+    secureFetch(`/api/hydration?athleteId=${activeAthlete.id}`)
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+          resData.data.forEach((item: HydrationEntry) => {
+            saveHydrationLocally(item);
+          });
+          const updatedList = getHydrationLocally(activeAthlete.id);
+          syncAndApplyData(updatedList);
+        }
+      })
+      .catch(() => {});
+
+    const handleDataUpdate = () => {
+      const updatedList = getHydrationLocally(activeAthlete.id);
+      syncAndApplyData(updatedList);
+    };
+
+    window.addEventListener('femperf_data_updated', handleDataUpdate);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('femperf_data_updated', handleDataUpdate);
+    };
   }, [activeAthlete.id, language, todayStr]);
+
+  const parseNum = (val: string | number): number => {
+    if (val === null || val === undefined) return 0;
+    const str = val.toString().trim().replace(',', '.');
+    const num = parseFloat(str);
+    return isNaN(num) ? 0 : num;
+  };
 
   // Adjust numeric input by delta
   const adjustValue = (field: 'pre' | 'post', delta: number) => {
     if (field === 'pre') {
-      const current = parseFloat(preWeight || '62.0');
+      const current = parseNum(preWeight) || 62.0;
       const updated = Math.max(30, Number((current + delta).toFixed(2)));
       setPreWeight(updated.toString());
+      if (savedPreWeight !== null) setSavedPreWeight(updated);
     } else {
-      const current = parseFloat(postWeight || '61.0');
+      const current = parseNum(postWeight) || 61.0;
       const updated = Math.max(30, Number((current + delta).toFixed(2)));
       setPostWeight(updated.toString());
     }
@@ -92,8 +142,8 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
   // Submit Stage 1: Pre-Training Weight (À Chegada)
   const handlePreWeightSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const pre = parseFloat(preWeight);
-    if (isNaN(pre) || pre <= 0) return;
+    const pre = parseNum(preWeight);
+    if (pre <= 0) return;
 
     setIsSubmitting(true);
     const partialEntry: HydrationEntry = {
@@ -107,7 +157,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       fluidsIntake: 0,
       weightLoss: 0,
       dehydrationRate: 0,
-      status: 'Adequada',
+      status: 'Pendente',
       refillNeededLiters: 0,
       recommendation: 'Peso Pré-Treino registado. Conclui a pesagem no final do treino.',
       biologicalImpact: 'Aguardando pesagem pós-treino',
@@ -115,7 +165,14 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     };
 
     saveHydrationLocally(partialEntry);
-    fetch('/api/sync-sheets', {
+
+    secureFetch('/api/hydration', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(partialEntry),
+    }).catch(() => {});
+
+    secureFetch('/api/sync-sheets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'hydration_pre', entry: partialEntry }),
@@ -124,21 +181,36 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     setSavedPreWeight(pre);
     setPostWeight((pre - 0.8).toFixed(2));
     setStep('post');
+    setActiveSubTab('post');
     setIsSubmitting(false);
 
-    setFeedbackMsg(`✅ Peso Pré-Treino de ${pre} kg registado! Bom treino. Volta aqui no final da sessão.`);
-    setTimeout(() => setFeedbackMsg(null), 5000);
+    setFeedbackMsg(`✅ Peso Pré-Treino de ${pre} kg registado! Podes agora realizar o teu treino. Volta aqui no final da sessão para a pesagem pós-treino.`);
+    setTimeout(() => setFeedbackMsg(null), 6000);
   };
 
   // Submit Stage 2: Post-Training Weight (À Saída)
-  const handlePostWeightSubmit = (e: React.FormEvent) => {
+  const handlePostWeightSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const pre = savedPreWeight || parseFloat(preWeight);
-    const post = parseFloat(postWeight);
-    const fluids = parseFloat(fluidsIntake || '0.5');
+    const post = parseNum(postWeight);
+    const fluids = parseNum(fluidsIntake || '0.5');
     const dur = parseInt(durationMin || '90', 10);
 
-    if (isNaN(pre) || isNaN(post) || pre <= 0 || post <= 0) return;
+    if (post <= 0) return;
+
+    // 1. Get today's pre-weight for this athlete from state or local storage
+    let pre = savedPreWeight || parseNum(preWeight);
+    if (!pre || pre <= 0) {
+      const list = getHydrationLocally(activeAthlete.id);
+      const todayEntry = list.find((item) => item.date === todayStr);
+      if (todayEntry && Number(todayEntry.preWeight) > 0) {
+        pre = Number(todayEntry.preWeight);
+      }
+    }
+
+    // 2. Fallback if no pre-weight was recorded beforehand
+    if (!pre || pre <= 0) {
+      pre = Number((post + 0.8).toFixed(2));
+    }
 
     setIsSubmitting(true);
     const calc = calculateHydrationStatus(pre, post, fluids, language);
@@ -162,20 +234,34 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     };
 
     saveHydrationLocally(fullEntry);
-    fetch('/api/sync-sheets', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'hydration', entry: fullEntry }),
-    }).catch(() => {});
+
+    try {
+      await secureFetch('/api/hydration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fullEntry),
+      });
+    } catch (err) {
+      console.error('Erro no envio API pós-treino:', err);
+    }
+
+    try {
+      secureFetch('/api/sync-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'hydration', entry: fullEntry }),
+      }).catch(() => {});
+    } catch {}
 
     const updatedList = getHydrationLocally(activeAthlete.id);
     setHistory(updatedList);
     setCurrentResult(fullEntry);
+    setSavedPreWeight(pre);
     setStep('completed');
     setIsSubmitting(false);
 
-    setFeedbackMsg(`🏆 Pesagem Pós-Treino concluída! Reposição recomendada: ${calc.refillNeededLiters.toFixed(2)} L.`);
-    setTimeout(() => setFeedbackMsg(null), 5000);
+    setFeedbackMsg(`🏆 Pesagem Pós-Treino concluída com sucesso! Perda: ${calc.weightLoss} kg | Taxa: ${calc.dehydrationRate}% | Reposição: ${calc.refillNeededLiters.toFixed(2)} L.`);
+    setTimeout(() => setFeedbackMsg(null), 6000);
   };
 
   const getStatusBadge = (status: HydrationStatus) => {
@@ -201,6 +287,13 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             <span>{t.hydration.statusAlert}</span>
           </span>
         );
+      case 'Pendente':
+        return (
+          <span className="inline-flex items-center space-x-1.5 rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-extrabold text-cyan-300 border border-cyan-500/40 shadow-sm">
+            <Scale className="h-4 w-4" />
+            <span>Pendente</span>
+          </span>
+        );
     }
   };
 
@@ -224,10 +317,45 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
           <div className="text-right">
             <span className="text-xs font-extrabold text-cyan-300 block">{new Date().toLocaleDateString()}</span>
             <span className="text-[10px] text-slate-400 font-bold">
-              {step === 'pre' ? 'Etapa 1: À Chegada' : step === 'post' ? 'Etapa 2: À Saída' : 'Concluído'}
+              {savedPreWeight !== null && step === 'completed'
+                ? 'Concluído'
+                : savedPreWeight !== null
+                ? 'Pré-Treino Registado'
+                : 'Pendente'}
             </span>
           </div>
         </div>
+      </div>
+
+      {/* Sub-Tab Navigation for Pre vs Post Weigh-in */}
+      <div className="grid grid-cols-2 gap-2 rounded-xl bg-dark-surface p-1 border border-slate-800">
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('pre')}
+          className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all ${
+            activeSubTab === 'pre'
+              ? 'bg-cyan-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Scale className="h-4 w-4" />
+          <span>1. Pesagem PRÉ-Treino</span>
+          {savedPreWeight !== null && <span className="ml-1 text-[10px]">✅</span>}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSubTab('post')}
+          className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all ${
+            activeSubTab === 'post'
+              ? 'bg-amber-500 text-slate-950 shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <Droplet className="h-4 w-4" />
+          <span>2. Pesagem PÓS-Treino</span>
+          {step === 'completed' && <span className="ml-1 text-[10px]">✅</span>}
+        </button>
       </div>
 
       {feedbackMsg && (
@@ -238,7 +366,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       )}
 
       {/* STAGE 1: Pre-Training Weight (À Chegada) */}
-      {step === 'pre' && (
+      {activeSubTab === 'pre' && (
         <form onSubmit={handlePreWeightSubmit} className="space-y-5 rounded-2xl border border-cyan-500/50 bg-dark-card p-5 shadow-2xl animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-cyan-400">
@@ -279,8 +407,8 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
               </button>
 
               <input
-                type="number"
-                step="0.05"
+                type="text"
+                inputMode="decimal"
                 required
                 value={preWeight}
                 onChange={(e) => setPreWeight(e.target.value)}
@@ -316,7 +444,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       )}
 
       {/* STAGE 2: Post-Training Weight (À Saída) */}
-      {step === 'post' && (
+      {activeSubTab === 'post' && (
         <form onSubmit={handlePostWeightSubmit} className="space-y-5 rounded-2xl border border-amber-500/50 bg-dark-card p-5 shadow-2xl animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-amber-400">
@@ -328,57 +456,17 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             </span>
           </div>
 
-          {/* Pre-Weight Editable Field in Stage 2 / Edit */}
-          <div className="space-y-2 rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-extrabold text-cyan-300 flex items-center space-x-1">
-                <span>1. Peso Pré-Treino (kg) — À Chegada</span>
-              </label>
-              <span className="text-xs font-black text-cyan-400">{preWeight} kg</span>
+          {/* Pre-Weight Read-Only Display in Stage 2 */}
+          <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/30 p-3.5 flex items-center justify-between shadow-inner">
+            <div className="flex items-center space-x-2.5">
+              <CheckCircle className="h-5 w-5 text-cyan-400 shrink-0" />
+              <div>
+                <p className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">Peso Pré-Treino Registado (À Chegada)</p>
+                <p className="text-[10px] text-slate-400">Gravado na etapa 1 — Não editável</p>
+              </div>
             </div>
-
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => adjustValue('pre', -0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.5
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustValue('pre', -0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.1
-              </button>
-
-              <input
-                type="number"
-                step="0.05"
-                required
-                value={preWeight}
-                onChange={(e) => {
-                  setPreWeight(e.target.value);
-                  setSavedPreWeight(parseFloat(e.target.value) || 0);
-                }}
-                className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
-              />
-
-              <button
-                type="button"
-                onClick={() => adjustValue('pre', 0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.1
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustValue('pre', 0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.5
-              </button>
+            <div className="text-right">
+              <span className="text-lg font-black text-cyan-300">{savedPreWeight && savedPreWeight > 0 ? savedPreWeight : (parseNum(preWeight) || '—')} kg</span>
             </div>
           </div>
 
@@ -408,8 +496,8 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
               </button>
 
               <input
-                type="number"
-                step="0.05"
+                type="text"
+                inputMode="decimal"
                 required
                 value={postWeight}
                 onChange={(e) => setPostWeight(e.target.value)}

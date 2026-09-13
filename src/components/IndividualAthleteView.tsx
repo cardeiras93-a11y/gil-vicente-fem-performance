@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
-import { INITIAL_ATHLETES, BORG_SCALE } from '@/lib/data';
+import { BORG_SCALE } from '@/lib/data';
 import { useLanguage } from '@/context/LanguageContext';
-import { getHydrationLocally } from '@/lib/storage';
+import { getHydrationLocally, getDynamicAthletes } from '@/lib/storage';
 import { exportAllDataToExcel } from '@/lib/exportUtils';
 import {
   Activity, Calendar, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
@@ -24,11 +24,22 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string>(INITIAL_ATHLETES[0].id);
+  const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setAthletes(getDynamicAthletes());
+    };
+    handleUpdate();
+    window.addEventListener('femperf_credentials_updated', handleUpdate);
+    return () => window.removeEventListener('femperf_credentials_updated', handleUpdate);
+  }, []);
+
+  const [selectedAthleteId, setSelectedAthleteId] = useState<string>(() => athletes[0]?.id || 'ath-1');
   const [timeWindow, setTimeWindow] = useState<'7' | '14' | '28'>('28');
   const [filterMD, setFilterMD] = useState<string>('ALL');
 
-  const selectedAthlete = INITIAL_ATHLETES.find((a) => a.id === selectedAthleteId) || INITIAL_ATHLETES[0];
+  const selectedAthlete = athletes.find((a) => a.id === selectedAthleteId) || athletes[0];
 
   // Helper to generate or blend 28-day historical data for deep longitudinal analytics
   const athleteHistory = useMemo(() => {
@@ -271,9 +282,9 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
                 onChange={(e) => setSelectedAthleteId(e.target.value)}
                 className="rounded-xl border border-slate-700 bg-dark-bg py-2 pl-9 pr-8 text-xs font-extrabold text-slate-100 focus:border-red-500 focus:outline-none appearance-none"
               >
-                {INITIAL_ATHLETES.map((ath) => (
+                {athletes.map((ath) => (
                   <option key={ath.id} value={ath.id}>
-                    {ath.name}
+                    {ath.name} {ath.position === 'GR' ? '🧤 (GR)' : ''}
                   </option>
                 ))}
               </select>

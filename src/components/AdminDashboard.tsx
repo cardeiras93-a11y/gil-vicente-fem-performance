@@ -1,23 +1,26 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from '@/lib/types';
+import { WellnessEntry, RPEEntry, HydrationEntry, Athlete, AthletePosition } from '@/lib/types';
 import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus } from '@/lib/data';
-import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage } from '@/lib/storage';
+import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, getAthleteAvatar, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, clearSelectiveHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage, getClubActivationCode, setClubActivationCode as saveClubActivationCodeToStorage, getDynamicAthletes, saveAthleteProfile, addNewAthlete, deleteAthlete, compressImageFile, setAthleteActiveStatus, setAllAthletesActive, syncAllDataFromCloud } from '@/lib/storage';
 import { exportWellnessToExcel, exportRPEToExcel, exportHydrationToExcel, exportWeightToExcel, exportAllDataToExcel } from '@/lib/exportUtils';
 import { getStoredReminderConfig, saveReminderConfig, requestNotificationPermission, getNotificationPermission, sendMobileNotification, getPendingQuestionnairesStatus, ReminderConfig } from '@/lib/reminderUtils';
 import { useLanguage } from '@/context/LanguageContext';
+import { secureFetch } from '@/lib/authGuard';
+import { translateTextToPortuguese, normalizeMenstrualCycleToPortuguese, normalizeHydrationStatusToPortuguese } from '@/lib/translationUtils';
 import { IndividualAthleteView } from './IndividualAthleteView';
 import { FinesComplianceView } from './FinesComplianceView';
 import { CollectiveSquadView } from './CollectiveSquadView';
 import { TrainingSessionManager } from './TrainingSessionManager';
 import { SquadMuscleHeatmap } from './SquadMuscleHeatmap';
+import { MatchDashboard } from './MatchDashboard';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
-  Download, FileSpreadsheet, FileText, Bell, Smartphone, Scale
+  Download, FileSpreadsheet, FileText, Bell, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -36,7 +39,12 @@ const getTodayLocalDateStr = () => {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose }) => {
   const { t, language } = useLanguage();
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('femperf_admin_auth') === 'true';
+    }
+    return false;
+  });
   const [adminLoginPin, setAdminLoginPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
 
@@ -47,6 +55,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [allWellnessList, setAllWellnessList] = useState<WellnessEntry[]>([]);
   const [allRpeList, setAllRpeList] = useState<RPEEntry[]>([]);
   const [allHydrationList, setAllHydrationList] = useState<HydrationEntry[]>([]);
+  const [athletesList, setAthletesList] = useState<Athlete[]>(() => getDynamicAthletes(true));
 
   const [selectedDate, setSelectedDateState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -64,14 +73,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   const [searchFilter, setSearchFilter] = useState<string>('');
 
-  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins'>(() => {
+  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_admin_active_tab') as any) || 'schedule';
     }
     return 'schedule';
   });
 
-  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins') => {
+  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_active_tab', tab);
@@ -105,6 +114,60 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [exportDataType, setExportDataType] = useState<'ALL' | 'WELLNESS' | 'RPE' | 'HYDRATION' | 'WEIGHT'>('ALL');
   const [exportAthleteId, setExportAthleteId] = useState<string>('ALL');
 
+  const [isClearModalOpen, setIsClearModalOpen] = useState<boolean>(false);
+  const [clearDays, setClearDays] = useState<string>('7');
+  const [clearMenus, setClearMenus] = useState<string[]>(['wellness', 'rpe', 'hydration', 'training']);
+  const [isClearingData, setIsClearingData] = useState<boolean>(false);
+
+  const handleExecuteClearData = async () => {
+    if (clearMenus.length === 0) {
+      alert('Selecione pelo menos um menu / categoria de dados a apagar.');
+      return;
+    }
+
+    const periodLabel =
+      clearDays === 'all'
+        ? 'TODO O HISTÓRICO'
+        : clearDays === '1'
+        ? 'o ÚLTIMO 1 DIA'
+        : `os ÚLTIMOS ${clearDays} DIAS`;
+
+    const menuLabels = clearMenus
+      .map((m) => {
+        if (m === 'wellness') return 'Wellness';
+        if (m === 'rpe') return 'RPE';
+        if (m === 'hydration') return 'Hidratação';
+        if (m === 'training') return 'Treinos/Calendário';
+        return m;
+      })
+      .join(', ');
+
+    if (
+      !confirm(
+        `Tem a certeza de que deseja apagar os registos de [${menuLabels}] referentes a [${periodLabel}]? Esta ação não pode ser desfeita.`
+      )
+    ) {
+      return;
+    }
+
+    setIsClearingData(true);
+    try {
+      await secureFetch('/api/sync-sheets', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ days: clearDays, menus: clearMenus }),
+      });
+    } catch (e) {
+      console.error('Erro ao apagar dados no servidor:', e);
+    }
+
+    clearSelectiveHistoricalData(clearDays, clearMenus);
+    loadAllData();
+    setIsClearingData(false);
+    setIsClearModalOpen(false);
+    alert(`Registos de [${menuLabels}] para [${periodLabel}] apagados com sucesso!`);
+  };
+
   const [reminderConfig, setReminderConfig] = useState<ReminderConfig>(getStoredReminderConfig());
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [broadcastMessage, setBroadcastMessage] = useState<string | null>(null);
@@ -119,40 +182,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     saveReminderConfig(newCfg);
   };
 
-  const handleSendBroadcastReminder = async () => {
-    let pendingCount = 0;
-    const todayStr = getTodayLocalDateStr();
-
-    INITIAL_ATHLETES.forEach((ath) => {
-      const st = getPendingQuestionnairesStatus(ath.id, todayStr, allWellnessList, allRpeList, allHydrationList);
-      if (!st.isComplete) {
-        pendingCount++;
-      }
-    });
-
-    const title = `⚽ Gil Vicente FC • Lembrete da Equipa Técnica`;
-    const body = pendingCount > 0
-      ? `Atenção: Há ${pendingCount} jogadora(s) com questionários pendentes hoje. Por favor preenche os teus registos.`
-      : `Lembrete geral de preenchimento dos questionários de Wellness e PSE.`;
-
-    const sent = await sendMobileNotification(title, body, `admin-broadcast-${Date.now()}`);
-    if (sent) {
-      setBroadcastMessage(`📢 Notificação enviada para os telemóveis com sucesso! (${pendingCount} atletas pendentes hoje)`);
-    } else {
-      const res = await requestNotificationPermission();
-      setNotifPermission(res);
-      if (res === 'granted') {
-        await sendMobileNotification(title, body, `admin-broadcast-${Date.now()}`);
-        setBroadcastMessage(`📢 Notificações no telemóvel ativadas e alerta enviado!`);
+  const handleSendBroadcastReminder = async (slot: string = 'all') => {
+    try {
+      const url = slot === 'all'
+        ? '/api/notifications/test-send'
+        : `/api/notifications/send-scheduled?slot=${slot}`;
+      const res = await secureFetch(url, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        setBroadcastMessage(
+          `📢 Push (${data.category || 'Geral'}) enviado com sucesso! ${data.sent} dispositivo(s) notificado(s)${
+            data.skippedAlreadyCompleted ? ` (${data.skippedAlreadyCompleted} já tinham preenchido hoje)` : ''
+          }.`
+        );
       } else {
-        setBroadcastMessage(`⚠️ Permissão de notificação pendente neste dispositivo.`);
+        setBroadcastMessage(`⚠️ ${data.error || data.message || 'Nenhum dispositivo registado para Web Push.'}`);
       }
+    } catch (e: any) {
+      setBroadcastMessage(`⚠️ Erro ao enviar Push: ${e?.message || 'Falha no servidor.'}`);
     }
-    setTimeout(() => setBroadcastMessage(null), 5000);
+    loadAllPins();
+    setTimeout(() => setBroadcastMessage(null), 6000);
   };
 
   const handleExecuteExport = () => {
-    const selectedAthleteObj = INITIAL_ATHLETES.find((a) => a.id === exportAthleteId);
+    const selectedAthleteObj = athletesList.find((a) => a.id === exportAthleteId);
     const athleteFilterName = exportAthleteId === 'ALL' ? undefined : (selectedAthleteObj?.name || exportAthleteId);
 
     if (exportDataType === 'WELLNESS') {
@@ -170,9 +224,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     setIsExportModalOpen(false);
   };
 
-  const handleDeleteHydration = (id: string) => {
+  const handleDeleteHydration = async (id: string) => {
     if (confirm('Tem a certeza que deseja apagar este registo de hidratação?')) {
       deleteHydrationLocally(id);
+      try {
+        await secureFetch(`/api/hydration?id=${id}`, { method: 'DELETE' });
+      } catch (e) {
+        console.error('Erro ao apagar registo no servidor:', e);
+      }
       loadAllData();
     }
   };
@@ -188,11 +247,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     e.preventDefault();
     if (!editingHydrationEntry) return;
 
-    const pre = parseFloat(editPreWeight);
-    const post = parseFloat(editPostWeight);
-    const fluids = parseFloat(editFluids || '0.5');
+    const parseNum = (val: string | number): number => {
+      if (val === null || val === undefined) return 0;
+      const str = val.toString().trim().replace(',', '.');
+      const num = parseFloat(str);
+      return isNaN(num) ? 0 : num;
+    };
 
-    if (isNaN(pre) || isNaN(post) || pre <= 0 || post <= 0) return;
+    const pre = parseNum(editPreWeight);
+    const post = parseNum(editPostWeight);
+    const fluids = parseNum(editFluids || '0.5');
+
+    if (pre <= 0) return;
 
     const calc = calculateHydrationStatus(pre, post, fluids, language);
     const updated: HydrationEntry = {
@@ -213,33 +279,71 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     loadAllData();
   };
 
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+
   useEffect(() => {
     if (isOpen && isAuthenticated) {
+      syncAllDataFromCloud();
       loadAllData();
       loadAllPins();
 
-      // Automatic sync on load
-      handleSyncGsheets(true);
+      const handleDataUpdate = () => {
+        loadAllData();
+      };
 
-      // Automatic background interval every 15 seconds
-      const intervalId = setInterval(() => {
-        handleSyncGsheets(true);
-      }, 15000);
+      const handleCredsUpdate = () => {
+        loadAllPins();
+        setAthletesList(getDynamicAthletes(true));
+        loadAllData();
+      };
 
-      return () => clearInterval(intervalId);
+      window.addEventListener('femperf_data_updated', handleDataUpdate);
+      window.addEventListener('femperf_credentials_updated', handleCredsUpdate);
+      return () => {
+        window.removeEventListener('femperf_data_updated', handleDataUpdate);
+        window.removeEventListener('femperf_credentials_updated', handleCredsUpdate);
+      };
     }
-  }, [isOpen, isAuthenticated, selectedDate]);
+  }, [isOpen, isAuthenticated]);
 
-  // Squad monthly weight averages
-  const squadWeightAverages = useMemo(() => {
-    const allHydration = getHydrationLocally();
+  const handleManualSyncCloudData = () => {
+    setIsSyncingCloud(true);
+    syncAllDataFromCloud();
+    setTimeout(() => {
+      loadAllData();
+      loadAllPins();
+      setIsSyncingCloud(false);
+    }, 1200);
+  };
+
+  const loadAllData = async () => {
+    const wLoc = getWellnessLocally();
+    const rLoc = getRPELocally();
+    const hLoc = getHydrationLocally();
+
+    setAllWellnessList(wLoc);
+    setAllRpeList(rLoc);
+    setAllHydrationList(hLoc);
+
+    const wSel = wLoc.filter((e) => e.date === selectedDate);
+    const rSel = rLoc.filter((e) => e.date === selectedDate);
+    const hSel = hLoc.filter((e) => e.date === selectedDate);
+
+    setWellnessList(wSel);
+    setRpeList(rSel);
+    setHydrationList(hSel);
+  };
+
+  // Compute weight statistics for weight management sub-tab
+  const weightAnalytics = useMemo(() => {
+    const allHydration = allHydrationList;
     const monthPrefix = selectedDate.substring(0, 7);
 
-    const firstWeights: number[] = [];
+    const initialWeights: number[] = [];
     const lastWeights: number[] = [];
     const preWeightsToday: number[] = [];
 
-    INITIAL_ATHLETES.forEach((ath) => {
+    athletesList.forEach((ath) => {
       const monthEntries = allHydration
         .filter(
           (h) =>
@@ -255,7 +359,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       if (monthEntries.length > 0) {
         const fw = monthEntries[0].preWeight || monthEntries[0].postWeight;
         const lw = monthEntries[monthEntries.length - 1].postWeight || monthEntries[monthEntries.length - 1].preWeight;
-        if (fw) firstWeights.push(fw);
+        if (fw) initialWeights.push(fw);
         if (lw) lastWeights.push(lw);
       }
 
@@ -264,8 +368,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       }
     });
 
-    const avgFirstMonthWeight = firstWeights.length
-      ? +(firstWeights.reduce((a, b) => a + b, 0) / firstWeights.length).toFixed(1)
+    const avgFirstMonthWeight = initialWeights.length
+      ? +(initialWeights.reduce((a, b) => a + b, 0) / initialWeights.length).toFixed(1)
       : null;
 
     const avgLastMonthWeight = lastWeights.length
@@ -277,21 +381,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       : null;
 
     return { avgFirstMonthWeight, avgLastMonthWeight, avgPreWeightToday };
-  }, [selectedDate, hydrationList]);
-
-  const loadAllData = () => {
-    const w = getWellnessLocally();
-    const r = getRPELocally();
-    const h = getHydrationLocally();
-
-    setAllWellnessList(w);
-    setAllRpeList(r);
-    setAllHydrationList(h);
-
-    setWellnessList(w.filter((item) => item.date === selectedDate));
-    setRpeList(r.filter((item) => item.date === selectedDate));
-    setHydrationList(h.filter((item) => item.date === selectedDate));
-  };
+  }, [selectedDate, hydrationList, athletesList, allHydrationList]);
 
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
@@ -319,7 +409,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       setSyncStatus(null);
     }
     try {
-      const res = await fetch('/api/sync-sheets');
+      const res = await secureFetch('/api/sync-sheets');
       const data = await res.json();
       if (data.success && data.data) {
         const result = saveBulkGsheetsData(
@@ -350,8 +440,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     }
   };
 
+  const [currentActivationCodeState, setCurrentActivationCodeState] = useState<string>('GVFC2026');
   const [currentAdminPinState, setCurrentAdminPinState] = useState<string>('2026');
   const [currentPhysioPinState, setCurrentPhysioPinState] = useState<string>('2026');
+
+  const [isEditingActivationCode, setIsEditingActivationCode] = useState<boolean>(false);
+  const [newActivationCodeInput, setNewActivationCodeInput] = useState<string>('');
+  const [copiedCodeToast, setCopiedCodeToast] = useState<boolean>(false);
 
   const [isEditingAdminPin, setIsEditingAdminPin] = useState<boolean>(false);
   const [newAdminPinInput, setNewAdminPinInput] = useState<string>('');
@@ -361,26 +456,153 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
   const [pinChangeSuccess, setPinChangeSuccess] = useState<string | null>(null);
 
+  const handleToggleAthleteActive = (athleteId: string, newActiveState: boolean) => {
+    setAthleteActiveStatus(athleteId, newActiveState);
+    loadAllPins();
+    setPinChangeSuccess(newActiveState ? 'Jogadora ativada no treino com sucesso!' : 'Jogadora ocultada da sessão de hoje com sucesso!');
+    setTimeout(() => setPinChangeSuccess(null), 4000);
+  };
+
+  const handleActivateAllAthletes = () => {
+    setAllAthletesActive();
+    loadAllPins();
+    setPinChangeSuccess('Todas as jogadoras do plantel foram ativadas no treino!');
+    setTimeout(() => setPinChangeSuccess(null), 4000);
+  };
+
+  // Modal para adicionar nova jogadora
+  const [isAddAthleteModalOpen, setIsAddAthleteModalOpen] = useState<boolean>(false);
+  const [newAthleteName, setNewAthleteName] = useState<string>('');
+  const [newAthletePosition, setNewAthletePosition] = useState<AthletePosition>('Campo');
+  const [newAthletePin, setNewAthletePin] = useState<string>('');
+  const [newAthleteAvatar, setNewAthleteAvatar] = useState<string>('');
+
+  // Modal para editar perfil da jogadora
+  const [editingAthleteProfile, setEditingAthleteProfile] = useState<Athlete | null>(null);
+  const [editProfileName, setEditProfileName] = useState<string>('');
+  const [editProfilePosition, setEditProfilePosition] = useState<AthletePosition>('Campo');
+  const [editProfileAvatar, setEditProfileAvatar] = useState<string>('');
+  const [editProfilePin, setEditProfilePin] = useState<string>('');
+  const [athleteToDelete, setAthleteToDelete] = useState<Athlete | null>(null);
+
+  const [pushSubCount, setPushSubCount] = useState<number>(0);
+
   const loadAllPins = () => {
+    setCurrentActivationCodeState(getClubActivationCode());
     setCurrentAdminPinState(getAdminPin());
     setCurrentPhysioPinState(getPhysioPin());
 
+    const currentAthletes = getDynamicAthletes(true);
+    setAthletesList(currentAthletes);
+
     const pinsMap: { [athleteId: string]: string | null } = {};
-    INITIAL_ATHLETES.forEach((ath) => {
+    currentAthletes.forEach((ath) => {
       pinsMap[ath.id] = getAthletePin(ath.id);
     });
     setPinsState(pinsMap);
+
+    secureFetch('/api/notifications/subscribe')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && typeof data.count === 'number') {
+          setPushSubCount(data.count);
+        }
+      })
+      .catch(() => {});
+  };
+
+  const handleAddAthleteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAthleteName.trim().length > 0) {
+      addNewAthlete(newAthleteName, newAthletePosition, newAthletePin, newAthleteAvatar);
+      loadAllPins();
+      setIsAddAthleteModalOpen(false);
+      setNewAthleteName('');
+      setNewAthletePosition('Campo');
+      setNewAthletePin('');
+      setNewAthleteAvatar('');
+      setPinChangeSuccess(`Jogadora ${newAthleteName.toUpperCase()} adicionada ao plantel com sucesso!`);
+      setTimeout(() => setPinChangeSuccess(null), 4000);
+    }
+  };
+
+  const handleSaveAthleteProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingAthleteProfile && editProfileName.trim().length > 0) {
+      const cleanPin = editProfilePin.replace(/\D/g, '').slice(0, 4);
+      saveAthleteProfile(editingAthleteProfile.id, {
+        name: editProfileName.trim().toUpperCase(),
+        position: editProfilePosition,
+        avatarUrl: editProfileAvatar || undefined,
+        pin: cleanPin.length > 0 ? cleanPin : undefined,
+      });
+      loadAllPins();
+      setEditingAthleteProfile(null);
+      setPinChangeSuccess(`Perfil de ${editProfileName.trim().toUpperCase()} atualizado com sucesso!`);
+      setTimeout(() => setPinChangeSuccess(null), 4000);
+    }
+  };
+
+  const handleDeleteAthleteClick = (athlete: Athlete) => {
+    if (confirm(`Tem a certeza que deseja remover a jogadora ${athlete.name} do plantel?`)) {
+      deleteAthlete(athlete.id);
+      loadAllPins();
+      setPinChangeSuccess(`Jogadora ${athlete.name} removida do plantel.`);
+      setTimeout(() => setPinChangeSuccess(null), 4000);
+    }
   };
 
   const handleAdminPinSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const storedPin = getAdminPin();
-    if (adminLoginPin.trim() === storedPin.trim()) {
+    const cleanInput = adminLoginPin.trim();
+    const activationCode = getClubActivationCode();
+
+    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026' || cleanInput.toUpperCase() === 'GVFC') {
+      setPinError('O Código de Ativação da App não é válido para aceder à Administração. Introduza a Palavra-passe de Administrador.');
+      setAdminLoginPin('');
+      return;
+    }
+
+    if (cleanInput === storedPin.trim()) {
       setIsAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('femperf_admin_auth', 'true');
+      }
       setPinError('');
     } else {
       setPinError('Palavra-passe / PIN de Administrador incorreto. Tente novamente.');
       setAdminLoginPin('');
+    }
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('femperf_admin_auth');
+      localStorage.removeItem('femperf_active_view_mode');
+    }
+    setIsAuthenticated(false);
+    onClose();
+  };
+
+  const handleCopyActivationCode = () => {
+    const code = getClubActivationCode();
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(code);
+      setCopiedCodeToast(true);
+      setTimeout(() => setCopiedCodeToast(false), 3000);
+    }
+  };
+
+  const handleSaveActivationCodeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newActivationCodeInput.trim().length > 0) {
+      saveClubActivationCodeToStorage(newActivationCodeInput.trim().toUpperCase());
+      loadAllPins();
+      setIsEditingActivationCode(false);
+      setNewActivationCodeInput('');
+      setPinChangeSuccess('Código de Ativação das Jogadoras redefinido com sucesso!');
+      setTimeout(() => setPinChangeSuccess(null), 4000);
     }
   };
 
@@ -538,7 +760,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     : 0;
 
   // Filtered roster status
-  const filteredAthletes = INITIAL_ATHLETES.filter((ath) =>
+  const filteredAthletes = athletesList.filter((ath) =>
     ath.name.toLowerCase().includes(searchFilter.toLowerCase())
   );
 
@@ -558,11 +780,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const highBorgCount = rpeList.filter((r) => r.physicalDemand >= 7).length;
 
   // Hydration KPIs
-  const totalHydration = hydrationList.length;
+  const completedHydrationList = hydrationList.filter((h) => Number(h.postWeight) > 0);
+  const totalHydration = completedHydrationList.length;
   const avgDehydration = totalHydration
-    ? +(hydrationList.reduce((acc, curr) => acc + curr.dehydrationRate, 0) / totalHydration).toFixed(2)
+    ? +(completedHydrationList.reduce((acc, curr) => acc + curr.dehydrationRate, 0) / totalHydration).toFixed(2)
     : 0;
-  const alertHydrationCount = hydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
+  const alertHydrationCount = completedHydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
 
   // Helper for monthly weight tracking (1º peso do mês, último peso do mês, peso pré-treino)
   const getAthleteWeightMetrics = (athleteName: string) => {
@@ -625,7 +848,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-bg text-slate-100 p-4 sm:p-6 animate-fade-in">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-bg text-slate-100 p-3 pt-safe sm:p-6 sm:pt-safe animate-fade-in">
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
         {/* Admin Header Bar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-red-900/60 pb-4 gap-3">
@@ -682,20 +905,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
               </button>
             </div>
 
-            {/* Clear All Data Button */}
+            {/* Sync Cloud Data Button */}
             <button
               type="button"
-              onClick={() => {
-                if (confirm('Tem a certeza de que deseja APAGAR TODOS OS DADOS gravados e começar de raiz a partir de hoje?')) {
-                  clearAllHistoricalData();
-                  loadAllData();
-                  alert('Todos os dados anteriores foram apagados com sucesso. A aplicação está limpa e pronta a ser usada a partir de hoje!');
-                }
-              }}
+              onClick={handleManualSyncCloudData}
+              disabled={isSyncingCloud}
+              className="flex items-center space-x-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-300 hover:bg-sky-500/20 transition-all disabled:opacity-50"
+              title="Sincronizar dados em tempo real com o servidor da nuvem"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-sky-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+              <span>{isSyncingCloud ? 'A Sincronizar...' : 'Sincronizar Nuvem'}</span>
+            </button>
+
+            {/* Clear Data Button */}
+            <button
+              type="button"
+              onClick={() => setIsClearModalOpen(true)}
               className="flex items-center space-x-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-300 hover:bg-rose-500/20 transition-all"
             >
               <Trash2 className="h-3.5 w-3.5" />
-              <span>Limpar Dados Anteriores</span>
+              <span>Limpar Dados</span>
             </button>
 
             {/* Export Excel Button */}
@@ -710,7 +939,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleLogout}
               className="rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-slate-700 transition-all"
             >
               Sair
@@ -774,6 +1003,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
           <button
             type="button"
+            onClick={() => setActiveTab('matchReport')}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'matchReport'
+                ? 'bg-gradient-to-r from-sky-600 to-sky-500 text-white shadow-md shadow-sky-600/30'
+                : 'text-slate-400 hover:bg-slate-800'
+            }`}
+          >
+            <Trophy className="h-4 w-4 text-amber-300" />
+            <span>⚽ Dashboard Jogos</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('fines')}
             className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
               activeTab === 'fines'
@@ -794,8 +1036,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 : 'text-slate-400 hover:bg-slate-800'
             }`}
           >
-            <KeyRound className="h-4 w-4" />
-            <span>Credenciais & Lembretes</span>
+            <KeyRound className="h-4 w-4 text-amber-400" />
+            <span>🔑 PINs das Jogadoras & Credenciais</span>
           </button>
         </div>
 
@@ -876,7 +1118,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <Scale className="h-3.5 w-3.5 text-amber-400" />
                 <span>{t.admin?.subTabs?.weight || 'PESO'}</span>
                 <span className="ml-1 rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] text-amber-300 font-extrabold">
-                  {INITIAL_ATHLETES.length}
+                  {athletesList.length}
                 </span>
               </button>
             </div>
@@ -892,7 +1134,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <span className="text-[11px] font-bold uppercase">Submissões</span>
                     </div>
                     <span className="text-2xl font-black text-slate-100">
-                      {totalSubmissions} <span className="text-xs text-slate-500 font-normal">/ {INITIAL_ATHLETES.length}</span>
+                      {totalSubmissions} <span className="text-xs text-slate-500 font-normal">/ {athletesList.length}</span>
                     </span>
                   </div>
 
@@ -943,7 +1185,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             </span>
                           </div>
                           <p className="text-xs text-rose-200 font-medium">
-                            <span className="font-bold text-slate-400">Motivo:</span> {item.physioReason}
+                            <span className="font-bold text-slate-400">Motivo:</span> {translateTextToPortuguese(item.physioReason)}
                           </p>
                         </div>
                       ))}
@@ -1062,7 +1304,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3.5 text-center shadow-sm">
                     <span className="text-[11px] font-bold text-emerald-400 uppercase block">Submissões Wellness</span>
-                    <span className="text-2xl font-black text-slate-100">{totalWellness} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalWellness} <span className="text-xs text-slate-500">/ {athletesList.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-brand-lime/30 bg-lime-950/20 p-3.5 text-center shadow-sm">
@@ -1166,7 +1408,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                           SIM
                                         </span>
                                         {w.physioReason && (
-                                          <p className="text-[10px] text-rose-300 mt-0.5 truncate max-w-[140px] inline-block">{w.physioReason}</p>
+                                          <p className="text-[10px] text-rose-300 mt-0.5 truncate max-w-[140px] inline-block">{translateTextToPortuguese(w.physioReason)}</p>
                                         )}
                                       </div>
                                     ) : (
@@ -1198,7 +1440,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3.5 text-center">
                     <span className="text-[11px] font-bold text-cyan-400 uppercase block">Total PSE Submetidos</span>
-                    <span className="text-2xl font-black text-slate-100">{totalRPE} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalRPE} <span className="text-xs text-slate-500">/ {athletesList.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
@@ -1305,7 +1547,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                   {/* Comments */}
                                   <td className="py-3 px-3 text-slate-300 max-w-xs truncate">
                                     {r.comments ? (
-                                      <span className="text-slate-200 italic">{r.comments}</span>
+                                      <span className="text-slate-200 italic">{translateTextToPortuguese(r.comments)}</span>
                                     ) : (
                                       <span className="text-slate-600">-</span>
                                     )}
@@ -1335,7 +1577,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="rounded-xl border border-blue-500/30 bg-blue-950/20 p-3.5 text-center">
                     <span className="text-[11px] font-bold text-blue-400 uppercase block">Atletas Registadas</span>
-                    <span className="text-2xl font-black text-slate-100">{totalHydration} <span className="text-xs text-slate-500">/ {INITIAL_ATHLETES.length}</span></span>
+                    <span className="text-2xl font-black text-slate-100">{totalHydration} <span className="text-xs text-slate-500">/ {athletesList.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3.5 text-center">
@@ -1407,30 +1649,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                                       {h.preWeight} kg
                                     </span>
                                   </td>
-                                  <td className="py-3 px-3 text-slate-300">{h.postWeight} kg</td>
-                                  <td className="py-3 px-3 font-bold text-amber-400">-{h.weightLoss} kg</td>
+                                  <td className="py-3 px-3 text-slate-300">
+                                    {h.postWeight > 0 ? `${h.postWeight} kg` : '-'}
+                                  </td>
+                                  <td className="py-3 px-3 font-bold text-amber-400">
+                                    {h.postWeight > 0 ? `-${h.weightLoss} kg` : '-'}
+                                  </td>
                                   <td className="py-3 px-3 text-slate-300">{h.fluidsIntake} L</td>
 
                                   <td className="py-3 px-3 font-black text-slate-100">
-                                    {h.dehydrationRate}%
+                                    {h.postWeight > 0 ? `${h.dehydrationRate}%` : '-'}
                                   </td>
 
                                 <td className="py-3 px-3">
                                   <span
                                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${
-                                      h.status === 'Adequada'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                        : h.status === 'Atenção'
-                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
-                                        : 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
+                                      h.postWeight > 0
+                                        ? h.status === 'Adequada'
+                                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                          : h.status === 'Atenção'
+                                          ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                                          : 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse'
+                                        : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
                                     }`}
                                   >
-                                    {h.status}
+                                    {h.postWeight > 0 ? h.status : 'PENDENTE'}
                                   </span>
                                 </td>
 
                                 <td className="py-3 px-3 text-right font-black text-cyan-300">
-                                  +{h.refillNeededLiters} L
+                                  {h.postWeight > 0 ? `+${h.refillNeededLiters} L` : '-'}
                                 </td>
 
                                 <td className="py-3 px-3 text-center">
@@ -1484,8 +1732,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <div>
                           <label className="block font-bold text-slate-300 mb-1">Peso Pré-Treino (kg)</label>
                           <input
-                            type="number"
-                            step="0.05"
+                            type="text"
+                            inputMode="decimal"
                             required
                             value={editPreWeight}
                             onChange={(e) => setEditPreWeight(e.target.value)}
@@ -1495,8 +1743,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                         <div>
                           <label className="block font-bold text-slate-300 mb-1">Peso Pós-Treino (kg)</label>
                           <input
-                            type="number"
-                            step="0.05"
+                            type="text"
+                            inputMode="decimal"
                             required
                             value={editPostWeight}
                             onChange={(e) => setEditPostWeight(e.target.value)}
@@ -1508,8 +1756,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       <div className="text-xs">
                         <label className="block font-bold text-slate-300 mb-1">Líquidos Ingeridos (L)</label>
                         <input
-                          type="number"
-                          step="0.1"
+                          type="text"
+                          inputMode="decimal"
                           value={editFluids}
                           onChange={(e) => setEditFluids(e.target.value)}
                           className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 font-bold text-slate-100 text-center"
@@ -1558,21 +1806,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                     <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
                       <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês (Média)</span>
                       <span className="text-xl font-black text-slate-100">
-                        {squadWeightAverages.avgFirstMonthWeight ? `${squadWeightAverages.avgFirstMonthWeight} kg` : '-'}
+                        {weightAnalytics.avgFirstMonthWeight ? `${weightAnalytics.avgFirstMonthWeight} kg` : '-'}
                       </span>
                     </div>
 
                     <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
                       <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês (Média)</span>
                       <span className="text-xl font-black text-slate-100">
-                        {squadWeightAverages.avgLastMonthWeight ? `${squadWeightAverages.avgLastMonthWeight} kg` : '-'}
+                        {weightAnalytics.avgLastMonthWeight ? `${weightAnalytics.avgLastMonthWeight} kg` : '-'}
                       </span>
                     </div>
 
                     <div className="rounded-xl border border-emerald-500/20 bg-dark-card p-3 text-center">
                       <span className="text-[11px] font-bold text-emerald-400 uppercase block">Peso Pré-Treino Médio (Hoje)</span>
                       <span className="text-xl font-black text-slate-100">
-                        {squadWeightAverages.avgPreWeightToday ? `${squadWeightAverages.avgPreWeightToday} kg` : '-'}
+                        {weightAnalytics.avgPreWeightToday ? `${weightAnalytics.avgPreWeightToday} kg` : '-'}
                       </span>
                     </div>
                   </div>
@@ -1729,6 +1977,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
             rpeList={allRpeList}
             hydrationList={allHydrationList}
           />
+        ) : activeTab === 'matchReport' ? (
+          <MatchDashboard userRole="admin" />
         ) : (
           /* PIN Management Section */
           <div className="space-y-6 animate-fade-in">
@@ -1739,10 +1989,87 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
               </div>
             )}
 
-            {/* 1. System Master Accounts PIN Redefinition (Admin & Physio) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* 1. System Master Credentials Redefinition (Activation Code, Admin & Physio) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Activation Code Card */}
+              <div className="rounded-2xl border border-amber-500/30 bg-dark-card p-4 space-y-3 shadow-md flex flex-col justify-between">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <div className="flex items-center space-x-2">
+                    <Smartphone className="h-5 w-5 text-amber-400" />
+                    <div>
+                      <h4 className="text-xs font-black uppercase text-slate-100">Código de Ativação da App</h4>
+                      <p className="text-[10px] text-slate-400">Ativação de telemóveis das jogadoras</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono font-black text-amber-400 bg-slate-900 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                    {currentActivationCodeState}
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleCopyActivationCode}
+                    className="w-full rounded-xl border border-amber-500/40 bg-amber-500/10 py-2 text-xs font-bold text-amber-300 hover:bg-amber-500/20 transition-all flex items-center justify-center space-x-1.5"
+                  >
+                    {copiedCodeToast ? (
+                      <>
+                        <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        <span className="text-emerald-300 font-extrabold">Copiado para a Área de Transferência!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5 text-amber-400" />
+                        <span>Copiar Código de Ativação</span>
+                      </>
+                    )}
+                  </button>
+
+                  {isEditingActivationCode ? (
+                    <form onSubmit={handleSaveActivationCodeSubmit} className="space-y-2 pt-1">
+                      <label className="text-[11px] font-bold text-slate-300 block">Novo Código de Ativação:</label>
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="text"
+                          value={newActivationCodeInput}
+                          onChange={(e) => setNewActivationCodeInput(e.target.value)}
+                          placeholder="Ex: GVFC2026..."
+                          autoFocus
+                          className="flex-1 rounded-xl border border-amber-500 bg-dark-bg p-2 text-xs font-bold uppercase text-slate-100 focus:outline-none"
+                        />
+                        <button
+                          type="submit"
+                          className="rounded-xl bg-amber-600 px-3 py-2 text-xs font-black text-white hover:bg-amber-500"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditingActivationCode(false)}
+                          className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-semibold text-slate-400"
+                        >
+                          X
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsEditingActivationCode(true);
+                        setNewActivationCodeInput(currentActivationCodeState);
+                      }}
+                      className="w-full rounded-xl border border-slate-800 bg-dark-bg py-2 text-xs font-extrabold text-slate-300 hover:bg-slate-800 hover:text-amber-400 transition-all flex items-center justify-center space-x-1.5"
+                    >
+                      <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Redefinir Código da App</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
               {/* Admin PIN Card */}
-              <div className="rounded-2xl border border-red-500/30 bg-dark-card p-4 space-y-3 shadow-md">
+              <div className="rounded-2xl border border-red-500/30 bg-dark-card p-4 space-y-3 shadow-md flex flex-col justify-between">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                   <div className="flex items-center space-x-2">
                     <Shield className="h-5 w-5 text-red-500" />
@@ -1758,7 +2085,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
                 {isEditingAdminPin ? (
                   <form onSubmit={handleSaveAdminPinSubmit} className="space-y-2 pt-1">
-                    <label className="text-[11px] font-bold text-slate-300 block">Nova Palavra-passe / PIN Admin:</label>
+                    <label className="text-[11px] font-bold text-slate-300 block">Nova Palavra-passe Admin:</label>
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
@@ -1790,16 +2117,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       setIsEditingAdminPin(true);
                       setNewAdminPinInput(currentAdminPinState);
                     }}
-                    className="w-full rounded-xl border border-slate-800 bg-dark-bg py-2.5 text-xs font-extrabold text-slate-200 hover:bg-slate-800 hover:text-red-400 transition-all flex items-center justify-center space-x-1.5"
+                    className="w-full rounded-xl border border-slate-800 bg-dark-bg py-2 text-xs font-extrabold text-slate-200 hover:bg-slate-800 hover:text-red-400 transition-all flex items-center justify-center space-x-1.5"
                   >
-                    <KeyRound className="h-4 w-4 text-red-500" />
-                    <span>Redefinir Palavra-passe do Administrador</span>
+                    <KeyRound className="h-3.5 w-3.5 text-red-500" />
+                    <span>Redefinir Palavra-passe Admin</span>
                   </button>
                 )}
               </div>
 
               {/* Physio PIN Card */}
-              <div className="rounded-2xl border border-teal-500/30 bg-dark-card p-4 space-y-3 shadow-md">
+              <div className="rounded-2xl border border-teal-500/30 bg-dark-card p-4 space-y-3 shadow-md flex flex-col justify-between">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                   <div className="flex items-center space-x-2">
                     <Stethoscope className="h-5 w-5 text-teal-400" />
@@ -1815,7 +2142,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
 
                 {isEditingPhysioPin ? (
                   <form onSubmit={handleSavePhysioPinSubmit} className="space-y-2 pt-1">
-                    <label className="text-[11px] font-bold text-slate-300 block">Nova Palavra-passe / PIN Fisioterapeuta:</label>
+                    <label className="text-[11px] font-bold text-slate-300 block">Nova Palavra-passe Fisioterapia:</label>
                     <div className="flex items-center space-x-2">
                       <input
                         type="text"
@@ -1847,10 +2174,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       setIsEditingPhysioPin(true);
                       setNewPhysioPinInput(currentPhysioPinState);
                     }}
-                    className="w-full rounded-xl border border-slate-800 bg-dark-bg py-2.5 text-xs font-extrabold text-slate-200 hover:bg-slate-800 hover:text-teal-400 transition-all flex items-center justify-center space-x-1.5"
+                    className="w-full rounded-xl border border-slate-800 bg-dark-bg py-2 text-xs font-extrabold text-slate-200 hover:bg-slate-800 hover:text-teal-400 transition-all flex items-center justify-center space-x-1.5"
                   >
-                    <KeyRound className="h-4 w-4 text-teal-400" />
-                    <span>Redefinir Palavra-passe do Dept. Médico</span>
+                    <KeyRound className="h-3.5 w-3.5 text-teal-400" />
+                    <span>Redefinir Palavra-passe Dept. Médico</span>
                   </button>
                 )}
               </div>
@@ -1873,14 +2200,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={handleSendBroadcastReminder}
-                  className="flex items-center justify-center space-x-1.5 bg-amber-500 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black hover:bg-amber-400 shadow-md shadow-amber-500/20 transition-all"
-                >
-                  <Smartphone className="h-4 w-4" />
-                  <span>📢 Enviar Lembrete no Telemóvel</span>
-                </button>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                  <div className="text-[11px] font-mono font-bold text-amber-300 bg-slate-900 px-3 py-2 rounded-xl border border-slate-700 text-center sm:text-left">
+                    📱 {pushSubCount} dispositivo(s) registados
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleSendBroadcastReminder('all')}
+                    className="flex items-center justify-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20 transition-all border border-amber-400/30"
+                  >
+                    <Smartphone className="h-4 w-4" />
+                    <span>🚀 Testar Envio Push Agora</span>
+                  </button>
+                </div>
               </div>
 
               {broadcastMessage && (
@@ -1959,20 +2291,241 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                   />
                 </div>
               </div>
+
+              {/* Quick Manual Push Triggers per Category */}
+              <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                  Disparo Manual Imediato por Categoria (Ignora atletas que já responderam hoje):
+                </span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSendBroadcastReminder('wellness')}
+                    className="py-2 px-2.5 rounded-xl border border-lime-500/30 bg-lime-950/30 text-lime-300 text-[11px] font-black hover:bg-lime-900/40 transition-all active:scale-95 text-center shadow-sm"
+                  >
+                    🔔 Push Wellness ({reminderConfig.wellnessTime})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendBroadcastReminder('preHydration')}
+                    className="py-2 px-2.5 rounded-xl border border-sky-500/30 bg-sky-950/30 text-sky-300 text-[11px] font-black hover:bg-sky-900/40 transition-all active:scale-95 text-center shadow-sm"
+                  >
+                    🔔 Push Pré-Treino ({reminderConfig.preHydrationTime})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendBroadcastReminder('postHydration')}
+                    className="py-2 px-2.5 rounded-xl border border-indigo-500/30 bg-indigo-950/30 text-indigo-300 text-[11px] font-black hover:bg-indigo-900/40 transition-all active:scale-95 text-center shadow-sm"
+                  >
+                    🔔 Push Pós-Treino ({reminderConfig.postHydrationTime})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSendBroadcastReminder('rpe')}
+                    className="py-2 px-2.5 rounded-xl border border-amber-500/30 bg-amber-950/30 text-amber-300 text-[11px] font-black hover:bg-amber-900/40 transition-all active:scale-95 text-center shadow-sm"
+                  >
+                    🔔 Push PSE ({reminderConfig.rpeTime})
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {/* 3. Athlete Direct Access Status Notice */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-2 shadow-lg">
-              <div className="flex items-center space-x-2.5">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                <div>
-                  <h3 className="text-xs font-black uppercase text-emerald-300">
-                    Acesso das Jogadoras Sem PIN (Desativado)
-                  </h3>
-                  <p className="text-xs text-slate-300">
-                    As jogadoras podem selecionar o seu perfil e responder aos questionários diretamente, sem necessidade de introduzir qualquer PIN de verificação.
-                  </p>
+            {/* 3. Tabela de Gestão do Plantel, Perfis & PINs */}
+            <div className="rounded-2xl border border-red-500/30 bg-dark-card p-4 space-y-4 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
+                <div className="flex items-center space-x-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600/20 text-red-400 border border-red-500/30">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-100 uppercase">
+                      Gestão do Plantel, Perfis & PINs ({athletesList.length} Jogadoras)
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Adiciona novas jogadoras, edita o perfil (nome, posição, foto) e gere os códigos de acesso.
+                    </p>
+                  </div>
                 </div>
+
+                <div className="flex items-center space-x-2 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:w-56">
+                    <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      placeholder="Pesquisar jogadora..."
+                      value={searchFilter}
+                      onChange={(e) => setSearchFilter(e.target.value)}
+                      className="w-full rounded-xl border border-slate-700 bg-dark-bg py-1.5 pl-9 pr-3 text-xs font-bold text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleActivateAllAthletes}
+                    className="flex items-center space-x-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/60 px-3 py-2 text-xs font-black text-emerald-300 hover:bg-emerald-900/80 transition-all whitespace-nowrap active:scale-95 shadow-md"
+                    title="Repor todas as jogadoras como ativas no treino num só clique"
+                  >
+                    <span>⚡ Ativar Todas</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewAthleteName('');
+                      setNewAthletePosition('Campo');
+                      setNewAthletePin('');
+                      setNewAthleteAvatar('');
+                      setIsAddAthleteModalOpen(true);
+                    }}
+                    className="flex items-center space-x-1.5 rounded-xl bg-red-600 px-3.5 py-2 text-xs font-black text-white shadow-lg shadow-red-900/40 hover:bg-red-500 transition-all whitespace-nowrap active:scale-95"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span>Adicionar Jogadora</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-dark-bg/60">
+                <table className="w-full text-left text-xs text-slate-200">
+                  <thead className="border-b border-slate-800 bg-slate-900/80 text-[11px] font-black uppercase text-slate-400">
+                    <tr>
+                      <th className="py-3 px-4">Jogadora</th>
+                      <th className="py-3 px-4">Posição</th>
+                      <th className="py-3 px-4">PIN de Acesso</th>
+                      <th className="py-3 px-4">No Treino / Visibilidade</th>
+                      <th className="py-3 px-4 text-right">Ação do Administrador</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/80">
+                    {filteredAthletes.map((athlete) => {
+                      const athletePin = pinsState[athlete.id];
+                      const isEditingPin = editingPinAthlete?.id === athlete.id;
+                      const customAvatar = getAthleteAvatar(athlete.id) || athlete.avatarUrl;
+                      const isCustomAthlete = athlete.id.startsWith('ath-custom-');
+
+                      return (
+                        <tr key={athlete.id} className="hover:bg-slate-800/40 transition-colors">
+                          <td className="py-3 px-4 font-extrabold text-slate-100">
+                            <div className="flex items-center space-x-2.5">
+                              {customAvatar ? (
+                                <img
+                                  src={customAvatar}
+                                  alt={athlete.name}
+                                  className="h-8 w-8 rounded-full object-cover border border-red-500/50"
+                                />
+                              ) : (
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-[10px] font-black text-slate-300 border border-slate-700">
+                                  {athlete.name.substring(0, 2)}
+                                </span>
+                              )}
+                              <span className="text-xs font-black">{athlete.name}</span>
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-4 font-bold">
+                            {athlete.position === 'GR' ? (
+                              <span className="text-[10px] font-black text-purple-300 bg-purple-500/20 border border-purple-500/30 px-2 py-0.5 rounded-md">
+                                🧤 Guarda-Redes (GR)
+                              </span>
+                            ) : (
+                              <span className="text-[10px] font-bold text-slate-400 bg-slate-800/60 border border-slate-700/50 px-2 py-0.5 rounded-md">
+                                ⚽ Campo
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3 px-4 font-mono font-bold">
+                            {athletePin ? (
+                              <span className="inline-flex items-center space-x-1 text-emerald-400 bg-emerald-950/40 border border-emerald-500/30 px-2.5 py-1 rounded-lg text-xs font-black">
+                                <span>🔒 {athletePin}</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center space-x-1 text-amber-400 bg-amber-950/40 border border-amber-500/30 px-2 py-0.5 rounded-lg text-[11px] font-bold">
+                                ⚪ Não Definido
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="py-3 px-4 font-bold">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleAthleteActive(athlete.id, athlete.isActive === false)}
+                              title={athlete.isActive !== false ? "Ativa na sessão. Clica para ocultar/desativar." : "Oculta da sessão. Clica para ativar."}
+                              className={`px-3 py-1.5 rounded-xl border text-[11px] font-black uppercase transition-all flex items-center space-x-1.5 active:scale-95 ${
+                                athlete.isActive !== false
+                                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/40'
+                                  : 'bg-slate-800/80 text-slate-400 border-slate-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-500/40'
+                              }`}
+                            >
+                              {athlete.isActive !== false ? (
+                                <>
+                                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                                  <span>🟢 Ativa</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="h-2 w-2 rounded-full bg-slate-500" />
+                                  <span>⚪ Oculta</span>
+                                </>
+                              )}
+                            </button>
+                          </td>
+
+                          <td className="py-3 px-4 text-right">
+                            {isEditingPin ? (
+                              <div className="flex items-center justify-end space-x-2">
+                                <input
+                                  type="text"
+                                  maxLength={4}
+                                  value={newPinInput}
+                                  onChange={(e) => setNewPinInput(e.target.value.replace(/\D/g, ''))}
+                                  placeholder="4 dígitos"
+                                  autoFocus
+                                  className="w-24 rounded-lg border border-red-500 bg-dark-card py-1 px-2 text-center text-xs font-mono font-black text-slate-100 focus:outline-none"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleSaveAthletePin(athlete.id)}
+                                  className="rounded-lg bg-red-600 px-3 py-1 text-xs font-black text-white hover:bg-red-500"
+                                >
+                                  Guardar
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingPinAthlete(null);
+                                    setNewPinInput('');
+                                  }}
+                                  className="rounded-lg bg-slate-800 px-2.5 py-1 text-xs font-bold text-slate-400 hover:text-slate-200"
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-end space-x-2">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingAthleteProfile(athlete);
+                                    setEditProfileName(athlete.name);
+                                    setEditProfilePosition(athlete.position || 'Campo');
+                                    setEditProfileAvatar(customAvatar || '');
+                                    setEditProfilePin(athletePin || '');
+                                  }}
+                                  className="flex items-center space-x-1.5 rounded-xl border border-cyan-500/40 bg-cyan-950/30 px-3 py-1.5 text-xs font-black text-cyan-300 hover:bg-cyan-900/50 hover:border-cyan-400 transition-all shadow-sm active:scale-95"
+                                  title="Editar Perfil, Posição, Foto e PIN"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                  <span>Perfil</span>
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -2096,7 +2649,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                     className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 text-xs font-bold text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   >
                     <option value="ALL">📋 Todas as Jogadoras (Plantel Completo)</option>
-                    {INITIAL_ATHLETES.map((ath) => (
+                    {athletesList.map((ath) => (
                       <option key={ath.id} value={ath.name}>
                         👤 {ath.name}
                       </option>
@@ -2127,6 +2680,515 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
             </div>
           </div>
         )}
+
+      {/* Modal para Escolher Período e Menus a Limpar */}
+      {isClearModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-rose-500/30 bg-dark-card p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 text-rose-400">
+                <Trash2 className="h-5 w-5" />
+                <h3 className="text-sm font-black uppercase tracking-wide">Limpar Dados Registados</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsClearModalOpen(false)}
+                className="rounded-full p-1 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* 1. Escolher Período (Dias para trás) */}
+            <div className="space-y-2">
+              <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                <Calendar className="h-4 w-4 text-rose-400" />
+                <span>1. Selecionar Período (Dias para trás)</span>
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: '1', label: '1 Dia' },
+                  { value: '7', label: '7 Dias' },
+                  { value: '15', label: '15 Dias' },
+                  { value: '30', label: '30 Dias' },
+                  { value: '60', label: '60 Dias' },
+                  { value: 'all', label: 'Todo o Histórico' },
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setClearDays(opt.value)}
+                    className={`py-2 px-3 rounded-xl text-xs font-black transition-all border ${
+                      clearDays === opt.value
+                        ? 'bg-rose-500 text-slate-950 border-rose-400 shadow-md shadow-rose-500/30 scale-102'
+                        : 'bg-slate-900/60 text-slate-300 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 2. Escolher Menus / Categorias de dados */}
+            <div className="space-y-2.5">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                  <Activity className="h-4 w-4 text-rose-400" />
+                  <span>2. Selecionar Menus a Apagar</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (clearMenus.length === 4) {
+                      setClearMenus([]);
+                    } else {
+                      setClearMenus(['wellness', 'rpe', 'hydration', 'training']);
+                    }
+                  }}
+                  className="text-[10px] font-bold text-cyan-400 hover:underline"
+                >
+                  {clearMenus.length === 4 ? 'Desmarcar Todos' : 'Selecionar Todos'}
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  { id: 'wellness', label: '💖 Wellness (Questionário de Bem-Estar)', desc: 'Sono, Fadiga, Humor, Dores' },
+                  { id: 'rpe', label: '⚡ RPE (Esforço & Carga de Treino)', desc: 'PSE, Carga Sessão, Planos Pré-Treino' },
+                  { id: 'hydration', label: '💧 Hidratação (Peso Pré & Pós-Treino)', desc: 'Pesagem Chegada e Saída' },
+                  { id: 'training', label: '📅 Informação de Treinos & Calendário', desc: 'Sessões agendadas e tipos de dia' },
+                ].map((item) => {
+                  const isChecked = clearMenus.includes(item.id);
+                  return (
+                    <label
+                      key={item.id}
+                      className={`flex items-start space-x-3 rounded-xl border p-3 cursor-pointer transition-all ${
+                        isChecked
+                          ? 'border-rose-500/50 bg-rose-950/20'
+                          : 'border-slate-800 bg-slate-900/40 opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setClearMenus([...clearMenus, item.id]);
+                          } else {
+                            setClearMenus(clearMenus.filter((m) => m !== item.id));
+                          }
+                        }}
+                        className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-rose-500 focus:ring-rose-500"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-slate-100">{item.label}</p>
+                        <p className="text-[10px] text-slate-400">{item.desc}</p>
+                      </div>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsClearModalOpen(false)}
+                className="w-1/2 rounded-xl bg-slate-800 py-3 text-xs font-bold text-slate-300 hover:bg-slate-700"
+              >
+                Cancelar
+              </button>
+
+              <button
+                type="button"
+                disabled={isClearingData || clearMenus.length === 0}
+                onClick={handleExecuteClearData}
+                className="w-1/2 rounded-xl bg-rose-600 py-3 text-xs font-black text-white shadow-lg shadow-rose-600/30 hover:bg-rose-500 disabled:opacity-50 flex items-center justify-center space-x-1.5"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span>{isClearingData ? 'A apagar...' : 'Apagar Dados'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Adicionar Nova Jogadora ao Plantel */}
+      {isAddAthleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-red-500/40 bg-dark-card p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 text-red-400">
+                <Plus className="h-5 w-5" />
+                <h3 className="text-sm font-black uppercase text-slate-100">Adicionar Jogadora ao Plantel</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsAddAthleteModalOpen(false)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddAthleteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1 uppercase">
+                  Nome da Jogadora *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: CHELSEA, PAYTON, SOFIA"
+                  value={newAthleteName}
+                  onChange={(e) => setNewAthleteName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1 uppercase">
+                  Posição em Campo *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewAthletePosition('Campo')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all ${
+                      newAthletePosition === 'Campo'
+                        ? 'border-red-500 bg-red-950/40 text-red-300 ring-1 ring-red-500'
+                        : 'border-slate-800 bg-dark-bg text-slate-400'
+                    }`}
+                  >
+                    ⚽ Jogadora de Campo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewAthletePosition('GR')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all ${
+                      newAthletePosition === 'GR'
+                        ? 'border-purple-500 bg-purple-950/40 text-purple-300 ring-1 ring-purple-500'
+                        : 'border-slate-800 bg-dark-bg text-slate-400'
+                    }`}
+                  >
+                    🧤 Guarda-Redes (GR)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1 uppercase">
+                  PIN de Acesso Inicial (Opcional)
+                </label>
+                <input
+                  type="text"
+                  maxLength={4}
+                  placeholder="Ex: 1234 (4 dígitos)"
+                  value={newAthletePin}
+                  onChange={(e) => setNewAthletePin(e.target.value.replace(/\D/g, ''))}
+                  className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 text-center text-sm font-mono font-bold text-amber-400 focus:border-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase">
+                  Fotografia de Perfil (Opcional)
+                </label>
+                <div className="flex items-center space-x-3 bg-dark-bg p-3 rounded-xl border border-slate-700">
+                  <div className="relative shrink-0">
+                    {newAthleteAvatar ? (
+                      <img
+                        src={newAthleteAvatar}
+                        alt="Preview"
+                        className="h-12 w-12 rounded-full object-cover border-2 border-red-500 shadow"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-400">
+                        <Camera className="h-5 w-5" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex items-center space-x-2">
+                      <label className="flex items-center space-x-1.5 rounded-xl bg-red-600/20 border border-red-500/40 px-3 py-1.5 text-xs font-black text-red-300 hover:bg-red-600/30 transition-all cursor-pointer">
+                        <Camera className="h-3.5 w-3.5" />
+                        <span>📁 Carregar Ficheiro de Foto</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              compressImageFile(file, (dataUrl) => {
+                                setNewAthleteAvatar(dataUrl);
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {newAthleteAvatar && (
+                        <button
+                          type="button"
+                          onClick={() => setNewAthleteAvatar('')}
+                          className="p-1 text-rose-400 hover:bg-rose-500/20 rounded-lg border border-rose-500/30"
+                          title="Remover foto"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="Ou colar URL da imagem..."
+                      value={newAthleteAvatar}
+                      onChange={(e) => setNewAthleteAvatar(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-dark-card py-1 px-2.5 text-[11px] font-mono text-slate-300 focus:border-red-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddAthleteModalOpen(false)}
+                  className="w-1/2 rounded-xl border border-slate-700 bg-dark-bg py-2.5 text-xs font-bold text-slate-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 rounded-xl bg-red-600 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-red-900/40 hover:bg-red-500 transition-all"
+                >
+                  Adicionar Jogadora
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Editar Perfil da Jogadora */}
+      {editingAthleteProfile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md rounded-2xl border border-cyan-500/40 bg-dark-card p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 text-cyan-400">
+                <Pencil className="h-5 w-5" />
+                <h3 className="text-sm font-black uppercase text-slate-100">Editar Perfil de {editingAthleteProfile.name}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingAthleteProfile(null)}
+                className="rounded-lg p-1 text-slate-400 hover:bg-slate-800"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAthleteProfileSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1 uppercase">
+                  Nome da Jogadora
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editProfileName}
+                  onChange={(e) => setEditProfileName(e.target.value)}
+                  className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 text-xs font-bold text-slate-100 focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1 uppercase">
+                  Posição em Campo
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditProfilePosition('Campo')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all ${
+                      editProfilePosition === 'Campo'
+                        ? 'border-cyan-500 bg-cyan-950/40 text-cyan-300 ring-1 ring-cyan-500'
+                        : 'border-slate-800 bg-dark-bg text-slate-400'
+                    }`}
+                  >
+                    ⚽ Campo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditProfilePosition('GR')}
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-extrabold transition-all ${
+                      editProfilePosition === 'GR'
+                        ? 'border-purple-500 bg-purple-950/40 text-purple-300 ring-1 ring-purple-500'
+                        : 'border-slate-800 bg-dark-bg text-slate-400'
+                    }`}
+                  >
+                    🧤 Guarda-Redes (GR)
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase">
+                  PIN de Acesso Pessoal (4 Dígitos)
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    maxLength={4}
+                    value={editProfilePin}
+                    onChange={(e) => setEditProfilePin(e.target.value.replace(/\D/g, ''))}
+                    placeholder="Ex: 1234 (opcional)"
+                    className="w-full rounded-xl border border-slate-700 bg-dark-bg py-2.5 pl-10 pr-3 text-xs font-mono font-black text-slate-100 focus:border-cyan-500 focus:outline-none"
+                  />
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400">PIN individual para a jogadora aceder à sua conta no ecrã inicial.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase">
+                  Fotografia de Perfil
+                </label>
+                <div className="flex items-center space-x-3 bg-dark-bg p-3 rounded-xl border border-slate-700">
+                  <div className="relative shrink-0">
+                    {editProfileAvatar ? (
+                      <img
+                        src={editProfileAvatar}
+                        alt="Preview"
+                        className="h-12 w-12 rounded-full object-cover border-2 border-cyan-500 shadow"
+                      />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 border border-slate-700 text-slate-400">
+                        <Camera className="h-5 w-5" />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex items-center space-x-2">
+                      <label className="flex items-center space-x-1.5 rounded-xl bg-cyan-600/20 border border-cyan-500/40 px-3 py-1.5 text-xs font-black text-cyan-300 hover:bg-cyan-600/30 transition-all cursor-pointer">
+                        <Camera className="h-3.5 w-3.5" />
+                        <span>📁 Carregar Ficheiro de Foto</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              compressImageFile(file, (dataUrl) => {
+                                setEditProfileAvatar(dataUrl);
+                              });
+                            }
+                          }}
+                        />
+                      </label>
+
+                      {editProfileAvatar && (
+                        <button
+                          type="button"
+                          onClick={() => setEditProfileAvatar('')}
+                          className="p-1 text-rose-400 hover:bg-rose-500/20 rounded-lg border border-rose-500/30"
+                          title="Remover foto"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+
+                    <input
+                      type="text"
+                      placeholder="Ou colar URL da imagem..."
+                      value={editProfileAvatar}
+                      onChange={(e) => setEditProfileAvatar(e.target.value)}
+                      className="w-full rounded-lg border border-slate-700 bg-dark-card py-1 px-2.5 text-[11px] font-mono text-slate-300 focus:border-cyan-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-800/80 pt-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const ath = editingAthleteProfile;
+                    setEditingAthleteProfile(null);
+                    setAthleteToDelete(ath);
+                  }}
+                  className="w-full flex items-center justify-center space-x-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 py-2.5 text-xs font-black text-rose-400 hover:bg-rose-500/20 transition-all"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span>Apagar Perfil da Jogadora</span>
+                </button>
+              </div>
+
+              <div className="flex space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAthleteProfile(null)}
+                  className="w-1/2 rounded-xl border border-slate-700 bg-dark-bg py-2.5 text-xs font-bold text-slate-300"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 rounded-xl bg-cyan-600 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-cyan-600/30 hover:bg-cyan-500 transition-all"
+                >
+                  Guardar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CONFIRMAR ELIMINAÇÃO DE PERFIL */}
+      {athleteToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm rounded-2xl border border-rose-500/40 bg-dark-card p-6 shadow-2xl space-y-4">
+            <div className="flex items-center space-x-2 text-rose-400">
+              <AlertTriangle className="h-5 w-5" />
+              <h3 className="text-sm font-black uppercase text-slate-100">Apagar Perfil da Jogadora</h3>
+            </div>
+            <p className="text-xs text-slate-300">
+              Tem a certeza que deseja apagar o perfil da jogadora <strong className="text-white">{athleteToDelete.name}</strong>?
+              Esta ação irá remover a jogadora do plantel ativo.
+            </p>
+            <div className="flex space-x-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setAthleteToDelete(null)}
+                className="w-1/2 rounded-xl border border-slate-700 bg-dark-bg py-2.5 text-xs font-bold text-slate-300"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  deleteAthlete(athleteToDelete.id);
+                  setAthleteToDelete(null);
+                  loadAllPins();
+                  setPinChangeSuccess(`Perfil de ${athleteToDelete.name} removido com sucesso.`);
+                  setTimeout(() => setPinChangeSuccess(null), 4000);
+                }}
+                className="w-1/2 rounded-xl bg-rose-600 py-2.5 text-xs font-black text-white hover:bg-rose-500 shadow-lg shadow-rose-900/40 transition-all"
+              >
+                Apagar Perfil
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

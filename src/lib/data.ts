@@ -1,37 +1,44 @@
 import { Athlete, MenstrualCyclePhase, HydrationStatus } from './types';
 
-export const ROSTER_NAMES: string[] = [
-  'CARLOTA',
-  'CAROL',
-  'CARTAXO',
-  'EVA',
-  'FAITH',
-  'LARA',
-  'LAURA',
-  'LUANA CORREIA',
-  'LUANA MACEDO',
-  'MAGUI',
-  'MALTA',
-  'MANU',
-  'MARTHE',
-  'MERIVA',
-  'NICOLE',
-  'RAMOS',
-  'RIBEIRO',
-  'RITA R.',
-  'SARA ALVES',
-  'SARA TEIXEIRA',
-  'SERENA',
-  'SIMÃES',
-  'TICHA',
-  'TITA',
-  'VERÓNICA',
+export const GOALKEEPER_NAMES: string[] = ['CAROL', 'LUANA MACEDO', 'LAURA', 'LAURA PATRÍCIO', 'PAYTON'];
+
+export const isGoalkeeper = (name: string): boolean => {
+  if (!name) return false;
+  const upper = name.toUpperCase().trim();
+  return GOALKEEPER_NAMES.some((gr) => upper === gr || upper.includes('LUANA MACEDO') || upper.includes('CAROL') || upper.includes('LAURA') || upper.includes('PAYTON'));
+};
+
+export const INITIAL_ATHLETES: Athlete[] = [
+  { id: 'ath-1', name: 'CARLOTA', position: 'Campo' },
+  { id: 'ath-2', name: 'CAROL', position: 'GR' },
+  { id: 'ath-3', name: 'CARTAXO', position: 'Campo' },
+  { id: 'ath-4', name: 'EVA', position: 'Campo' },
+  { id: 'ath-5', name: 'FAITH', position: 'Campo' },
+  { id: 'ath-6', name: 'LARA', position: 'Campo' },
+  { id: 'ath-7', name: 'LAURA PATRÍCIO', position: 'GR' },
+  { id: 'ath-8', name: 'LUANA CORREIA', position: 'Campo' },
+  { id: 'ath-9', name: 'LUANA MACEDO', position: 'GR' },
+  { id: 'ath-10', name: 'MAGUI', position: 'Campo' },
+  { id: 'ath-11', name: 'MALTA', position: 'Campo' },
+  { id: 'ath-12', name: 'MANU', position: 'Campo' },
+  { id: 'ath-13', name: 'MARTHE', position: 'Campo' },
+  { id: 'ath-14', name: 'MERIVA', position: 'Campo' },
+  { id: 'ath-15', name: 'NICOLE', position: 'Campo' },
+  { id: 'ath-16', name: 'RAMOS', position: 'Campo' },
+  { id: 'ath-17', name: 'RIBEIRO', position: 'Campo' },
+  { id: 'ath-18', name: 'RITA R.', position: 'Campo' },
+  { id: 'ath-19', name: 'SARA ALVES', position: 'Campo' },
+  { id: 'ath-20', name: 'SARA TEIXEIRA', position: 'Campo' },
+  { id: 'ath-21', name: 'SERENA', position: 'Campo' },
+  { id: 'ath-22', name: 'SIMÃES', position: 'Campo' },
+  { id: 'ath-23', name: 'TICHA', position: 'Campo' },
+  { id: 'ath-24', name: 'TITA', position: 'Campo' },
+  { id: 'ath-25', name: 'VERÓNICA', position: 'Campo' },
+  { id: 'ath-26', name: 'PAYTON', position: 'GR' },
+  { id: 'ath-27', name: 'CHELSEA', position: 'Campo' },
 ];
 
-export const INITIAL_ATHLETES: Athlete[] = ROSTER_NAMES.map((name, index) => ({
-  id: `ath-${index + 1}`,
-  name,
-}));
+export const ROSTER_NAMES: string[] = INITIAL_ATHLETES.map((a) => a.name);
 
 export const MENSTRUAL_CYCLE_OPTIONS: MenstrualCyclePhase[] = [
   'Menstruação',
@@ -93,9 +100,45 @@ export const PRE_WORKOUT_TAGS = [
 
 import { Language } from './i18n';
 
-export function calculateHydrationStatus(preWeight: number, postWeight: number, fluidsIntake: number = 0, language: Language = 'pt') {
-  const weightLoss = Math.max(0, +(preWeight - postWeight).toFixed(2));
-  const dehydrationRate = +((weightLoss / preWeight) * 100).toFixed(2);
+export function calculateHydrationStatus(
+  preWeight: number | string,
+  postWeight: number | string,
+  fluidsIntake: number | string = 0,
+  language: Language = 'pt'
+) {
+  const parseVal = (val: any): number => {
+    if (val === null || val === undefined || val === '') return 0;
+    const str = String(val).trim().replace(',', '.');
+    const num = parseFloat(str);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const pre = parseVal(preWeight);
+  const post = parseVal(postWeight);
+  const fluids = parseVal(fluidsIntake);
+
+  if (post <= 0) {
+    return {
+      weightLoss: 0,
+      dehydrationRate: 0,
+      refillNeededLiters: 0,
+      status: 'Pendente' as HydrationStatus,
+      recommendation: language === 'en'
+        ? 'Pre-training weight recorded. Pending post-training weight.'
+        : language === 'fr'
+        ? 'Poids pré-entraînement enregistré. En attente du poids post-entraînement.'
+        : 'Peso pré-treino registado. Conclui a pesagem no final do treino.',
+      biologicalImpact: language === 'en'
+        ? 'Pending post-training weight to calculate dehydration level.'
+        : language === 'fr'
+        ? 'En attente du poids post-entraînement pour calculer le niveau de déshydratation.'
+        : 'Aguardando pesagem pós-treino para calcular a taxa de desidratação.',
+    };
+  }
+
+  const validPre = pre > 0 ? pre : post + 0.8;
+  const weightLoss = Math.max(0, +(validPre - post).toFixed(2));
+  const dehydrationRate = +((weightLoss / validPre) * 100).toFixed(2);
   const refillNeededLiters = +(weightLoss * 1.5).toFixed(2);
 
   let status: HydrationStatus = 'Adequada';

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus } from '@/lib/types';
-import { INITIAL_ATHLETES } from '@/lib/data';
-import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, CalendarDayType } from '@/lib/storage';
+import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete } from '@/lib/types';
+import { isGoalkeeper } from '@/lib/data';
+import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, CalendarDayType, getDynamicAthletes } from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
   AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users
@@ -24,6 +25,16 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   rpeList,
   hydrationList,
 }) => {
+  const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setAthletes(getDynamicAthletes());
+    };
+    handleUpdate();
+    window.addEventListener('femperf_credentials_updated', handleUpdate);
+    return () => window.removeEventListener('femperf_credentials_updated', handleUpdate);
+  }, []);
   // Calendar month selection
   const [selectedMonth, setSelectedMonth] = useState<string>(
     selectedDate.substring(0, 7)
@@ -35,12 +46,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   // Current selected session state
   const [dayType, setDayType] = useState<CalendarDayType>('training');
+  const [matchCategory, setMatchCategory] = useState<'friendly' | 'championship' | 'cup'>('championship');
   const [matchDayOffset, setMatchDayOffset] = useState<MatchDayOffset>('MD-3');
   const [startTime, setStartTime] = useState<string>('10:00');
   const [endTime, setEndTime] = useState<string>('11:30');
   const [tempStart, setTempStart] = useState<string>('20.0');
   const [tempEnd, setTempEnd] = useState<string>('25.0');
-  const [locationName, setLocationName] = useState<string>('Campo N.º 1');
+  const [locationName, setLocationName] = useState<string>('Campo de São Martinho - Barcelos');
   const [focusNotes, setFocusNotes] = useState<string>('');
   const [athleteStatuses, setAthleteStatuses] = useState<Record<string, AthleteSessionStatus>>({});
 
@@ -54,15 +66,61 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     let injured = 0;
     let absent = 0;
 
-    INITIAL_ATHLETES.forEach((ath) => {
+    let grNormal = 0;
+    let grConditioned = 0;
+    let grInjured = 0;
+    let grAbsent = 0;
+
+    let fieldNormal = 0;
+    let fieldConditioned = 0;
+    let fieldInjured = 0;
+    let fieldAbsent = 0;
+
+    athletes.forEach((ath) => {
       const st = athleteStatuses[ath.id]?.status || 'normal';
-      if (st === 'normal') normal++;
-      else if (st === 'conditioned') conditioned++;
-      else if (st === 'injured') injured++;
-      else if (st === 'absent') absent++;
+      const isGR = ath.position === 'GR' || isGoalkeeper(ath.name);
+
+      if (st === 'normal') {
+        normal++;
+        if (isGR) grNormal++; else fieldNormal++;
+      } else if (st === 'conditioned') {
+        conditioned++;
+        if (isGR) grConditioned++; else fieldConditioned++;
+      } else if (st === 'injured') {
+        injured++;
+        if (isGR) grInjured++; else fieldInjured++;
+      } else if (st === 'absent') {
+        absent++;
+        if (isGR) grAbsent++; else fieldAbsent++;
+      }
     });
 
-    return { normal, conditioned, injured, absent };
+    const totalGR = grNormal + grConditioned + grInjured + grAbsent;
+    const totalField = fieldNormal + fieldConditioned + fieldInjured + fieldAbsent;
+
+    const grInTraining = grNormal + grConditioned;
+    const fieldInTraining = fieldNormal + fieldConditioned;
+    const totalInTraining = normal + conditioned;
+
+    return {
+      normal,
+      conditioned,
+      injured,
+      absent,
+      grNormal,
+      grConditioned,
+      grInjured,
+      grAbsent,
+      fieldNormal,
+      fieldConditioned,
+      fieldInjured,
+      fieldAbsent,
+      totalGR,
+      totalField,
+      grInTraining,
+      fieldInTraining,
+      totalInTraining,
+    };
   }, [athleteStatuses]);
 
   // Calculate duration automatically from startTime and endTime
@@ -169,7 +227,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     // Helper to build initial statuses for all roster athletes if missing
     const buildInitialStatuses = (stored?: Record<string, AthleteSessionStatus>) => {
       const result: Record<string, AthleteSessionStatus> = {};
-      INITIAL_ATHLETES.forEach((ath) => {
+      athletes.forEach((ath) => {
         if (stored && stored[ath.id]) {
           result[ath.id] = stored[ath.id];
         } else {
@@ -186,12 +244,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
     if (existing) {
       setDayType(existing.dayType);
+      setMatchCategory(existing.matchCategory || 'championship');
       setMatchDayOffset(existing.matchDayOffset);
       setStartTime(existing.startTime || '10:00');
       setEndTime(existing.endTime || '11:30');
       setTempStart(existing.tempStart !== undefined ? existing.tempStart.toString() : '20.0');
       setTempEnd(existing.tempEnd !== undefined ? existing.tempEnd.toString() : '25.0');
-      setLocationName(existing.locationTime || 'Campo N.º 1');
+      setLocationName(existing.locationTime || 'Campo de São Martinho - Barcelos');
       setFocusNotes(existing.focusNotes || '');
       setAthleteStatuses(buildInitialStatuses(existing.athleteStatuses));
     } else {
@@ -206,12 +265,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         initialType = isMatch ? 'match' : hasData ? 'training' : 'training';
       }
       setDayType(initialType);
+      setMatchCategory('championship');
       setMatchDayOffset(getAutoMatchDayOffset(selectedDate, initialType));
       setStartTime('10:00');
       setEndTime('11:30');
       setTempStart('20.0');
       setTempEnd('25.0');
-      setLocationName('Campo N.º 1');
+      setLocationName('Campo de São Martinho - Barcelos');
       setFocusNotes('');
       setAthleteStatuses(buildInitialStatuses());
     }
@@ -220,14 +280,25 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const isInitialLoad = useRef(true);
 
   useEffect(() => {
-    fetch('/api/training-sessions')
+    const handleDataUpdate = () => {
+      const localSessions = getStoredTrainingSessions();
+      const localSched = getStoredCalendarSchedule();
+      setTrainingSessions(localSessions);
+      setCalendarSchedule(localSched);
+    };
+
+    window.addEventListener('femperf_data_updated', handleDataUpdate);
+
+    secureFetch('/api/training-sessions')
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.sessions) {
+        const remoteSessions = data?.sessions || data?.data?.sessions;
+        const remoteSchedule = data?.schedule || data?.data?.schedule;
+        if (remoteSessions || remoteSchedule) {
           const localSessions = getStoredTrainingSessions();
           const localSched = getStoredCalendarSchedule();
-          const mergedSessions = { ...data.sessions, ...localSessions };
-          const mergedSched = { ...(data.schedule || {}), ...localSched };
+          const mergedSessions = { ...localSessions, ...(remoteSessions || {}) };
+          const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
           localStorage.setItem('femperf_training_sessions_info', JSON.stringify(mergedSessions));
           localStorage.setItem('femperf_training_calendar_schedule_v2', JSON.stringify(mergedSched));
           setTrainingSessions(mergedSessions);
@@ -235,6 +306,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         }
       })
       .catch(() => {});
+
+    return () => {
+      window.removeEventListener('femperf_data_updated', handleDataUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -256,6 +331,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     const info: TrainingSessionInfo = {
       date: selectedDate,
       dayType,
+      matchCategory: dayType === 'match' ? matchCategory : undefined,
       matchDayOffset,
       startTime,
       endTime,
@@ -269,7 +345,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     };
 
     saveTrainingSessionInfo(info);
-  }, [selectedDate, dayType, matchDayOffset, startTime, endTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses]);
+  }, [selectedDate, dayType, matchCategory, matchDayOffset, startTime, endTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses]);
 
   // All dates in selected month for calendar strip
   const datesInMonth = useMemo(() => {
@@ -351,7 +427,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   // Update athlete training status
   const handleUpdateAthleteStatus = (athleteId: string, status: AthleteTrainingStatus, notes?: string) => {
-    const ath = INITIAL_ATHLETES.find((a) => a.id === athleteId);
+    const ath = athletes.find((a) => a.id === athleteId);
     const name = ath ? ath.name : athleteId;
 
     setAthleteStatuses((prev) => ({
@@ -367,7 +443,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   const handleSetAllNormal = () => {
     const allNormal: Record<string, AthleteSessionStatus> = {};
-    INITIAL_ATHLETES.forEach((ath) => {
+    athletes.forEach((ath) => {
       allNormal[ath.id] = {
         athleteId: ath.id,
         athleteName: ath.name,
@@ -578,6 +654,55 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <span>Dia de Folga</span>
               </button>
             </div>
+
+            {/* Match Category Sub-selector (Jogo de Treino / Campeonato / Taça) */}
+            {dayType === 'match' && (
+              <div className="space-y-2 mt-3 animate-fade-in p-3 rounded-xl border border-emerald-500/30 bg-emerald-950/30">
+                <label className="text-[11px] font-extrabold uppercase text-emerald-400 flex items-center space-x-1">
+                  <span>🏆 Categoria / Competição do Jogo:</span>
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMatchCategory('friendly')}
+                    className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
+                      matchCategory === 'friendly'
+                        ? 'border-emerald-500 bg-emerald-900/90 text-emerald-100 shadow-md ring-2 ring-emerald-500/50'
+                        : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>🤝</span>
+                    <span>Jogo de Treino</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMatchCategory('championship')}
+                    className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
+                      matchCategory === 'championship'
+                        ? 'border-amber-500 bg-amber-900/90 text-amber-100 shadow-md ring-2 ring-amber-500/50'
+                        : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>🏆</span>
+                    <span>Campeonato</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setMatchCategory('cup')}
+                    className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
+                      matchCategory === 'cup'
+                        ? 'border-purple-500 bg-purple-900/90 text-purple-100 shadow-md ring-2 ring-purple-500/50'
+                        : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>🥇</span>
+                    <span>Taça</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Match Day Microcycle Phase (MD Tag) */}
@@ -700,7 +825,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             </label>
             <input
               type="text"
-              placeholder="Ex: Campo N.º 1 • Estádio Cidade de Barcelos"
+              placeholder="Ex: Campo de São Martinho - Barcelos • Estádio Cidade de Barcelos"
               value={locationName}
               onChange={(e) => setLocationName(e.target.value)}
               className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 text-xs font-bold text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none"
@@ -745,25 +870,41 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
             {/* KPI Summary Badges */}
             <div className="flex flex-wrap items-center gap-2 text-xs font-extrabold pt-1">
-              <span className="bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-xl">
+              <span className="bg-brand-lime text-slate-950 px-3 py-1.5 rounded-xl font-black shadow-md shadow-brand-lime/20 border border-brand-lime flex items-center space-x-1.5">
+                <Users className="h-4 w-4 stroke-[2.5]" />
+                <span>👥 TOTAL NO TREINO: {statusCounts.totalInTraining} / {athletes.length} JOGADORAS</span>
+              </span>
+
+              <span className="bg-cyan-950/80 text-cyan-300 border border-cyan-500/40 px-3 py-1.5 rounded-xl flex items-center space-x-1.5 font-black">
+                <span>🏃 Jogadoras de Campo:</span>
+                <span className="text-cyan-200">{statusCounts.fieldInTraining} / {statusCounts.totalField}</span>
+              </span>
+
+              <span className="bg-purple-950/80 text-purple-300 border border-purple-500/40 px-3 py-1.5 rounded-xl flex items-center space-x-1.5 font-black">
+                <span>🧤 Guarda-Redes (GR):</span>
+                <span className="text-purple-200">{statusCounts.grInTraining} / {statusCounts.totalGR}</span>
+              </span>
+
+              <span className="bg-emerald-950/60 text-emerald-300 border border-emerald-500/30 px-2.5 py-1.5 rounded-xl">
                 🟢 Treino Integral: {statusCounts.normal}
               </span>
-              <span className="bg-amber-950/60 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-xl">
+              <span className="bg-amber-950/60 text-amber-300 border border-amber-500/30 px-2.5 py-1.5 rounded-xl">
                 🟡 Condicionada: {statusCounts.conditioned}
               </span>
-              <span className="bg-rose-950/60 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-xl">
+              <span className="bg-rose-950/60 text-rose-300 border border-rose-500/30 px-2.5 py-1.5 rounded-xl">
                 🔴 Lesionada: {statusCounts.injured}
               </span>
-              <span className="bg-slate-900 text-slate-400 border border-slate-700 px-2.5 py-1 rounded-xl">
+              <span className="bg-slate-900 text-slate-400 border border-slate-700 px-2.5 py-1.5 rounded-xl">
                 ⚪ Ausente: {statusCounts.absent}
               </span>
             </div>
 
             {/* Roster Athletes Status Grid */}
             <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin pt-2">
-              {INITIAL_ATHLETES.map((athlete) => {
+              {athletes.map((athlete) => {
                 const currentStatus = athleteStatuses[athlete.id]?.status || 'normal';
                 const currentNotes = athleteStatuses[athlete.id]?.notes || '';
+                const isGR = athlete.position === 'GR' || isGoalkeeper(athlete.name);
 
                 return (
                   <div
@@ -781,6 +922,15 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-black text-slate-200">{athlete.name}</span>
+                        {isGR ? (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 shadow-sm">
+                            🧤 GR
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">
+                            🏃 Campo
+                          </span>
+                        )}
                       </div>
 
                       {/* Status Selector Buttons */}
@@ -872,7 +1022,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <div className="flex items-center justify-between bg-dark-bg p-3 rounded-xl border border-slate-800">
                 <span className="text-xs font-bold text-slate-300">Questionário Wellness</span>
                 <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                  {wellnessTodayCount} / {INITIAL_ATHLETES.length}
+                  {wellnessTodayCount} / {athletes.length}
                 </span>
               </div>
 
@@ -880,7 +1030,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <div className="flex items-center justify-between bg-dark-bg p-3 rounded-xl border border-slate-800">
                 <span className="text-xs font-bold text-slate-300">Questionário PSE (RPE)</span>
                 <span className="text-xs font-black text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/30">
-                  {rpeTodayCount} / {INITIAL_ATHLETES.length}
+                  {rpeTodayCount} / {athletes.length}
                 </span>
               </div>
 
@@ -888,7 +1038,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <div className="flex items-center justify-between bg-dark-bg p-3 rounded-xl border border-slate-800">
                 <span className="text-xs font-bold text-slate-300">Registo de Hidratação</span>
                 <span className="text-xs font-black text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                  {hydrationTodayCount} / {INITIAL_ATHLETES.length}
+                  {hydrationTodayCount} / {athletes.length}
                 </span>
               </div>
             </div>
@@ -905,6 +1055,12 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <span className="text-slate-500 font-bold">Tipo:</span>{' '}
                 <span className="font-extrabold text-slate-100 uppercase">
                   {dayType === 'training' ? '⚽ Treino' : dayType === 'match' ? '🏆 Jogo (MD)' : '🏖️ Folga'}
+                </span>
+              </p>
+              <p>
+                <span className="text-slate-500 font-bold">Total no Treino:</span>{' '}
+                <span className="font-black text-emerald-400">
+                  {statusCounts.normal + statusCounts.conditioned} / {athletes.length} Jogadoras
                 </span>
               </p>
               <p>

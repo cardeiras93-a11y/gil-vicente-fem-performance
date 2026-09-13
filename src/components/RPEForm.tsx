@@ -4,6 +4,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { BORG_SCALE } from '@/lib/data';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
 import { saveRPELocally } from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
+import { translateTextToPortuguese } from '@/lib/translationUtils';
 import { Dumbbell, Activity, Check, AlertCircle, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface RPEFormProps {
@@ -40,6 +42,8 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     setIsSubmitting(true);
 
     const today = new Date().toISOString().split('T')[0];
+    const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
+
     const newEntry: RPEEntry = {
       id: `rpe-${Date.now()}`,
       athleteId: activeAthlete.id,
@@ -49,18 +53,18 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       postFatigue,
       muscleFatigue,
       preWorkoutPlans: [],
-      comments: comments.trim() || undefined,
+      comments: translatedComments,
       createdAt: new Date().toISOString(),
     };
 
     try {
-      await fetch('/api/rpe', {
+      await secureFetch('/api/rpe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry),
       });
 
-      fetch('/api/sync-sheets', {
+      secureFetch('/api/sync-sheets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'rpe', entry: newEntry }),

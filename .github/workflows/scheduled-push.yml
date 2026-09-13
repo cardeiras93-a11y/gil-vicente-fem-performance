@@ -1,0 +1,16 @@
+name: Dispatch Scheduled Web Push Notifications
+
+on:
+  schedule:
+    # Dispara a cada 30 minutos entre as 07:00 e as 20:00 UTC (cobre 08:00 às 21:00 em Portugal)
+    - cron: '*/30 7-20 * * *'
+  workflow_dispatch:
+
+jobs:
+  send-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar Lembretes Web Push
+        run: |
+          echo "A enviar pedido de disparo agendado para o servidor Gil Vicente..."
+          curl -s -X GET "https://fem-performance-app.vercel.app/api/notifications/send-scheduled"

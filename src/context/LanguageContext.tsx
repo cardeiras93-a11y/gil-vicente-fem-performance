@@ -16,7 +16,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     const saved = localStorage.getItem('fem_perf_lang') as Language;
-    if (saved && (saved === 'pt' || saved === 'en' || saved === 'fr')) {
+    if (saved && (saved === 'pt' || saved === 'en' || saved === 'fr' || saved === 'es')) {
       setLanguageState(saved);
     }
   }, []);

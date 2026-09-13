@@ -3,6 +3,8 @@ import { Athlete, MenstrualCyclePhase, MuscleFatigueMap, WellnessEntry } from '@
 import { useLanguage } from '@/context/LanguageContext';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
 import { saveWellnessLocally } from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
+import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese } from '@/lib/translationUtils';
 import { HeartPulse, Moon, Sun, Smile, ShieldAlert, Zap, Stethoscope, Check, AlertCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
 
 interface WellnessFormProps {
@@ -64,12 +66,15 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     setIsSubmitting(true);
 
     const today = new Date().toISOString().split('T')[0];
+    const normalizedCycle = normalizeMenstrualCycleToPortuguese(menstrualCycle);
+    const translatedReason = needsPhysio && physioReason.trim() ? translateTextToPortuguese(physioReason.trim()) : undefined;
+
     const newEntry: WellnessEntry = {
       id: `wel-${Date.now()}`,
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: today,
-      menstrualCycle,
+      menstrualCycle: normalizedCycle,
       sleepQuality,
       sleepDuration,
       mood,
@@ -80,18 +85,18 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       wellnessTotal: sleepQuality + sleepDuration + mood + stress + fatigue + soreness + heavyLegs,
       muscleFatigue,
       needsPhysio,
-      physioReason: needsPhysio ? physioReason.trim() : undefined,
+      physioReason: translatedReason,
       createdAt: new Date().toISOString(),
     };
 
     try {
-      await fetch('/api/wellness', {
+      await secureFetch('/api/wellness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry),
       });
 
-      fetch('/api/sync-sheets', {
+      secureFetch('/api/sync-sheets', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'wellness', entry: newEntry }),

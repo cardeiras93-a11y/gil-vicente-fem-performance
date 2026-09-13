@@ -1,8 +1,12 @@
+export type AthletePosition = 'GR' | 'Campo';
+
 export interface Athlete {
   id: string;
   name: string;
+  position?: AthletePosition;
   avatarUrl?: string;
   pin?: string;
+  isActive?: boolean;
 }
 
 export type MenstrualCyclePhase =
@@ -54,7 +58,7 @@ export interface RPEEntry {
   createdAt: string;
 }
 
-export type HydrationStatus = 'Adequada' | 'Atenção' | 'Alerta';
+export type HydrationStatus = 'Adequada' | 'Atenção' | 'Alerta' | 'Pendente';
 
 export interface HydrationEntry {
   id: string;
@@ -111,6 +115,7 @@ export interface AthleteSessionStatus {
 export interface TrainingSessionInfo {
   date: string; // YYYY-MM-DD
   dayType: 'training' | 'match' | 'rest';
+  matchCategory?: 'friendly' | 'championship' | 'cup';
   matchDayOffset: MatchDayOffset;
   startTime?: string; // HH:mm (e.g. "10:00")
   endTime?: string; // HH:mm (e.g. "11:30")

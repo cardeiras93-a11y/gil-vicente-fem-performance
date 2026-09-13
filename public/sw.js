@@ -1,10 +1,14 @@
-const CACHE_NAME = 'femperf-v1';
+const CACHE_NAME = 'femperf-v5-background-push';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
   '/favicon.ico',
+  '/gil-vicente-crest.png',
+  '/icon-192.png',
+  '/icon-512.png',
 ];
 
+// Install event: cache core assets and skip waiting immediately
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -14,6 +18,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
+// Activate event: purge old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -29,43 +34,91 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Allow client app to trigger instant update takeover
+self.addEventListener('message', (event) => {
+  if (event.data === 'SKIP_WAITING' || (event.data && event.data.type === 'SKIP_WAITING')) {
+    self.skipWaiting();
+  }
+});
+
+// Fetch event: Network-First strategy for HTML pages, NextJS chunks, and API routes
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
+  const url = new URL(event.request.url);
+
+  // Bypass cache completely for credentials API so mobile devices always get fresh cloud PINs
+  if (url.pathname === '/api/credentials') {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Network-First for HTML navigation pages, API routes, and Next.js assets
+  if (event.request.mode === 'navigate' || url.pathname.startsWith('/api') || url.pathname.startsWith('/_next')) {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-          return response;
+          return networkResponse;
         })
         .catch(() => {
-          if (event.request.mode === 'navigate') {
-            return caches.match('/');
+          return caches.match(event.request).then((cached) => {
+            if (cached) return cached;
+            if (event.request.mode === 'navigate') {
+              return caches.match('/');
+            }
+          });
+        })
+    );
+    return;
+  }
+
+  // Stale-While-Revalidate for static assets (images, icons)
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const cacheCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           }
-        });
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
+
+      return cachedResponse || fetchPromise;
     })
   );
 });
 
-// Handle incoming Web Push notifications on mobile devices
+// Handle incoming Web Push notifications on mobile devices (App closed or running in background)
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { body: event.data.text() };
+    }
+  }
+
   const title = data.title || '⚽ Gil Vicente FC • Lembrete';
   const options = {
     body: data.body || 'Tens questionários pendentes por responder hoje!',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
-    vibrate: [200, 100, 200],
-    data: { url: data.url || '/' },
+    vibrate: [300, 100, 300],
+    tag: data.tag || 'gvfc-reminder-push',
+    renotify: true,
+    requireInteraction: false,
+    data: {
+      url: data.url || '/',
+      date: new Date().toISOString(),
+    },
   };
 
   event.waitUntil(self.registration.showNotification(title, options));
@@ -74,18 +127,25 @@ self.addEventListener('push', (event) => {
 // Handle clicking on mobile notifications
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const urlToOpen = (event.notification.data && event.notification.data.url) || '/';
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
-        if (client.url === urlToOpen && 'focus' in client) {
-          return client.focus();
+        if ('focus' in client) {
+          if (client.url === targetUrl || client.url.includes(self.location.origin)) {
+            client.focus();
+            if ('navigate' in client && client.url !== targetUrl) {
+              return client.navigate(targetUrl);
+            }
+            return;
+          }
         }
       }
       if (clients.openWindow) {
-        return clients.openWindow(urlToOpen);
+        return clients.openWindow(targetUrl);
       }
     })
   );
 });
+

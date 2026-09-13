@@ -1,4 +1,5 @@
-import { WellnessEntry, RPEEntry, HydrationEntry } from './types';
+import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from './types';
+import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese, normalizeHydrationStatusToPortuguese } from './translationUtils';
 
 // Helper to trigger browser download of CSV/Excel file with UTF-8 BOM
 export function downloadExcelCSV(filename: string, headers: string[], rows: (string | number)[][]): void {
@@ -72,10 +73,10 @@ export function exportWellnessToExcel(entries: WellnessEntry[], athleteFilter?: 
       e.fatigue,
       e.soreness,
       e.heavyLegs,
-      e.menstrualCycle,
+      normalizeMenstrualCycleToPortuguese(e.menstrualCycle),
       muscleMap,
       e.needsPhysio ? 'SIM' : 'NÃO',
-      e.physioReason || '',
+      translateTextToPortuguese(e.physioReason) || '',
       e.createdAt ? new Date(e.createdAt).toLocaleString('pt-PT') : e.date
     ];
   });
@@ -120,7 +121,7 @@ export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, fi
       sRPE,
       e.postFatigue,
       muscleMap,
-      e.comments || '',
+      e.comments ? translateTextToPortuguese(e.comments) : '',
       e.createdAt ? new Date(e.createdAt).toLocaleString('pt-PT') : e.date
     ];
   });

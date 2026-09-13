@@ -8,9 +8,12 @@ import {
   requestNotificationPermission,
   sendMobileNotification,
   checkAndSendPendingReminder,
-  startAutomaticReminderScheduler
+  startAutomaticReminderScheduler,
+  getTodayLocalDateStr,
 } from '@/lib/reminderUtils';
-import { Smartphone } from 'lucide-react';
+import { registerPushSubscription, syncPushSubscriptionIfGranted } from '@/lib/pushSubscription';
+import { secureFetch } from '@/lib/authGuard';
+import { Smartphone, CheckCircle2, Bell } from 'lucide-react';
 
 interface ReminderBannerProps {
   activeAthlete: Athlete;
@@ -28,8 +31,23 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
   hydrationList,
 }) => {
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [todayStr, setTodayStr] = useState<string>(getTodayLocalDateStr());
+  const [refreshCounter, setRefreshCounter] = useState<number>(0);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  useEffect(() => {
+    const handleDataUpdate = () => {
+      setTodayStr(getTodayLocalDateStr());
+      setRefreshCounter((prev) => prev + 1);
+    };
+
+    window.addEventListener('femperf_data_updated', handleDataUpdate);
+    window.addEventListener('storage', handleDataUpdate);
+
+    return () => {
+      window.removeEventListener('femperf_data_updated', handleDataUpdate);
+      window.removeEventListener('storage', handleDataUpdate);
+    };
+  }, []);
 
   const status = getPendingQuestionnairesStatus(
     activeAthlete.id,
@@ -40,9 +58,15 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
   );
 
   useEffect(() => {
-    setPermission(getNotificationPermission());
+    const currentPerm = getNotificationPermission();
+    setPermission(currentPerm);
 
-    if (getNotificationPermission() === 'granted' && !status.isComplete) {
+    // Silently auto-sync Web Push subscription with server if athlete already granted permission
+    if (currentPerm === 'granted') {
+      syncPushSubscriptionIfGranted(activeAthlete.id);
+    }
+
+    if (currentPerm === 'granted' && !status.isComplete) {
       checkAndSendPendingReminder(
         activeAthlete.id,
         activeAthlete.name,
@@ -62,84 +86,101 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
     );
 
     return () => cleanup();
-  }, [activeAthlete.id, activeAthlete.name, status.isComplete]);
+  }, [activeAthlete.id, activeAthlete.name, status.isComplete, todayStr, refreshCounter]);
 
   const [testFeedback, setTestFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const handleEnableMobileNotifications = async () => {
     setTestFeedback(null);
-    const res = await requestNotificationPermission();
-    setPermission(res);
+    const result = await registerPushSubscription(activeAthlete.id);
+    const newPerm = getNotificationPermission();
+    setPermission(newPerm);
 
-    if (res === 'granted') {
-      const result = await sendMobileNotification(
+    if (result.success) {
+      // Also fire a test notification immediately so the user sees it working
+      sendMobileNotification(
         '⚽ Gil Vicente FC (Futebol Feminino)',
-        'Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente'
+        'Notificações em 2º Plano Ativadas! Vais receber avisos mesmo com a app fechada.'
       );
-      if (result.success) {
-        setTestFeedback({
-          type: 'success',
-          message: '🔔 Notificações ativadas! Notificação enviada: "Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente"',
-        });
-      } else {
-        setTestFeedback({
-          type: 'error',
-          message: result.reason || 'Não foi possível emitir notificação no teu dispositivo.',
-        });
-      }
+      setTestFeedback({
+        type: 'success',
+        message: '🔔 Notificações em 2º plano (App Fechada) ativadas com sucesso neste dispositivo!',
+      });
     } else {
       setTestFeedback({
         type: 'error',
-        message: 'Permissão não concedida. No iPad/iPhone, adiciona a app ao Ecrã Principal e aceita as Notificações nas Definições.',
+        message: result.message || 'Permissão não concedida. No iPad/iPhone, adiciona a app ao Ecrã Principal e aceita as Notificações.',
       });
     }
   };
 
   const handleSendTestNotification = async () => {
     setTestFeedback(null);
-    const result = await sendMobileNotification(
+
+    // 1. Immediate local feedback
+    sendMobileNotification(
       '⚽ Gil Vicente FC (Futebol Feminino)',
-      'Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente'
+      'Notificação de Teste: Tudo a postos para os teus questionários diários!'
     );
 
-    if (result.success) {
+    // 2. Trigger server-side push test to verify true background delivery
+    try {
+      const res = await secureFetch('/api/notifications/test-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ athleteId: activeAthlete.id }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTestFeedback({
+          type: 'success',
+          message: '🔔 Notificação enviada pelo servidor com sucesso para o teu telemóvel!',
+        });
+      } else {
+        setTestFeedback({
+          type: 'success',
+          message: '🔔 Notificação de teste emitida no teu ecrã com sucesso!',
+        });
+      }
+    } catch {
       setTestFeedback({
         type: 'success',
-        message: '🔔 Notificação enviada: "Bem-Vindo à Aplicação da Equipa Feminina do Gil Vicente"',
-      });
-    } else {
-      setTestFeedback({
-        type: 'error',
-        message: result.reason || 'Erro ao enviar notificação para o teu dispositivo.',
+        message: '🔔 Notificação de teste emitida no teu ecrã com sucesso!',
       });
     }
   };
 
   return (
     <div className="rounded-2xl border border-slate-800 bg-dark-card p-3 space-y-2 shadow-md">
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 text-[11px]">
-        <span className="font-extrabold uppercase text-slate-300">
+      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2 text-[11px] gap-2">
+        <span className="font-extrabold uppercase text-slate-300 truncate">
           Estado dos Questionários de Hoje ({todayStr})
         </span>
 
         {permission === 'granted' ? (
-          <button
-            type="button"
-            onClick={handleSendTestNotification}
-            title="Enviar notificação de teste para o teu dispositivo"
-            className="flex items-center space-x-1 font-extrabold text-emerald-400 hover:text-emerald-300 transition-all active:scale-95 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30"
-          >
-            <Smartphone className="h-3 w-3" />
-            <span>Testar Notificação</span>
-          </button>
+          <div className="flex items-center space-x-1.5 shrink-0">
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30">
+              <CheckCircle2 className="h-3 w-3" />
+              <span>2º Plano Ativo</span>
+            </span>
+            <button
+              type="button"
+              onClick={handleSendTestNotification}
+              title="Enviar notificação de teste para o teu dispositivo"
+              className="flex items-center space-x-1 font-extrabold text-emerald-400 hover:text-emerald-300 transition-all active:scale-95 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30"
+            >
+              <Smartphone className="h-3 w-3" />
+              <span>Testar Notificação</span>
+            </button>
+          </div>
         ) : permission !== 'unsupported' ? (
           <button
             type="button"
             onClick={handleEnableMobileNotifications}
-            className="flex items-center space-x-1 font-extrabold text-amber-400 hover:text-amber-300 transition-all active:scale-95 bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-500/30"
+            className="flex items-center space-x-1 font-extrabold text-amber-300 hover:text-amber-200 transition-all active:scale-95 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-sm shrink-0"
           >
-            <Smartphone className="h-3 w-3" />
-            <span>Ativar Alertas</span>
+            <Bell className="h-3 w-3 animate-pulse text-amber-300" />
+            <span>Ativar Alertas (2º Plano)</span>
           </button>
         ) : null}
       </div>
@@ -196,14 +237,22 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
           type="button"
           onClick={() => onSelectTab('hydration')}
           className={`flex flex-col sm:flex-row items-center justify-center p-2 rounded-xl border text-center transition-all ${
-            status.hasHydration
+            status.hasPreHydration && status.hasPostHydration
               ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
+              : status.hasPreHydration || status.hasPostHydration
+              ? 'border-cyan-500/40 bg-cyan-950/20 text-cyan-300 font-bold'
               : 'border-amber-500/40 bg-amber-950/20 text-amber-300 font-extrabold'
           }`}
         >
           <span className="text-[10px] font-bold text-slate-400">3. Pesagem</span>
           <span className="text-xs font-black sm:ml-1.5">
-            {status.hasHydration ? '✅ Preenchido' : '❌ Pendente'}
+            {status.hasPreHydration && status.hasPostHydration
+              ? '✅ Preenchido'
+              : status.hasPreHydration
+              ? '🟡 Pré OK'
+              : status.hasPostHydration
+              ? '🟡 Pós OK'
+              : '❌ Pendente'}
           </span>
         </button>
       </div>
