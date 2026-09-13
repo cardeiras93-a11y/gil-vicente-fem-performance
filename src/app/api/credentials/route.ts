@@ -14,7 +14,7 @@ function ensureFileExists() {
     }
     if (!fs.existsSync(FILE_PATH)) {
       const initial = {
-        activationCode: 'GVFC2026',
+        activationCode: 'GVFC2026@',
         adminPin: '2026',
         physioPin: '2026',
         athletePins: {},
@@ -36,7 +36,7 @@ function getStoredCredentialsFile(): any {
     const raw = fs.readFileSync(FILE_PATH, 'utf-8');
     return JSON.parse(raw);
   } catch {
-    return { activationCode: 'GVFC2026', adminPin: '2026', physioPin: '2026', athletePins: {}, athleteAvatars: {}, finesEnabledDays: {}, editedProfiles: {}, customAthletes: [] };
+    return { activationCode: 'GVFC2026@', adminPin: '2026', physioPin: '2026', athletePins: {}, athleteAvatars: {}, finesEnabledDays: {}, editedProfiles: {}, customAthletes: [] };
   }
 }
 
@@ -112,7 +112,44 @@ export async function GET(request: Request) {
       } catch (e) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
       }
+
+      // 3. Read native athletes from public.athletes table to ensure dual-layer permanent persistence
+      try {
+        const { data: dbAthletes, error: athError } = await supabase
+          .from('athletes')
+          .select('id, name')
+          .order('name');
+
+        if (!athError && dbAthletes && Array.isArray(dbAthletes)) {
+          const initialIds = new Set([
+            'ath-1','ath-2','ath-3','ath-4','ath-5','ath-6','ath-7','ath-8','ath-9','ath-10',
+            'ath-11','ath-12','ath-13','ath-14','ath-15','ath-16','ath-17','ath-18','ath-19','ath-20',
+            'ath-21','ath-22','ath-23','ath-24','ath-25','ath-26','ath-27'
+          ]);
+          const deletedSet = new Set(result.deletedAthletes || []);
+          const existingMap = new Map<string, any>();
+          (result.customAthletes || []).forEach((ca: any) => existingMap.set(ca.id, ca));
+
+          dbAthletes.forEach((row: any) => {
+            if (row.id && !row.id.startsWith('__') && !initialIds.has(row.id) && !deletedSet.has(row.id)) {
+              if (!existingMap.has(row.id)) {
+                existingMap.set(row.id, {
+                  id: row.id,
+                  name: row.name,
+                  position: 'Campo',
+                });
+              }
+            }
+          });
+
+          result.customAthletes = Array.from(existingMap.values()).filter((a: any) => !deletedSet.has(a.id));
+        }
+      } catch (e) {
+        console.warn('Erro ao carregar atletas adicionais de athletes table:', e);
+      }
     }
+
+    result.activationCode = result.activationCode || 'GVFC2026@';
 
     return NextResponse.json({ success: true, data: result });
   } catch (err: any) {
@@ -190,6 +227,8 @@ export async function POST(request: Request) {
       current.reminderConfig = body.reminderConfig;
     }
 
+    current.activationCode = current.activationCode || 'GVFC2026@';
+
     saveCredentialsFile(current);
 
     if (isSupabaseConfigured && supabase) {
@@ -243,6 +282,36 @@ export async function POST(request: Request) {
         );
       } catch (e) {
         console.error('Erro ao guardar fallback em athletes:', e);
+      }
+
+      // 3. Upsert custom athletes directly into public.athletes table
+      if (body.customAthletes && Array.isArray(body.customAthletes)) {
+        try {
+          const rowsToUpsert = body.customAthletes
+            .filter((a: any) => a.id && a.name && !a.id.startsWith('__'))
+            .map((a: any) => ({
+              id: a.id,
+              name: a.name.trim().toUpperCase(),
+              created_at: new Date().toISOString(),
+            }));
+          if (rowsToUpsert.length > 0) {
+            await supabase.from('athletes').upsert(rowsToUpsert, { onConflict: 'id' });
+          }
+        } catch (e) {
+          console.warn('Erro ao upsert em athletes table:', e);
+        }
+      }
+
+      // 4. Delete removed athletes from public.athletes table
+      if (body.deletedAthletes && Array.isArray(body.deletedAthletes)) {
+        try {
+          const idsToDelete = body.deletedAthletes.filter((id: string) => id && !id.startsWith('__'));
+          if (idsToDelete.length > 0) {
+            await supabase.from('athletes').delete().in('id', idsToDelete);
+          }
+        } catch (e) {
+          console.warn('Erro ao apagar atletas em athletes table:', e);
+        }
       }
     }
 

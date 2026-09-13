@@ -26,6 +26,7 @@ import {
 interface AdminDashboardProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAthleteSelector?: () => void;
 }
 
 const getTodayLocalDateStr = () => {
@@ -36,7 +37,16 @@ const getTodayLocalDateStr = () => {
   return `${year}-${month}-${day}`;
 };
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose }) => {
+const getYesterdayLocalDateStr = () => {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose, onOpenAthleteSelector }) => {
   const { t, language } = useLanguage();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
@@ -64,11 +74,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     return getTodayLocalDateStr();
   });
 
+  const loadAllData = (targetDate: string = selectedDate) => {
+    const wLoc = getWellnessLocally();
+    const rLoc = getRPELocally();
+    const hLoc = getHydrationLocally();
+
+    setAllWellnessList([...wLoc]);
+    setAllRpeList([...rLoc]);
+    setAllHydrationList([...hLoc]);
+
+    const wSel = wLoc.filter((e) => e.date === targetDate);
+    const rSel = rLoc.filter((e) => e.date === targetDate);
+    const hSel = hLoc.filter((e) => e.date === targetDate);
+
+    setWellnessList(wSel);
+    setRpeList(rSel);
+    setHydrationList(hSel);
+  };
+
   const setSelectedDate = (date: string) => {
     setSelectedDateState(date);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_selected_date', date);
     }
+    loadAllData(date);
+    syncAllDataFromCloud();
   };
 
   const [searchFilter, setSearchFilter] = useState<string>('');
@@ -187,10 +217,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     }
   };
 
+  const handleClearAllSubscribers = async () => {
+    if (!confirm('Tem a certeza que deseja remover todos os dispositivos registados para notificações?')) return;
+    setIsLoadingSubscribers(true);
+    try {
+      const res = await secureFetch('/api/notifications/subscribe?all=1', { method: 'DELETE' });
+      if (res.ok) {
+        setActiveSubscribers([]);
+        setPinChangeSuccess('Todos os dispositivos registados foram removidos com sucesso.');
+        setTimeout(() => setPinChangeSuccess(null), 4000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
+
+  const handleRemoveSubscriber = async (endpoint: string, deviceName: string) => {
+    if (!confirm(`Deseja remover o dispositivo "${deviceName}"?`)) return;
+    setIsLoadingSubscribers(true);
+    try {
+      const res = await secureFetch(`/api/notifications/subscribe?endpoint=${encodeURIComponent(endpoint)}`, { method: 'DELETE' });
+      if (res.ok) {
+        await fetchActiveSubscribers();
+        setPinChangeSuccess(`Dispositivo "${deviceName}" removido com sucesso.`);
+        setTimeout(() => setPinChangeSuccess(null), 4000);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
+
   useEffect(() => {
     setNotifPermission(getNotificationPermission());
     if (isOpen && isAuthenticated) {
       fetchActiveSubscribers();
+      const interval = setInterval(fetchActiveSubscribers, 8000);
+      return () => clearInterval(interval);
     }
   }, [isOpen, isAuthenticated]);
 
@@ -302,17 +368,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
       syncAllDataFromCloud();
-      loadAllData();
+      loadAllData(selectedDate);
       loadAllPins();
 
       const handleDataUpdate = () => {
-        loadAllData();
+        loadAllData(selectedDate);
       };
 
       const handleCredsUpdate = () => {
         loadAllPins();
         setAthletesList(getDynamicAthletes(true));
-        loadAllData();
+        loadAllData(selectedDate);
       };
 
       window.addEventListener('femperf_data_updated', handleDataUpdate);
@@ -322,34 +388,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
         window.removeEventListener('femperf_credentials_updated', handleCredsUpdate);
       };
     }
-  }, [isOpen, isAuthenticated]);
+  }, [isOpen, isAuthenticated, selectedDate]);
 
   const handleManualSyncCloudData = () => {
     setIsSyncingCloud(true);
     syncAllDataFromCloud();
     setTimeout(() => {
-      loadAllData();
+      loadAllData(selectedDate);
       loadAllPins();
       setIsSyncingCloud(false);
     }, 1200);
-  };
-
-  const loadAllData = async () => {
-    const wLoc = getWellnessLocally();
-    const rLoc = getRPELocally();
-    const hLoc = getHydrationLocally();
-
-    setAllWellnessList(wLoc);
-    setAllRpeList(rLoc);
-    setAllHydrationList(hLoc);
-
-    const wSel = wLoc.filter((e) => e.date === selectedDate);
-    const rSel = rLoc.filter((e) => e.date === selectedDate);
-    const hSel = hLoc.filter((e) => e.date === selectedDate);
-
-    setWellnessList(wSel);
-    setRpeList(rSel);
-    setHydrationList(hSel);
   };
 
   // Compute weight statistics for weight management sub-tab
@@ -405,20 +453,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   const shiftDate = (days: number) => {
-    const current = new Date(selectedDate);
-    if (isNaN(current.getTime())) return;
-    current.setDate(current.getDate() + days);
-    setSelectedDate(current.toISOString().split('T')[0]);
+    const parts = selectedDate.split('-').map(Number);
+    if (parts.length !== 3 || parts.some(isNaN)) return;
+    const d = new Date(parts[0], parts[1] - 1, parts[2] + days);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    setSelectedDate(`${year}-${month}-${day}`);
   };
 
   const setTodayDate = () => {
-    setSelectedDate(new Date().toISOString().split('T')[0]);
+    setSelectedDate(getTodayLocalDateStr());
   };
 
   const setYesterdayDate = () => {
-    const d = new Date();
-    d.setDate(d.getDate() - 1);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(getYesterdayLocalDateStr());
   };
 
   const handleSyncGsheets = async (isSilent = false) => {
@@ -458,9 +507,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     }
   };
 
-  const [currentActivationCodeState, setCurrentActivationCodeState] = useState<string>('GVFC2026');
-  const [currentAdminPinState, setCurrentAdminPinState] = useState<string>('2026');
-  const [currentPhysioPinState, setCurrentPhysioPinState] = useState<string>('2026');
+  const [currentActivationCodeState, setCurrentActivationCodeState] = useState<string>(getClubActivationCode);
+  const [currentAdminPinState, setCurrentAdminPinState] = useState<string>(getAdminPin);
+  const [currentPhysioPinState, setCurrentPhysioPinState] = useState<string>(getPhysioPin);
 
   const [isEditingActivationCode, setIsEditingActivationCode] = useState<boolean>(false);
   const [newActivationCodeInput, setNewActivationCodeInput] = useState<string>('');
@@ -502,8 +551,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [editProfileAvatar, setEditProfileAvatar] = useState<string>('');
   const [editProfilePin, setEditProfilePin] = useState<string>('');
   const [athleteToDelete, setAthleteToDelete] = useState<Athlete | null>(null);
-
-  const [pushSubCount, setPushSubCount] = useState<number>(0);
+  const [isSubmittingAthlete, setIsSubmittingAthlete] = useState<boolean>(false);
 
   const loadAllPins = () => {
     setCurrentActivationCodeState(getClubActivationCode());
@@ -518,52 +566,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
       pinsMap[ath.id] = getAthletePin(ath.id);
     });
     setPinsState(pinsMap);
-
-    secureFetch('/api/notifications/subscribe')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && typeof data.count === 'number') {
-          setPushSubCount(data.count);
-        }
-      })
-      .catch(() => {});
   };
 
-  const handleAddAthleteSubmit = (e: React.FormEvent) => {
+  const handleAddAthleteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newAthleteName.trim().length > 0) {
-      addNewAthlete(newAthleteName, newAthletePosition, newAthletePin, newAthleteAvatar);
-      loadAllPins();
-      setIsAddAthleteModalOpen(false);
-      setNewAthleteName('');
-      setNewAthletePosition('Campo');
-      setNewAthletePin('');
-      setNewAthleteAvatar('');
-      setPinChangeSuccess(`Jogadora ${newAthleteName.toUpperCase()} adicionada ao plantel com sucesso!`);
-      setTimeout(() => setPinChangeSuccess(null), 4000);
+    const cleanName = newAthleteName.trim().toUpperCase();
+    if (cleanName.length > 0) {
+      setIsSubmittingAthlete(true);
+      try {
+        await addNewAthlete(cleanName, newAthletePosition, newAthletePin, newAthleteAvatar);
+        loadAllPins();
+        setIsAddAthleteModalOpen(false);
+        setNewAthleteName('');
+        setNewAthletePosition('Campo');
+        setNewAthletePin('');
+        setNewAthleteAvatar('');
+        setPinChangeSuccess(`Jogadora ${cleanName} adicionada com sucesso e guardada permanentemente na nuvem!`);
+        setTimeout(() => setPinChangeSuccess(null), 6000);
+      } catch (err: any) {
+        alert('Erro ao guardar jogadora: ' + (err?.message || 'Falha de comunicação'));
+      } finally {
+        setIsSubmittingAthlete(false);
+      }
     }
   };
 
-  const handleSaveAthleteProfileSubmit = (e: React.FormEvent) => {
+  const handleSaveAthleteProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingAthleteProfile && editProfileName.trim().length > 0) {
       const cleanPin = editProfilePin.replace(/\D/g, '').slice(0, 4);
-      saveAthleteProfile(editingAthleteProfile.id, {
-        name: editProfileName.trim().toUpperCase(),
+      const cleanName = editProfileName.trim().toUpperCase();
+      await saveAthleteProfile(editingAthleteProfile.id, {
+        name: cleanName,
         position: editProfilePosition,
         avatarUrl: editProfileAvatar || undefined,
         pin: cleanPin.length > 0 ? cleanPin : undefined,
       });
       loadAllPins();
       setEditingAthleteProfile(null);
-      setPinChangeSuccess(`Perfil de ${editProfileName.trim().toUpperCase()} atualizado com sucesso!`);
+      setPinChangeSuccess(`Perfil de ${cleanName} atualizado com sucesso!`);
       setTimeout(() => setPinChangeSuccess(null), 4000);
     }
   };
 
-  const handleDeleteAthleteClick = (athlete: Athlete) => {
+  const handleDeleteAthleteClick = async (athlete: Athlete) => {
     if (confirm(`Tem a certeza que deseja remover a jogadora ${athlete.name} do plantel?`)) {
-      deleteAthlete(athlete.id);
+      await deleteAthlete(athlete.id);
       loadAllPins();
       setPinChangeSuccess(`Jogadora ${athlete.name} removida do plantel.`);
       setTimeout(() => setPinChangeSuccess(null), 4000);
@@ -576,7 +624,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
     const cleanInput = adminLoginPin.trim();
     const activationCode = getClubActivationCode();
 
-    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026' || cleanInput.toUpperCase() === 'GVFC') {
+    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
       setPinError('O Código de Ativação da App não é válido para aceder à Administração. Introduza a Palavra-passe de Administrador.');
       setAdminLoginPin('');
       return;
@@ -896,14 +944,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
               <button
                 type="button"
                 onClick={setTodayDate}
-                className="rounded-lg bg-slate-800 px-2.5 py-1 text-[11px] font-extrabold text-slate-200 hover:bg-slate-700"
+                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                  selectedDate === getTodayLocalDateStr()
+                    ? 'bg-sky-600 text-white font-black shadow-sm'
+                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                }`}
               >
                 Hoje
               </button>
               <button
                 type="button"
                 onClick={setYesterdayDate}
-                className="rounded-lg bg-slate-800/60 px-2.5 py-1 text-[11px] font-bold text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                  selectedDate === getYesterdayLocalDateStr()
+                    ? 'bg-sky-600 text-white font-black shadow-sm'
+                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                }`}
               >
                 Ontem
               </button>
@@ -1971,12 +2027,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
           </div>
         ) : activeTab === 'collective' ? (
           <CollectiveSquadView
+            key={selectedDate}
             wellnessList={allWellnessList}
             rpeList={allRpeList}
             selectedDate={selectedDate}
           />
         ) : activeTab === 'individual' ? (
           <IndividualAthleteView
+            key={selectedDate}
             wellnessList={allWellnessList}
             rpeList={allRpeList}
             selectedDate={selectedDate}
@@ -2001,9 +2059,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
           /* PIN Management Section */
           <div className="space-y-6 animate-fade-in">
             {pinChangeSuccess && (
-              <div className="flex items-center space-x-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-300">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>{pinChangeSuccess}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-300">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>{pinChangeSuccess}</span>
+                </div>
+                {onOpenAthleteSelector && (
+                  <button
+                    type="button"
+                    onClick={onOpenAthleteSelector}
+                    className="self-start sm:self-auto px-3 py-1 bg-emerald-500 text-slate-950 rounded-lg text-[11px] font-black hover:bg-emerald-400 transition-all shadow shrink-0 active:scale-95"
+                  >
+                    👁️ Ver no Ecrã Principal →
+                  </button>
+                )}
               </div>
             )}
 
@@ -2051,7 +2120,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                           type="text"
                           value={newActivationCodeInput}
                           onChange={(e) => setNewActivationCodeInput(e.target.value)}
-                          placeholder="Ex: GVFC2026..."
+                          placeholder="Ex: GVFC2026@..."
                           autoFocus
                           className="flex-1 rounded-xl border border-amber-500 bg-dark-bg p-2 text-xs font-bold uppercase text-slate-100 focus:outline-none"
                         />
@@ -2217,20 +2286,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                     </p>
                   </div>
                 </div>
-
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-                  <div className="text-[11px] font-mono font-bold text-amber-300 bg-slate-900 px-3 py-2 rounded-xl border border-slate-700 text-center sm:text-left">
-                    📱 {pushSubCount} dispositivo(s) registados
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleSendBroadcastReminder('all')}
-                    className="flex items-center justify-center space-x-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 px-4 py-2.5 rounded-xl text-xs font-black hover:from-amber-400 hover:to-amber-500 shadow-md shadow-amber-500/20 transition-all border border-amber-400/30"
-                  >
-                    <Smartphone className="h-4 w-4" />
-                    <span>🚀 Testar Envio Push Agora</span>
-                  </button>
-                </div>
               </div>
 
               {broadcastMessage && (
@@ -2273,15 +2328,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                       Dispositivos com Notificações Ativas em 2º Plano ({activeSubscribers.length})
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={fetchActiveSubscribers}
-                    disabled={isLoadingSubscribers}
-                    className="flex items-center space-x-1 text-[10px] font-bold text-indigo-300 hover:text-indigo-200 bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-500/30 transition-all active:scale-95"
-                  >
-                    <RefreshCw className={`h-3 w-3 ${isLoadingSubscribers ? 'animate-spin' : ''}`} />
-                    <span>Atualizar</span>
-                  </button>
+                  <div className="flex items-center space-x-2">
+                    {activeSubscribers.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearAllSubscribers}
+                        disabled={isLoadingSubscribers}
+                        className="flex items-center space-x-1 text-[10px] font-bold text-red-400 hover:text-red-300 bg-red-950/60 px-2 py-0.5 rounded-lg border border-red-500/30 transition-all active:scale-95 disabled:opacity-50"
+                        title="Remover todos os dispositivos registados"
+                      >
+                        <Trash2 className="h-3 w-3 text-red-400" />
+                        <span>Remover Todos</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {activeSubscribers.length === 0 ? (
@@ -2308,6 +2368,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                             <span className="text-[9px] font-bold text-indigo-400/80 bg-indigo-900/60 px-1 py-0.2 rounded border border-indigo-700/40">
                               {deviceType}
                             </span>
+                            {sub.endpoint && (
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveSubscriber(sub.endpoint, name)}
+                                disabled={isLoadingSubscribers}
+                                className="ml-1 text-slate-400 hover:text-red-400 p-0.5 rounded hover:bg-red-500/20 transition-colors"
+                                title={`Remover dispositivo ${name}`}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
                           </span>
                         );
                       })}
@@ -3029,15 +3100,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 <button
                   type="button"
                   onClick={() => setIsAddAthleteModalOpen(false)}
-                  className="w-1/2 rounded-xl border border-slate-700 bg-dark-bg py-2.5 text-xs font-bold text-slate-300"
+                  disabled={isSubmittingAthlete}
+                  className="w-1/2 rounded-xl border border-slate-700 bg-dark-bg py-2.5 text-xs font-bold text-slate-300 disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="w-1/2 rounded-xl bg-red-600 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-red-900/40 hover:bg-red-500 transition-all"
+                  disabled={isSubmittingAthlete}
+                  className="w-1/2 rounded-xl bg-red-600 py-2.5 text-xs font-extrabold text-white shadow-lg shadow-red-900/40 hover:bg-red-500 transition-all disabled:opacity-50 flex items-center justify-center space-x-1.5"
                 >
-                  Adicionar Jogadora
+                  {isSubmittingAthlete && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                  <span>{isSubmittingAthlete ? 'A Guardar...' : 'Adicionar Jogadora'}</span>
                 </button>
               </div>
             </form>

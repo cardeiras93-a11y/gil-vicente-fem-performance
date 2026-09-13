@@ -208,7 +208,10 @@ export function getDynamicAthletes(includeInactive: boolean = false): Athlete[] 
   }
 }
 
-export function saveAthleteProfile(athleteId: string, updates: { name?: string; position?: AthletePosition; avatarUrl?: string; pin?: string }): void {
+export async function saveAthleteProfile(
+  athleteId: string,
+  updates: { name?: string; position?: AthletePosition; avatarUrl?: string; pin?: string }
+): Promise<void> {
   if (typeof window === 'undefined') return;
   try {
     const editedMapRaw = localStorage.getItem(EDITED_PROFILES_KEY);
@@ -217,9 +220,10 @@ export function saveAthleteProfile(athleteId: string, updates: { name?: string; 
     localStorage.setItem(EDITED_PROFILES_KEY, JSON.stringify(editedMap));
 
     const customListRaw = localStorage.getItem(CUSTOM_ATHLETES_KEY);
+    let customList: Athlete[] = [];
     if (customListRaw) {
       try {
-        const customList: Athlete[] = JSON.parse(customListRaw);
+        customList = JSON.parse(customListRaw);
         const idx = customList.findIndex((a) => a.id === athleteId);
         if (idx !== -1) {
           customList[idx] = { ...customList[idx], ...updates };
@@ -228,18 +232,33 @@ export function saveAthleteProfile(athleteId: string, updates: { name?: string; 
       } catch {}
     }
 
+    const payload: any = {
+      editedProfiles: editedMap,
+    };
+
     if (updates.avatarUrl !== undefined) {
-      setAthleteAvatar(athleteId, updates.avatarUrl);
-    }
-    if (updates.pin !== undefined && updates.pin.length > 0) {
-      setAthletePin(athleteId, updates.pin);
+      const avatarsMap = JSON.parse(localStorage.getItem(ATHLETE_AVATARS_KEY) || '{}');
+      avatarsMap[athleteId] = updates.avatarUrl;
+      localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(avatarsMap));
+      payload.athleteAvatars = { [athleteId]: updates.avatarUrl };
     }
 
-    secureFetch('/api/credentials', {
+    if (updates.pin !== undefined && updates.pin.length > 0) {
+      const pinsMap = JSON.parse(localStorage.getItem(ATHLETE_PINS_KEY) || '{}');
+      pinsMap[athleteId] = updates.pin;
+      localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(pinsMap));
+      payload.athletePins = { [athleteId]: updates.pin };
+    }
+
+    if (customList.length > 0) {
+      payload.customAthletes = customList;
+    }
+
+    await secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ editedProfiles: editedMap }),
-    }).catch(() => {});
+      body: JSON.stringify(payload),
+    });
 
     window.dispatchEvent(new Event('femperf_credentials_updated'));
   } catch (e) {
@@ -247,34 +266,72 @@ export function saveAthleteProfile(athleteId: string, updates: { name?: string; 
   }
 }
 
-export function addNewAthlete(name: string, position: AthletePosition = 'Campo', pin?: string, avatarUrl?: string): Athlete {
+export async function addNewAthlete(
+  name: string,
+  position: AthletePosition = 'Campo',
+  pin?: string,
+  avatarUrl?: string
+): Promise<Athlete> {
+  const cleanName = name.trim().toUpperCase();
   const newId = `ath-custom-${Date.now()}`;
   const newAth: Athlete = {
     id: newId,
-    name: name.trim().toUpperCase(),
+    name: cleanName,
     position,
     avatarUrl,
+    isActive: true,
   };
 
   if (typeof window !== 'undefined') {
     try {
       const customListRaw = localStorage.getItem(CUSTOM_ATHLETES_KEY);
       const customList: Athlete[] = customListRaw ? JSON.parse(customListRaw) : [];
-      customList.push(newAth);
+      const existingIdx = customList.findIndex((a) => a.name === cleanName);
+      if (existingIdx !== -1) {
+        customList[existingIdx] = { ...customList[existingIdx], ...newAth };
+      } else {
+        customList.push(newAth);
+      }
       localStorage.setItem(CUSTOM_ATHLETES_KEY, JSON.stringify(customList));
 
-      if (pin) {
-        setAthletePin(newId, pin);
-      }
-      if (avatarUrl) {
-        setAthleteAvatar(newId, avatarUrl);
+      // Remove from deleted list if present
+      const deletedList = getDeletedAthleteIds().filter((id) => id !== newId);
+      localStorage.setItem(DELETED_ATHLETES_KEY, JSON.stringify(deletedList));
+
+      // Ensure active in inactive list
+      const inactiveList = getInactiveAthleteIds().filter((id) => id !== newId);
+      localStorage.setItem(INACTIVE_ATHLETES_KEY, JSON.stringify(inactiveList));
+
+      const payload: any = {
+        customAthletes: customList,
+      };
+
+      if (pin && pin.trim().length > 0) {
+        const pinsMap = JSON.parse(localStorage.getItem(ATHLETE_PINS_KEY) || '{}');
+        pinsMap[newId] = pin.trim();
+        localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(pinsMap));
+        payload.athletePins = { [newId]: pin.trim() };
       }
 
-      secureFetch('/api/credentials', {
+      if (avatarUrl && avatarUrl.trim().length > 0) {
+        const avatarsMap = JSON.parse(localStorage.getItem(ATHLETE_AVATARS_KEY) || '{}');
+        avatarsMap[newId] = avatarUrl.trim();
+        localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(avatarsMap));
+        payload.athleteAvatars = { [newId]: avatarUrl.trim() };
+      }
+
+      const res = await secureFetch('/api/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customAthletes: customList }),
-      }).catch(() => {});
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        if (json.data?.customAthletes && Array.isArray(json.data.customAthletes)) {
+          localStorage.setItem(CUSTOM_ATHLETES_KEY, JSON.stringify(json.data.customAthletes));
+        }
+      }
 
       window.dispatchEvent(new Event('femperf_credentials_updated'));
     } catch (e) {
@@ -285,7 +342,7 @@ export function addNewAthlete(name: string, position: AthletePosition = 'Campo',
   return newAth;
 }
 
-export function deleteAthlete(athleteId: string): void {
+export async function deleteAthlete(athleteId: string): Promise<void> {
   if (typeof window === 'undefined') return;
   try {
     const customListRaw = localStorage.getItem(CUSTOM_ATHLETES_KEY);
@@ -299,11 +356,11 @@ export function deleteAthlete(athleteId: string): void {
       localStorage.setItem(DELETED_ATHLETES_KEY, JSON.stringify(deletedList));
     }
 
-    secureFetch('/api/credentials', {
+    await secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ customAthletes: filtered, deletedAthletes: deletedList }),
-    }).catch(() => {});
+    });
 
     window.dispatchEvent(new Event('femperf_credentials_updated'));
   } catch (e) {
@@ -552,8 +609,8 @@ export function setAthletePin(athleteId: string, pin: string): void {
 }
 
 export function getClubActivationCode(): string {
-  if (typeof window === 'undefined') return 'GVFC2026';
-  return localStorage.getItem(ACTIVATION_CODE_KEY) || 'GVFC2026';
+  if (typeof window === 'undefined') return 'GVFC2026@';
+  return localStorage.getItem(ACTIVATION_CODE_KEY) || 'GVFC2026@';
 }
 
 export function setClubActivationCode(code: string): void {
@@ -797,6 +854,11 @@ export function getWellnessLocally(athleteId?: string): WellnessEntry[] {
 export function saveRPELocally(entry: RPEEntry): void {
   if (typeof window === 'undefined') return;
   try {
+    if (!entry.sessionDurationMin || entry.sessionDurationMin <= 0) {
+      const sessions = getStoredTrainingSessions();
+      entry.sessionDurationMin = sessions[entry.date]?.durationMin || 90;
+    }
+
     const list: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
     const index = list.findIndex((item) => item.id === entry.id || (item.date === entry.date && item.athleteId === entry.athleteId));
     if (index !== -1) {
@@ -821,10 +883,15 @@ export function getRPELocally(athleteId?: string): RPEEntry[] {
   purgeSyntheticDemoData();
   try {
     const list: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
+    const sessions = getStoredTrainingSessions();
+    const resolved = list.map((item) => ({
+      ...item,
+      sessionDurationMin: item.sessionDurationMin || sessions[item.date]?.durationMin || 90,
+    }));
     if (athleteId) {
-      return list.filter((item) => item.athleteId === athleteId);
+      return resolved.filter((item) => item.athleteId === athleteId);
     }
-    return list;
+    return resolved;
   } catch {
     return [];
   }

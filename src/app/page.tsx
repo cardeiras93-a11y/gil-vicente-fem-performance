@@ -159,6 +159,10 @@ function MainAppContent() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncAllDataFromCloud();
+        const ath = getStoredActiveAthlete();
+        if (ath) {
+          syncPushSubscriptionIfGranted(ath.id);
+        }
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -170,6 +174,7 @@ function MainAppContent() {
       if (athleteObj) {
         setActiveAthlete(athleteObj);
         setIsChangingAthlete(false);
+        syncPushSubscriptionIfGranted(athleteObj.id);
       }
     }
 
@@ -193,6 +198,7 @@ function MainAppContent() {
       const athleteObj = getStoredActiveAthlete();
       if (athleteObj) {
         setActiveAthlete(athleteObj);
+        syncPushSubscriptionIfGranted(athleteObj.id);
       }
     };
     window.addEventListener('femperf_credentials_updated', handleCredentialsUpdate);
@@ -211,6 +217,7 @@ function MainAppContent() {
     setActiveAthlete(athlete);
     setAthleteSession(athlete.id);
     setIsChangingAthlete(false);
+    syncPushSubscriptionIfGranted(athlete.id);
   };
 
   const handleOpenAdmin = () => {
@@ -482,6 +489,10 @@ function MainAppContent() {
       <AdminDashboard
         isOpen={isAdminOpen}
         onClose={handleCloseAdmin}
+        onOpenAthleteSelector={() => {
+          handleCloseAdmin();
+          setIsChangingAthlete(true);
+        }}
       />
 
       {/* Physiotherapist Dashboard Modal */}
