@@ -211,7 +211,7 @@ export const translations: Record<Language, Translations> = {
     gate: {
       title: 'Gil Vicente FC (Feminino)',
       subtitle: 'Introduza a Chave de Segurança da Equipa para aceder ao sistema de performance e saúde.',
-      codePlaceholder: 'Código de Acesso (ex: GVFC2026)',
+      codePlaceholder: 'Introduzir Código de Acesso',
       submit: 'Desbloquear Acesso',
       error: 'Código de acesso incorreto. Introduza o Passe de Segurança do Gil Vicente FC.',
       footer: '🔒 Acesso restrito a atletas, equipa técnica e médica do Gil Vicente FC.',
@@ -416,7 +416,7 @@ export const translations: Record<Language, Translations> = {
     gate: {
       title: 'Gil Vicente FC (Women\'s)',
       subtitle: 'Enter the Team Security Passcode to access the performance and health system.',
-      codePlaceholder: 'Access Code (e.g., GVFC2026)',
+      codePlaceholder: 'Enter Access Code',
       submit: 'Unlock Access',
       error: 'Incorrect access code. Please enter the Gil Vicente FC Security Passcode.',
       footer: '🔒 Restricted access for Gil Vicente FC players, technical, and medical staff.',
@@ -621,7 +621,7 @@ export const translations: Record<Language, Translations> = {
     gate: {
       title: 'Gil Vicente FC (Féminin)',
       subtitle: 'Entrez le Code de Sécurité de l\'Équipe pour accéder au système.',
-      codePlaceholder: 'Code d\'Accès (ex: GVFC2026)',
+      codePlaceholder: 'Entrer le Code d\'Accès',
       submit: 'Déverrouiller l\'Accès',
       error: 'Code d\'accès incorrect. Veuillez entrer le Pass de Sécurité du Gil Vicente FC.',
       footer: '🔒 Accès réservé aux joueuses et au staff technique et médical du Gil Vicente FC.',
@@ -826,7 +826,7 @@ export const translations: Record<Language, Translations> = {
     gate: {
       title: 'Gil Vicente FC (Femenino)',
       subtitle: 'Introduce el Código de Seguridad del Equipo para acceder al sistema.',
-      codePlaceholder: 'Código de Acceso (ej: GVFC2026)',
+      codePlaceholder: 'Introducir Código de Acceso',
       submit: 'Desbloquear Acceso',
       error: 'Código de acceso incorrecto. Introduce el Pase de Seguridad del Gil Vicente FC.',
       footer: '🔒 Acceso restringido a jugadoras, cuerpo técnico y equipo médico del Gil Vicente FC.',

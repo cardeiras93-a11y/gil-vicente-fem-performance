@@ -2120,7 +2120,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                           type="text"
                           value={newActivationCodeInput}
                           onChange={(e) => setNewActivationCodeInput(e.target.value)}
-                          placeholder="Ex: GVFC2026@..."
+                          placeholder="Introduzir novo código..."
                           autoFocus
                           className="flex-1 rounded-xl border border-amber-500 bg-dark-bg p-2 text-xs font-bold uppercase text-slate-100 focus:outline-none"
                         />
