@@ -54,7 +54,7 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
   const availableMatches = allMatches;
 
   const [selectedMatchId, setSelectedMatchId] = useState<string>(
-    () => customMatch?.id || availableMatches[0]?.id || 'match_20260910_gvfc_gil_u14'
+    () => customMatch?.id || availableMatches[0]?.id || 'match_20260912_gvfc_romariz'
   );
 
   // Synchronize selected match if matches list changes
