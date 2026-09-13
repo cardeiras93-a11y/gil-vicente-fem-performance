@@ -2,11 +2,15 @@
   "crons": [
     {
       "path": "/api/notifications/send-scheduled?slot=wellness",
-      "schedule": "0 8 * * *"
+      "schedule": "0 5 * * *"
     },
     {
-      "path": "/api/notifications/send-scheduled?slot=rpe",
-      "schedule": "0 17 * * *"
+      "path": "/api/notifications/send-scheduled?slot=preHydration",
+      "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/notifications/send-scheduled?slot=postTraining",
+      "schedule": "30 9 * * *"
     }
   ]
 }

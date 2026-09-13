@@ -1,24 +1,24 @@
 import { WellnessEntry, RPEEntry, HydrationEntry } from './types';
 import { getWellnessLocally, getRPELocally, getHydrationLocally } from './storage';
 
-export const REMINDER_SETTINGS_KEY = 'femperf_reminder_settings_v1';
+export const REMINDER_SETTINGS_KEY = 'femperf_reminder_settings_v2';
 export const LAST_NOTIFICATION_TIMESTAMP_KEY = 'femperf_last_notification_ts';
 
 export interface ReminderConfig {
   enabled: boolean;
-  wellnessTime: string; // "09:00"
-  rpeTime: string; // "18:00"
+  wellnessTime: string; // "06:00"
+  rpeTime: string; // "10:30"
   hydrationTime?: string; // legacy fallback
-  preHydrationTime: string; // "10:00" (Pesagem Pré-Treino)
-  postHydrationTime: string; // "12:00" (Pesagem Pós-Treino)
+  preHydrationTime: string; // "08:00" (Pesagem Pré-Treino)
+  postHydrationTime: string; // "10:30" (Pesagem Pós-Treino)
 }
 
 export const DEFAULT_REMINDER_CONFIG: ReminderConfig = {
   enabled: true,
-  wellnessTime: '09:00',
-  rpeTime: '18:00',
-  preHydrationTime: '10:00',
-  postHydrationTime: '12:00',
+  wellnessTime: '06:00',
+  rpeTime: '10:30',
+  preHydrationTime: '08:00',
+  postHydrationTime: '10:30',
 };
 
 // Check current notification permission status in browser/smartphone

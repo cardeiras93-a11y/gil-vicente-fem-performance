@@ -19,10 +19,10 @@ function initVapid() {
 function getStoredReminderConfig(): any {
   const defaultConfig = {
     enabled: true,
-    wellnessTime: '09:00',
-    rpeTime: '18:00',
-    preHydrationTime: '10:00',
-    postHydrationTime: '12:00',
+    wellnessTime: '06:00',
+    rpeTime: '10:30',
+    preHydrationTime: '08:00',
+    postHydrationTime: '10:30',
   };
 
   try {
@@ -87,11 +87,15 @@ async function executeScheduledSend(request: Request) {
     hour12: false,
   });
 
-  const forcedSlot = searchParams.get('slot'); // e.g. ?slot=wellness | ?slot=rpe | ?slot=preHydration | ?slot=postHydration | ?slot=all
+  const forcedSlot = searchParams.get('slot'); // e.g. ?slot=wellness | ?slot=preHydration | ?slot=postHydration | ?slot=rpe | ?slot=postTraining | ?slot=all
 
   let activeTitle = '';
   let activeBody = '';
   let activeCategory = '';
+
+  const isPostTrainingTime =
+    matchesSlotTime(portugalTimeStr, config.postHydrationTime) ||
+    matchesSlotTime(portugalTimeStr, config.rpeTime);
 
   if (forcedSlot === 'wellness' || (!forcedSlot && matchesSlotTime(portugalTimeStr, config.wellnessTime))) {
     activeCategory = 'Wellness';
@@ -101,14 +105,18 @@ async function executeScheduledSend(request: Request) {
     activeCategory = 'Pesagem Pré-Treino';
     activeTitle = '⚽ Gil Vicente FC • Pesagem Pré-Treino';
     activeBody = 'Lembrete: Entra na app e regista a tua pesagem pré-treino de hoje.';
-  } else if (forcedSlot === 'postHydration' || (!forcedSlot && matchesSlotTime(portugalTimeStr, config.postHydrationTime))) {
+  } else if (forcedSlot === 'postHydration') {
     activeCategory = 'Pesagem Pós-Treino';
     activeTitle = '⚽ Gil Vicente FC • Pesagem Pós-Treino';
     activeBody = 'Lembrete: Entra na app e regista a tua pesagem pós-treino de hoje.';
-  } else if (forcedSlot === 'rpe' || (!forcedSlot && matchesSlotTime(portugalTimeStr, config.rpeTime))) {
+  } else if (forcedSlot === 'rpe') {
     activeCategory = 'PSE (RPE Pós-Treino)';
     activeTitle = '⚽ Gil Vicente FC • Lembrete PSE (RPE)';
     activeBody = 'Está na hora de preencheres o teu registo de Perceção Subjetiva do Esforço (RPE).';
+  } else if (forcedSlot === 'postTraining' || (!forcedSlot && isPostTrainingTime)) {
+    activeCategory = 'Pós-Treino';
+    activeTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
+    activeBody = 'Olá! Está na hora de registares a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
   } else if (forcedSlot === 'all') {
     activeCategory = 'Geral';
     activeTitle = '⚽ Gil Vicente FC • Lembrete de Treino';
@@ -127,22 +135,27 @@ async function executeScheduledSend(request: Request) {
   const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Lisbon' });
 
   // 1. Fetch completed athlete IDs for today if Supabase is active
-  const completedAthleteIds = new Set<string>();
+  const completedWellnessAthleteIds = new Set<string>();
+  const completedRpeAthleteIds = new Set<string>();
+  const completedPreHydrationAthleteIds = new Set<string>();
+  const completedPostHydrationAthleteIds = new Set<string>();
+
   try {
     const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
     if (isSupabaseConfigured && supabase) {
-      if (activeCategory === 'Wellness') {
-        const { data } = await supabase.from('wellness_entries').select('athlete_id').eq('date', todayDateStr);
-        if (data) data.forEach((d: any) => completedAthleteIds.add(d.athlete_id));
-      } else if (activeCategory === 'PSE (RPE Pós-Treino)') {
-        const { data } = await supabase.from('rpe_entries').select('athlete_id').eq('date', todayDateStr);
-        if (data) data.forEach((d: any) => completedAthleteIds.add(d.athlete_id));
-      } else if (activeCategory === 'Pesagem Pré-Treino') {
-        const { data } = await supabase.from('hydration_entries').select('athlete_id, pre_weight').eq('date', todayDateStr);
-        if (data) data.forEach((d: any) => { if (Number(d.pre_weight) > 0) completedAthleteIds.add(d.athlete_id); });
-      } else if (activeCategory === 'Pesagem Pós-Treino') {
-        const { data } = await supabase.from('hydration_entries').select('athlete_id, post_weight').eq('date', todayDateStr);
-        if (data) data.forEach((d: any) => { if (Number(d.post_weight) > 0) completedAthleteIds.add(d.athlete_id); });
+      const [wRes, rRes, hRes] = await Promise.all([
+        supabase.from('wellness_entries').select('athlete_id').eq('date', todayDateStr),
+        supabase.from('rpe_entries').select('athlete_id').eq('date', todayDateStr),
+        supabase.from('hydration_entries').select('athlete_id, pre_weight, post_weight').eq('date', todayDateStr),
+      ]);
+
+      if (wRes.data) wRes.data.forEach((d: any) => completedWellnessAthleteIds.add(d.athlete_id));
+      if (rRes.data) rRes.data.forEach((d: any) => completedRpeAthleteIds.add(d.athlete_id));
+      if (hRes.data) {
+        hRes.data.forEach((d: any) => {
+          if (Number(d.pre_weight) > 0) completedPreHydrationAthleteIds.add(d.athlete_id);
+          if (Number(d.post_weight) > 0) completedPostHydrationAthleteIds.add(d.athlete_id);
+        });
       }
     }
   } catch (err) {
@@ -169,10 +182,46 @@ async function executeScheduledSend(request: Request) {
 
   await Promise.allSettled(
     subscriptions.map(async (sub) => {
-      // If athlete already completed this questionnaire today, don't disturb her!
-      if (sub.athleteId && completedAthleteIds.has(sub.athleteId)) {
-        skippedAlreadyDoneCount++;
-        return;
+      let athleteTitle = activeTitle;
+      let athleteBody = activeBody;
+
+      if (activeCategory === 'Wellness') {
+        if (sub.athleteId && completedWellnessAthleteIds.has(sub.athleteId)) {
+          skippedAlreadyDoneCount++;
+          return;
+        }
+      } else if (activeCategory === 'Pesagem Pré-Treino') {
+        if (sub.athleteId && completedPreHydrationAthleteIds.has(sub.athleteId)) {
+          skippedAlreadyDoneCount++;
+          return;
+        }
+      } else if (activeCategory === 'Pesagem Pós-Treino') {
+        if (sub.athleteId && completedPostHydrationAthleteIds.has(sub.athleteId)) {
+          skippedAlreadyDoneCount++;
+          return;
+        }
+      } else if (activeCategory === 'PSE (RPE Pós-Treino)') {
+        if (sub.athleteId && completedRpeAthleteIds.has(sub.athleteId)) {
+          skippedAlreadyDoneCount++;
+          return;
+        }
+      } else if (activeCategory === 'Pós-Treino') {
+        const hasPostWeight = sub.athleteId ? completedPostHydrationAthleteIds.has(sub.athleteId) : false;
+        const hasRpe = sub.athleteId ? completedRpeAthleteIds.has(sub.athleteId) : false;
+
+        if (hasPostWeight && hasRpe) {
+          skippedAlreadyDoneCount++;
+          return;
+        } else if (hasPostWeight && !hasRpe) {
+          athleteTitle = '⚽ Gil Vicente FC • Lembrete PSE (RPE)';
+          athleteBody = 'Olá! Lembra-te de preencher o teu registo de PSE (RPE) do treino de hoje.';
+        } else if (!hasPostWeight && hasRpe) {
+          athleteTitle = '⚽ Gil Vicente FC • Pesagem Pós-Treino';
+          athleteBody = 'Olá! Lembra-te de registar a tua pesagem pós-treino de hoje.';
+        } else {
+          athleteTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
+          athleteBody = 'Olá! Lembra-te de registar a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
+        }
       }
 
       const pushSubscription = {
@@ -184,8 +233,8 @@ async function executeScheduledSend(request: Request) {
       };
 
       const payload = JSON.stringify({
-        title: activeTitle,
-        body: activeBody,
+        title: athleteTitle,
+        body: athleteBody,
         icon: '/icon-192.png',
         badge: '/icon-192.png',
         tag: `gvfc-${activeCategory.toLowerCase().replace(/\s+/g, '-')}-${todayDateStr}`,
