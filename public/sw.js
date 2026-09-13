@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v5-background-push';
+const CACHE_NAME = 'femperf-v6-push-active';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.json',
@@ -8,14 +8,25 @@ const ASSETS_TO_CACHE = [
   '/icon-512.png',
 ];
 
-// Install event: cache core assets and skip waiting immediately
+// Install event: skip waiting immediately and cache assets safely
 self.addEventListener('install', (event) => {
+  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      // Safe non-blocking asset caching: never fail service worker installation if one asset errors
+      await Promise.allSettled(
+        ASSETS_TO_CACHE.map((url) =>
+          fetch(url, { cache: 'no-cache' })
+            .then((res) => {
+              if (res && res.status === 200) {
+                return cache.put(url, res);
+              }
+            })
+            .catch(() => {})
+        )
+      );
     })
   );
-  self.skipWaiting();
 });
 
 // Activate event: purge old caches and claim clients immediately
@@ -29,9 +40,8 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
 // Allow client app to trigger instant update takeover

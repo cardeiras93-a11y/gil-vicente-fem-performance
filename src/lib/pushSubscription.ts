@@ -72,16 +72,22 @@ export async function checkPushSubscriptionStatus(): Promise<PushStatusResult> {
   }
 
   try {
-    const reg = await Promise.race([
+    let reg = await navigator.serviceWorker.getRegistration();
+    if (!reg) {
+      reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    }
+
+    const readyReg = await Promise.race([
       navigator.serviceWorker.ready,
-      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1500)),
+      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 2000)),
     ]);
 
-    if (!reg) {
+    const targetReg = readyReg || reg;
+    if (!targetReg) {
       return { supported: true, permission: 'granted', isSubscribed: false };
     }
 
-    const sub = await reg.pushManager.getSubscription();
+    const sub = await targetReg.pushManager.getSubscription();
     return {
       supported: true,
       permission: 'granted',
@@ -138,22 +144,47 @@ export async function registerPushSubscription(
       };
     }
 
-    // 2. Ensure Service Worker is registered and active
-    let reg = await navigator.serviceWorker.getRegistration('/sw.js');
+    // 2. Ensure Service Worker is registered and truly active
+    let reg = await navigator.serviceWorker.getRegistration();
     if (!reg) {
-      reg = await navigator.serviceWorker.register('/sw.js');
+      reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+    } else {
+      reg.update().catch(() => {});
     }
-    
-    const readyReg = await Promise.race([
-      navigator.serviceWorker.ready,
-      new Promise<ServiceWorkerRegistration | undefined>((resolve) =>
-        setTimeout(() => resolve(reg || undefined), 2000)
-      ),
-    ]);
 
-    const activeReg = readyReg || reg;
-    if (!activeReg) {
-      return { success: false, message: 'Falha ao inicializar o Service Worker.' };
+    // Wait for the Service Worker to reach ready/active state
+    let activeReg: ServiceWorkerRegistration = reg;
+    try {
+      activeReg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<ServiceWorkerRegistration>((resolve) => setTimeout(() => resolve(reg!), 4000)),
+      ]);
+    } catch {}
+
+    // If active worker is not yet attached to registration, wait for candidate worker to activate
+    if (!activeReg.active) {
+      const candidateWorker = activeReg.installing || activeReg.waiting || (reg && (reg.installing || reg.waiting));
+      if (candidateWorker) {
+        await new Promise<void>((resolve) => {
+          if (candidateWorker.state === 'activated') {
+            resolve();
+            return;
+          }
+          const handleState = () => {
+            if (candidateWorker.state === 'activated' || activeReg.active) {
+              candidateWorker.removeEventListener('statechange', handleState);
+              resolve();
+            }
+          };
+          candidateWorker.addEventListener('statechange', handleState);
+          setTimeout(resolve, 4000);
+        });
+      }
+    }
+
+    // Brief safety tick if active worker is just finishing activation
+    if (!activeReg.active) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
 
     // 3. Obtain VAPID Public Key from environment, API or fallback
@@ -185,10 +216,24 @@ export async function registerPushSubscription(
 
     if (!subscription) {
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-      subscription = await activeReg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedVapidKey as unknown as BufferSource,
-      });
+      try {
+        subscription = await activeReg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey as unknown as BufferSource,
+        });
+      } catch (subErr: any) {
+        // If it threw 'no active Service Worker', wait for ready explicitly and retry
+        if (subErr?.message?.includes('no active Service Worker')) {
+          console.warn('Service Worker a inicializar. A aguardar ready para nova tentativa...');
+          const readyReg = await navigator.serviceWorker.ready;
+          subscription = await readyReg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidKey as unknown as BufferSource,
+          });
+        } else {
+          throw subErr;
+        }
+      }
     }
 
     // Safely extract keys
@@ -240,9 +285,13 @@ export async function registerPushSubscription(
     }
   } catch (e: any) {
     console.error('Erro ao registar subscrição Push:', e);
+    const isNoActiveWorker = e?.message?.includes('no active Service Worker');
+    const userMessage = isNoActiveWorker
+      ? 'O telemóvel ainda estava a inicializar o Service Worker. Por favor, clica novamente em Ativar Alertas.'
+      : `Erro de registo Push: ${e?.message || 'Falha desconhecida.'}`;
     return {
       success: false,
-      message: `Erro de registo Push: ${e?.message || 'Falha desconhecida.'}`,
+      message: userMessage,
     };
   }
 }
