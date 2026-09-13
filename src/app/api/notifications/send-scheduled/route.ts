@@ -204,7 +204,13 @@ async function executeScheduledSend(request: Request) {
           statusCode: err?.statusCode,
           body: err?.body,
         });
-        if (err?.statusCode === 410 || err?.statusCode === 404 || err?.statusCode === 400) {
+        if (
+          err?.statusCode === 410 ||
+          err?.statusCode === 404 ||
+          err?.statusCode === 400 ||
+          err?.message?.includes('65 bytes') ||
+          err?.message?.includes('invalid')
+        ) {
           purgedCount++;
           await purgeExpiredPushSubscription(sub.endpoint);
         }

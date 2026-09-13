@@ -1,19 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, HydrationEntry } from '@/lib/types';
 import {
   getPendingQuestionnairesStatus,
   getNotificationPermission,
-  requestNotificationPermission,
   sendMobileNotification,
-  checkAndSendPendingReminder,
   startAutomaticReminderScheduler,
   getTodayLocalDateStr,
 } from '@/lib/reminderUtils';
-import { registerPushSubscription, syncPushSubscriptionIfGranted } from '@/lib/pushSubscription';
+import {
+  registerPushSubscription,
+  syncPushSubscriptionIfGranted,
+  checkPushSubscriptionStatus,
+  PushStatusResult,
+  isIosDevice,
+  isPwaStandalone,
+} from '@/lib/pushSubscription';
 import { secureFetch } from '@/lib/authGuard';
-import { Smartphone, CheckCircle2, Bell } from 'lucide-react';
+import { Smartphone, CheckCircle2, Bell, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReminderBannerProps {
   activeAthlete: Athlete;
@@ -31,6 +36,11 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
   hydrationList,
 }) => {
   const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>('default');
+  const [pushStatus, setPushStatus] = useState<PushStatusResult | null>(null);
+  const [isEnablingPush, setIsEnablingPush] = useState<boolean>(false);
+  const [showIosHelp, setShowIosHelp] = useState<boolean>(false);
+  const [testFeedback, setTestFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+
   const [todayStr, setTodayStr] = useState<string>(getTodayLocalDateStr());
   const [refreshCounter, setRefreshCounter] = useState<number>(0);
 
@@ -57,14 +67,26 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
     hydrationList
   );
 
-  useEffect(() => {
-    const currentPerm = getNotificationPermission();
-    setPermission(currentPerm);
+  const refreshPushStatus = useCallback(async () => {
+    try {
+      const currentPerm = getNotificationPermission();
+      setPermission(currentPerm);
+      let statusRes = await checkPushSubscriptionStatus();
 
-    // Silently auto-sync Web Push subscription with server if athlete already granted permission
-    if (currentPerm === 'granted') {
-      syncPushSubscriptionIfGranted(activeAthlete.id);
+      // Silently auto-sync Web Push subscription with server if athlete already granted permission
+      if (currentPerm === 'granted' && !statusRes.isSubscribed && statusRes.supported) {
+        await syncPushSubscriptionIfGranted(activeAthlete.id);
+        statusRes = await checkPushSubscriptionStatus();
+      }
+
+      setPushStatus(statusRes);
+    } catch (e) {
+      console.warn('Erro ao verificar status push:', e);
     }
+  }, [activeAthlete.id]);
+
+  useEffect(() => {
+    refreshPushStatus();
 
     const cleanup = startAutomaticReminderScheduler(
       activeAthlete.id,
@@ -75,41 +97,49 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
     );
 
     return () => cleanup();
-  }, [activeAthlete.id, activeAthlete.name, status.isComplete, todayStr, refreshCounter]);
-
-  const [testFeedback, setTestFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  }, [activeAthlete.id, activeAthlete.name, refreshPushStatus, status.isComplete, todayStr, refreshCounter]);
 
   const handleEnableMobileNotifications = async () => {
     setTestFeedback(null);
-    const result = await registerPushSubscription(activeAthlete.id);
-    const newPerm = getNotificationPermission();
-    setPermission(newPerm);
+    setIsEnablingPush(true);
+    try {
+      const result = await registerPushSubscription(activeAthlete.id);
+      await refreshPushStatus();
 
-    if (result.success) {
-      // Also fire a test notification immediately so the user sees it working
-      sendMobileNotification(
-        '⚽ Gil Vicente FC (Futebol Feminino)',
-        'Notificações em 2º Plano Ativadas! Vais receber avisos mesmo com a app fechada.'
-      );
-      setTestFeedback({
-        type: 'success',
-        message: '🔔 Notificações em 2º plano (App Fechada) ativadas com sucesso neste dispositivo!',
-      });
-    } else {
-      setTestFeedback({
-        type: 'error',
-        message: result.message || 'Permissão não concedida. No iPad/iPhone, adiciona a app ao Ecrã Principal e aceita as Notificações.',
-      });
+      if (result.success) {
+        sendMobileNotification(
+          '⚽ Gil Vicente FC (Futebol Feminino)',
+          'Notificações em 2º Plano Ativadas! Vais receber avisos mesmo com a app fechada.',
+          'gvfc-welcome',
+          true
+        );
+        setTestFeedback({
+          type: 'success',
+          message: '🔔 Notificações em 2º plano (App Fechada) ativadas com sucesso neste telemóvel!',
+        });
+      } else {
+        setTestFeedback({
+          type: 'error',
+          message: result.message || 'Permissão não concedida. No iPhone, adiciona a app ao Ecrã Principal.',
+        });
+        if (isIosDevice() && !isPwaStandalone()) {
+          setShowIosHelp(true);
+        }
+      }
+    } finally {
+      setIsEnablingPush(false);
     }
   };
 
   const handleSendTestNotification = async () => {
     setTestFeedback(null);
 
-    // 1. Immediate local feedback
+    // 1. Immediate local feedback (forced test)
     sendMobileNotification(
       '⚽ Gil Vicente FC (Futebol Feminino)',
-      'Notificação de Teste: Tudo a postos para os teus questionários diários!'
+      'Notificação de Teste: Tudo a postos para os teus questionários diários!',
+      'test-local',
+      true
     );
 
     // 2. Trigger server-side push test to verify true background delivery
@@ -120,21 +150,21 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
         body: JSON.stringify({ athleteId: activeAthlete.id }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.sent > 0) {
         setTestFeedback({
           type: 'success',
-          message: '🔔 Notificação enviada pelo servidor com sucesso para o teu telemóvel!',
+          message: `🔔 Notificação enviada pelo servidor para o teu telemóvel (${data.sent} dispositivo(s))! Fecha a aplicação para confirmares a receção com a app fechada.`,
         });
       } else {
         setTestFeedback({
           type: 'success',
-          message: '🔔 Notificação de teste emitida no teu ecrã com sucesso!',
+          message: '🔔 Notificação emitida no teu ecrã com sucesso!',
         });
       }
     } catch {
       setTestFeedback({
         type: 'success',
-        message: '🔔 Notificação de teste emitida no teu ecrã com sucesso!',
+        message: '🔔 Notificação emitida no teu ecrã com sucesso!',
       });
     }
   };
@@ -146,33 +176,86 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
           Estado dos Questionários de Hoje ({todayStr})
         </span>
 
-        {permission === 'granted' ? (
+        {pushStatus?.isSubscribed ? (
           <div className="flex items-center space-x-1.5 shrink-0">
-            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30">
+            <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
               <CheckCircle2 className="h-3 w-3" />
               <span>2º Plano Ativo</span>
             </span>
             <button
               type="button"
               onClick={handleSendTestNotification}
-              title="Enviar notificação de teste para o teu dispositivo"
-              className="flex items-center space-x-1 font-extrabold text-emerald-400 hover:text-emerald-300 transition-all active:scale-95 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30"
+              title="Enviar notificação de teste para este telemóvel"
+              className="flex items-center space-x-1 font-extrabold text-emerald-400 hover:text-emerald-300 transition-all active:scale-95 bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-500/30 text-[10px]"
             >
               <Smartphone className="h-3 w-3" />
-              <span>Testar Notificação</span>
+              <span>Testar</span>
             </button>
           </div>
-        ) : permission !== 'unsupported' ? (
+        ) : pushStatus?.reason === 'ios_safari_needs_pwa' ? (
+          <button
+            type="button"
+            onClick={() => setShowIosHelp((prev) => !prev)}
+            className="flex items-center space-x-1 font-extrabold text-indigo-300 hover:text-indigo-200 transition-all active:scale-95 bg-indigo-950/60 px-2.5 py-0.5 rounded-full border border-indigo-500/40 shadow-sm shrink-0 text-[10px]"
+          >
+            <Smartphone className="h-3 w-3 text-indigo-400" />
+            <span>Instalar no iPhone</span>
+            {showIosHelp ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+          </button>
+        ) : pushStatus?.permission === 'denied' ? (
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold text-rose-400 bg-rose-950/40 px-2 py-0.5 rounded-full border border-rose-500/30">
+            <span>Alertas Bloqueados</span>
+          </span>
+        ) : pushStatus?.supported ? (
           <button
             type="button"
             onClick={handleEnableMobileNotifications}
-            className="flex items-center space-x-1 font-extrabold text-amber-300 hover:text-amber-200 transition-all active:scale-95 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-sm shrink-0"
+            disabled={isEnablingPush}
+            className="flex items-center space-x-1 font-extrabold text-amber-300 hover:text-amber-200 transition-all active:scale-95 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/40 shadow-sm shrink-0 text-[10px]"
           >
             <Bell className="h-3 w-3 animate-pulse text-amber-300" />
-            <span>Ativar Alertas (2º Plano)</span>
+            <span>{isEnablingPush ? 'A Ativar...' : 'Ativar Alertas (2º Plano)'}</span>
           </button>
         ) : null}
       </div>
+
+      {/* iOS Safari PWA Installation Instructions Banner */}
+      {(pushStatus?.reason === 'ios_safari_needs_pwa' || showIosHelp) && (
+        <div className="p-3 bg-gradient-to-br from-indigo-950/80 via-slate-900 to-indigo-950/80 border border-indigo-500/40 rounded-xl text-xs space-y-2 animate-fade-in shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 font-black text-indigo-300 text-xs">
+              <Smartphone className="w-4 h-4 text-indigo-400 shrink-0" />
+              <span>Como ativar notificações com a app fechada no iPhone / iPad</span>
+            </div>
+            {pushStatus?.reason !== 'ios_safari_needs_pwa' && (
+              <button
+                type="button"
+                onClick={() => setShowIosHelp(false)}
+                className="text-slate-400 hover:text-slate-200 text-xs px-1"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+          <p className="text-slate-300 leading-relaxed text-[11px]">
+            No sistema iOS da Apple, as notificações com a <strong>aplicação fechada</strong> (Push em 2º plano) exigem que a app esteja adicionada ao Ecrã Principal:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px]">
+            <div className="flex items-start gap-2 bg-slate-900/90 p-2 rounded-lg border border-indigo-500/30">
+              <span className="w-5 h-5 rounded-full bg-indigo-500/30 text-indigo-300 flex items-center justify-center font-bold shrink-0 text-[10px] mt-0.5">1</span>
+              <span className="text-slate-200 leading-snug">No Safari, toca no botão <strong>Partilhar</strong> (quadrado com seta ⎋)</span>
+            </div>
+            <div className="flex items-start gap-2 bg-slate-900/90 p-2 rounded-lg border border-indigo-500/30">
+              <span className="w-5 h-5 rounded-full bg-indigo-500/30 text-indigo-300 flex items-center justify-center font-bold shrink-0 text-[10px] mt-0.5">2</span>
+              <span className="text-slate-200 leading-snug">Desce e escolhe <strong>Adicionar ao Ecrã Principal</strong></span>
+            </div>
+            <div className="flex items-start gap-2 bg-slate-900/90 p-2 rounded-lg border border-indigo-500/30">
+              <span className="w-5 h-5 rounded-full bg-indigo-500/30 text-indigo-300 flex items-center justify-center font-bold shrink-0 text-[10px] mt-0.5">3</span>
+              <span className="text-slate-200 leading-snug">Abre a app pelo ícone no teu ecrã e clica em <strong>Ativar Alertas</strong>!</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {testFeedback && (
         <div

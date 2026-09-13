@@ -77,7 +77,13 @@ export async function POST(request: Request) {
           sentCount++;
         } catch (err: any) {
           failedCount++;
-          if (err?.statusCode === 410 || err?.statusCode === 404 || err?.statusCode === 400) {
+          if (
+            err?.statusCode === 410 ||
+            err?.statusCode === 404 ||
+            err?.statusCode === 400 ||
+            err?.message?.includes('65 bytes') ||
+            err?.message?.includes('invalid')
+          ) {
             purgedCount++;
             await purgeExpiredPushSubscription(sub.endpoint);
           }

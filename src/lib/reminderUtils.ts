@@ -61,10 +61,16 @@ export interface NotificationResult {
 export async function sendMobileNotification(
   title: string,
   body: string,
-  tag: string = 'femperf-reminder'
+  tag: string = 'femperf-reminder',
+  forceEvenIfVisible: boolean = false
 ): Promise<NotificationResult> {
   if (typeof window === 'undefined') {
     return { success: false, reason: 'Ambiente de servidor sem janela disponível.' };
+  }
+
+  // If user is already actively viewing the application, do not spam them with OS popups unless explicitly requested (e.g. test button)
+  if (!forceEvenIfVisible && typeof document !== 'undefined' && document.visibilityState === 'visible') {
+    return { success: false, reason: 'Aplicação aberta e visível no ecrã.' };
   }
 
   if (!('Notification' in window)) {
@@ -245,14 +251,13 @@ export function checkAndSendPendingReminder(
     }
   }
 
+  // Record cooldown immediately to prevent concurrent calls from re-entering
+  localStorage.setItem(LAST_NOTIFICATION_TIMESTAMP_KEY, now.toString());
+
   const title = `⚽ Gil Vicente FC • Olá ${athleteName.split(' ')[0]}!`;
   const body = `Tens ${status.pendingCount} questionário(s) por responder hoje: ${status.missingNames.join(', ')}. Clica para responder.`;
 
-  sendMobileNotification(title, body, `femperf-pending-${dateStr}`).then((sent) => {
-    if (sent) {
-      localStorage.setItem(LAST_NOTIFICATION_TIMESTAMP_KEY, now.toString());
-    }
-  });
+  sendMobileNotification(title, body, `femperf-pending-${dateStr}`);
 }
 
 // AUTOMATIC SCHEDULED REMINDERS

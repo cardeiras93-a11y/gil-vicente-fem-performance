@@ -14,25 +14,55 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
+export function isIosDevice(): boolean {
+  if (typeof window === 'undefined') return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+}
+
+export function isPwaStandalone(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    (window.navigator as any).standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches
+  );
+}
+
 export interface PushStatusResult {
   supported: boolean;
   permission: NotificationPermission | 'unsupported';
   isSubscribed: boolean;
-  reason?: string;
+  reason?: 'ios_safari_needs_pwa' | 'unsupported_browser' | string;
 }
 
 // Check device support, notification permission, and active push subscription
 export async function checkPushSubscriptionStatus(): Promise<PushStatusResult> {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+  if (typeof window === 'undefined') {
+    return { supported: false, permission: 'unsupported', isSubscribed: false };
+  }
+
+  const isIos = isIosDevice();
+  const isStandalone = isPwaStandalone();
+
+  // On iOS, Apple specifically blocks PushManager in Safari unless installed to Home Screen (PWA)
+  if (isIos && !isStandalone) {
+    return {
+      supported: false,
+      permission: typeof Notification !== 'undefined' ? Notification.permission : 'default',
+      isSubscribed: false,
+      reason: 'ios_safari_needs_pwa',
+    };
+  }
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
     return {
       supported: false,
       permission: 'unsupported',
       isSubscribed: false,
-      reason: 'Push notifications não são suportadas neste navegador/dispositivo. No iPhone/iPad, adiciona a App ao Ecrã Principal (PWA).',
+      reason: 'unsupported_browser',
     };
   }
 
-  const permission = Notification.permission;
+  const permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
   if (permission !== 'granted') {
     return {
       supported: true,
@@ -42,7 +72,15 @@ export async function checkPushSubscriptionStatus(): Promise<PushStatusResult> {
   }
 
   try {
-    const reg = await navigator.serviceWorker.ready;
+    const reg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), 1500)),
+    ]);
+
+    if (!reg) {
+      return { supported: true, permission: 'granted', isSubscribed: false };
+    }
+
     const sub = await reg.pushManager.getSubscription();
     return {
       supported: true,
@@ -61,25 +99,42 @@ export async function checkPushSubscriptionStatus(): Promise<PushStatusResult> {
 const FALLBACK_VAPID_PUBLIC_KEY = 'BLElYRBRZOvn96NJTP6DiDf4EFwoTfUVmp-ASsFIBK1JSxRedoD8jGaafLIrRNenS6_ltU5bnwTVMzNDIHM8SpQ';
 
 // Register Web Push subscription on device and send to backend
-export async function registerPushSubscription(athleteId?: string): Promise<{ success: boolean; message?: string }> {
-  if (typeof window === 'undefined' || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+export async function registerPushSubscription(
+  athleteId?: string,
+  forceRenew: boolean = false
+): Promise<{ success: boolean; message?: string }> {
+  if (typeof window === 'undefined') {
+    return { success: false, message: 'Ambiente de servidor.' };
+  }
+
+  const isIos = isIosDevice();
+  const isStandalone = isPwaStandalone();
+
+  if (isIos && !isStandalone) {
     return {
       success: false,
-      message: 'Notificações Push não suportadas. No iPhone/iPad, abre o Safari e escolhe "Adicionar ao Ecrã Principal".',
+      message: 'No iPhone/iPad, para receberes avisos com a app fechada toca em Partilhar ➔ "Adicionar ao Ecrã Principal" e abre a app por aí.',
+    };
+  }
+
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    return {
+      success: false,
+      message: 'Notificações Push não suportadas neste navegador.',
     };
   }
 
   try {
     // 1. Request notification permission
-    let permission = Notification.permission;
-    if (permission === 'default') {
+    let permission = typeof Notification !== 'undefined' ? Notification.permission : 'default';
+    if (permission === 'default' && typeof Notification !== 'undefined') {
       permission = await Notification.requestPermission();
     }
     
     if (permission !== 'granted') {
       return {
         success: false,
-        message: 'Permissão de notificações não concedida. Ativa as notificações nas definições do teu telemóvel.',
+        message: 'Permissão de notificações não concedida. Ativa as notificações nas definições do telemóvel.',
       };
     }
 
@@ -88,7 +143,18 @@ export async function registerPushSubscription(athleteId?: string): Promise<{ su
     if (!reg) {
       reg = await navigator.serviceWorker.register('/sw.js');
     }
-    await navigator.serviceWorker.ready;
+    
+    const readyReg = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise<ServiceWorkerRegistration | undefined>((resolve) =>
+        setTimeout(() => resolve(reg || undefined), 2000)
+      ),
+    ]);
+
+    const activeReg = readyReg || reg;
+    if (!activeReg) {
+      return { success: false, message: 'Falha ao inicializar o Service Worker.' };
+    }
 
     // 3. Obtain VAPID Public Key from environment, API or fallback
     let vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -107,13 +173,42 @@ export async function registerPushSubscription(athleteId?: string): Promise<{ su
     }
 
     // 4. Get existing subscription or create a new one
-    let subscription = await reg.pushManager.getSubscription();
+    let subscription = await activeReg.pushManager.getSubscription();
+    if (subscription && forceRenew) {
+      try {
+        await subscription.unsubscribe();
+        subscription = null;
+      } catch (unsubErr) {
+        console.warn('Erro ao renovar subscrição existente:', unsubErr);
+      }
+    }
+
     if (!subscription) {
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
-      subscription = await reg.pushManager.subscribe({
+      subscription = await activeReg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedVapidKey as unknown as BufferSource,
       });
+    }
+
+    // Safely extract keys
+    const rawJson = subscription.toJSON();
+    let p256dh = rawJson.keys?.p256dh;
+    let auth = rawJson.keys?.auth;
+
+    if (!p256dh && subscription.getKey) {
+      const rawKey = subscription.getKey('p256dh');
+      if (rawKey) {
+        p256dh = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(rawKey))))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
+    }
+    if (!auth && subscription.getKey) {
+      const rawAuth = subscription.getKey('auth');
+      if (rawAuth) {
+        auth = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(rawAuth))))
+          .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
     }
 
     // 5. Send subscription JSON payload to backend API with athleteId
@@ -121,7 +216,13 @@ export async function registerPushSubscription(athleteId?: string): Promise<{ su
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        subscription: subscription.toJSON(),
+        subscription: {
+          endpoint: subscription.endpoint,
+          keys: {
+            p256dh,
+            auth,
+          },
+        },
         athleteId: athleteId || null,
         userAgent: navigator.userAgent,
       }),
@@ -149,15 +250,18 @@ export async function registerPushSubscription(athleteId?: string): Promise<{ su
 // Silently ensure push subscription is registered and synchronized with backend if permission is already granted
 export async function syncPushSubscriptionIfGranted(athleteId?: string): Promise<boolean> {
   if (typeof window === 'undefined') return false;
+  const isIos = isIosDevice();
+  const isStandalone = isPwaStandalone();
+  if (isIos && !isStandalone) return false;
+
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return false;
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
 
   try {
-    const res = await registerPushSubscription(athleteId);
+    const res = await registerPushSubscription(athleteId, false);
     return res.success;
   } catch (err) {
     console.warn('Erro ao sincronizar subscrição silenciosa:', err);
     return false;
   }
 }
-
