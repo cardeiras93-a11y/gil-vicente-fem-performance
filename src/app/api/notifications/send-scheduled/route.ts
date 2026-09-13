@@ -165,6 +165,8 @@ async function executeScheduledSend(request: Request) {
   let failedCount = 0;
   let purgedCount = 0;
 
+  const errorDetails: any[] = [];
+
   await Promise.allSettled(
     subscriptions.map(async (sub) => {
       // If athlete already completed this questionnaire today, don't disturb her!
@@ -195,6 +197,13 @@ async function executeScheduledSend(request: Request) {
         sentCount++;
       } catch (err: any) {
         failedCount++;
+        errorDetails.push({
+          athleteId: sub.athleteId,
+          endpoint: sub.endpoint ? sub.endpoint.substring(0, 40) + '...' : null,
+          message: err?.message,
+          statusCode: err?.statusCode,
+          body: err?.body,
+        });
         if (err?.statusCode === 410 || err?.statusCode === 404 || err?.statusCode === 400) {
           purgedCount++;
           await purgeExpiredPushSubscription(sub.endpoint);
@@ -210,6 +219,7 @@ async function executeScheduledSend(request: Request) {
     skippedAlreadyCompleted: skippedAlreadyDoneCount,
     failed: failedCount,
     purged: purgedCount,
+    errors: errorDetails,
     totalSubscriptions: subscriptions.length,
     portugalTime: portugalTimeStr,
     timestamp: new Date().toISOString(),

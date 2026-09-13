@@ -66,17 +66,6 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
       syncPushSubscriptionIfGranted(activeAthlete.id);
     }
 
-    if (currentPerm === 'granted' && !status.isComplete) {
-      checkAndSendPendingReminder(
-        activeAthlete.id,
-        activeAthlete.name,
-        todayStr,
-        wellnessList,
-        rpeList,
-        hydrationList
-      );
-    }
-
     const cleanup = startAutomaticReminderScheduler(
       activeAthlete.id,
       activeAthlete.name,
