@@ -171,10 +171,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
   const [reminderConfig, setReminderConfig] = useState<ReminderConfig>(getStoredReminderConfig());
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [broadcastMessage, setBroadcastMessage] = useState<string | null>(null);
+  const [activeSubscribers, setActiveSubscribers] = useState<any[]>([]);
+  const [isLoadingSubscribers, setIsLoadingSubscribers] = useState<boolean>(false);
+
+  const fetchActiveSubscribers = async () => {
+    setIsLoadingSubscribers(true);
+    try {
+      const res = await secureFetch('/api/notifications/subscribe');
+      const data = await res.json();
+      if (data.subscriptions) {
+        setActiveSubscribers(data.subscriptions);
+      }
+    } catch {} finally {
+      setIsLoadingSubscribers(false);
+    }
+  };
 
   useEffect(() => {
     setNotifPermission(getNotificationPermission());
-  }, [isOpen]);
+    if (isOpen && isAuthenticated) {
+      fetchActiveSubscribers();
+    }
+  }, [isOpen, isAuthenticated]);
 
   const handleUpdateReminderConfig = (updated: Partial<ReminderConfig>) => {
     const newCfg = { ...reminderConfig, ...updated };
@@ -2244,6 +2262,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose 
                 >
                   {reminderConfig.enabled ? '🟢 Automático Ativo' : '⚪ Desativado'}
                 </button>
+              </div>
+
+              {/* Active Push Subscribers Live Card */}
+              <div className="bg-slate-900/80 p-3.5 rounded-xl border border-indigo-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Smartphone className="h-4 w-4 text-indigo-400" />
+                    <span className="text-xs font-black text-slate-200">
+                      Dispositivos com Notificações Ativas em 2º Plano ({activeSubscribers.length})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={fetchActiveSubscribers}
+                    disabled={isLoadingSubscribers}
+                    className="flex items-center space-x-1 text-[10px] font-bold text-indigo-300 hover:text-indigo-200 bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-500/30 transition-all active:scale-95"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${isLoadingSubscribers ? 'animate-spin' : ''}`} />
+                    <span>Atualizar</span>
+                  </button>
+                </div>
+
+                {activeSubscribers.length === 0 ? (
+                  <p className="text-[11px] text-slate-400">
+                    Nenhum dispositivo registado de momento. As jogadoras só precisam de abrir a app e tocar em &quot;Ativar Alertas em 2º Plano&quot;.
+                  </p>
+                ) : (
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex flex-wrap gap-1.5">
+                      {activeSubscribers.map((sub, idx) => {
+                        const athlete = athletesList.find((a) => a.id === sub.athleteId);
+                        const name = athlete ? athlete.name : (sub.athleteId || 'Dispositivo Desconhecido');
+                        const isIos = sub.userAgent && /iPhone|iPad|iPod/.test(sub.userAgent);
+                        const isAndroid = sub.userAgent && /Android/.test(sub.userAgent);
+                        const deviceType = isIos ? 'iPhone' : isAndroid ? 'Android' : 'PC/Mac';
+
+                        return (
+                          <span
+                            key={sub.id || idx}
+                            className="inline-flex items-center gap-1.5 text-[11px] font-extrabold bg-indigo-950/80 text-indigo-200 border border-indigo-500/40 px-2.5 py-1 rounded-lg shadow-sm"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                            <span>{name}</span>
+                            <span className="text-[9px] font-bold text-indigo-400/80 bg-indigo-900/60 px-1 py-0.2 rounded border border-indigo-700/40">
+                              {deviceType}
+                            </span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
