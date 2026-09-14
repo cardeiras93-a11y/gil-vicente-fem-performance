@@ -20,7 +20,7 @@ import {
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
-  Download, FileSpreadsheet, FileText, Bell, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy
+  Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -201,6 +201,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   const [reminderConfig, setReminderConfig] = useState<ReminderConfig>(getStoredReminderConfig());
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [broadcastMessage, setBroadcastMessage] = useState<string | null>(null);
+  const [isSendingBroadcast, setIsSendingBroadcast] = useState<boolean>(false);
+  const [forceBroadcast, setForceBroadcast] = useState<boolean>(false);
   const [activeSubscribers, setActiveSubscribers] = useState<any[]>([]);
   const [isLoadingSubscribers, setIsLoadingSubscribers] = useState<boolean>(false);
 
@@ -266,16 +268,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     saveReminderConfig(newCfg);
   };
 
-  const handleSendBroadcastReminder = async (slot: string = 'all', force: boolean = false) => {
+  const handleSendBroadcastReminder = async (slot: string = 'all', force?: boolean) => {
+    const shouldForce = force !== undefined ? force : forceBroadcast;
+    setIsSendingBroadcast(true);
     try {
-      const url = slot === 'all'
-        ? `/api/notifications/test-send${force ? '?force=true' : ''}`
-        : `/api/notifications/send-scheduled?slot=${slot}${force ? '&force=true' : ''}`;
+      const url = `/api/notifications/send-scheduled?slot=${slot}${shouldForce ? '&force=true' : ''}`;
       const res = await secureFetch(url, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setBroadcastMessage(
-          `📢 Push (${data.category || 'Geral'}) enviado! ${data.sent} entregue(s)${
+          `📢 Push (${data.category || 'Todos'}) enviado com sucesso! ${data.sent} entregue(s)${
             data.skippedAlreadyCompleted ? ` • ${data.skippedAlreadyCompleted} ignorado(s) por já terem respondido hoje` : ''
           }${data.failed ? ` • ${data.failed} falha(s)` : ''}.`
         );
@@ -284,6 +286,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       }
     } catch (e: any) {
       setBroadcastMessage(`⚠️ Erro ao enviar Push: ${e?.message || 'Falha no servidor.'}`);
+    } finally {
+      setIsSendingBroadcast(false);
     }
     loadAllPins();
     setTimeout(() => setBroadcastMessage(null), 6000);
@@ -2433,40 +2437,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 </div>
               </div>
 
-              {/* Quick Manual Push Triggers per Category */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-800">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                  Disparo Manual Imediato por Categoria (Ignora atletas que já responderam hoje):
-                </span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleSendBroadcastReminder('wellness')}
-                    className="py-2 px-2.5 rounded-xl border border-lime-500/30 bg-lime-950/30 text-lime-300 text-[11px] font-black hover:bg-lime-900/40 transition-all active:scale-95 text-center shadow-sm"
-                  >
-                    🔔 Push Wellness ({reminderConfig.wellnessTime})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendBroadcastReminder('preHydration')}
-                    className="py-2 px-2.5 rounded-xl border border-sky-500/30 bg-sky-950/30 text-sky-300 text-[11px] font-black hover:bg-sky-900/40 transition-all active:scale-95 text-center shadow-sm"
-                  >
-                    🔔 Push Pré-Treino ({reminderConfig.preHydrationTime})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendBroadcastReminder('postHydration')}
-                    className="py-2 px-2.5 rounded-xl border border-indigo-500/30 bg-indigo-950/30 text-indigo-300 text-[11px] font-black hover:bg-indigo-900/40 transition-all active:scale-95 text-center shadow-sm"
-                  >
-                    🔔 Push Pós-Treino ({reminderConfig.postHydrationTime})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleSendBroadcastReminder('rpe')}
-                    className="py-2 px-2.5 rounded-xl border border-amber-500/30 bg-amber-950/30 text-amber-300 text-[11px] font-black hover:bg-amber-900/40 transition-all active:scale-95 text-center shadow-sm"
-                  >
-                    🔔 Push PSE ({reminderConfig.rpeTime})
-                  </button>
+              {/* Quick Manual Push Triggers */}
+              <div className="space-y-3 pt-3 border-t border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-black text-slate-200 flex items-center space-x-1.5">
+                    <BellRing className="h-4 w-4 text-red-400 animate-pulse" />
+                    <span>Disparo Manual Imediato de Notificações</span>
+                  </span>
+                  <label className="inline-flex items-center space-x-2 cursor-pointer select-none bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={forceBroadcast}
+                      onChange={(e) => setForceBroadcast(e.target.checked)}
+                      className="rounded border-slate-700 bg-slate-800 text-red-600 focus:ring-red-500 h-3.5 w-3.5 cursor-pointer"
+                    />
+                    <span className="text-[11px] font-bold text-slate-300">
+                      Forçar envio (mesmo a quem já respondeu)
+                    </span>
+                  </label>
+                </div>
+
+                {/* BOTÃO PRINCIPAL DE DESTAQUE: ENVIAR PARA TODOS OS QUESTIONÁRIOS */}
+                <button
+                  type="button"
+                  onClick={() => handleSendBroadcastReminder('all')}
+                  disabled={isSendingBroadcast}
+                  className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:via-rose-500 hover:to-red-600 text-white font-black text-xs sm:text-sm tracking-wide shadow-xl shadow-red-950/50 active:scale-[0.99] transition-all flex items-center justify-center space-x-2.5 border border-red-400/40 disabled:opacity-50 cursor-pointer"
+                >
+                  <Send className={`h-4 w-4 ${isSendingBroadcast ? 'animate-spin' : ''}`} />
+                  <span>
+                    {isSendingBroadcast
+                      ? 'A ENVIAR NOTIFICAÇÕES A TODAS AS JOGADORAS...'
+                      : '📢 ENVIAR NOTIFICAÇÃO PARA TODOS OS QUESTIONÁRIOS'}
+                  </span>
+                </button>
+
+                {/* Botões Individuais por Categoria */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
+                    Ou enviar lembrete individual por questionário:
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    <button
+                      type="button"
+                      disabled={isSendingBroadcast}
+                      onClick={() => handleSendBroadcastReminder('wellness')}
+                      className="py-2.5 px-2.5 rounded-xl border border-lime-500/40 bg-lime-950/40 text-lime-300 text-[11px] font-black hover:bg-lime-900/50 transition-all active:scale-95 text-center shadow-sm disabled:opacity-50"
+                    >
+                      🔔 Push Wellness ({reminderConfig.wellnessTime})
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSendingBroadcast}
+                      onClick={() => handleSendBroadcastReminder('preHydration')}
+                      className="py-2.5 px-2.5 rounded-xl border border-sky-500/40 bg-sky-950/40 text-sky-300 text-[11px] font-black hover:bg-sky-900/50 transition-all active:scale-95 text-center shadow-sm disabled:opacity-50"
+                    >
+                      🔔 Push Pré-Treino ({reminderConfig.preHydrationTime})
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSendingBroadcast}
+                      onClick={() => handleSendBroadcastReminder('postHydration')}
+                      className="py-2.5 px-2.5 rounded-xl border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 text-[11px] font-black hover:bg-indigo-900/50 transition-all active:scale-95 text-center shadow-sm disabled:opacity-50"
+                    >
+                      🔔 Push Pós-Treino ({reminderConfig.postHydrationTime})
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSendingBroadcast}
+                      onClick={() => handleSendBroadcastReminder('rpe')}
+                      className="py-2.5 px-2.5 rounded-xl border border-amber-500/40 bg-amber-950/40 text-amber-300 text-[11px] font-black hover:bg-amber-900/50 transition-all active:scale-95 text-center shadow-sm disabled:opacity-50"
+                    >
+                      🔔 Push PSE ({reminderConfig.rpeTime})
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

@@ -153,9 +153,9 @@ async function executeScheduledSend(request: Request) {
     activeTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
     activeBody = 'Olá! Está na hora de registares a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
   } else if (forcedSlot === 'all') {
-    activeCategory = 'Geral';
-    activeTitle = '⚽ Gil Vicente FC • Lembrete de Treino';
-    activeBody = 'Olá! Não te esqueças de preencher o teu questionário diário na aplicação!';
+    activeCategory = 'Todos os Questionários';
+    activeTitle = '⚽ Gil Vicente FC • Questionários Diários';
+    activeBody = 'Olá! Lembra-te de responder aos teus questionários e registos de hoje na app.';
   }
 
   if (!activeCategory) {
@@ -258,7 +258,31 @@ async function executeScheduledSend(request: Request) {
             athleteTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
             athleteBody = 'Olá! Lembra-te de registar a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
           }
+        } else if (activeCategory === 'Todos os Questionários' || activeCategory === 'Geral') {
+          const hasWellness = sub.athleteId ? completedWellnessAthleteIds.has(sub.athleteId) : false;
+          const hasPreWeight = sub.athleteId ? completedPreHydrationAthleteIds.has(sub.athleteId) : false;
+          const hasPostWeight = sub.athleteId ? completedPostHydrationAthleteIds.has(sub.athleteId) : false;
+          const hasRpe = sub.athleteId ? completedRpeAthleteIds.has(sub.athleteId) : false;
+
+          const missing: string[] = [];
+          if (!hasWellness) missing.push('Wellness');
+          if (!hasPreWeight) missing.push('Pesagem Pré');
+          if (!hasPostWeight) missing.push('Pesagem Pós');
+          if (!hasRpe) missing.push('PSE');
+
+          if (missing.length === 0) {
+            skippedAlreadyDoneCount++;
+            return;
+          }
+
+          athleteTitle = '⚽ Gil Vicente FC • Questionários Diários';
+          athleteBody = `Tens ${missing.length} registo(s) pendente(s) hoje: ${missing.join(', ')}. Clica para responder!`;
         }
+      }
+
+      if (forceSend && (activeCategory === 'Todos os Questionários' || activeCategory === 'Geral')) {
+        athleteTitle = '⚽ Gil Vicente FC • Questionários Diários';
+        athleteBody = 'Olá! Lembra-te de manter todos os teus questionários e pesagens em dia na app!';
       }
 
       const pushSubscription = {
