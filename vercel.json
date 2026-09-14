@@ -11,6 +11,14 @@
     {
       "path": "/api/notifications/send-scheduled?slot=postTraining",
       "schedule": "30 9 * * *"
+    },
+    {
+      "path": "/api/notifications/send-scheduled?slot=postTraining",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/notifications/send-scheduled?slot=postTraining",
+      "schedule": "30 10 * * *"
     }
   ]
 }

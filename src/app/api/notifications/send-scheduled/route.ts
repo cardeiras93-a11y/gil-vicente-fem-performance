@@ -16,7 +16,7 @@ function initVapid() {
   return false;
 }
 
-function getStoredReminderConfig(): any {
+async function getStoredReminderConfig(): Promise<any> {
   const defaultConfig = {
     enabled: true,
     wellnessTime: '06:00',
@@ -24,6 +24,40 @@ function getStoredReminderConfig(): any {
     preHydrationTime: '08:00',
     postHydrationTime: '10:30',
   };
+
+  try {
+    const { supabase, isSupabaseConfigured } = await import('@/lib/supabase');
+    if (isSupabaseConfigured && supabase) {
+      // 1. Try reading __APP_CREDENTIALS__ from athletes table
+      try {
+        const { data: athData } = await supabase
+          .from('athletes')
+          .select('name')
+          .eq('id', '__APP_CREDENTIALS__')
+          .single();
+        if (athData?.name) {
+          const parsed = JSON.parse(athData.name);
+          if (parsed.reminderConfig) {
+            return { ...defaultConfig, ...parsed.reminderConfig };
+          }
+        }
+      } catch {}
+
+      // 2. Try reading app_credentials table
+      try {
+        const { data: credData } = await supabase
+          .from('app_credentials')
+          .select('value')
+          .eq('key', 'reminder_config')
+          .single();
+        if (credData?.value) {
+          return { ...defaultConfig, ...credData.value };
+        }
+      } catch {}
+    }
+  } catch (e) {
+    console.warn('Erro ao ler reminderConfig da cloud:', e);
+  }
 
   try {
     const dataDir = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
@@ -71,7 +105,7 @@ async function executeScheduledSend(request: Request) {
     );
   }
 
-  const config = getStoredReminderConfig();
+  const config = await getStoredReminderConfig();
   if (!config.enabled) {
     return NextResponse.json({
       success: true,
@@ -88,6 +122,7 @@ async function executeScheduledSend(request: Request) {
   });
 
   const forcedSlot = searchParams.get('slot'); // e.g. ?slot=wellness | ?slot=preHydration | ?slot=postHydration | ?slot=rpe | ?slot=postTraining | ?slot=all
+  const forceSend = searchParams.get('force') === 'true' || searchParams.get('force') === '1';
 
   let activeTitle = '';
   let activeBody = '';
@@ -105,11 +140,11 @@ async function executeScheduledSend(request: Request) {
     activeCategory = 'Pesagem Pré-Treino';
     activeTitle = '⚽ Gil Vicente FC • Pesagem Pré-Treino';
     activeBody = 'Lembrete: Entra na app e regista a tua pesagem pré-treino de hoje.';
-  } else if (forcedSlot === 'postHydration') {
+  } else if (forcedSlot === 'postHydration' || (!forcedSlot && matchesSlotTime(portugalTimeStr, config.postHydrationTime))) {
     activeCategory = 'Pesagem Pós-Treino';
     activeTitle = '⚽ Gil Vicente FC • Pesagem Pós-Treino';
     activeBody = 'Lembrete: Entra na app e regista a tua pesagem pós-treino de hoje.';
-  } else if (forcedSlot === 'rpe') {
+  } else if (forcedSlot === 'rpe' || (!forcedSlot && matchesSlotTime(portugalTimeStr, config.rpeTime))) {
     activeCategory = 'PSE (RPE Pós-Treino)';
     activeTitle = '⚽ Gil Vicente FC • Lembrete PSE (RPE)';
     activeBody = 'Está na hora de preencheres o teu registo de Perceção Subjetiva do Esforço (RPE).';
@@ -185,42 +220,44 @@ async function executeScheduledSend(request: Request) {
       let athleteTitle = activeTitle;
       let athleteBody = activeBody;
 
-      if (activeCategory === 'Wellness') {
-        if (sub.athleteId && completedWellnessAthleteIds.has(sub.athleteId)) {
-          skippedAlreadyDoneCount++;
-          return;
-        }
-      } else if (activeCategory === 'Pesagem Pré-Treino') {
-        if (sub.athleteId && completedPreHydrationAthleteIds.has(sub.athleteId)) {
-          skippedAlreadyDoneCount++;
-          return;
-        }
-      } else if (activeCategory === 'Pesagem Pós-Treino') {
-        if (sub.athleteId && completedPostHydrationAthleteIds.has(sub.athleteId)) {
-          skippedAlreadyDoneCount++;
-          return;
-        }
-      } else if (activeCategory === 'PSE (RPE Pós-Treino)') {
-        if (sub.athleteId && completedRpeAthleteIds.has(sub.athleteId)) {
-          skippedAlreadyDoneCount++;
-          return;
-        }
-      } else if (activeCategory === 'Pós-Treino') {
-        const hasPostWeight = sub.athleteId ? completedPostHydrationAthleteIds.has(sub.athleteId) : false;
-        const hasRpe = sub.athleteId ? completedRpeAthleteIds.has(sub.athleteId) : false;
+      if (!forceSend) {
+        if (activeCategory === 'Wellness') {
+          if (sub.athleteId && completedWellnessAthleteIds.has(sub.athleteId)) {
+            skippedAlreadyDoneCount++;
+            return;
+          }
+        } else if (activeCategory === 'Pesagem Pré-Treino') {
+          if (sub.athleteId && completedPreHydrationAthleteIds.has(sub.athleteId)) {
+            skippedAlreadyDoneCount++;
+            return;
+          }
+        } else if (activeCategory === 'Pesagem Pós-Treino') {
+          if (sub.athleteId && completedPostHydrationAthleteIds.has(sub.athleteId)) {
+            skippedAlreadyDoneCount++;
+            return;
+          }
+        } else if (activeCategory === 'PSE (RPE Pós-Treino)') {
+          if (sub.athleteId && completedRpeAthleteIds.has(sub.athleteId)) {
+            skippedAlreadyDoneCount++;
+            return;
+          }
+        } else if (activeCategory === 'Pós-Treino') {
+          const hasPostWeight = sub.athleteId ? completedPostHydrationAthleteIds.has(sub.athleteId) : false;
+          const hasRpe = sub.athleteId ? completedRpeAthleteIds.has(sub.athleteId) : false;
 
-        if (hasPostWeight && hasRpe) {
-          skippedAlreadyDoneCount++;
-          return;
-        } else if (hasPostWeight && !hasRpe) {
-          athleteTitle = '⚽ Gil Vicente FC • Lembrete PSE (RPE)';
-          athleteBody = 'Olá! Lembra-te de preencher o teu registo de PSE (RPE) do treino de hoje.';
-        } else if (!hasPostWeight && hasRpe) {
-          athleteTitle = '⚽ Gil Vicente FC • Pesagem Pós-Treino';
-          athleteBody = 'Olá! Lembra-te de registar a tua pesagem pós-treino de hoje.';
-        } else {
-          athleteTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
-          athleteBody = 'Olá! Lembra-te de registar a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
+          if (hasPostWeight && hasRpe) {
+            skippedAlreadyDoneCount++;
+            return;
+          } else if (hasPostWeight && !hasRpe) {
+            athleteTitle = '⚽ Gil Vicente FC • Lembrete PSE (RPE)';
+            athleteBody = 'Olá! Lembra-te de preencher o teu registo de PSE (RPE) do treino de hoje.';
+          } else if (!hasPostWeight && hasRpe) {
+            athleteTitle = '⚽ Gil Vicente FC • Pesagem Pós-Treino';
+            athleteBody = 'Olá! Lembra-te de registar a tua pesagem pós-treino de hoje.';
+          } else {
+            athleteTitle = '⚽ Gil Vicente FC • Registo Pós-Treino';
+            athleteBody = 'Olá! Lembra-te de registar a tua Pesagem Pós-Treino e o teu PSE (RPE) de hoje.';
+          }
         }
       }
 

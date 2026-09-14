@@ -266,18 +266,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     saveReminderConfig(newCfg);
   };
 
-  const handleSendBroadcastReminder = async (slot: string = 'all') => {
+  const handleSendBroadcastReminder = async (slot: string = 'all', force: boolean = false) => {
     try {
       const url = slot === 'all'
-        ? '/api/notifications/test-send'
-        : `/api/notifications/send-scheduled?slot=${slot}`;
+        ? `/api/notifications/test-send${force ? '?force=true' : ''}`
+        : `/api/notifications/send-scheduled?slot=${slot}${force ? '&force=true' : ''}`;
       const res = await secureFetch(url, { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setBroadcastMessage(
-          `📢 Push (${data.category || 'Geral'}) enviado com sucesso! ${data.sent} dispositivo(s) notificado(s)${
-            data.skippedAlreadyCompleted ? ` (${data.skippedAlreadyCompleted} já tinham preenchido hoje)` : ''
-          }.`
+          `📢 Push (${data.category || 'Geral'}) enviado! ${data.sent} entregue(s)${
+            data.skippedAlreadyCompleted ? ` • ${data.skippedAlreadyCompleted} ignorado(s) por já terem respondido hoje` : ''
+          }${data.failed ? ` • ${data.failed} falha(s)` : ''}.`
         );
       } else {
         setBroadcastMessage(`⚠️ ${data.error || data.message || 'Nenhum dispositivo registado para Web Push.'}`);
