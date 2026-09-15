@@ -109,7 +109,7 @@ export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, fi
       ? Object.entries(e.muscleFatigue).map(([m, val]) => `${m}: ${val}/10`).join(' | ')
       : 'Nenhuma';
 
-    const dur = e.sessionDurationMin || 0;
+    const dur = e.sessionDurationMin || 90;
     const sRPE = e.physicalDemand * dur;
 
     return [
@@ -221,7 +221,7 @@ export function exportAllDataToExcel(
     : rpeEntries;
 
   filteredR.forEach((e) => {
-    const dur = e.sessionDurationMin || 0;
+    const dur = e.sessionDurationMin || 90;
     const sRPE = e.physicalDemand * dur;
     rows.push([
       'PSE (Pós-Treino)',

@@ -275,7 +275,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     const cleanInput = physioPin.trim();
     const activationCode = getClubActivationCode();
     
-    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026' || cleanInput.toUpperCase() === 'GVFC') {
+    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
       setPinError('O Código de Ativação da App não é válido para aceder ao Gabinete Médico. Introduza a Palavra-passe da Fisioterapia.');
       setPhysioPin('');
       return;

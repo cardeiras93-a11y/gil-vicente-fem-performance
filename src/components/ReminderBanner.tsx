@@ -73,10 +73,9 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
       setPermission(currentPerm);
       let statusRes = await checkPushSubscriptionStatus();
 
-      // Silently auto-sync Web Push subscription with server if athlete already granted permission
-      if (currentPerm === 'granted' && !statusRes.isSubscribed && statusRes.supported) {
+      // Silently auto-sync Web Push subscription with server whenever permission is granted
+      if (currentPerm === 'granted' && statusRes.supported) {
         await syncPushSubscriptionIfGranted(activeAthlete.id);
-        statusRes = await checkPushSubscriptionStatus();
       }
 
       setPushStatus(statusRes);
@@ -134,7 +133,10 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
   const handleSendTestNotification = async () => {
     setTestFeedback(null);
 
-    // 1. Immediate local feedback (forced test)
+    // 1. Ensure device is properly registered in server database
+    await syncPushSubscriptionIfGranted(activeAthlete.id);
+
+    // 2. Immediate local feedback (forced test)
     sendMobileNotification(
       '⚽ Gil Vicente FC (Futebol Feminino)',
       'Notificação de Teste: Tudo a postos para os teus questionários diários!',
@@ -142,14 +144,26 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
       true
     );
 
-    // 2. Trigger server-side push test to verify true background delivery
+    // 3. Trigger server-side push test to verify true background delivery
     try {
-      const res = await secureFetch('/api/notifications/test-send', {
+      let res = await secureFetch('/api/notifications/test-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ athleteId: activeAthlete.id }),
       });
-      const data = await res.json();
+      let data = await res.json();
+
+      // If server had 0 devices recorded, force renewal and retry
+      if (data.success && data.sent === 0) {
+        await registerPushSubscription(activeAthlete.id, true);
+        res = await secureFetch('/api/notifications/test-send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ athleteId: activeAthlete.id }),
+        });
+        data = await res.json();
+      }
+
       if (data.success && data.sent > 0) {
         setTestFeedback({
           type: 'success',

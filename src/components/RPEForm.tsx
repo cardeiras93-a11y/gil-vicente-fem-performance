@@ -3,7 +3,7 @@ import { Athlete, MuscleFatigueMap, RPEEntry } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { BORG_SCALE } from '@/lib/data';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
-import { saveRPELocally } from '@/lib/storage';
+import { saveRPELocally, getStoredTrainingSessions } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { translateTextToPortuguese } from '@/lib/translationUtils';
 import { Dumbbell, Activity, Check, AlertCircle, MessageSquare, Info, ChevronDown, ChevronUp } from 'lucide-react';
@@ -42,6 +42,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     setIsSubmitting(true);
 
     const today = new Date().toISOString().split('T')[0];
+    const sessions = getStoredTrainingSessions();
+    const sessionDurationMin = sessions[today]?.durationMin || 90;
+    const matchDayOffset = sessions[today]?.matchDayOffset || 'MD-3';
     const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
 
     const newEntry: RPEEntry = {
@@ -49,7 +52,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: today,
+      matchDayOffset,
       physicalDemand,
+      sessionDurationMin,
       postFatigue,
       muscleFatigue,
       preWorkoutPlans: [],

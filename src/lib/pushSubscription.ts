@@ -214,6 +214,17 @@ export async function registerPushSubscription(
       }
     }
 
+    // If existing subscription is missing valid keys, force clean re-subscribe
+    if (subscription) {
+      const testJson = subscription.toJSON();
+      if (!testJson.keys?.p256dh || !testJson.keys?.auth) {
+        try {
+          await subscription.unsubscribe();
+          subscription = null;
+        } catch {}
+      }
+    }
+
     if (!subscription) {
       const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
       try {

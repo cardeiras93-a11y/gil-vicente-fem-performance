@@ -1,0 +1,24 @@
+name: Scheduled Notifications Cron
+
+on:
+  schedule:
+    # 05:00 UTC = 06:00 Portugal - Wellness
+    - cron: '0 5 * * *'
+    # 07:00 UTC = 08:00 Portugal - Pré-Treino Pesagem
+    - cron: '0 7 * * *'
+    # 09:30 UTC = 10:30 Portugal - Pós-Treino Pesagem
+    - cron: '30 9 * * *'
+    # 10:00 UTC = 11:00 Portugal - PSE (RPE Pós-Treino)
+    - cron: '0 10 * * *'
+    # 10:30 UTC = 11:30 Portugal - Reforço Pós-Treino
+    - cron: '30 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  trigger-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Scheduled Notification Endpoint
+        run: |
+          echo "Triggering notification endpoint at $(date -u)"
+          curl -s -X GET "https://fem-performance-app.vercel.app/api/notifications/send-scheduled"

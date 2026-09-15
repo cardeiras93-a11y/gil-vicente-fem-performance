@@ -9,11 +9,11 @@
       "schedule": "0 7 * * *"
     },
     {
-      "path": "/api/notifications/send-scheduled?slot=postTraining",
+      "path": "/api/notifications/send-scheduled?slot=postHydration",
       "schedule": "30 9 * * *"
     },
     {
-      "path": "/api/notifications/send-scheduled?slot=postTraining",
+      "path": "/api/notifications/send-scheduled?slot=rpe",
       "schedule": "0 10 * * *"
     },
     {

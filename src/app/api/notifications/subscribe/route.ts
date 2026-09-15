@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { verifyApiAuth } from '@/lib/authGuard';
 import {
   getAllActivePushSubscriptions,
-  getStoredSubscriptionsFile,
-  saveSubscriptionsFile,
+  saveOrUpdatePushSubscription,
+  purgeExpiredPushSubscription,
+  clearAllPushSubscriptions,
   StoredPushSubscription,
 } from '@/lib/pushStorage';
 
@@ -49,55 +49,11 @@ export async function POST(request: Request) {
       updatedAt: now,
     };
 
-    // 1. Update local file storage
-    const currentFile = getStoredSubscriptionsFile();
-    const existingIndex = currentFile.findIndex((s) => s.endpoint === newSub.endpoint);
-    if (existingIndex !== -1) {
-      currentFile[existingIndex] = {
-        ...currentFile[existingIndex],
-        athleteId: newSub.athleteId || currentFile[existingIndex].athleteId,
-        p256dh: newSub.p256dh,
-        auth: newSub.auth,
-        updatedAt: now,
-      };
-    } else {
-      currentFile.unshift(newSub);
-    }
-    saveSubscriptionsFile(currentFile);
-
-    // 2. Update Supabase if configured
-    if (isSupabaseConfigured && supabase) {
-      try {
-        await supabase.from('push_subscriptions').upsert(
-          {
-            athlete_id: newSub.athleteId,
-            endpoint: newSub.endpoint,
-            p256dh: newSub.p256dh,
-            auth: newSub.auth,
-            updated_at: now,
-          },
-          { onConflict: 'endpoint' }
-        );
-      } catch (e) {
-        console.warn('Upsert na tabela push_subscriptions falhou (a utilizar fallback):', e);
-      }
-
-      try {
-        await supabase.from('athletes').upsert(
-          {
-            id: '__PUSH_SUBSCRIPTIONS__',
-            name: JSON.stringify(currentFile),
-            created_at: now,
-          },
-          { onConflict: 'id' }
-        );
-      } catch (e) {
-        console.error('Erro ao guardar fallback de subscrições em athletes:', e);
-      }
-    }
+    const updatedList = await saveOrUpdatePushSubscription(newSub);
 
     return NextResponse.json({
       success: true,
+      count: updatedList.length,
       message: 'Subscrição Web Push registada e guardada com sucesso.',
       subscription: newSub,
     });
@@ -105,3 +61,33 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err?.message || 'Erro ao registar subscrição' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request) {
+  const authError = verifyApiAuth(request);
+  if (authError) return authError;
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const endpoint = searchParams.get('endpoint');
+    const clearAll = searchParams.get('all') === '1' || searchParams.get('all') === 'true';
+
+    if (endpoint && !clearAll) {
+      await purgeExpiredPushSubscription(endpoint);
+      return NextResponse.json({
+        success: true,
+        message: 'Dispositivo removido com sucesso.',
+      });
+    }
+
+    // Clear all push subscriptions
+    await clearAllPushSubscriptions();
+    return NextResponse.json({
+      success: true,
+      message: 'Todos os dispositivos registados foram removidos com sucesso.',
+      count: 0,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err?.message || 'Erro ao remover subscrições' }, { status: 500 });
+  }
+}
+

@@ -58,7 +58,12 @@ export async function GET(request: Request) {
 
     // 1. Fetch from local file
     const localEntries = getStoredEntries();
-    localEntries.forEach((e) => entryMap.set(e.id || `${e.athleteId}-${e.date}`, e));
+    localEntries.forEach((e) => {
+      if (e) {
+        e.sessionDurationMin = Number(e.sessionDurationMin || 90);
+        entryMap.set(e.id || `${e.athleteId}-${e.date}`, e);
+      }
+    });
 
     if (isSupabaseConfigured && supabase) {
       // 2. Try primary rpe_entries table
@@ -77,6 +82,7 @@ export async function GET(request: Request) {
               date: item.date,
               physicalDemand: Number(item.physical_demand),
               postFatigue: Number(item.post_fatigue),
+              sessionDurationMin: Number(item.session_duration_min || 90),
               muscleFatigue: item.muscle_fatigue || {},
               preWorkoutPlans: item.pre_workout_plans || [],
               comments: item.comments || null,
@@ -101,9 +107,12 @@ export async function GET(request: Request) {
           const fallbackList: any[] = JSON.parse(athData.name);
           if (Array.isArray(fallbackList)) {
             fallbackList.forEach((e) => {
-              const key = e.id || `${e.athleteId}-${e.date}`;
-              if (!entryMap.has(key)) {
-                entryMap.set(key, e);
+              if (e) {
+                e.sessionDurationMin = Number(e.sessionDurationMin || 90);
+                const key = e.id || `${e.athleteId}-${e.date}`;
+                if (!entryMap.has(key)) {
+                  entryMap.set(key, e);
+                }
               }
             });
           }
@@ -154,6 +163,7 @@ export async function POST(request: Request) {
       date,
       physicalDemand: Number(physicalDemand),
       postFatigue: Number(postFatigue || 0),
+      sessionDurationMin: Number(body.sessionDurationMin || 90),
       muscleFatigue: muscleFatigue || {},
       preWorkoutPlans: preWorkoutPlans || [],
       comments: comments || null,

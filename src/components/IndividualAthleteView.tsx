@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
 import { BORG_SCALE } from '@/lib/data';
 import { useLanguage } from '@/context/LanguageContext';
-import { getHydrationLocally, getDynamicAthletes } from '@/lib/storage';
+import { getHydrationLocally, getDynamicAthletes, getStoredTrainingSessions } from '@/lib/storage';
 import { exportAllDataToExcel } from '@/lib/exportUtils';
 import {
   Activity, Calendar, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
@@ -25,25 +25,29 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
   const { t } = useLanguage();
 
   const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+  const [selectedAthleteId, setSelectedAthleteId] = useState<string>(athletes[0]?.id || 'ath-1');
+  const [timeWindow, setTimeWindow] = useState<'7' | '14' | '28'>('28');
+  const [filterMD, setFilterMD] = useState<string>('ALL');
 
   useEffect(() => {
     const handleUpdate = () => {
-      setAthletes(getDynamicAthletes());
+      const list = getDynamicAthletes();
+      setAthletes(list);
+      if (!list.some((a) => a.id === selectedAthleteId) && list.length > 0) {
+        setSelectedAthleteId(list[0].id);
+      }
     };
     handleUpdate();
     window.addEventListener('femperf_credentials_updated', handleUpdate);
     return () => window.removeEventListener('femperf_credentials_updated', handleUpdate);
-  }, []);
-
-  const [selectedAthleteId, setSelectedAthleteId] = useState<string>(() => athletes[0]?.id || 'ath-1');
-  const [timeWindow, setTimeWindow] = useState<'7' | '14' | '28'>('28');
-  const [filterMD, setFilterMD] = useState<string>('ALL');
+  }, [selectedAthleteId]);
 
   const selectedAthlete = athletes.find((a) => a.id === selectedAthleteId) || athletes[0];
 
-  // Helper to generate or blend 28-day historical data for deep longitudinal analytics
+  // Build the 28-day history dataset
   const athleteHistory = useMemo(() => {
-    const daysCount = 28;
+    if (!selectedAthlete) return [];
+
     const historyData: Array<{
       date: string;
       dayLabel: string;
@@ -61,12 +65,17 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
       hasRealData: boolean;
     }> = [];
 
-    const todayObj = new Date(selectedDate);
+    const [sy, sm, sd] = selectedDate.split('-').map(Number);
+    const todayObj = new Date(sy, sm - 1, sd, 12, 0, 0);
+    const sessions = getStoredTrainingSessions();
 
-    for (let i = daysCount - 1; i >= 0; i--) {
+    for (let i = 27; i >= 0; i--) {
       const d = new Date(todayObj);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${y}-${m}-${dayStr}`;
 
       // Check real entries stored locally
       const realW = wellnessList.find(
@@ -90,7 +99,7 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
         : 0;
 
       const borgDemand = realR ? realR.physicalDemand : 0;
-      const durationMin = realR?.sessionDurationMin || 0;
+      const durationMin = realR?.sessionDurationMin || sessions[dateStr]?.durationMin || (realR ? 90 : 0);
       const sRPE = borgDemand * durationMin;
       const postFatigue = realR ? realR.postFatigue : 0;
 
@@ -133,11 +142,20 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
     const last3 = athleteHistory.slice(-3);
     const last14 = athleteHistory.slice(-14);
 
+    const earliestRpeDate = rpeList.length > 0 ? [...rpeList.map((r) => r.date)].sort()[0] : selectedDate;
+    const [ey, em, ed] = earliestRpeDate.split('-').map(Number);
+    const earliestObj = new Date(ey, em - 1, ed, 12, 0, 0);
+    const [sy, sm, sd] = selectedDate.split('-').map(Number);
+    const todayObj = new Date(sy, sm - 1, sd, 12, 0, 0);
+    const daysSinceStart = Math.max(1, Math.round((todayObj.getTime() - earliestObj.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    const chronicDivisor28 = Math.max(7, Math.min(28, daysSinceStart));
+    const chronicDivisor14 = Math.max(7, Math.min(14, daysSinceStart));
+
     const acuteLoad7 = last7.reduce((acc, curr) => acc + curr.sRPE, 0) / 7;
-    const chronicLoad28 = last28.reduce((acc, curr) => acc + curr.sRPE, 0) / 28;
+    const chronicLoad28 = last28.reduce((acc, curr) => acc + curr.sRPE, 0) / chronicDivisor28;
 
     const acuteLoad3 = last3.reduce((acc, curr) => acc + curr.sRPE, 0) / 3;
-    const chronicLoad14 = last14.reduce((acc, curr) => acc + curr.sRPE, 0) / 14;
+    const chronicLoad14 = last14.reduce((acc, curr) => acc + curr.sRPE, 0) / chronicDivisor14;
 
     const standardACWR = chronicLoad28 > 0 ? +(acuteLoad7 / chronicLoad28).toFixed(2) : 1.0;
     const shortACWR = chronicLoad14 > 0 ? +(acuteLoad3 / chronicLoad14).toFixed(2) : 1.0;
@@ -151,7 +169,7 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
       chronicLoad14: Math.round(chronicLoad14),
       shortACWR,
     };
-  }, [athleteHistory]);
+  }, [athleteHistory, rpeList, selectedDate]);
 
   // Helper for ACWR Risk Status Badge
   const getACWRBadge = (ratio: number, labelPrefix: string) => {

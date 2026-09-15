@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Shield, KeyRound, Lock, AlertCircle, ArrowRight } from 'lucide-react';
-import { grantClubAccess, getClubActivationCode, getAdminPin, getPhysioPin } from '@/lib/storage';
+import React, { useState, useEffect } from 'react';
+import { Shield, KeyRound, Lock, AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { grantClubAccess, getClubActivationCode, getAdminPin, getPhysioPin, syncCredentialsFromCloud } from '@/lib/storage';
+import { secureFetch } from '@/lib/authGuard';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface AppAccessGateProps {
@@ -13,32 +14,83 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
   const { t } = useLanguage();
   const [passcode, setPasscode] = useState('');
   const [error, setError] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
-  const handleVerifyPasscode = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Sincronizar credenciais da nuvem para ter o código mais recente logo no arranque
+    syncCredentialsFromCloud();
+  }, []);
+
+  const handleVerifyPasscode = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPass = passcode.trim();
-    const currentActivationCode = getClubActivationCode();
-    const currentAdminPin = getAdminPin();
-    const currentPhysioPin = getPhysioPin();
-    
-    // Explicitly reject staff admin or physio PINs entered in player device gate
+    if (!cleanPass) return;
+
+    let currentActivationCode = getClubActivationCode();
+    let currentAdminPin = getAdminPin();
+    let currentPhysioPin = getPhysioPin();
+
+    // Verificação rápida local: se coincide com o código ativo guardado
+    if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
+      grantClubAccess();
+      onAccessGranted();
+      return;
+    }
+
+    // Rejeitar expressamente o PIN de administrador ou de fisioterapia na ativação das jogadoras
     if (cleanPass === currentAdminPin || cleanPass === currentPhysioPin) {
       setError('Código de Ativação do Clube incorreto. O PIN de Administrador/Fisioterapia não é válido para ativação da app.');
       setPasscode('');
       return;
     }
 
-    if (
-      cleanPass.toUpperCase() === currentActivationCode.toUpperCase() ||
-      cleanPass.toUpperCase() === 'GVFC2026' ||
-      cleanPass.toUpperCase() === 'GVFC'
-    ) {
-      grantClubAccess();
-      onAccessGranted();
-    } else {
-      setError(t.gate.error);
-      setPasscode('');
+    // Se não coincidir localmente, validar em tempo real com a nuvem (Supabase)
+    setIsVerifying(true);
+    try {
+      const res = await secureFetch('/api/credentials');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          const cloudCode = json.data.activationCode;
+          const cloudAdmin = json.data.adminPin;
+          const cloudPhysio = json.data.physioPin;
+
+          if (cloudAdmin) {
+            localStorage.setItem('femperf_admin_pin', cloudAdmin);
+            currentAdminPin = cloudAdmin;
+          }
+          if (cloudPhysio) {
+            localStorage.setItem('femperf_physio_pin', cloudPhysio);
+            currentPhysioPin = cloudPhysio;
+          }
+          if (cloudCode) {
+            localStorage.setItem('femperf_club_activation_code', cloudCode);
+            currentActivationCode = cloudCode;
+          }
+
+          if (cleanPass === currentAdminPin || cleanPass === currentPhysioPin) {
+            setError('Código de Ativação do Clube incorreto. O PIN de Administrador/Fisioterapia não é válido para ativação da app.');
+            setPasscode('');
+            setIsVerifying(false);
+            return;
+          }
+
+          if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
+            grantClubAccess();
+            onAccessGranted();
+            setIsVerifying(false);
+            return;
+          }
+        }
+      }
+    } catch {
+      // Fallback silencioso
+    } finally {
+      setIsVerifying(false);
     }
+
+    setError(t.gate.error);
+    setPasscode('');
   };
 
   return (
@@ -78,7 +130,8 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
                 setPasscode(e.target.value);
                 if (error) setError('');
               }}
-              className="w-full rounded-xl border border-slate-700 bg-dark-bg py-3.5 pl-10 pr-4 text-center text-sm font-black uppercase tracking-widest text-amber-400 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 shadow-inner"
+              disabled={isVerifying}
+              className="w-full rounded-xl border border-slate-700 bg-dark-bg py-3.5 pl-10 pr-4 text-center text-sm font-black uppercase tracking-widest text-amber-400 placeholder-slate-500 focus:border-red-500 focus:outline-none focus:ring-1 focus:ring-red-500 shadow-inner disabled:opacity-60"
               autoFocus
             />
           </div>
@@ -92,10 +145,20 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-red-900/40 hover:from-red-500 hover:to-red-600 active:scale-98 transition-all"
+            disabled={isVerifying}
+            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-gradient-to-r from-red-600 to-red-700 py-3.5 text-xs font-black uppercase tracking-wider text-white shadow-lg shadow-red-900/40 hover:from-red-500 hover:to-red-600 active:scale-98 transition-all disabled:opacity-50"
           >
-            <span>{t.gate.submit}</span>
-            <ArrowRight className="h-4 w-4" />
+            {isVerifying ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>A validar código...</span>
+              </>
+            ) : (
+              <>
+                <span>{t.gate.submit}</span>
+                <ArrowRight className="h-4 w-4" />
+              </>
+            )}
           </button>
         </form>
 

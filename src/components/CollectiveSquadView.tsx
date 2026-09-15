@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
-import { getDynamicAthletes } from '@/lib/storage';
+import { getDynamicAthletes, getStoredTrainingSessions } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
 import {
   Users, Activity, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
@@ -40,7 +40,17 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
 
   // Compute 28-day analytics matrix for ALL athletes concurrently
   const squadMetrics = useMemo(() => {
-    const todayObj = new Date(selectedDate);
+    const [sy, sm, sd] = selectedDate.split('-').map(Number);
+    const todayObj = new Date(sy, sm - 1, sd, 12, 0, 0);
+    const sessions = getStoredTrainingSessions();
+
+    // Adapt early-season chronic divisor (minimum 7 rolling days up to full 28 days)
+    const earliestRpeDate = rpeList.length > 0 ? [...rpeList.map((r) => r.date)].sort()[0] : selectedDate;
+    const [ey, em, ed] = earliestRpeDate.split('-').map(Number);
+    const earliestObj = new Date(ey, em - 1, ed, 12, 0, 0);
+    const daysSinceStart = Math.max(1, Math.round((todayObj.getTime() - earliestObj.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+    const chronicDivisor28 = Math.max(7, Math.min(28, daysSinceStart));
+    const chronicDivisor14 = Math.max(7, Math.min(14, daysSinceStart));
 
     return athletes.map((ath) => {
       // Build 28-day history for athlete
@@ -56,7 +66,10 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
       for (let i = 27; i >= 0; i--) {
         const d = new Date(todayObj);
         d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0];
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const dayStr = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${y}-${m}-${dayStr}`;
 
         const realW = wellnessList.find(
           (w) => w.athleteName.toLowerCase() === ath.name.toLowerCase() && w.date === dateStr
@@ -70,7 +83,7 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
           : 0;
 
         const borg = realR ? realR.physicalDemand : 0;
-        const dur = realR?.sessionDurationMin || 0;
+        const dur = realR?.sessionDurationMin || sessions[dateStr]?.durationMin || (realR ? 90 : 0);
         const sRPE = borg * dur;
         const pFatigue = realR ? realR.postFatigue : 0;
 
@@ -87,15 +100,15 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
       // ACWR 7:28
       const last7 = days28.slice(-7);
       const acuteLoad7 = Math.round(last7.reduce((acc, curr) => acc + curr.sRPE, 0) / 7);
-      const chronicLoad28 = Math.round(days28.reduce((acc, curr) => acc + curr.sRPE, 0) / 28);
-      const standardACWR = chronicLoad28 > 0 ? +(acuteLoad7 / chronicLoad28).toFixed(2) : 0.0;
+      const chronicLoad28 = Math.round(days28.reduce((acc, curr) => acc + curr.sRPE, 0) / chronicDivisor28);
+      const standardACWR = chronicLoad28 > 0 ? +(acuteLoad7 / chronicLoad28).toFixed(2) : 1.0;
 
       // Micro ACWR 3:14
       const last3 = days28.slice(-3);
       const last14 = days28.slice(-14);
       const acuteLoad3 = last3.reduce((acc, curr) => acc + curr.sRPE, 0) / 3;
-      const chronicLoad14 = last14.reduce((acc, curr) => acc + curr.sRPE, 0) / 14;
-      const shortACWR = chronicLoad14 > 0 ? +(acuteLoad3 / chronicLoad14).toFixed(2) : 0.0;
+      const chronicLoad14 = last14.reduce((acc, curr) => acc + curr.sRPE, 0) / chronicDivisor14;
+      const shortACWR = chronicLoad14 > 0 ? +(acuteLoad3 / chronicLoad14).toFixed(2) : 1.0;
 
       // Wellness 7d avg
       const validWellness = last7.filter((item) => item.wellnessTotal > 0);
@@ -144,7 +157,7 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
         riskCategory,
       };
     });
-  }, [wellnessList, rpeList, selectedDate]);
+  }, [athletes, wellnessList, rpeList, selectedDate]);
 
   // Squad Aggregate Statistics
   const squadStats = useMemo(() => {
