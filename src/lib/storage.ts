@@ -381,204 +381,173 @@ export function setStoredActiveAthleteId(athleteId: string): void {
   localStorage.setItem(ACTIVE_ATHLETE_KEY, athleteId);
 }
 
-export function syncCredentialsFromCloud(): void {
-  if (typeof window === 'undefined') return;
-  secureFetch('/api/credentials')
-    .then((res) => res.json())
-    .then((data) => {
-      if (data.success && data.data) {
-        const {
-          activationCode: cloudActivationCode,
-          adminPin: cloudAdminPin,
-          physioPin: cloudPhysioPin,
-          athletePins: cloudAthletePins,
-          athleteAvatars: cloudAthleteAvatars,
-          finesEnabledDays: cloudFinesEnabledDays,
-          editedProfiles: cloudEditedProfiles,
-          customAthletes: cloudCustomAthletes,
-        } = data.data;
+export async function syncCredentialsFromCloud(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  try {
+    const res = await secureFetch(`/api/credentials?t=${Date.now()}`, { cache: 'no-store' });
+    const data = await res.json();
+    if (data.success && data.data) {
+      const {
+        activationCode: cloudActivationCode,
+        adminPin: cloudAdminPin,
+        physioPin: cloudPhysioPin,
+        athletePins: cloudAthletePins,
+        athleteAvatars: cloudAthleteAvatars,
+        finesEnabledDays: cloudFinesEnabledDays,
+        editedProfiles: cloudEditedProfiles,
+        customAthletes: cloudCustomAthletes,
+        deletedAthletes: cloudDeletedAthletes,
+        inactiveAthletes: cloudInactiveAthletes,
+        reminderConfig: cloudReminderConfig,
+      } = data.data;
 
-        const localAthletePinsRaw = localStorage.getItem(ATHLETE_PINS_KEY);
-        let localAthletePins: { [id: string]: string } = {};
-        try {
-          if (localAthletePinsRaw) localAthletePins = JSON.parse(localAthletePinsRaw);
-        } catch {}
-
-        // 1. Activation Code & Admin & Physio PIN: Cloud takes absolute priority
-        if (cloudActivationCode) {
-          localStorage.setItem(ACTIVATION_CODE_KEY, cloudActivationCode);
-        }
-        if (cloudAdminPin) {
-          localStorage.setItem(ADMIN_PIN_KEY, cloudAdminPin);
-        }
-        if (cloudPhysioPin) {
-          localStorage.setItem(PHYSIO_PIN_KEY, cloudPhysioPin);
-        }
-
-        // 2. Athlete PINs: Cloud overrides local stale PINs
-        const mergedAthletePins = { ...localAthletePins, ...(cloudAthletePins || {}) };
-        localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(mergedAthletePins));
-
-        // 3. Athlete Avatars Sync: Cloud overrides local
-        const localAvatarsRaw = localStorage.getItem(ATHLETE_AVATARS_KEY);
-        let localAvatars: { [id: string]: string } = {};
-        try {
-          if (localAvatarsRaw) localAvatars = JSON.parse(localAvatarsRaw);
-        } catch {}
-
-        const mergedAvatars = { ...localAvatars, ...(cloudAthleteAvatars || {}) };
-        localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(mergedAvatars));
-
-        // 4. Fines Enabled Days Sync: Cloud overrides local
-        const localFinesEnabledDaysRaw = localStorage.getItem('femperf_fines_enabled_days');
-        let localFinesEnabledDays: { [date: string]: boolean } = {};
-        try {
-          if (localFinesEnabledDaysRaw) localFinesEnabledDays = JSON.parse(localFinesEnabledDaysRaw);
-        } catch {}
-
-        const mergedFinesEnabledDays = { ...(cloudFinesEnabledDays || {}), ...localFinesEnabledDays };
-        localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(mergedFinesEnabledDays));
-
-        // 5. Edited Profiles Sync
-        if (cloudEditedProfiles) {
-          const localEditedRaw = localStorage.getItem(EDITED_PROFILES_KEY);
-          let localEdited = {};
-          try { if (localEditedRaw) localEdited = JSON.parse(localEditedRaw); } catch {}
-          const mergedEdited = { ...localEdited, ...cloudEditedProfiles };
-          localStorage.setItem(EDITED_PROFILES_KEY, JSON.stringify(mergedEdited));
-        }
-
-        // 6. Custom Athletes Sync
-        if (cloudCustomAthletes && Array.isArray(cloudCustomAthletes)) {
-          const localCustomRaw = localStorage.getItem(CUSTOM_ATHLETES_KEY);
-          let localCustom: Athlete[] = [];
-          try { if (localCustomRaw) localCustom = JSON.parse(localCustomRaw); } catch {}
-          const map = new Map<string, Athlete>();
-          localCustom.forEach((a) => map.set(a.id, a));
-          cloudCustomAthletes.forEach((a: Athlete) => map.set(a.id, a));
-          localStorage.setItem(CUSTOM_ATHLETES_KEY, JSON.stringify(Array.from(map.values())));
-        }
-
-        // 7. Deleted Athletes Sync
-        if (data.data.deletedAthletes && Array.isArray(data.data.deletedAthletes)) {
-          const localDeleted = getDeletedAthleteIds();
-          const mergedDeleted = Array.from(new Set([...localDeleted, ...data.data.deletedAthletes]));
-          localStorage.setItem(DELETED_ATHLETES_KEY, JSON.stringify(mergedDeleted));
-        }
-
-        // 8. Inactive Athletes Sync
-        if (data.data.inactiveAthletes && Array.isArray(data.data.inactiveAthletes)) {
-          const localInactive = getInactiveAthleteIds();
-          const mergedInactive = Array.from(new Set([...localInactive, ...data.data.inactiveAthletes]));
-          localStorage.setItem(INACTIVE_ATHLETES_KEY, JSON.stringify(mergedInactive));
-        }
-
-        // 9. Reminder Config Sync
-        if (data.data.reminderConfig) {
-          localStorage.setItem('femperf_reminder_settings_v1', JSON.stringify(data.data.reminderConfig));
-        }
-
-        window.dispatchEvent(new Event('femperf_credentials_updated'));
+      // 1. Activation Code & Admin & Physio PIN: Cloud takes absolute priority
+      if (cloudActivationCode) {
+        localStorage.setItem(ACTIVATION_CODE_KEY, cloudActivationCode);
       }
-    })
-    .catch(() => {});
+      if (cloudAdminPin) {
+        localStorage.setItem(ADMIN_PIN_KEY, cloudAdminPin);
+      }
+      if (cloudPhysioPin) {
+        localStorage.setItem(PHYSIO_PIN_KEY, cloudPhysioPin);
+      }
+
+      // 2. Athlete PINs: Cloud is the single source of truth
+      if (cloudAthletePins && typeof cloudAthletePins === 'object') {
+        localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(cloudAthletePins));
+      }
+
+      // 3. Athlete Avatars: Cloud is the single source of truth
+      if (cloudAthleteAvatars && typeof cloudAthleteAvatars === 'object') {
+        localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(cloudAthleteAvatars));
+      }
+
+      // 4. Fines Enabled Days: Cloud takes priority
+      if (cloudFinesEnabledDays && typeof cloudFinesEnabledDays === 'object') {
+        localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
+      }
+
+      // 5. Edited Profiles: Cloud is authoritative
+      if (cloudEditedProfiles && typeof cloudEditedProfiles === 'object') {
+        localStorage.setItem(EDITED_PROFILES_KEY, JSON.stringify(cloudEditedProfiles));
+      }
+
+      // 6. Custom Athletes: Cloud list is authoritative
+      if (cloudCustomAthletes && Array.isArray(cloudCustomAthletes)) {
+        localStorage.setItem(CUSTOM_ATHLETES_KEY, JSON.stringify(cloudCustomAthletes));
+      }
+
+      // 7. Deleted Athletes: Cloud list is authoritative
+      if (cloudDeletedAthletes && Array.isArray(cloudDeletedAthletes)) {
+        localStorage.setItem(DELETED_ATHLETES_KEY, JSON.stringify(cloudDeletedAthletes));
+      }
+
+      // 8. Inactive Athletes: Cloud list is authoritative (no stale merge!)
+      if (cloudInactiveAthletes && Array.isArray(cloudInactiveAthletes)) {
+        localStorage.setItem(INACTIVE_ATHLETES_KEY, JSON.stringify(cloudInactiveAthletes));
+      }
+
+      // 9. Reminder Config: Save to both v2 and v1 keys for 100% compatibility
+      if (cloudReminderConfig && typeof cloudReminderConfig === 'object') {
+        localStorage.setItem('femperf_reminder_settings_v2', JSON.stringify(cloudReminderConfig));
+        localStorage.setItem('femperf_reminder_settings_v1', JSON.stringify(cloudReminderConfig));
+      }
+
+      window.dispatchEvent(new Event('femperf_credentials_updated'));
+      return true;
+    }
+    return false;
+  } catch (err) {
+    console.warn('Erro ao sincronizar credenciais da nuvem:', err);
+    return false;
+  }
 }
 
-export function syncAllDataFromCloud(): void {
+export async function syncAllDataFromCloud(): Promise<void> {
   if (typeof window === 'undefined') return;
 
-  // 1. Sync credentials / PINs
-  syncCredentialsFromCloud();
+  // 1. Sync credentials / PINs first
+  await syncCredentialsFromCloud();
 
   // 2. Sync training sessions & calendar schedule
-  secureFetch('/api/training-sessions')
-    .then((res) => res.json())
-    .then((data) => {
-      const remoteSessions = data?.sessions || data?.data?.sessions;
-      const remoteSchedule = data?.schedule || data?.data?.schedule;
-      if (remoteSessions || remoteSchedule) {
-        const localSessions = getStoredTrainingSessions();
-        const localSched = getStoredCalendarSchedule();
-        const mergedSessions = { ...localSessions, ...(remoteSessions || {}) };
-        const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
-        localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
-        localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
-        dispatchDataUpdatedEvent();
-      }
-    })
-    .catch(() => {});
+  try {
+    const res = await secureFetch(`/api/training-sessions?t=${Date.now()}`, { cache: 'no-store' });
+    const data = await res.json();
+    const remoteSessions = data?.sessions || data?.data?.sessions;
+    const remoteSchedule = data?.schedule || data?.data?.schedule;
+    if (remoteSessions || remoteSchedule) {
+      const localSessions = getStoredTrainingSessions();
+      const localSched = getStoredCalendarSchedule();
+      const mergedSessions = { ...localSessions, ...(remoteSessions || {}) };
+      const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
+      localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
+      localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
+      dispatchDataUpdatedEvent();
+    }
+  } catch {}
 
   // 3. Sync Wellness Entries
-  secureFetch('/api/wellness')
-    .then((res) => res.json())
-    .then((data) => {
-      const items = data?.entries || data?.data;
-      if (Array.isArray(items) && items.length > 0) {
-        try {
-          const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
-          const map = new Map<string, WellnessEntry>();
-          const getKey = (item: WellnessEntry) => {
-            if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-            if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-            return item.id || `wel_${Math.random()}`;
-          };
-          local.forEach((item) => map.set(getKey(item), item));
-          items.forEach((item) => map.set(getKey(item), item));
-          const merged = Array.from(map.values());
-          localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
-          dispatchDataUpdatedEvent();
-        } catch {}
-      }
-    })
-    .catch(() => {});
+  try {
+    const res = await secureFetch(`/api/wellness?t=${Date.now()}`, { cache: 'no-store' });
+    const data = await res.json();
+    const items = data?.entries || data?.data;
+    if (Array.isArray(items) && items.length > 0) {
+      const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
+      const map = new Map<string, WellnessEntry>();
+      const getKey = (item: WellnessEntry) => {
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+        return item.id || `wel_${Math.random()}`;
+      };
+      local.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => map.set(getKey(item), item));
+      const merged = Array.from(map.values());
+      localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
+      dispatchDataUpdatedEvent();
+    }
+  } catch {}
 
   // 4. Sync RPE Entries
-  secureFetch('/api/rpe')
-    .then((res) => res.json())
-    .then((data) => {
-      const items = data?.entries || data?.data;
-      if (Array.isArray(items) && items.length > 0) {
-        try {
-          const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
-          const map = new Map<string, RPEEntry>();
-          const getKey = (item: RPEEntry) => {
-            if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-            if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-            return item.id || `rpe_${Math.random()}`;
-          };
-          local.forEach((item) => map.set(getKey(item), item));
-          items.forEach((item) => map.set(getKey(item), item));
-          const merged = Array.from(map.values());
-          localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
-          dispatchDataUpdatedEvent();
-        } catch {}
-      }
-    })
-    .catch(() => {});
+  try {
+    const res = await secureFetch(`/api/rpe?t=${Date.now()}`, { cache: 'no-store' });
+    const data = await res.json();
+    const items = data?.entries || data?.data;
+    if (Array.isArray(items) && items.length > 0) {
+      const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
+      const map = new Map<string, RPEEntry>();
+      const getKey = (item: RPEEntry) => {
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+        return item.id || `rpe_${Math.random()}`;
+      };
+      local.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => map.set(getKey(item), item));
+      const merged = Array.from(map.values());
+      localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
+      dispatchDataUpdatedEvent();
+    }
+  } catch {}
 
   // 5. Sync Hydration Entries
-  secureFetch('/api/hydration')
-    .then((res) => res.json())
-    .then((data) => {
-      const items = data?.entries || data?.data;
-      if (Array.isArray(items) && items.length > 0) {
-        try {
-          const local: HydrationEntry[] = JSON.parse(localStorage.getItem(HYDRATION_LOCAL_KEY) || '[]');
-          const map = new Map<string, HydrationEntry>();
-          const getKey = (item: HydrationEntry) => {
-            if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-            if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-            return item.id || `hyd_${Math.random()}`;
-          };
-          local.forEach((item) => map.set(getKey(item), item));
-          items.forEach((item) => map.set(getKey(item), item));
-          const merged = Array.from(map.values());
-          localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
-          dispatchDataUpdatedEvent();
-        } catch {}
-      }
-    })
-    .catch(() => {});
+  try {
+    const res = await secureFetch(`/api/hydration?t=${Date.now()}`, { cache: 'no-store' });
+    const data = await res.json();
+    const items = data?.entries || data?.data;
+    if (Array.isArray(items) && items.length > 0) {
+      const local: HydrationEntry[] = JSON.parse(localStorage.getItem(HYDRATION_LOCAL_KEY) || '[]');
+      const map = new Map<string, HydrationEntry>();
+      const getKey = (item: HydrationEntry) => {
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+        return item.id || `hyd_${Math.random()}`;
+      };
+      local.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => map.set(getKey(item), item));
+      const merged = Array.from(map.values());
+      localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
+      dispatchDataUpdatedEvent();
+    }
+  } catch {}
 }
 
 export function getAthletePin(athleteId: string): string | null {
@@ -659,7 +628,43 @@ export function setPhysioPin(pin: string): void {
 
 const FINES_ENABLED_DAYS_KEY = 'femperf_fines_enabled_days';
 
-export function getStoredFinesEnabledDays(): Record<string, boolean> {
+export interface DayFineConfig {
+  wellness: boolean;   // Aplica multa por falta de Wellness
+  rpe: boolean;        // Aplica multa por falta de PSE (RPE)
+  hydration: boolean;  // Aplica multa por falta de Pesagem (Pré/Pós)
+}
+
+export function normalizeDayFineConfig(
+  rawVal: boolean | DayFineConfig | undefined,
+  dayType?: CalendarDayType
+): DayFineConfig {
+  if (typeof rawVal === 'boolean') {
+    return {
+      wellness: rawVal,
+      rpe: rawVal,
+      hydration: rawVal,
+    };
+  }
+  if (rawVal && typeof rawVal === 'object') {
+    return {
+      wellness: rawVal.wellness ?? true,
+      rpe: rawVal.rpe ?? true,
+      hydration: rawVal.hydration ?? true,
+    };
+  }
+  const isActivity = dayType === 'training' || dayType === 'match';
+  return {
+    wellness: isActivity,
+    rpe: isActivity,
+    hydration: isActivity,
+  };
+}
+
+export function isDayAnyFineActive(config: DayFineConfig): boolean {
+  return !!(config.wellness || config.rpe || config.hydration);
+}
+
+export function getStoredFinesEnabledDays(): Record<string, boolean | DayFineConfig> {
   if (typeof window === 'undefined') return {};
   try {
     const raw = localStorage.getItem(FINES_ENABLED_DAYS_KEY);
@@ -669,7 +674,7 @@ export function getStoredFinesEnabledDays(): Record<string, boolean> {
   }
 }
 
-export function saveFinesEnabledDays(map: Record<string, boolean>): void {
+export function saveFinesEnabledDays(map: Record<string, boolean | DayFineConfig>): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(FINES_ENABLED_DAYS_KEY, JSON.stringify(map));

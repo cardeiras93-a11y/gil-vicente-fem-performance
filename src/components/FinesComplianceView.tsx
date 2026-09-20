@@ -9,12 +9,16 @@ import {
   saveCalendarSchedule,
   CalendarDayType,
   getStoredFinesEnabledDays,
-  saveFinesEnabledDays
+  saveFinesEnabledDays,
+  DayFineConfig,
+  normalizeDayFineConfig,
+  isDayAnyFineActive
 } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import {
   AlertTriangle, Calendar, CheckCircle2, ChevronDown, ChevronUp, Copy,
-  Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy, Check, X
+  Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy, Check, X,
+  HeartPulse, Scale, Settings2
 } from 'lucide-react';
 
 interface FinesComplianceViewProps {
@@ -66,8 +70,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Saved manual calendar schedule overrides (dateStr -> 'training' | 'match' | 'rest')
   const [manualDayTypes, setManualDayTypes] = useState<Record<string, CalendarDayType>>({});
 
-  // Fine enabled status per date (dateStr -> boolean)
-  const [finesEnabledDays, setFinesEnabledDays] = useState<Record<string, boolean>>({});
+  // Fine enabled status per date (dateStr -> boolean | DayFineConfig)
+  const [finesEnabledDays, setFinesEnabledDays] = useState<Record<string, boolean | DayFineConfig>>({});
+  const [configuringDate, setConfiguringDate] = useState<string | null>(null);
+  const [modalFineConfig, setModalFineConfig] = useState<DayFineConfig>({
+    wellness: true,
+    rpe: true,
+    hydration: true,
+  });
 
   useEffect(() => {
     setManualDayTypes(getStoredCalendarSchedule());
@@ -142,20 +152,25 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     return map;
   }, [datesInMonth, manualDayTypes, wellnessList, rpeList, hydrationList]);
 
-  // Fine status map per date (explicit boolean or default: training/match = true, rest = false)
-  const finesEnabledMap = useMemo(() => {
-    const map: Record<string, boolean> = {};
+  // Fine config map per date (DayFineConfig for every date in month)
+  const finesConfigMap = useMemo(() => {
+    const map: Record<string, DayFineConfig> = {};
     datesInMonth.forEach((dateStr) => {
-      if (finesEnabledDays[dateStr] !== undefined) {
-        map[dateStr] = finesEnabledDays[dateStr];
-      } else {
-        map[dateStr] = dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match';
-      }
+      map[dateStr] = normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
     });
     return map;
   }, [datesInMonth, finesEnabledDays, dayTypesMap]);
 
-  // All dates where fines are active in month
+  // Fine status map per date (true if ANY questionnaire gives fine on that date)
+  const finesEnabledMap = useMemo(() => {
+    const map: Record<string, boolean> = {};
+    datesInMonth.forEach((dateStr) => {
+      map[dateStr] = isDayAnyFineActive(finesConfigMap[dateStr]);
+    });
+    return map;
+  }, [datesInMonth, finesConfigMap]);
+
+  // All dates where at least one fine is active in month
   const fineActiveDates = useMemo(() => {
     return datesInMonth.filter((dateStr) => finesEnabledMap[dateStr] === true);
   }, [datesInMonth, finesEnabledMap]);
@@ -194,26 +209,55 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     saveCalendarSchedule(updatedSchedule);
   };
 
-  // Toggle fine active status for a specific date
-  const toggleFineStatus = (dateStr: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const current = finesEnabledMap[dateStr];
-    const updated = {
-      ...finesEnabledDays,
-      [dateStr]: !current,
-    };
-    setFinesEnabledDays(updated);
-    saveFinesEnabledDays(updated);
+  // Open fine configuration modal for a specific date
+  const handleOpenConfigModal = (dateStr: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const currentCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+    setModalFineConfig({ ...currentCfg });
+    setConfiguringDate(dateStr);
   };
 
-  // Bulk action: Enable fines for all training and match days in month
+  // Save updated fine config from modal
+  const handleSaveModalFineConfig = (applyToMatchingDayType: boolean = false) => {
+    if (!configuringDate) return;
+    const targetType = dayTypesMap[configuringDate];
+    const updated = { ...finesEnabledDays };
+
+    if (applyToMatchingDayType && targetType) {
+      datesInMonth.forEach((dStr) => {
+        if (dayTypesMap[dStr] === targetType) {
+          updated[dStr] = { ...modalFineConfig };
+        }
+      });
+    } else {
+      updated[configuringDate] = { ...modalFineConfig };
+    }
+
+    setFinesEnabledDays(updated);
+    saveFinesEnabledDays(updated);
+    setConfiguringDate(null);
+  };
+
+  // Bulk action: Enable fines for all training and match days in month (all 3 questionnaires)
   const enableAllFinesForActivityDays = () => {
     const updated = { ...finesEnabledDays };
     datesInMonth.forEach((dateStr) => {
       if (dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match') {
-        updated[dateStr] = true;
+        updated[dateStr] = { wellness: true, rpe: true, hydration: true };
       } else {
-        updated[dateStr] = false;
+        updated[dateStr] = { wellness: false, rpe: false, hydration: false };
+      }
+    });
+    setFinesEnabledDays(updated);
+    saveFinesEnabledDays(updated);
+  };
+
+  // Bulk action: Enable only Wellness for Rest days (Folgas)
+  const enableWellnessOnlyForRestDays = () => {
+    const updated = { ...finesEnabledDays };
+    datesInMonth.forEach((dateStr) => {
+      if (dayTypesMap[dateStr] === 'rest') {
+        updated[dateStr] = { wellness: true, rpe: false, hydration: false };
       }
     });
     setFinesEnabledDays(updated);
@@ -224,7 +268,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const exemptAllFinesInMonth = () => {
     const updated = { ...finesEnabledDays };
     datesInMonth.forEach((dateStr) => {
-      updated[dateStr] = false;
+      updated[dateStr] = { wellness: false, rpe: false, hydration: false };
     });
     setFinesEnabledDays(updated);
     saveFinesEnabledDays(updated);
@@ -239,6 +283,8 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       const failedDates: AthleteComplianceReport['failedDates'] = [];
 
       pastAndTodayFineActiveDates.forEach((dateStr) => {
+        const fineCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+
         const hasWellness = wellnessList.some(
           (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name)
         );
@@ -249,9 +295,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           (h) => h.date === dateStr && (h.athleteId === ath.id || h.athleteName === ath.name)
         );
 
-        const missingW = !hasWellness;
-        const missingR = !hasRpe;
-        const missingH = !hasHydration;
+        // Only count as missing if that questionnaire is enabled for fines on this date!
+        const missingW = fineCfg.wellness && !hasWellness;
+        const missingR = fineCfg.rpe && !hasRpe;
+        const missingH = fineCfg.hydration && !hasHydration;
 
         if (missingW || missingR || missingH) {
           if (missingW) missingWellnessCount++;
@@ -283,7 +330,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         failedDates,
       };
     }).sort((a, b) => b.totalFineEuros - a.totalFineEuros);
-  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault]);
+  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault, finesConfigMap, finesEnabledDays, dayTypesMap]);
 
   // Overall KPIs
   const totalSquadFinesEuros = useMemo(
@@ -291,7 +338,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     [complianceReports]
   );
 
-  const totalPossibleSubmissions = pastAndTodayFineActiveDates.length * athletes.length * 3;
+  const totalPossibleSubmissions = useMemo(() => {
+    return pastAndTodayFineActiveDates.reduce((sum, dateStr) => {
+      const cfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+      const activeCount = (cfg.wellness ? 1 : 0) + (cfg.rpe ? 1 : 0) + (cfg.hydration ? 1 : 0);
+      return sum + (activeCount * athletes.length);
+    }, 0);
+  }, [pastAndTodayFineActiveDates, finesConfigMap, finesEnabledDays, dayTypesMap, athletes.length]);
+
   const totalActualFails = useMemo(
     () => complianceReports.reduce((acc, curr) => acc + curr.totalFails, 0),
     [complianceReports]
@@ -472,24 +526,35 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               onClick={enableAllFinesForActivityDays}
               className="px-2.5 py-1 text-[11px] font-extrabold rounded-xl border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/60 transition-all flex items-center space-x-1"
             >
-              <span>💶 Ativar Multas em Treinos/Jogos</span>
+              <span>💶 Ativar Todas as Multas (Treinos/Jogos)</span>
+            </button>
+            <button
+              type="button"
+              onClick={enableWellnessOnlyForRestDays}
+              className="px-2.5 py-1 text-[11px] font-extrabold rounded-xl border border-cyan-500/40 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/60 transition-all flex items-center space-x-1"
+            >
+              <span>🏖️ Ativar Só Wellness nas Folgas</span>
             </button>
             <button
               type="button"
               onClick={exemptAllFinesInMonth}
               className="px-2.5 py-1 text-[11px] font-extrabold rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 transition-all flex items-center space-x-1"
             >
-              <span>🚫 Isentar Todas as Multas do Mês</span>
+              <span>🚫 Isentar Todas as Multas</span>
             </button>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] font-medium text-slate-400">
-          <span>Clica no cartão para mudar o tipo de atividade (Treino ⚽ / Jogo 🏆 / Folga 🏖️) ou na etiqueta para ativar/isentar multas:</span>
-          <div className="flex items-center space-x-3 text-[10px]">
+          <span>Clica no cartão para mudar atividade (⚽/🏆/🏖️) ou na etiqueta para escolher os questionários com multa:</span>
+          <div className="flex flex-wrap items-center gap-3 text-[10px]">
             <span className="flex items-center space-x-1 text-emerald-400 font-bold">
               <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              <span>💶 Multa Ativa</span>
+              <span>💶 Todas Multas</span>
+            </span>
+            <span className="flex items-center space-x-1 text-amber-400 font-bold">
+              <span className="h-2 w-2 rounded-full bg-amber-400" />
+              <span>💶 Multas Selecionadas (W/PSE/PES)</span>
             </span>
             <span className="flex items-center space-x-1 text-slate-400 font-bold">
               <span className="h-2 w-2 rounded-full bg-slate-500" />
@@ -501,7 +566,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
           {datesInMonth.map((dStr) => {
             const dayType = dayTypesMap[dStr] || 'rest';
-            const hasFine = finesEnabledMap[dStr] === true;
+            const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
+            const hasFine = isDayAnyFineActive(cfg);
+            const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
             const dayNum = dStr.split('-')[2];
             const isToday = dStr === todayStr;
 
@@ -523,12 +590,30 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               style += ' ring-2 ring-red-500 border-red-500 shadow-lg';
             }
 
+            let badgeText = '🚫 NÃO';
+            let badgeTitle = `${dStr}: Dia Isento de multas. Clica para escolher questionários.`;
+            let badgeStyle = 'bg-slate-800/90 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
+
+            if (allActive) {
+              badgeText = '💶 TODAS';
+              badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
+              badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30';
+            } else if (hasFine) {
+              const activeLabels: string[] = [];
+              if (cfg.wellness) activeLabels.push('W');
+              if (cfg.rpe) activeLabels.push('PSE');
+              if (cfg.hydration) activeLabels.push('PES');
+              badgeText = `💶 ${activeLabels.join('·')}`;
+              badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
+              badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30';
+            }
+
             return (
               <div
                 key={dStr}
                 onClick={() => cycleDayType(dStr)}
-                title={`${dStr}: Clica para alternar tipo (${label}). Clica na etiqueta para alternar multa.`}
-                className={`flex flex-col items-center justify-between min-w-[56px] min-h-[72px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative cursor-pointer ${style}`}
+                title={`${dStr}: Clica para alternar tipo (${label}). Clica na etiqueta para escolher questionários sujeitos a multa.`}
+                className={`flex flex-col items-center justify-between min-w-[58px] min-h-[74px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative cursor-pointer ${style}`}
               >
                 <div className="flex flex-col items-center">
                   <span className="text-[10px] opacity-75">{dayNum}</span>
@@ -540,18 +625,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                   )}
                 </div>
 
-                {/* Interactive Fine Active Badge */}
+                {/* Interactive Fine Active Badge / Questionnaire Selector */}
                 <button
                   type="button"
-                  onClick={(e) => toggleFineStatus(dStr, e)}
-                  title={hasFine ? 'Multa ATIVA. Clica para isentar.' : 'Isento de multa. Clica para ativar.'}
-                  className={`mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all flex items-center space-x-0.5 ${
-                    hasFine
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-rose-500/30 hover:text-rose-200 hover:border-rose-500/50'
-                      : 'bg-slate-800/90 text-slate-400 border border-slate-700 hover:bg-emerald-950 hover:text-emerald-300 hover:border-emerald-500/40'
-                  }`}
+                  onClick={(e) => handleOpenConfigModal(dStr, e)}
+                  title={badgeTitle}
+                  className={`mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all flex items-center justify-center w-full truncate ${badgeStyle}`}
                 >
-                  {hasFine ? <span>💶 SIM</span> : <span>🚫 NÃO</span>}
+                  <span className="truncate">{badgeText}</span>
                 </button>
               </div>
             );
@@ -708,6 +789,235 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Questionnaire Fine Configuration Modal */}
+      {configuringDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg rounded-3xl border border-slate-700 bg-dark-card p-6 shadow-2xl space-y-5 text-slate-100">
+            {/* Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <span className="text-3xl">
+                  {dayTypesMap[configuringDate] === 'training'
+                    ? '⚽'
+                    : dayTypesMap[configuringDate] === 'match'
+                    ? '🏆'
+                    : '🏖️'}
+                </span>
+                <div>
+                  <h3 className="text-base font-black text-slate-100 flex items-center space-x-2">
+                    <span>Configurar Multas por Questionário</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 font-semibold">
+                    {configuringDate.split('-').reverse().join('/')} &bull;{' '}
+                    {dayTypesMap[configuringDate] === 'training'
+                      ? 'Dia de Treino'
+                      : dayTypesMap[configuringDate] === 'match'
+                      ? 'Dia de Jogo'
+                      : 'Dia de Folga'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setConfiguringDate(null)}
+                className="rounded-full p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Quick Presets */}
+            <div className="space-y-1.5">
+              <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider">
+                Atalhos Rápidos (1 Toque)
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setModalFineConfig({ wellness: false, rpe: false, hydration: false })}
+                  className="px-2.5 py-2 text-xs font-black rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all text-center"
+                >
+                  🚫 Isentar Dia
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, hydration: true })}
+                  className="px-2.5 py-2 text-xs font-black rounded-xl border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 transition-all text-center"
+                >
+                  💶 Todas Multas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: false, hydration: false })}
+                  className="px-2.5 py-2 text-xs font-black rounded-xl border border-cyan-500/50 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 transition-all text-center"
+                >
+                  🏖️ Só Wellness
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, hydration: false })}
+                  className="px-2.5 py-2 text-xs font-black rounded-xl border border-amber-500/50 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 transition-all text-center"
+                >
+                  🏆 Jogo (W+PSE)
+                </button>
+              </div>
+            </div>
+
+            {/* Questionnaire Fine Toggles */}
+            <div className="space-y-2.5">
+              <span className="text-[11px] font-extrabold uppercase text-slate-400 tracking-wider">
+                Escolhe quais os questionários que dão multa neste dia:
+              </span>
+
+              {/* 1. Wellness Toggle */}
+              <div
+                onClick={() => setModalFineConfig((prev) => ({ ...prev, wellness: !prev.wellness }))}
+                className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
+                  modalFineConfig.wellness
+                    ? 'border-emerald-500/60 bg-emerald-950/20 shadow-sm shadow-emerald-500/10'
+                    : 'border-slate-800 bg-dark-surface/50 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold ${
+                      modalFineConfig.wellness
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    <HeartPulse className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-100">Questionário Wellness (Manhã)</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Sono, fadiga, humor, dor muscular e stress diário.
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 text-[10px] font-black rounded-full border uppercase ${
+                    modalFineConfig.wellness
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {modalFineConfig.wellness ? '💶 Dá Multa' : '🚫 Isento'}
+                </span>
+              </div>
+
+              {/* 2. Pesagem / Hidratação Toggle */}
+              <div
+                onClick={() => setModalFineConfig((prev) => ({ ...prev, hydration: !prev.hydration }))}
+                className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
+                  modalFineConfig.hydration
+                    ? 'border-emerald-500/60 bg-emerald-950/20 shadow-sm shadow-emerald-500/10'
+                    : 'border-slate-800 bg-dark-surface/50 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold ${
+                      modalFineConfig.hydration
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    <Scale className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-100">Pesagem de Hidratação (Pré / Pós Treino)</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Registo de peso corporal e desidratação no treino.
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 text-[10px] font-black rounded-full border uppercase ${
+                    modalFineConfig.hydration
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {modalFineConfig.hydration ? '💶 Dá Multa' : '🚫 Isento'}
+                </span>
+              </div>
+
+              {/* 3. PSE / RPE Toggle */}
+              <div
+                onClick={() => setModalFineConfig((prev) => ({ ...prev, rpe: !prev.rpe }))}
+                className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
+                  modalFineConfig.rpe
+                    ? 'border-emerald-500/60 bg-emerald-950/20 shadow-sm shadow-emerald-500/10'
+                    : 'border-slate-800 bg-dark-surface/50 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold ${
+                      modalFineConfig.rpe
+                        ? 'bg-emerald-500/20 text-emerald-400'
+                        : 'bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    <Dumbbell className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-black text-slate-100">PSE / RPE (Perceção de Esforço Pós-Treino)</h4>
+                    <p className="text-[11px] text-slate-400">
+                      Escala de Borg (0 a 10) e cansaço pós-treino / jogo.
+                    </p>
+                  </div>
+                </div>
+                <span
+                  className={`px-2.5 py-1 text-[10px] font-black rounded-full border uppercase ${
+                    modalFineConfig.rpe
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}
+                >
+                  {modalFineConfig.rpe ? '💶 Dá Multa' : '🚫 Isento'}
+                </span>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleSaveModalFineConfig(true)}
+                className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-center"
+              >
+                Aplicar a todos os{' '}
+                {dayTypesMap[configuringDate] === 'training'
+                  ? 'Treinos'
+                  : dayTypesMap[configuringDate] === 'match'
+                  ? 'Jogos'
+                  : 'Folgas'}{' '}
+                do mês
+              </button>
+
+              <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
+                <button
+                  type="button"
+                  onClick={() => setConfiguringDate(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSaveModalFineConfig(false)}
+                  className="px-5 py-2 rounded-xl text-xs font-black bg-brand-lime text-slate-950 shadow-lg shadow-brand-lime/20 hover:bg-lime-400 transition-all active:scale-95"
+                >
+                  Confirmar & Guardar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
