@@ -29,6 +29,12 @@ export function getAthleteAvatar(athleteId: string): string | null {
   }
 }
 
+export function dispatchDataUpdatedEvent(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('femperf_data_updated'));
+  }
+}
+
 export function setAthleteAvatar(athleteId: string, avatarUrl: string | null): void {
   if (typeof window === 'undefined') return;
   try {
@@ -45,6 +51,7 @@ export function setAthleteAvatar(athleteId: string, avatarUrl: string | null): v
       body: JSON.stringify({ athleteAvatars: { [athleteId]: avatarUrl || '' } }),
     }).catch(() => {});
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+    dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar foto de perfil:', e);
   }
@@ -132,6 +139,7 @@ export function setAthleteActiveStatus(athleteId: string, isActive: boolean): vo
       body: JSON.stringify({ inactiveAthletes: updated }),
     }).catch(() => {});
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+    dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar estado de visibilidade da jogadora:', e);
   }
@@ -147,6 +155,7 @@ export function setAllAthletesActive(): void {
       body: JSON.stringify({ inactiveAthletes: [] }),
     }).catch(() => {});
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+    dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao ativar todas as jogadoras:', e);
   }
@@ -262,6 +271,7 @@ export async function saveAthleteProfile(
     });
 
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+    dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar perfil da jogadora:', e);
   }
@@ -335,6 +345,7 @@ export async function addNewAthlete(
       }
 
       window.dispatchEvent(new Event('femperf_credentials_updated'));
+      dispatchDataUpdatedEvent();
     } catch (e) {
       console.error('Erro ao adicionar nova jogadora:', e);
     }
@@ -364,6 +375,7 @@ export async function deleteAthlete(athleteId: string): Promise<void> {
     });
 
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+    dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao apagar jogadora:', e);
   }
@@ -472,6 +484,7 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
       }
 
       window.dispatchEvent(new Event('femperf_credentials_updated'));
+      dispatchDataUpdatedEvent();
       return true;
     }
     return false;
@@ -1017,11 +1030,6 @@ export function saveBulkGsheetsData(
   return { wellnessAdded: wAdded, rpeAdded: rAdded, hydrationAdded: hAdded };
 }
 
-function dispatchDataUpdatedEvent() {
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('femperf_data_updated'));
-  }
-}
 
 // Offline / LocalStorage entries helper
 export function saveWellnessLocally(entry: WellnessEntry): void {

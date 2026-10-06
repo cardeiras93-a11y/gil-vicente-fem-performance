@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete } from '@/lib/types';
 import { getStoredActiveAthlete, setStoredActiveAthleteId, setAthleteSession, getAthleteSessionId, clearAthleteSession, isClubAccessGranted, syncAllDataFromCloud } from '@/lib/storage';
+import { initRealtimeCloudSync } from '@/lib/supabase';
 import { Header } from '@/components/Header';
 import { AthleteSelector } from '@/components/AthleteSelector';
 import { WellnessForm } from '@/components/WellnessForm';
@@ -147,15 +148,22 @@ function MainAppContent() {
   useEffect(() => {
     setIsLoaded(true);
 
-    // Sync all cloud data (PINs, training calendar, wellness, RPE, hydration) permanently
+    // 1. Initial complete cloud sync
     syncAllDataFromCloud();
 
-    // Periodic cloud sync every 15 seconds
-    const intervalId = setInterval(() => {
+    // 2. Real-time Supabase push updates across devices
+    const cleanupRealtime = initRealtimeCloudSync(() => {
       syncAllDataFromCloud();
-    }, 15000);
+    });
 
-    // Sync on tab focus / visibility change
+    // 3. Fast fallback heartbeat poll (every 3.5s while active)
+    const intervalId = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        syncAllDataFromCloud();
+      }
+    }, 3500);
+
+    // 4. Instant sync on tab focus or visibility change
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncAllDataFromCloud();
@@ -165,7 +173,11 @@ function MainAppContent() {
         }
       }
     };
+    const handleFocus = () => {
+      syncAllDataFromCloud();
+    };
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
 
     // Check if session athlete is stored
     const sessionId = getAthleteSessionId();
@@ -204,8 +216,10 @@ function MainAppContent() {
     window.addEventListener('femperf_credentials_updated', handleCredentialsUpdate);
 
     return () => {
+      cleanupRealtime();
       clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
       window.removeEventListener('femperf_credentials_updated', handleCredentialsUpdate);
       cleanupReminders();
       window.removeEventListener('online', updateOnlineStatus);
