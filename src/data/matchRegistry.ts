@@ -1,3 +1,7 @@
+import vila0510Match from './matches/gilvicente-vila-0510.json';
+import freiriz0410Match from './matches/gilvicente-freiriz-0410.json';
+import sub14Match0110 from './matches/gilvicente-sub14-0110.json';
+import albergaria2609Match from './matches/gilvicente-albergaria-2609.json';
 import j1pv1909Match from './matches/gilvicente-j1pv-1909.json';
 import romarizMatch from './matches/gilvicente-romariz-1209.json';
 import u14Match from './matches/gilvicente-sub14-1009.json';
@@ -90,6 +94,10 @@ export const posColorClassMap: Record<string, { badge: string; text: string; bg:
 };
 
 export const ALL_MATCHES: MatchInfo[] = [
+  vila0510Match as unknown as MatchInfo,
+  freiriz0410Match as unknown as MatchInfo,
+  sub14Match0110 as unknown as MatchInfo,
+  albergaria2609Match as unknown as MatchInfo,
   j1pv1909Match as unknown as MatchInfo,
   romarizMatch as unknown as MatchInfo,
   u14Match as unknown as MatchInfo,

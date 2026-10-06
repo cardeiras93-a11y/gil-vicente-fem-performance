@@ -47,41 +47,23 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
     // Se não coincidir localmente, validar em tempo real com a nuvem (Supabase)
     setIsVerifying(true);
     try {
-      const res = await secureFetch('/api/credentials');
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success && json.data) {
-          const cloudCode = json.data.activationCode;
-          const cloudAdmin = json.data.adminPin;
-          const cloudPhysio = json.data.physioPin;
+      await syncCredentialsFromCloud();
+      currentActivationCode = getClubActivationCode();
+      currentAdminPin = getAdminPin();
+      currentPhysioPin = getPhysioPin();
 
-          if (cloudAdmin) {
-            localStorage.setItem('femperf_admin_pin', cloudAdmin);
-            currentAdminPin = cloudAdmin;
-          }
-          if (cloudPhysio) {
-            localStorage.setItem('femperf_physio_pin', cloudPhysio);
-            currentPhysioPin = cloudPhysio;
-          }
-          if (cloudCode) {
-            localStorage.setItem('femperf_club_activation_code', cloudCode);
-            currentActivationCode = cloudCode;
-          }
+      if (cleanPass === currentAdminPin || cleanPass === currentPhysioPin) {
+        setError('Código de Ativação do Clube incorreto. O PIN de Administrador/Fisioterapia não é válido para ativação da app.');
+        setPasscode('');
+        setIsVerifying(false);
+        return;
+      }
 
-          if (cleanPass === currentAdminPin || cleanPass === currentPhysioPin) {
-            setError('Código de Ativação do Clube incorreto. O PIN de Administrador/Fisioterapia não é válido para ativação da app.');
-            setPasscode('');
-            setIsVerifying(false);
-            return;
-          }
-
-          if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
-            grantClubAccess();
-            onAccessGranted();
-            setIsVerifying(false);
-            return;
-          }
-        }
+      if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
+        grantClubAccess();
+        onAccessGranted();
+        setIsVerifying(false);
+        return;
       }
     } catch {
       // Fallback silencioso

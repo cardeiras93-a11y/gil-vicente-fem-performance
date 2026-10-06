@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Lock, KeyRound, X, CheckCircle } from 'lucide-react';
-import { getAthletePin, setAthletePin } from '@/lib/storage';
+import { getAthletePin, setAthletePin, syncCredentialsFromCloud } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface PinModalProps {
@@ -24,6 +24,12 @@ export const PinModal: React.FC<PinModalProps> = ({
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'verify' | 'setup'>('verify');
+
+  useEffect(() => {
+    if (isOpen) {
+      syncCredentialsFromCloud();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

@@ -4,12 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Athlete, HydrationEntry, HydrationStatus } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { calculateHydrationStatus } from '@/lib/data';
-import { saveHydrationLocally, getHydrationLocally } from '@/lib/storage';
+import { saveHydrationLocally, getHydrationLocally, formatSubmissionTime } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { getTodayLocalDateStr } from '@/lib/reminderUtils';
 import {
   Droplet, AlertTriangle, CheckCircle, Scale, ChevronDown, ChevronUp,
-  Activity, Plus, History, Check, ArrowRight, Sparkles, RefreshCw, Pencil
+  Activity, Plus, History, Check, ArrowRight, Sparkles, RefreshCw, Pencil, Clock
 } from 'lucide-react';
 
 interface HydrationDashboardProps {
@@ -146,6 +146,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     if (pre <= 0) return;
 
     setIsSubmitting(true);
+    const nowIso = new Date().toISOString();
     const partialEntry: HydrationEntry = {
       id: `hyd-${todayStr}-${activeAthlete.id}`,
       athleteId: activeAthlete.id,
@@ -161,7 +162,9 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       refillNeededLiters: 0,
       recommendation: 'Peso Pré-Treino registado. Conclui a pesagem no final do treino.',
       biologicalImpact: 'Aguardando pesagem pós-treino',
-      createdAt: new Date().toISOString(),
+      preWeightTime: nowIso,
+      submittedAtPre: nowIso,
+      createdAt: nowIso,
     };
 
     saveHydrationLocally(partialEntry);
@@ -198,10 +201,11 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     if (post <= 0) return;
 
     // 1. Get today's pre-weight for this athlete from state or local storage
+    const list = getHydrationLocally(activeAthlete.id);
+    const todayEntry = list.find((item) => item.date === todayStr);
+
     let pre = savedPreWeight || parseNum(preWeight);
     if (!pre || pre <= 0) {
-      const list = getHydrationLocally(activeAthlete.id);
-      const todayEntry = list.find((item) => item.date === todayStr);
       if (todayEntry && Number(todayEntry.preWeight) > 0) {
         pre = Number(todayEntry.preWeight);
       }
@@ -214,6 +218,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
 
     setIsSubmitting(true);
     const calc = calculateHydrationStatus(pre, post, fluids, language);
+    const nowIso = new Date().toISOString();
 
     const fullEntry: HydrationEntry = {
       id: `hyd-${todayStr}-${activeAthlete.id}`,
@@ -230,7 +235,11 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       refillNeededLiters: calc.refillNeededLiters,
       recommendation: calc.recommendation,
       biologicalImpact: calc.biologicalImpact,
-      createdAt: new Date().toISOString(),
+      preWeightTime: todayEntry?.preWeightTime || todayEntry?.submittedAtPre || todayEntry?.createdAt || nowIso,
+      submittedAtPre: todayEntry?.submittedAtPre || todayEntry?.preWeightTime || todayEntry?.createdAt || nowIso,
+      postWeightTime: nowIso,
+      submittedAtPost: nowIso,
+      createdAt: todayEntry?.createdAt || nowIso,
     };
 
     saveHydrationLocally(fullEntry);
@@ -577,9 +586,18 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
                   <span className="text-xs uppercase font-extrabold tracking-wider text-slate-300 block">
                     Pesagem de Hoje Concluída
                   </span>
-                  <span className="text-[10px] text-slate-400">
-                    Pré: {currentResult.preWeight} kg &bull; Pós: {currentResult.postWeight} kg (-{currentResult.weightLoss} kg)
-                  </span>
+                  <div className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-cyan-400" />
+                      <span>Pré: <strong className="text-slate-200">{currentResult.preWeight} kg</strong> ({formatSubmissionTime(currentResult.preWeightTime || currentResult.submittedAtPre || currentResult.createdAt)})</span>
+                    </span>
+                    <span>&bull;</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-amber-400" />
+                      <span>Pós: <strong className="text-slate-200">{currentResult.postWeight} kg</strong> ({formatSubmissionTime(currentResult.postWeightTime || currentResult.submittedAtPost || currentResult.createdAt)})</span>
+                    </span>
+                    <span className="text-amber-400 font-bold">(-{currentResult.weightLoss} kg)</span>
+                  </div>
                 </div>
               </div>
               {getStatusBadge(currentResult.status)}
@@ -675,9 +693,11 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
               >
                 <div>
                   <span className="font-bold text-slate-200 block">{item.date}</span>
-                  <span className="text-[10px] text-slate-400">
-                    {item.preWeight} kg &rarr; {item.postWeight > 0 ? `${item.postWeight} kg (-${item.weightLoss} kg)` : 'Aguardando Pós-Treino'}
-                  </span>
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mt-0.5">
+                    <span>Pré: <strong className="text-slate-300">{item.preWeight} kg</strong> ({formatSubmissionTime(item.preWeightTime || item.submittedAtPre || item.createdAt)})</span>
+                    <span>&rarr;</span>
+                    <span>{item.postWeight > 0 ? <>Pós: <strong className="text-slate-300">{item.postWeight} kg</strong> ({formatSubmissionTime(item.postWeightTime || item.submittedAtPost || item.createdAt)})</> : 'Aguardando Pós'}</span>
+                  </div>
                 </div>
                 <div className="text-right">
                   <span className="font-extrabold text-cyan-400 block">{item.dehydrationRate}%</span>

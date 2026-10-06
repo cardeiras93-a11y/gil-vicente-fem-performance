@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Athlete, MenstrualCyclePhase, MuscleFatigueMap, WellnessEntry } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
-import { saveWellnessLocally } from '@/lib/storage';
+import { saveWellnessLocally, getWellnessLocally, isSubmissionPastDeadline } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese } from '@/lib/translationUtils';
-import { HeartPulse, Moon, Sun, Smile, ShieldAlert, Zap, Stethoscope, Check, AlertCircle, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { HeartPulse, Moon, Sun, Smile, ShieldAlert, Zap, Stethoscope, Check, AlertCircle, ChevronDown, ChevronUp, Info, Lock, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 interface WellnessFormProps {
   activeAthlete: Athlete;
@@ -25,16 +25,60 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   const [fatigue, setFatigue] = useState<number | null>(null);
   const [soreness, setSoreness] = useState<number | null>(null);
   const [heavyLegs, setHeavyLegs] = useState<number | null>(null);
-
   const [muscleFatigue, setMuscleFatigue] = useState<MuscleFatigueMap>({});
   const [needsPhysio, setNeedsPhysio] = useState<boolean>(false);
   const [physioReason, setPhysioReason] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [allowEdit, setAllowEdit] = useState<boolean>(false);
 
   // State to toggle full scale legend visibility per item
   const [expandedLegend, setExpandedLegend] = useState<{ [key: string]: boolean }>({});
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const localEntries = getWellnessLocally(activeAthlete.id);
+  const existingToday = localEntries.find((e) => e.date === todayStr);
+
+  const [deadlineCheck, setDeadlineCheck] = useState(() =>
+    isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id)
+  );
+
+  const [submittedLateNotice, setSubmittedLateNotice] = useState<{
+    deadlineTime: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const updateCheck = () => {
+      setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id));
+    };
+    updateCheck();
+    const interval = setInterval(updateCheck, 10000);
+    window.addEventListener('femperf_credentials_updated', updateCheck);
+    window.addEventListener('femperf_data_updated', updateCheck);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('femperf_credentials_updated', updateCheck);
+      window.removeEventListener('femperf_data_updated', updateCheck);
+    };
+  }, [todayStr, activeAthlete.id]);
+
+  const handleEditClick = () => {
+    if (existingToday) {
+      setMenstrualCycle((existingToday.menstrualCycle as MenstrualCyclePhase) || null);
+      setSleepQuality(existingToday.sleepQuality ?? null);
+      setSleepDuration(existingToday.sleepDuration ?? null);
+      setMood(existingToday.mood ?? null);
+      setStress(existingToday.stress ?? null);
+      setFatigue(existingToday.fatigue ?? null);
+      setSoreness(existingToday.soreness ?? null);
+      setHeavyLegs(existingToday.heavyLegs ?? null);
+      setMuscleFatigue(existingToday.muscleFatigue || {});
+      setNeedsPhysio(!!existingToday.needsPhysio);
+      setPhysioReason(existingToday.physioReason || '');
+    }
+    setAllowEdit(true);
+  };
 
   const toggleLegend = (key: string) => {
     setExpandedLegend((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -69,8 +113,16 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     const normalizedCycle = normalizeMenstrualCycleToPortuguese(menstrualCycle);
     const translatedReason = needsPhysio && physioReason.trim() ? translateTextToPortuguese(physioReason.trim()) : undefined;
 
+    const currentDeadlineCheck = isSubmissionPastDeadline(today, 'wellness', activeAthlete.id);
+    if (currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast && currentDeadlineCheck.strictBlock) {
+      setError(`O horário limite (${currentDeadlineCheck.deadlineTime}) já expirou hoje. A submissão está bloqueada pela equipa técnica.`);
+      setIsSubmitting(false);
+      return;
+    }
+    const isLate = currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast;
+
     const newEntry: WellnessEntry = {
-      id: `wel-${Date.now()}`,
+      id: existingToday ? existingToday.id : `wel-${Date.now()}`,
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: today,
@@ -85,9 +137,23 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       wellnessTotal: sleepQuality + sleepDuration + mood + stress + fatigue + soreness + heavyLegs,
       muscleFatigue,
       needsPhysio,
-      physioReason: translatedReason,
-      createdAt: new Date().toISOString(),
+      isLate: existingToday ? (existingToday.isLate || isLate) : (isLate || undefined),
+      isAuthorizedLate: currentDeadlineCheck.isAuthorizedLate,
+      approvalStatus: currentDeadlineCheck.isAuthorizedLate
+        ? 'approved'
+        : (currentDeadlineCheck.requireApproval ? 'pending' : (existingToday?.approvalStatus || 'approved')),
+      submittedAt: existingToday?.submittedAt || new Date().toISOString(),
+      createdAt: existingToday?.createdAt || new Date().toISOString(),
     };
+
+    const isLatePending = Boolean(currentDeadlineCheck.requireApproval);
+    if (isLatePending) {
+      setSubmittedLateNotice({ deadlineTime: currentDeadlineCheck.deadlineTime });
+    } else {
+      setSubmittedLateNotice(null);
+    }
+
+    const redirectDelay = isLatePending ? 4500 : 1800;
 
     try {
       await secureFetch('/api/wellness', {
@@ -109,7 +175,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       setTimeout(() => {
         setIsSuccess(false);
         onSubmitSuccess();
-      }, 1800);
+      }, redirectDelay);
     } catch (err) {
       console.warn('Falha no envio API. Guardado localmente.');
       saveWellnessLocally(newEntry);
@@ -118,7 +184,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       setTimeout(() => {
         setIsSuccess(false);
         onSubmitSuccess();
-      }, 1800);
+      }, redirectDelay);
     }
   };
 
@@ -221,7 +287,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 rounded-2xl border border-brand-lime/40 bg-dark-card p-8 text-center shadow-xl animate-fade-in">
+      <div className="flex flex-col items-center justify-center space-y-4 rounded-2xl border border-brand-lime/40 bg-dark-card p-6 sm:p-8 text-center shadow-xl animate-fade-in">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-lime text-slate-950 shadow-lg shadow-brand-lime/30">
           <Check className="h-8 w-8 stroke-[3]" />
         </div>
@@ -229,6 +295,156 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         <p className="text-xs text-slate-300">
           {activeAthlete.name}
         </p>
+
+        {submittedLateNotice && (
+          <div className="mt-2 w-full max-w-sm rounded-xl bg-amber-500/15 border border-amber-500/40 p-4 text-left space-y-2.5 animate-fade-in shadow-md">
+            <div className="flex items-center space-x-2 text-amber-300 font-bold text-xs">
+              <Clock className="h-4 w-4 shrink-0 text-amber-400" />
+              <span>Aviso: Submissão Fora de Horas</span>
+            </div>
+            <p className="text-[11px] text-amber-200/90 leading-relaxed">
+              O questionário foi submetido após a hora limite ({submittedLateNotice.deadlineTime}). De acordo com o regulamento de equipa, o registo foi assinalado por atraso.
+            </p>
+            <p className="text-[11px] text-amber-200/80 leading-relaxed">
+              A tua submissão ficou a aguardar validação da equipa técnica, que irá analisar a situação.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setIsSuccess(false);
+                onSubmitSuccess();
+              }}
+              className="w-full mt-1 py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors cursor-pointer"
+            >
+              Compreendi
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (existingToday && !allowEdit) {
+    return (
+      <div className="rounded-2xl border border-emerald-500/40 bg-dark-card p-6 shadow-xl space-y-5 animate-fade-in">
+        <div className="flex items-center space-x-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <Check className="h-6 w-6 stroke-[3]" />
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">
+              Wellness Concluído Hoje
+            </span>
+            <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
+          </div>
+        </div>
+
+        <div className="rounded-xl bg-slate-900/80 p-4 border border-slate-800 space-y-3">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-400">Data de registo:</span>
+            <span className="font-bold text-slate-200">{existingToday.date}</span>
+          </div>
+          {existingToday.submittedAt && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Hora de submissão:</span>
+              <span className="font-bold text-slate-200">
+                {new Date(existingToday.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-slate-400">Pontuação Total:</span>
+            <span className="font-black text-brand-lime text-base">
+              {existingToday.wellnessTotal} / 35
+            </span>
+          </div>
+          {existingToday.approvalStatus === 'pending' ? (
+            <div className="rounded-xl bg-amber-500/15 border border-amber-500/40 p-3 space-y-1.5 text-xs text-amber-200">
+              <div className="flex items-center space-x-2 text-amber-300 font-bold">
+                <Clock className="h-4 w-4 text-amber-400 shrink-0 animate-pulse" />
+                <span>Submissão Fora de Horas • Aguarda Validação</span>
+              </div>
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                Preencheste este questionário após o horário limite. A submissão ficou registada fora de horas e a equipa técnica irá analisar o teu envio.
+              </p>
+            </div>
+          ) : existingToday.approvalStatus === 'rejected' ? (
+            <div className="rounded-xl bg-rose-500/15 border border-rose-500/40 p-3 space-y-1.5 text-xs text-rose-200">
+              <div className="flex items-center space-x-2 text-rose-300 font-bold">
+                <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+                <span>Submissão Não Aceite pela Equipa Técnica</span>
+              </div>
+              <p className="text-[11px] text-rose-200/90 leading-relaxed">
+                A submissão fora de horas não foi aceite pela equipa técnica e ficou registada como não conforme.
+              </p>
+            </div>
+          ) : existingToday.isAuthorizedLate ? (
+            <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 space-y-1.5 text-xs text-emerald-200">
+              <div className="flex items-center space-x-2 text-emerald-300 font-bold">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Autorização Especial de Submissão</span>
+              </div>
+              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
+                Submetido com autorização prévia da equipa técnica.
+              </p>
+            </div>
+          ) : existingToday.isLate ? (
+            <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 space-y-1.5 text-xs text-emerald-200">
+              <div className="flex items-center space-x-2 text-emerald-300 font-bold">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>Submissão Aprovada pela Equipa Técnica</span>
+              </div>
+              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
+                A tua submissão fora de horas foi validada com sucesso pela equipa técnica.
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="pt-2">
+          {deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock ? (
+            <div className="w-full text-center text-xs font-semibold text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center justify-center space-x-1.5">
+              <Lock className="h-4 w-4 text-slate-400" />
+              <span>Edição bloqueada após as {deadlineCheck.deadlineTime}</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
+            >
+              <span>✏️ Rever ou Atualizar Respostas</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!existingToday && deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock) {
+    return (
+      <div className="rounded-2xl border border-rose-500/40 bg-dark-card p-6 text-center space-y-4 shadow-xl animate-fade-in">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-lg shadow-rose-500/10">
+          <Lock className="h-8 w-8 stroke-[2.5]" />
+        </div>
+        <div className="space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+            Horário Limite Ultrapassado
+          </span>
+          <h2 className="text-xl font-black text-slate-100">Questionário Fechado</h2>
+          <p className="text-xs text-slate-300 max-w-sm mx-auto">
+            A hora limite para o preenchimento do Wellness ({deadlineCheck.deadlineTime}) já expirou hoje.
+          </p>
+        </div>
+        <div className="rounded-xl bg-slate-900/90 p-4 border border-slate-800 text-left space-y-2 text-xs">
+          <div className="flex items-center space-x-2 text-rose-300 font-bold">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
+            <span>Submissão Bloqueada pela Equipa Técnica</span>
+          </div>
+          <p className="text-slate-400 text-[11px] leading-relaxed">
+            De acordo com o regulamento de equipa, os questionários não podem ser submetidos após o horário limite. Se tiveste algum impedimento ou problema de conexão, fala diretamente com a equipa técnica.
+          </p>
+        </div>
       </div>
     );
   }
@@ -252,11 +468,58 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
             </span>
             <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
           </div>
-          <span className="text-xs font-semibold text-slate-400">
-            {new Date().toLocaleDateString()}
-          </span>
+          <div className="flex flex-col items-end space-y-1">
+            <span className="text-xs font-semibold text-slate-400">
+              {new Date().toLocaleDateString()}
+            </span>
+            {deadlineCheck.hasDeadline && !deadlineCheck.isPast && (
+              <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${
+                deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
+                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                  : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+              }`}>
+                <Clock className="h-3 w-3" />
+                <span>
+                  {deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
+                    ? `Faltam ${deadlineCheck.minutesRemaining} min (${deadlineCheck.deadlineTime})`
+                    : `Limite: ${deadlineCheck.deadlineTime}`}
+                </span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
+
+      {/* Deadline Warning / Special Authorization Banner */}
+      {deadlineCheck.hasDeadline && deadlineCheck.isPast && !deadlineCheck.strictBlock && (
+        deadlineCheck.isAuthorizedLate ? (
+          <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3.5 flex items-start space-x-2.5 text-xs text-emerald-300 animate-fade-in shadow-sm">
+            <span className="text-base shrink-0">🔓</span>
+            <div className="space-y-0.5">
+              <span className="font-extrabold text-emerald-200">Autorização Especial da Equipa Técnica</span>
+              <p className="text-[11px] text-emerald-200/90 leading-snug">
+                Tens autorização de administrador para submeter o questionário mesmo após o horário limite ({deadlineCheck.deadlineTime}).
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3.5 flex items-start space-x-2.5 text-xs text-amber-300 animate-fade-in shadow-sm">
+            <Clock className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" />
+            <div className="space-y-0.5">
+              <span className="font-extrabold text-amber-200">
+                {deadlineCheck.requireApproval
+                  ? `Preenchimento Fora do Prazo`
+                  : `Atenção: Submissão após o horário limite (${deadlineCheck.deadlineTime})`}
+              </span>
+              <p className="text-[11px] text-amber-200/80 leading-snug">
+                {deadlineCheck.requireApproval
+                  ? `A hora limite era às ${deadlineCheck.deadlineTime}. Podes preencher o formulário normalmente. A equipa técnica irá validar o teu registo.`
+                  : 'O preenchimento ainda é permitido, mas a tua resposta ficará registada como enviada com atraso.'}
+              </p>
+            </div>
+          </div>
+        )
+      )}
 
       {/* 1. Ciclo Menstrual */}
       <div className="space-y-3 rounded-xl border border-dark-border bg-dark-card p-4 shadow-sm">
@@ -420,7 +683,11 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         disabled={isSubmitting}
         className="w-full rounded-xl bg-gradient-to-r from-brand-lime to-emerald-400 py-4 text-sm font-extrabold text-slate-950 shadow-xl shadow-brand-lime/25 hover:from-brand-limeHover hover:to-emerald-500 active:scale-98 transition-all disabled:opacity-50"
       >
-        {isSubmitting ? t.wellness.submitting : t.wellness.submit}
+        {isSubmitting
+          ? t.wellness.submitting
+          : deadlineCheck.requireApproval
+          ? 'Submeter Questionário (Sujeito a Validação)'
+          : t.wellness.submit}
       </button>
     </form>
   );

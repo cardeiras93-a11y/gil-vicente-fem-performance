@@ -1,5 +1,6 @@
 import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from './types';
 import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese, normalizeHydrationStatusToPortuguese } from './translationUtils';
+import { formatSubmissionTime } from './storage';
 
 // Helper to trigger browser download of CSV/Excel file with UTF-8 BOM
 export function downloadExcelCSV(filename: string, headers: string[], rows: (string | number)[][]): void {
@@ -38,6 +39,7 @@ export function exportWellnessToExcel(entries: WellnessEntry[], athleteFilter?: 
   const headers = [
     'Data',
     'Atleta',
+    'Hora Submissão',
     'Fase Microciclo',
     'Pontuação Wellness Total (7-35)',
     'Qualidade do Sono (1-5)',
@@ -64,6 +66,7 @@ export function exportWellnessToExcel(entries: WellnessEntry[], athleteFilter?: 
     return [
       e.date,
       e.athleteName,
+      formatSubmissionTime(e.submittedAt || e.createdAt),
       e.matchDayOffset || 'MD-3',
       wTotal,
       e.sleepQuality,
@@ -94,6 +97,7 @@ export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, fi
   const headers = [
     'Data',
     'Atleta',
+    'Hora Submissão',
     'Fase Microciclo (MD Tag)',
     'Exigência Física / Borg CR10 (1-10)',
     'Duração do Treino (minutos)',
@@ -115,6 +119,7 @@ export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, fi
     return [
       e.date,
       e.athleteName,
+      formatSubmissionTime(e.submittedAt || e.createdAt),
       e.matchDayOffset || 'MD-3',
       e.physicalDemand,
       dur,
@@ -140,7 +145,9 @@ export function exportHydrationToExcel(entries: HydrationEntry[], athleteFilter?
     'Data',
     'Atleta',
     'Peso Pré-Treino (kg)',
+    'Hora Pesagem Pré',
     'Peso Pós-Treino (kg)',
+    'Hora Pesagem Pós',
     'Perda de Peso (kg)',
     'Taxa de Desidratação (%)',
     'Fluidos Ingeridos no Treino (L)',
@@ -155,7 +162,9 @@ export function exportHydrationToExcel(entries: HydrationEntry[], athleteFilter?
     e.date,
     e.athleteName,
     e.preWeight,
-    e.postWeight,
+    formatSubmissionTime(e.preWeightTime || e.submittedAtPre || (e.preWeight > 0 ? e.createdAt : undefined)),
+    e.postWeight > 0 ? e.postWeight : '-',
+    formatSubmissionTime(e.postWeightTime || e.submittedAtPost || (e.postWeight > 0 ? e.createdAt : undefined)),
     e.weightLoss,
     `${e.dehydrationRate}%`,
     e.fluidsIntake,
@@ -268,10 +277,12 @@ export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: s
     'Data',
     'Atleta',
     'Peso Pré-Treino (kg)',
+    'Hora Pesagem Pré',
     'Peso Pós-Treino (kg)',
+    'Hora Pesagem Pós',
     'Perda de Peso no Treino (kg)',
-    '1º Peso Registado no Mês (kg)',
-    'Último Peso Registado no Mês (kg)',
+    '1º Peso Registado no Mês (Pré-Treino) (kg)',
+    'Último Peso Registado no Mês (Pré-Treino) (kg)',
     'Variação Ponderal Mensal (kg)',
     'Data de Registo'
   ];
@@ -282,11 +293,13 @@ export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: s
       .filter((h) => h.athleteName.toLowerCase() === e.athleteName.toLowerCase() && h.date.startsWith(monthPrefix))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
-    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+    // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna
+    const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+    const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
+    const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
     const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : '';
-    const lastWeightMonth = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : '';
+    const lastWeightMonth = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : '';
     const monthlyDiff = (typeof firstWeightMonth === 'number' && typeof lastWeightMonth === 'number')
       ? +(lastWeightMonth - firstWeightMonth).toFixed(1)
       : '';
@@ -295,7 +308,9 @@ export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: s
       e.date,
       e.athleteName,
       e.preWeight || '',
+      formatSubmissionTime(e.preWeightTime || e.submittedAtPre || (e.preWeight > 0 ? e.createdAt : undefined)),
       e.postWeight || '',
+      formatSubmissionTime(e.postWeightTime || e.submittedAtPost || (e.postWeight > 0 ? e.createdAt : undefined)),
       e.weightLoss || '',
       firstWeightMonth,
       lastWeightMonth,

@@ -4,6 +4,10 @@ import { verifyApiAuth } from '@/lib/authGuard';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'credentials.json');
 
@@ -20,6 +24,7 @@ function ensureFileExists() {
         athletePins: {},
         athleteAvatars: {},
         finesEnabledDays: {},
+        individualFineExemptions: {},
         editedProfiles: {},
         customAthletes: [],
       };
@@ -36,7 +41,7 @@ function getStoredCredentialsFile(): any {
     const raw = fs.readFileSync(FILE_PATH, 'utf-8');
     return JSON.parse(raw);
   } catch {
-    return { activationCode: 'GVFC2026@', adminPin: '2026', physioPin: '2026', athletePins: {}, athleteAvatars: {}, finesEnabledDays: {}, editedProfiles: {}, customAthletes: [] };
+    return { activationCode: 'GVFC2026@', adminPin: '2026', physioPin: '2026', athletePins: {}, athleteAvatars: {}, finesEnabledDays: {}, individualFineExemptions: {}, editedProfiles: {}, customAthletes: [] };
   }
 }
 
@@ -74,12 +79,16 @@ export async function GET(request: Request) {
               result.athleteAvatars = { ...result.athleteAvatars, ...item.value };
             } else if (item.key === 'fines_enabled_days' && item.value) {
               result.finesEnabledDays = { ...result.finesEnabledDays, ...item.value };
+            } else if (item.key === 'individual_fine_exemptions' && item.value) {
+              result.individualFineExemptions = { ...result.individualFineExemptions, ...item.value };
             } else if (item.key === 'edited_profiles' && item.value) {
               result.editedProfiles = { ...result.editedProfiles, ...item.value };
             } else if (item.key === 'custom_athletes' && item.value) {
               result.customAthletes = item.value;
             } else if (item.key === 'reminder_config' && item.value) {
               result.reminderConfig = item.value;
+            } else if (item.key === 'deadline_config' && item.value) {
+              result.deadlineConfig = item.value;
             }
           });
         }
@@ -103,11 +112,13 @@ export async function GET(request: Request) {
           if (fallbackCreds.athletePins) result.athletePins = { ...result.athletePins, ...fallbackCreds.athletePins };
           if (fallbackCreds.athleteAvatars) result.athleteAvatars = { ...result.athleteAvatars, ...fallbackCreds.athleteAvatars };
           if (fallbackCreds.finesEnabledDays) result.finesEnabledDays = { ...result.finesEnabledDays, ...fallbackCreds.finesEnabledDays };
+          if (fallbackCreds.individualFineExemptions) result.individualFineExemptions = { ...result.individualFineExemptions, ...fallbackCreds.individualFineExemptions };
           if (fallbackCreds.editedProfiles) result.editedProfiles = { ...result.editedProfiles, ...fallbackCreds.editedProfiles };
           if (fallbackCreds.customAthletes) result.customAthletes = fallbackCreds.customAthletes;
           if (fallbackCreds.deletedAthletes) result.deletedAthletes = fallbackCreds.deletedAthletes;
           if (fallbackCreds.inactiveAthletes) result.inactiveAthletes = fallbackCreds.inactiveAthletes;
           if (fallbackCreds.reminderConfig) result.reminderConfig = fallbackCreds.reminderConfig;
+          if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
         }
       } catch (e) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
@@ -151,7 +162,16 @@ export async function GET(request: Request) {
 
     result.activationCode = result.activationCode || 'GVFC2026@';
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(
+      { success: true, data: result },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Erro ao ler credenciais' }, { status: 500 });
   }
@@ -203,6 +223,9 @@ export async function POST(request: Request) {
     if (body.finesEnabledDays !== undefined) {
       current.finesEnabledDays = { ...current.finesEnabledDays, ...body.finesEnabledDays };
     }
+    if (body.individualFineExemptions !== undefined) {
+      current.individualFineExemptions = body.individualFineExemptions;
+    }
     if (body.editedProfiles !== undefined) {
       current.editedProfiles = { ...(current.editedProfiles || {}), ...body.editedProfiles };
     }
@@ -225,6 +248,9 @@ export async function POST(request: Request) {
     }
     if (body.reminderConfig !== undefined) {
       current.reminderConfig = body.reminderConfig;
+    }
+    if (body.deadlineConfig !== undefined) {
+      current.deadlineConfig = body.deadlineConfig;
     }
 
     current.activationCode = current.activationCode || 'GVFC2026@';
@@ -253,6 +279,9 @@ export async function POST(request: Request) {
         if (body.finesEnabledDays !== undefined) {
           updates.push({ key: 'fines_enabled_days', value: current.finesEnabledDays, updated_at: new Date().toISOString() });
         }
+        if (body.individualFineExemptions !== undefined) {
+          updates.push({ key: 'individual_fine_exemptions', value: current.individualFineExemptions, updated_at: new Date().toISOString() });
+        }
         if (body.editedProfiles !== undefined) {
           updates.push({ key: 'edited_profiles', value: current.editedProfiles, updated_at: new Date().toISOString() });
         }
@@ -261,6 +290,9 @@ export async function POST(request: Request) {
         }
         if (body.reminderConfig !== undefined) {
           updates.push({ key: 'reminder_config', value: current.reminderConfig, updated_at: new Date().toISOString() });
+        }
+        if (body.deadlineConfig !== undefined) {
+          updates.push({ key: 'deadline_config', value: current.deadlineConfig, updated_at: new Date().toISOString() });
         }
 
         if (updates.length > 0) {

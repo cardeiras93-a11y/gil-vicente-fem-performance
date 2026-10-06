@@ -4,6 +4,10 @@ import { verifyApiAuth } from '@/lib/authGuard';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'rpe_entries.json');
 
@@ -86,6 +90,13 @@ export async function GET(request: Request) {
               muscleFatigue: item.muscle_fatigue || {},
               preWorkoutPlans: item.pre_workout_plans || [],
               comments: item.comments || null,
+              submittedAt: item.submitted_at || item.submittedAt || item.created_at || item.date,
+              isLate: Boolean(item.is_late ?? item.isLate),
+              isAuthorizedLate: Boolean(item.is_authorized_late ?? item.isAuthorizedLate),
+              approvalStatus: item.approval_status || item.approvalStatus || 'approved',
+              keepFine: Boolean(item.keep_fine ?? item.keepFine),
+              reviewedAt: item.reviewed_at || item.reviewedAt || null,
+              reviewedBy: item.reviewed_by || item.reviewedBy || null,
               createdAt: item.created_at || item.date,
             };
             entryMap.set(mapped.id, mapped);
@@ -129,7 +140,16 @@ export async function GET(request: Request) {
 
     result.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(
+      { success: true, data: result },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Erro no servidor' }, { status: 500 });
   }
@@ -167,6 +187,13 @@ export async function POST(request: Request) {
       muscleFatigue: muscleFatigue || {},
       preWorkoutPlans: preWorkoutPlans || [],
       comments: comments || null,
+      submittedAt: body.submittedAt || body.createdAt || new Date().toISOString(),
+      isLate: Boolean(body.isLate),
+      isAuthorizedLate: Boolean(body.isAuthorizedLate),
+      approvalStatus: body.approvalStatus || (Boolean(body.isLate) && !body.isAuthorizedLate ? 'pending' : 'approved'),
+      keepFine: Boolean(body.keepFine),
+      reviewedAt: body.reviewedAt || null,
+      reviewedBy: body.reviewedBy || null,
       createdAt: body.createdAt || new Date().toISOString(),
     };
 

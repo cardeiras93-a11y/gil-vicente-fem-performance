@@ -249,13 +249,16 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
         h.date === selectedDate
     );
 
-    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
-    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+    // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna (baseline vs baseline)
+    const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+    const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
+    const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
     const firstWeight = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
     const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
 
-    const lastWeight = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : null;
+    // Ambos 1º e último peso do mês utilizam o peso pré-treino!
+    const lastWeight = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
     const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
 
     const preWeightToday = todayEntry ? todayEntry.preWeight : null;
@@ -435,7 +438,7 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
           </div>
 
           <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
-            <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês</span>
+            <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês (Pré)</span>
             <span className="text-xl font-black text-slate-100">
               {weightMetrics.firstWeight ? `${weightMetrics.firstWeight} kg` : '-'}
             </span>
@@ -445,7 +448,7 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
           </div>
 
           <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
-            <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês</span>
+            <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês (Pré)</span>
             <span className="text-xl font-black text-slate-100">
               {weightMetrics.lastWeight ? `${weightMetrics.lastWeight} kg` : '-'}
             </span>

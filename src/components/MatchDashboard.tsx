@@ -6,10 +6,11 @@ import {
   calculateTeamKpis, calculateSectorAverages, getAthleteParticipatedMatches, getDeltaPct
 } from '@/data/matchRegistry';
 import { MatchComparisonView } from './MatchComparisonView';
+import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import { normalizeAthleteName, getCurrentClientRole, getActiveSessionAthlete } from '@/lib/matchAcl';
 import {
   Trophy, Zap, Activity, Flame, Shield, ArrowUpDown, ChevronDown, ChevronUp,
-  Table, LayoutGrid, ArrowLeft, Sparkles, Info, Heart, Scale,
+  Table, LayoutGrid, ArrowLeft, Sparkles, Info, Heart, Scale, Clock,
   Lock, UserCheck, Eye, Compass, TrendingUp, TrendingDown, Target, Award
 } from 'lucide-react';
 import Link from 'next/link';
@@ -102,7 +103,7 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
 
   const [activePosFilter, setActivePosFilter] = useState<string>('ALL');
   const [currentChartMetric, setCurrentChartMetric] = useState<'dist' | 'sprint' | 'sprint23'>('dist');
-  const [viewMode, setViewMode] = useState<'visual' | 'table' | 'compare'>('visual');
+  const [viewMode, setViewMode] = useState<'visual' | 'table' | 'compare' | 'minutes'>('visual');
   const [tableSortKey, setTableSortKey] = useState<keyof MatchPlayerGps | 'totalAcc'>('dist');
   const [tableSortOrder, setTableSortOrder] = useState<'asc' | 'desc'>('desc');
 
@@ -114,8 +115,8 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
       if (matchParam && allMatches.some((m) => m.id === matchParam)) {
         setSelectedMatchId(matchParam);
       }
-      if (viewParam === 'compare' || viewParam === 'table' || viewParam === 'visual') {
-        setViewMode(viewParam);
+      if (viewParam === 'compare' || viewParam === 'table' || viewParam === 'visual' || viewParam === 'minutes') {
+        setViewMode(viewParam as any);
       }
     }
   }, [allMatches]);
@@ -330,6 +331,21 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
               <Scale className="h-3.5 w-3.5 text-amber-300" />
               <span>Comparar Jogos</span>
             </button>
+
+            {!isAthlete && (
+              <button
+                type="button"
+                onClick={() => setViewMode('minutes')}
+                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  viewMode === 'minutes'
+                    ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white font-black shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5 text-rose-400" />
+                <span>Minutos de Jogo</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -360,6 +376,8 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
           lockedPlayerName={effectiveAthleteName}
           onBack={() => setViewMode('visual')}
         />
+      ) : viewMode === 'minutes' ? (
+        <MatchMinutesDashboard />
       ) : (
         <>
           {/* HERO HEADER */}

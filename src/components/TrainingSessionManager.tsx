@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
-import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, CalendarDayType, getDynamicAthletes } from '@/lib/storage';
+import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
-  AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users
+  AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users,
+  LayoutGrid, List, Loader2
 } from 'lucide-react';
 
 interface TrainingSessionManagerProps {
@@ -48,15 +49,35 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const [dayType, setDayType] = useState<CalendarDayType>('training');
   const [matchCategory, setMatchCategory] = useState<'friendly' | 'championship' | 'cup'>('championship');
   const [matchDayOffset, setMatchDayOffset] = useState<MatchDayOffset>('MD-3');
-  const [startTime, setStartTime] = useState<string>('10:00');
-  const [endTime, setEndTime] = useState<string>('11:30');
+  const [startTime, setStartTime] = useState<string>('09:00');
+  const [endTime, setEndTime] = useState<string>('10:30');
   const [tempStart, setTempStart] = useState<string>('20.0');
   const [tempEnd, setTempEnd] = useState<string>('25.0');
   const [locationName, setLocationName] = useState<string>('Campo de São Martinho - Barcelos');
   const [focusNotes, setFocusNotes] = useState<string>('');
   const [athleteStatuses, setAthleteStatuses] = useState<Record<string, AthleteSessionStatus>>({});
-
+  const [customDeadline, setCustomDeadline] = useState<string>('');
+  const [customDeadlineWellness, setCustomDeadlineWellness] = useState<string>('');
+  const [customDeadlineRpe, setCustomDeadlineRpe] = useState<string>('');
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const autoSaveTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [calendarViewMode, setCalendarViewMode] = useState<'grid' | 'strip'>('grid');
+
+  const [sessionSubTab, setSessionSubTabState] = useState<'calendar' | 'timing' | 'roster' | 'conditions' | 'submissions' | 'all'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('femperf_session_sub_tab') as any) || 'calendar';
+    }
+    return 'calendar';
+  });
+
+  const setSessionSubTab = (tab: 'calendar' | 'timing' | 'roster' | 'conditions' | 'submissions' | 'all') => {
+    setSessionSubTabState(tab);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('femperf_session_sub_tab', tab);
+    }
+  };
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -246,13 +267,32 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setDayType(existing.dayType);
       setMatchCategory(existing.matchCategory || 'championship');
       setMatchDayOffset(existing.matchDayOffset);
-      setStartTime(existing.startTime || '10:00');
-      setEndTime(existing.endTime || '11:30');
+      setStartTime(existing.startTime || (existing.dayType === 'match' ? '10:00' : '09:00'));
+      setEndTime(existing.endTime || (existing.dayType === 'match' ? '11:30' : '10:30'));
       setTempStart(existing.tempStart !== undefined ? existing.tempStart.toString() : '20.0');
       setTempEnd(existing.tempEnd !== undefined ? existing.tempEnd.toString() : '25.0');
       setLocationName(existing.locationTime || 'Campo de São Martinho - Barcelos');
       setFocusNotes(existing.focusNotes || '');
       setAthleteStatuses(buildInitialStatuses(existing.athleteStatuses));
+      setCustomDeadline(existing.customDeadline || '');
+      const dCfg = getStoredDeadlineConfig();
+      let initWellness = existing.customDeadlineWellness || existing.customDeadline || dCfg.customDateDeadlinesWellness?.[selectedDate] || dCfg.customDateDeadlines?.[selectedDate] || '';
+      let initRpe = existing.customDeadlineRpe || dCfg.customDateDeadlinesRpe?.[selectedDate] || '';
+
+      if (!initWellness && existing.startTime && existing.startTime.includes(':') && (existing.startTime !== '09:00' || existing.dayType === 'match')) {
+        const [h, m] = existing.startTime.split(':').map(Number);
+        const targetW = Math.max(0, (h * 60 + m) - 60);
+        initWellness = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+      }
+      if (!initRpe && (existing.endTime || existing.startTime) && ((existing.startTime && existing.startTime !== '09:00') || existing.dayType === 'match')) {
+        const base = existing.endTime || existing.startTime || (existing.dayType === 'match' ? '11:30' : '10:30');
+        const [h, m] = base.split(':').map(Number);
+        const targetR = Math.min(1439, (h * 60 + m) + 60);
+        initRpe = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+      }
+
+      setCustomDeadlineWellness(initWellness);
+      setCustomDeadlineRpe(initRpe);
     } else {
       // Default fallbacks
       const typeOverride = sched[selectedDate];
@@ -267,13 +307,23 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setDayType(initialType);
       setMatchCategory('championship');
       setMatchDayOffset(getAutoMatchDayOffset(selectedDate, initialType));
-      setStartTime('10:00');
-      setEndTime('11:30');
+      if (initialType === 'match') {
+        setStartTime('10:00');
+        setEndTime('11:30');
+      } else {
+        setStartTime('09:00');
+        setEndTime('10:30');
+      }
       setTempStart('20.0');
       setTempEnd('25.0');
       setLocationName('Campo de São Martinho - Barcelos');
       setFocusNotes('');
       setAthleteStatuses(buildInitialStatuses());
+
+      const dCfg = getStoredDeadlineConfig();
+      setCustomDeadline(dCfg.customDateDeadlines?.[selectedDate] || '');
+      setCustomDeadlineWellness(dCfg.customDateDeadlinesWellness?.[selectedDate] || dCfg.customDateDeadlines?.[selectedDate] || '');
+      setCustomDeadlineRpe(dCfg.customDateDeadlinesRpe?.[selectedDate] || '');
     }
   };
 
@@ -288,24 +338,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     };
 
     window.addEventListener('femperf_data_updated', handleDataUpdate);
-
-    secureFetch('/api/training-sessions')
-      .then((res) => res.json())
-      .then((data) => {
-        const remoteSessions = data?.sessions || data?.data?.sessions;
-        const remoteSchedule = data?.schedule || data?.data?.schedule;
-        if (remoteSessions || remoteSchedule) {
-          const localSessions = getStoredTrainingSessions();
-          const localSched = getStoredCalendarSchedule();
-          const mergedSessions = { ...localSessions, ...(remoteSessions || {}) };
-          const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
-          localStorage.setItem('femperf_training_sessions_info', JSON.stringify(mergedSessions));
-          localStorage.setItem('femperf_training_calendar_schedule_v2', JSON.stringify(mergedSched));
-          setTrainingSessions(mergedSessions);
-          setCalendarSchedule(mergedSched);
-        }
-      })
-      .catch(() => {});
+    syncAllDataFromCloud();
 
     return () => {
       window.removeEventListener('femperf_data_updated', handleDataUpdate);
@@ -321,31 +354,55 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return () => clearTimeout(timer);
   }, [selectedDate]);
 
-  // Auto-save session configuration on any field change
+  // Auto-save session configuration on any field change (debounced)
   useEffect(() => {
     if (isInitialLoad.current || !selectedDate) return;
 
-    const startT = parseFloat(tempStart);
-    const endT = parseFloat(tempEnd);
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
 
-    const info: TrainingSessionInfo = {
-      date: selectedDate,
-      dayType,
-      matchCategory: dayType === 'match' ? matchCategory : undefined,
-      matchDayOffset,
-      startTime,
-      endTime,
-      durationMin,
-      tempStart: isNaN(startT) ? undefined : startT,
-      tempEnd: isNaN(endT) ? undefined : endT,
-      tempDelta: tempDelta !== null ? tempDelta : undefined,
-      locationTime: locationName,
-      focusNotes,
-      athleteStatuses,
+    autoSaveTimerRef.current = setTimeout(() => {
+      const startT = parseFloat(tempStart);
+      const endT = parseFloat(tempEnd);
+
+      const info: TrainingSessionInfo = {
+        date: selectedDate,
+        dayType,
+        matchCategory: dayType === 'match' ? matchCategory : undefined,
+        matchDayOffset,
+        startTime,
+        endTime,
+        durationMin,
+        tempStart: isNaN(startT) ? undefined : startT,
+        tempEnd: isNaN(endT) ? undefined : endT,
+        tempDelta: tempDelta !== null ? tempDelta : undefined,
+        locationTime: locationName,
+        focusNotes,
+        athleteStatuses,
+        customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
+        customDeadlineWellness: customDeadlineWellness.trim(),
+        customDeadlineRpe: customDeadlineRpe.trim(),
+        updatedAt: Date.now(),
+      };
+
+      saveTrainingSessionInfo(info);
+      setTrainingSessions((prev) => ({
+        ...prev,
+        [selectedDate]: info,
+      }));
+      setCalendarSchedule((prev) => ({
+        ...prev,
+        [selectedDate]: dayType,
+      }));
+    }, 700);
+
+    return () => {
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+      }
     };
-
-    saveTrainingSessionInfo(info);
-  }, [selectedDate, dayType, matchCategory, matchDayOffset, startTime, endTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses]);
+  }, [selectedDate, dayType, matchCategory, matchDayOffset, startTime, endTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses, customDeadlineWellness, customDeadlineRpe, customDeadline]);
 
   // All dates in selected month for calendar strip
   const datesInMonth = useMemo(() => {
@@ -362,6 +419,48 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     }
     return list;
   }, [selectedMonth]);
+
+  const formattedMonthName = useMemo(() => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const d = new Date(y, m - 1, 1);
+    const name = d.toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  }, [selectedMonth]);
+
+  const handlePrevMonth = () => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const prevDate = new Date(y, m - 2, 1);
+    const prevMonthStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+    setSelectedMonth(prevMonthStr);
+  };
+
+  const handleNextMonth = () => {
+    const [y, m] = selectedMonth.split('-').map(Number);
+    const nextDate = new Date(y, m, 1);
+    const nextMonthStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
+    setSelectedMonth(nextMonthStr);
+  };
+
+  const calendarMonthData = useMemo(() => {
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+
+    const firstDate = new Date(year, month - 1, 1);
+    // In Portugal / Europe: Monday is day 0
+    let startingDayOfWeek = firstDate.getDay() - 1;
+    if (startingDayOfWeek === -1) startingDayOfWeek = 6;
+
+    const paddingLeading: null[] = Array(startingDayOfWeek).fill(null);
+    const totalCells = paddingLeading.length + datesInMonth.length;
+    const trailingCount = (7 - (totalCells % 7)) % 7;
+    const paddingTrailing: null[] = Array(trailingCount).fill(null);
+
+    return {
+      paddingLeading,
+      paddingTrailing,
+    };
+  }, [selectedMonth, datesInMonth]);
 
   // Combined day types map (manual overrides or auto-detected)
   const dayTypesMap = useMemo(() => {
@@ -407,15 +506,82 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       const updatedInfo: TrainingSessionInfo = {
         ...existing,
         dayType: next,
+        matchCategory: next === 'match' ? (existing.matchCategory || 'championship') : undefined,
         matchDayOffset: getAutoMatchDayOffset(dateStr, next),
+        startTime: existing.startTime || (next === 'match' ? '10:00' : '09:00'),
+        endTime: existing.endTime || (next === 'match' ? '11:30' : '10:30'),
+        updatedAt: Date.now(),
       };
       saveTrainingSessionInfo(updatedInfo);
+      setTrainingSessions((prev) => ({
+        ...prev,
+        [dateStr]: updatedInfo,
+      }));
+    } else if (next === 'match') {
+      const newMatchSession: TrainingSessionInfo = {
+        date: dateStr,
+        dayType: 'match',
+        matchCategory: 'championship',
+        matchDayOffset: 'MD',
+        startTime: '10:00',
+        endTime: '11:30',
+        durationMin: 90,
+        tempStart: 20.0,
+        tempEnd: 25.0,
+        tempDelta: 5.0,
+        locationTime: 'Campo de São Martinho - Barcelos',
+        focusNotes: '',
+        athleteStatuses: {},
+        updatedAt: Date.now(),
+      };
+      saveTrainingSessionInfo(newMatchSession);
+      setTrainingSessions((prev) => ({
+        ...prev,
+        [dateStr]: newMatchSession,
+      }));
     }
 
     // If currently selected date, update state & recalculate MD tag
     if (dateStr === selectedDate) {
       setDayType(next);
       setMatchDayOffset(getAutoMatchDayOffset(selectedDate, next));
+      if (next === 'match') {
+        setMatchCategory(existing?.matchCategory || 'championship');
+        setStartTime(existing?.startTime || (startTime !== '09:00' ? startTime : '10:00'));
+        setEndTime(existing?.endTime || (endTime !== '10:30' ? endTime : '11:30'));
+      } else if (next === 'training') {
+        setStartTime(existing?.startTime || (startTime !== '10:00' ? startTime : '09:00'));
+        setEndTime(existing?.endTime || (endTime !== '11:30' ? endTime : '10:30'));
+      }
+    }
+  };
+
+  // Handle start time change and auto-adapt deadlines to this specific session
+  const handleStartTimeChange = (newStartTime: string) => {
+    setStartTime(newStartTime);
+    if (newStartTime && newStartTime.includes(':')) {
+      const [h, m] = newStartTime.split(':').map(Number);
+      const targetW = Math.max(0, (h * 60 + m) - 60);
+      const calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+      setCustomDeadlineWellness(calcW);
+      setCustomDeadline(calcW);
+
+      const base = endTime && endTime.includes(':') ? endTime : newStartTime;
+      const [bH, bM] = base.split(':').map(Number);
+      const targetR = Math.min(1439, (bH * 60 + bM) + (endTime ? 60 : 150));
+      const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+      setCustomDeadlineRpe(calcR);
+    }
+  };
+
+  // Handle end time change and auto-adapt RPE deadline to this specific session
+  const handleEndTimeChange = (newEndTime: string) => {
+    setEndTime(newEndTime);
+    if (newEndTime && newEndTime.includes(':')) {
+      const [h, m] = newEndTime.split(':').map(Number);
+      const targetR = Math.min(1439, (h * 60 + m) + 60);
+      const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+      setCustomDeadlineRpe(calcR);
     }
   };
 
@@ -423,6 +589,76 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const handleSelectDayType = (newType: CalendarDayType) => {
     setDayType(newType);
     setMatchDayOffset(getAutoMatchDayOffset(selectedDate, newType));
+    const existing = trainingSessions[selectedDate];
+    if (newType === 'match') {
+      if (existing?.matchCategory) {
+        setMatchCategory(existing.matchCategory);
+      }
+      const matchStart = existing?.startTime || (startTime !== '09:00' ? startTime : '10:00');
+      const matchEnd = existing?.endTime || (endTime !== '10:30' ? endTime : '11:30');
+      setStartTime(matchStart);
+      setEndTime(matchEnd);
+
+      if (existing?.customDeadlineWellness) {
+        setCustomDeadlineWellness(existing.customDeadlineWellness);
+        setCustomDeadline(existing.customDeadlineWellness);
+      } else if (matchStart && matchStart.includes(':')) {
+        const [h, m] = matchStart.split(':').map(Number);
+        const targetW = Math.max(0, (h * 60 + m) - 60);
+        const calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+        setCustomDeadlineWellness(calcW);
+        setCustomDeadline(calcW);
+      }
+
+      if (existing?.customDeadlineRpe) {
+        setCustomDeadlineRpe(existing.customDeadlineRpe);
+      } else if (matchStart && matchStart.includes(':')) {
+        const base = matchEnd && matchEnd.includes(':') ? matchEnd : matchStart;
+        const [bH, bM] = base.split(':').map(Number);
+        const targetR = Math.min(1439, (bH * 60 + bM) + (matchEnd ? 60 : 150));
+        const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        setCustomDeadlineRpe(calcR);
+      }
+    } else if (newType === 'training') {
+      const trainStart = existing?.startTime || (startTime && startTime !== '10:00' ? startTime : '09:00');
+      const trainEnd = existing?.endTime || (endTime && endTime !== '11:30' ? endTime : '10:30');
+      setStartTime(trainStart);
+      setEndTime(trainEnd);
+    }
+  };
+
+  // Change match category (friendly, championship, cup) and save immediately
+  const handleSelectMatchCategory = (cat: 'friendly' | 'championship' | 'cup') => {
+    setMatchCategory(cat);
+
+    const startT = parseFloat(tempStart);
+    const endT = parseFloat(tempEnd);
+
+    const info: TrainingSessionInfo = {
+      date: selectedDate,
+      dayType,
+      matchCategory: cat,
+      matchDayOffset,
+      startTime,
+      endTime,
+      durationMin,
+      tempStart: isNaN(startT) ? undefined : startT,
+      tempEnd: isNaN(endT) ? undefined : endT,
+      tempDelta: tempDelta !== null ? tempDelta : undefined,
+      locationTime: locationName,
+      focusNotes,
+      athleteStatuses,
+      customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
+      customDeadlineWellness: customDeadlineWellness.trim() || '',
+      customDeadlineRpe: customDeadlineRpe.trim() || '',
+      updatedAt: Date.now(),
+    };
+
+    saveTrainingSessionInfo(info);
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [selectedDate]: info,
+    }));
   };
 
   // Update athlete training status
@@ -455,15 +691,21 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   };
 
   // Save current training session info
-  const handleSaveSession = (e: React.FormEvent) => {
+  const handleSaveSession = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+    }
+
+    setIsSaving(true);
     const startT = parseFloat(tempStart);
     const endT = parseFloat(tempEnd);
 
     const info: TrainingSessionInfo = {
       date: selectedDate,
       dayType,
+      matchCategory: dayType === 'match' ? matchCategory : undefined,
       matchDayOffset,
       startTime,
       endTime,
@@ -474,12 +716,25 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       locationTime: locationName,
       focusNotes,
       athleteStatuses,
+      customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
+      customDeadlineWellness: customDeadlineWellness.trim() || '',
+      customDeadlineRpe: customDeadlineRpe.trim() || '',
+      updatedAt: Date.now(),
     };
 
-    saveTrainingSessionInfo(info);
-    loadAllStoredData();
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [selectedDate]: info,
+    }));
+    setCalendarSchedule((prev) => ({
+      ...prev,
+      [selectedDate]: dayType,
+    }));
 
-    setSaveSuccess(`Informação do treino para ${selectedDate} guardada com sucesso!`);
+    await saveTrainingSessionInfoAsync(info);
+    setIsSaving(false);
+
+    setSaveSuccess(`Informação do ${dayType === 'match' ? 'jogo' : 'treino'} para ${selectedDate} guardada com sucesso!`);
     setTimeout(() => setSaveSuccess(null), 4000);
   };
 
@@ -497,31 +752,173 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Sub-Navigation Pills for Treino & Calendário */}
+      <div className="flex flex-wrap gap-2 bg-dark-card/80 p-2 rounded-2xl border border-slate-800">
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('calendar')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'calendar'
+              ? 'bg-brand-lime text-slate-950 shadow-md font-extrabold ring-1 ring-lime-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Calendar className="h-3.5 w-3.5 text-brand-lime" />
+          <span>Calendário Mensal</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('timing')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'timing'
+              ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold ring-1 ring-amber-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Clock className="h-3.5 w-3.5 text-amber-400" />
+          <span>Horários & Limites</span>
+          <span className="ml-1 rounded-full bg-slate-900/60 px-2 py-0.5 text-[10px] text-amber-300 font-extrabold border border-amber-500/30">
+            {startTime} - {endTime}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('roster')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'roster'
+              ? 'bg-red-600 text-white shadow-md font-extrabold ring-1 ring-red-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Users className="h-3.5 w-3.5 text-rose-400" />
+          <span>Presenças do Plantel</span>
+          <span className="ml-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] text-emerald-300 font-extrabold">
+            {statusCounts.normal}/{athletes.length}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('conditions')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'conditions'
+              ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold ring-1 ring-cyan-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Thermometer className="h-3.5 w-3.5 text-cyan-400" />
+          <span>Condições & Notas</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('submissions')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'submissions'
+              ? 'bg-blue-500 text-white shadow-md font-extrabold ring-1 ring-blue-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Activity className="h-3.5 w-3.5 text-blue-400" />
+          <span>Respostas do Dia</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('all')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'all'
+              ? 'bg-slate-700 text-white shadow-md font-extrabold'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <LayoutGrid className="h-3.5 w-3.5 text-slate-300" />
+          <span>Ver Tudo</span>
+        </button>
+      </div>
+
       {/* 1. Activity Calendar Bar (DIAS DO MÊS & CALENDÁRIO DE ATIVIDADE) */}
-      <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-4 shadow-lg">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+      {(sessionSubTab === 'calendar' || sessionSubTab === 'all') && (
+        <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-4 shadow-lg animate-fade-in">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800 pb-3">
           <div className="flex items-center space-x-2 text-slate-300">
-            <Calendar className="h-5 w-5 text-brand-lime" />
+            <Calendar className="h-5 w-5 text-brand-lime shrink-0" />
             <div>
-              <h3 className="text-xs font-extrabold uppercase text-slate-100">
-                Dias do Mês & Calendário de Atividade
-              </h3>
+              <div className="flex items-center space-x-2">
+                <h3 className="text-xs font-extrabold uppercase text-slate-100">
+                  Dias do Mês & Calendário de Atividade
+                </h3>
+                <span className="text-[10px] text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded-full border border-cyan-800/50 font-bold">
+                  {formattedMonthName}
+                </span>
+              </div>
               <p className="text-[11px] text-slate-400">
-                Clica num dia para ver/editar a informação do treino. Clica novamente para alternar a atividade.
+                Clica num dia para selecionar e editar o treino. Clica na etiqueta da atividade para alternar (⚽ Treino / 🏆 Jogo / 🏖️ Folga).
               </p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-3">
-            {/* Month Selector */}
-            <input
-              type="month"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="rounded-xl border border-slate-700 bg-dark-bg px-2.5 py-1 text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
-            />
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* View Mode Toggle: Grid vs Strip */}
+            <div className="flex items-center p-0.5 rounded-xl bg-slate-900 border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setCalendarViewMode('grid')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  calendarViewMode === 'grid'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+                title="Vista em Grelha de Calendário Mensal"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span>Calendário</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalendarViewMode('strip')}
+                className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  calendarViewMode === 'strip'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+                title="Vista em Linha Horizontal"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span>Linha</span>
+              </button>
+            </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-medium text-slate-400">
+            {/* Month Navigation & Selector */}
+            <div className="flex items-center space-x-1 bg-dark-bg border border-slate-700 rounded-xl px-1.5 py-0.5">
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                title="Mês anterior"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <input
+                type="month"
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="bg-transparent text-xs font-bold text-slate-200 focus:outline-none cursor-pointer px-1 py-0.5"
+              />
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
+                title="Mês seguinte"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Legend badges */}
+            <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium text-slate-400">
               <span className="bg-blue-950/60 text-blue-300 border border-blue-500/40 px-2 py-0.5 rounded-lg font-bold">⚽ Treino</span>
               <span className="bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-lg font-bold">🏆 Jogo</span>
               <span className="bg-slate-900 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-lg font-bold">🏖️ Folga</span>
@@ -529,58 +926,264 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           </div>
         </div>
 
-        {/* Scrollable Month Calendar Buttons */}
-        <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
-          {datesInMonth.map((dStr) => {
-            const currentType = dayTypesMap[dStr] || 'rest';
-            const dayNum = dStr.split('-')[2];
-            const isToday = dStr === todayStr;
-            const isSelected = dStr === selectedDate;
+        {/* 1A. Calendar Grid View (Requested Mode) */}
+        {calendarViewMode === 'grid' ? (
+          <div className="space-y-1.5">
+            {/* Weekday column headers */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-black uppercase text-slate-400 py-1.5 border-b border-slate-800/80">
+              <div className="text-slate-300">Segunda</div>
+              <div className="text-slate-300">Terça</div>
+              <div className="text-slate-300">Quarta</div>
+              <div className="text-slate-300">Quinta</div>
+              <div className="text-slate-300">Sexta</div>
+              <div className="text-amber-400/90 font-extrabold">Sábado</div>
+              <div className="text-rose-400/90 font-extrabold">Domingo</div>
+            </div>
 
-            let icon = '🏖️';
-            let label = 'Folga';
-            let style = 'border-slate-800 bg-slate-900/80 text-slate-500 hover:bg-slate-800';
+            {/* 7-column Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {/* Padding cells before day 1 */}
+              {calendarMonthData.paddingLeading.map((_, idx) => (
+                <div
+                  key={`pad-lead-${idx}`}
+                  className="min-h-[70px] sm:min-h-[88px] rounded-xl border border-slate-800/30 bg-slate-950/20 opacity-25"
+                />
+              ))}
 
-            if (currentType === 'training') {
-              icon = '⚽';
-              label = 'Treino';
-              style = 'border-blue-500/60 bg-blue-950/60 text-blue-200 hover:bg-blue-900/60';
-            } else if (currentType === 'match') {
-              icon = '🏆';
-              label = 'Jogo';
-              style = 'border-emerald-500/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70 font-black';
-            }
+              {/* Day cells */}
+              {datesInMonth.map((dStr) => {
+                const currentType = dayTypesMap[dStr] || 'rest';
+                const dayNum = dStr.split('-')[2];
+                const isToday = dStr === todayStr;
+                const isSelected = dStr === selectedDate;
+                const session = trainingSessions[dStr];
 
-            if (isSelected) {
-              style += ' ring-2 ring-red-500 border-red-500 bg-red-950/40 shadow-lg scale-105';
-            }
+                let icon = '🏖️';
+                let label = 'Folga';
+                let cardStyle = 'border-slate-800/80 bg-slate-900/60 text-slate-400 hover:bg-slate-850 hover:border-slate-700';
+                let badgeStyle = 'bg-slate-800/80 text-slate-400 border border-slate-700/80';
 
-            return (
-              <button
-                key={dStr}
-                type="button"
-                onClick={() => {
-                  if (isSelected) {
-                    cycleDayTypeOnCalendar(dStr);
-                  } else {
+                if (currentType === 'training') {
+                  icon = '⚽';
+                  label = 'Treino';
+                  cardStyle = 'border-blue-500/40 bg-blue-950/30 text-blue-200 hover:bg-blue-950/50 hover:border-blue-500/70 shadow-sm';
+                  badgeStyle = 'bg-blue-900/60 text-blue-300 border border-blue-500/50';
+                } else if (currentType === 'match') {
+                  const cat = session?.matchCategory;
+                  icon = cat === 'cup' ? '🥇' : cat === 'friendly' ? '🤝' : '🏆';
+                  label = cat === 'cup' ? 'Taça' : cat === 'friendly' ? 'Treino' : 'Jogo';
+                  cardStyle = cat === 'cup'
+                    ? 'border-purple-500/50 bg-purple-950/30 text-purple-200 hover:bg-purple-950/50 hover:border-purple-500/80 shadow-sm'
+                    : 'border-emerald-500/50 bg-emerald-950/30 text-emerald-200 hover:bg-emerald-950/50 hover:border-emerald-500/80 shadow-sm';
+                  badgeStyle = cat === 'cup'
+                    ? 'bg-purple-900/60 text-purple-300 border border-purple-500/50 font-black'
+                    : 'bg-emerald-900/60 text-emerald-300 border border-emerald-500/50 font-black';
+                }
+
+                if (isSelected) {
+                  cardStyle += ' ring-2 ring-red-500 border-red-500 bg-red-950/30 shadow-lg';
+                }
+
+                return (
+                  <div
+                    key={dStr}
+                    onClick={() => {
+                      onSelectDate(dStr);
+                    }}
+                    title={`${dStr}: Clica para selecionar (${label})`}
+                    className={`group relative flex flex-col justify-between p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer min-h-[70px] sm:min-h-[88px] select-none ${cardStyle}`}
+                  >
+                    {/* Header: Day number + Today pill */}
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs sm:text-sm font-black ${isSelected ? 'text-red-400 font-extrabold' : 'text-slate-200'}`}>
+                        {dayNum}
+                      </span>
+                      {isToday && (
+                        <span className="text-[7px] sm:text-[8px] uppercase font-black bg-red-600 text-white px-1.5 py-0.2 rounded-full shadow-sm">
+                          Hoje
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Center: Activity Badge (clickable to toggle activity) */}
+                    <div className="flex items-center justify-center my-0.5 sm:my-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          cycleDayTypeOnCalendar(dStr);
+                        }}
+                        className={`flex items-center space-x-1 px-1.5 py-0.5 rounded-lg text-[9px] sm:text-[11px] font-bold hover:scale-105 transition-transform cursor-pointer ${badgeStyle}`}
+                        title="Clica para alternar atividade (Treino ➔ Jogo ➔ Folga)"
+                      >
+                        <span>{icon}</span>
+                        <span className="hidden sm:inline">{label}</span>
+                      </button>
+                    </div>
+
+                    {/* Footer: Start time & Match Day offset */}
+                    <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-slate-400 truncate">
+                      {session?.startTime ? (
+                        <span className="truncate text-cyan-400 font-bold flex items-center space-x-0.5" title={`Início às ${session.startTime}`}>
+                          <Clock className="h-2.5 w-2.5 inline shrink-0" />
+                          <span>{session.startTime}</span>
+                        </span>
+                      ) : (
+                        <span className="opacity-0 group-hover:opacity-60 transition-opacity text-[8px] text-slate-500">
+                          {isSelected ? 'Alternar' : 'Selecionar'}
+                        </span>
+                      )}
+
+                      {session?.matchDayOffset && currentType === 'training' && (
+                        <span className="font-extrabold text-[8px] text-blue-300 bg-blue-950/80 px-1 py-0.2 rounded border border-blue-500/30">
+                          {session.matchDayOffset}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Padding cells after last day */}
+              {calendarMonthData.paddingTrailing.map((_, idx) => (
+                <div
+                  key={`pad-trail-${idx}`}
+                  className="min-h-[70px] sm:min-h-[88px] rounded-xl border border-slate-800/30 bg-slate-950/20 opacity-25"
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* 1B. Scrollable Horizontal Strip View (Compact) */
+          <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+            {datesInMonth.map((dStr) => {
+              const currentType = dayTypesMap[dStr] || 'rest';
+              const dayNum = dStr.split('-')[2];
+              const isToday = dStr === todayStr;
+              const isSelected = dStr === selectedDate;
+
+              let icon = '🏖️';
+              let label = 'Folga';
+              let style = 'border-slate-800 bg-slate-900/80 text-slate-500 hover:bg-slate-800';
+
+              if (currentType === 'training') {
+                icon = '⚽';
+                label = 'Treino';
+                style = 'border-blue-500/60 bg-blue-950/60 text-blue-200 hover:bg-blue-900/60';
+              } else if (currentType === 'match') {
+                const session = trainingSessions[dStr];
+                const cat = session?.matchCategory;
+                icon = cat === 'cup' ? '🥇' : cat === 'friendly' ? '🤝' : '🏆';
+                label = cat === 'cup' ? 'Taça' : cat === 'friendly' ? 'Treino' : 'Jogo';
+                style = cat === 'cup'
+                  ? 'border-purple-500/80 bg-purple-950/70 text-purple-300 hover:bg-purple-900/70 font-black'
+                  : 'border-emerald-500/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70 font-black';
+              }
+
+              if (isSelected) {
+                style += ' ring-2 ring-red-500 border-red-500 bg-red-950/40 shadow-lg scale-105';
+              }
+
+              return (
+                <button
+                  key={dStr}
+                  type="button"
+                  onClick={() => {
                     onSelectDate(dStr);
-                  }
-                }}
-                title={`${dStr}: Clica para selecionar/alterar (${label})`}
-                className={`flex flex-col items-center justify-center min-w-[46px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative ${style}`}
-              >
-                <span className="text-[10px] opacity-75">{dayNum}</span>
-                <span className="text-sm font-black">{icon}</span>
-                {isToday && (
-                  <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
-                    Hoje
-                  </span>
-                )}
-              </button>
-            );
-          })}
+                  }}
+                  title={`${dStr}: Clica para selecionar (${label})`}
+                  className={`flex flex-col items-center justify-center min-w-[46px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative ${style}`}
+                >
+                  <span className="text-[10px] opacity-75">{dayNum}</span>
+                  <span className="text-sm font-black">{icon}</span>
+                  {isToday && (
+                    <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
+                      Hoje
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+            </div>
+          )}
+
+          {/* Quick Summary Strip for Selected Day in Calendar View */}
+          {sessionSubTab === 'calendar' && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 animate-fade-in">
+              <div className="flex items-center space-x-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl border text-lg font-black shrink-0 ${
+                  dayType === 'match'
+                    ? matchCategory === 'cup'
+                      ? 'bg-purple-600/20 text-purple-300 border-purple-500/40'
+                      : matchCategory === 'friendly'
+                      ? 'bg-emerald-600/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-amber-600/20 text-amber-300 border-amber-500/40'
+                    : dayType === 'rest'
+                    ? 'bg-amber-600/20 text-amber-300 border-amber-500/40'
+                    : 'bg-blue-600/20 text-blue-300 border-blue-500/40'
+                }`}>
+                  {dayType === 'match'
+                    ? matchCategory === 'cup'
+                      ? '🥇'
+                      : matchCategory === 'friendly'
+                      ? '🤝'
+                      : '🏆'
+                    : dayType === 'rest'
+                    ? '🏖️'
+                    : '⚽'}
+                </div>
+                <div>
+                  <h4 className="text-xs font-black text-slate-100 uppercase flex items-center space-x-2">
+                    <span>{selectedDate}</span>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                      dayType === 'match'
+                        ? matchCategory === 'cup'
+                          ? 'bg-purple-950/80 text-purple-300 border border-purple-500/40'
+                          : matchCategory === 'friendly'
+                          ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
+                          : 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                        : dayType === 'rest'
+                        ? 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                        : 'bg-slate-800 text-slate-300 border border-slate-700'
+                    }`}>
+                      {dayType === 'match'
+                        ? matchCategory === 'cup'
+                          ? 'Jogo de Taça (MD)'
+                          : matchCategory === 'friendly'
+                          ? 'Jogo de Treino (MD)'
+                          : 'Dia de Jogo (MD)'
+                        : dayType === 'rest'
+                        ? 'Dia de Folga'
+                        : 'Dia de Treino'}
+                    </span>
+                  </h4>
+                  <p className="text-[11px] text-slate-400">
+                    Horário: <strong className="text-cyan-300">{startTime} - {endTime}</strong> ({formattedHoursMinutes(durationMin)}) &bull; Presenças: <strong className="text-emerald-400">{statusCounts.normal}</strong> normais, <strong className="text-amber-400">{statusCounts.conditioned}</strong> cond., <strong className="text-rose-400">{statusCounts.injured}</strong> les.
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSessionSubTab('timing')}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold hover:bg-amber-500/30 transition-all flex items-center space-x-1 cursor-pointer"
+                >
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>Editar Horários</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSessionSubTab('roster')}
+                  className="px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-extrabold transition-all shadow-md flex items-center space-x-1 cursor-pointer"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  <span>Presenças ({statusCounts.normal}/{athletes.length})</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
 
       {saveSuccess && (
         <div className="flex items-center space-x-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-300 animate-fade-in">
@@ -590,27 +1193,31 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       )}
 
       {/* 2. Main Training Session Info Form & Athlete Submissions KPI */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Form Panel (2 columns wide on large screens) */}
-        <form onSubmit={handleSaveSession} className="lg:col-span-2 space-y-5 rounded-2xl border border-dark-border bg-dark-card p-5 shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-            <div>
-              <h2 className="text-sm font-black uppercase text-slate-100 flex items-center space-x-2">
-                <FileText className="h-4 w-4 text-red-500" />
-                <span>Configurar Informação do Treino &bull; {selectedDate}</span>
-              </h2>
-              <p className="text-xs text-slate-400">
-                Define o horário, cálculo automático de duração, temperaturas inicial/final e conteúdos da sessão.
-              </p>
-            </div>
+      {sessionSubTab !== 'calendar' && (
+        <div className={`grid grid-cols-1 ${sessionSubTab === 'all' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 animate-fade-in`}>
+          {sessionSubTab !== 'submissions' && (
+            <form onSubmit={handleSaveSession} className={`${sessionSubTab === 'all' ? 'lg:col-span-2' : ''} space-y-5 rounded-2xl border border-dark-border bg-dark-card p-5 shadow-lg`}>
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h2 className="text-sm font-black uppercase text-slate-100 flex items-center space-x-2">
+                    <FileText className="h-4 w-4 text-red-500" />
+                    <span>Configurar Informação do Treino &bull; {selectedDate}</span>
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Define o horário, cálculo automático de duração, temperaturas inicial/final e conteúdos da sessão.
+                  </p>
+                </div>
 
-            <span className="bg-red-500/10 text-red-400 border border-red-500/30 px-2.5 py-1 rounded-xl text-xs font-extrabold font-mono">
-              {selectedDate}
-            </span>
-          </div>
+                <span className="bg-red-500/10 text-red-400 border border-red-500/30 px-2.5 py-1 rounded-xl text-xs font-extrabold font-mono">
+                  {selectedDate}
+                </span>
+              </div>
 
-          {/* Day Type Selector Buttons */}
-          <div className="space-y-2">
+              {/* Timing Section (Day Type, Offset, Times, Deadlines) */}
+              {(sessionSubTab === 'timing' || sessionSubTab === 'all') && (
+                <>
+                  {/* Day Type Selector Buttons */}
+                  <div className="space-y-2">
             <label className="text-xs font-extrabold uppercase text-slate-300 block">
               1. Tipo de Dia / Atividade
             </label>
@@ -664,7 +1271,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     type="button"
-                    onClick={() => setMatchCategory('friendly')}
+                    onClick={() => handleSelectMatchCategory('friendly')}
                     className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
                       matchCategory === 'friendly'
                         ? 'border-emerald-500 bg-emerald-900/90 text-emerald-100 shadow-md ring-2 ring-emerald-500/50'
@@ -677,7 +1284,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setMatchCategory('championship')}
+                    onClick={() => handleSelectMatchCategory('championship')}
                     className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
                       matchCategory === 'championship'
                         ? 'border-amber-500 bg-amber-900/90 text-amber-100 shadow-md ring-2 ring-amber-500/50'
@@ -690,7 +1297,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setMatchCategory('cup')}
+                    onClick={() => handleSelectMatchCategory('cup')}
                     className={`flex items-center justify-center space-x-1.5 p-2.5 rounded-xl border text-xs font-extrabold transition-all ${
                       matchCategory === 'cup'
                         ? 'border-purple-500 bg-purple-900/90 text-purple-100 shadow-md ring-2 ring-purple-500/50'
@@ -752,7 +1359,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <input
                   type="time"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={(e) => handleStartTimeChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
                 />
               </div>
@@ -762,19 +1369,296 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <input
                   type="time"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  onChange={(e) => handleEndTimeChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Temperature Start, Temperature End & Automatic Delta Variation */}
-          <div className="rounded-xl border border-slate-800 bg-dark-surface/40 p-3.5 space-y-3">
+          {/* 4. Horas Limite de Preenchimento para Este Dia */}
+          <div className="rounded-xl border border-amber-500/40 bg-dark-surface/40 p-4 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+              <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-amber-400" />
+                <span>4. Horas Limite de Preenchimento para Este Dia ({selectedDate})</span>
+              </label>
+              <span className="text-[11px] text-slate-400">
+                Pode definir horários diferentes para o <strong>Wellness</strong> e para o <strong>PSE</strong>.
+              </span>
+            </div>
+
+            {startTime && (startTime !== '09:00' || dayType === 'match') && (
+              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-xs">
+                <span className="text-base shrink-0">⚡</span>
+                <div className="leading-snug">
+                  <span className="font-extrabold text-cyan-200 block">
+                    Horário de {dayType === 'match' ? 'Jogo' : 'Treino'} Específico Ativo ({startTime} - {endTime})
+                  </span>
+                  <span className="text-[11px] text-cyan-300/80">
+                    A regra geral por defeito foi desativada automaticamente para este dia. As horas limite foram adaptadas ao horário deste {dayType === 'match' ? 'jogo' : 'treino'}.
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Wellness Card */}
+              <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <span>☀️</span>
+                    <span>Wellness (Matinal / Pré-Treino)</span>
+                  </span>
+                  {(() => {
+                    const eff = getEffectiveDeadlineForDate(selectedDate, 'wellness');
+                    return (
+                      <span className="text-[10px] font-black text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/30 whitespace-nowrap">
+                        Ativo: {eff.deadlineTime} ({eff.isCustom ? 'Manual' : eff.isMatchDay ? 'Jogo' : eff.isRelativeToSession ? 'Auto Início' : 'Geral'})
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={customDeadlineWellness}
+                      onChange={(e) => {
+                        setCustomDeadlineWellness(e.target.value);
+                        setCustomDeadline(e.target.value);
+                      }}
+                      className="w-36 rounded-xl border border-amber-500/40 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-amber-400 focus:outline-none"
+                    />
+                    {customDeadlineWellness && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCustomDeadlineWellness('');
+                          setCustomDeadline('');
+                        }}
+                        className="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                        title="Repor regra geral de Wellness"
+                      >
+                        ✕ Repor Geral
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Shortcuts for Wellness (relative to startTime) */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    {startTime && startTime.includes(':') && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const [h, m] = startTime.split(':').map(Number);
+                            let target = (h * 60 + m) - 60;
+                            if (target < 0) target = 0;
+                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
+                            const calcM = String(target % 60).padStart(2, '0');
+                            const val = `${calcH}:${calcM}`;
+                            setCustomDeadlineWellness(val);
+                            setCustomDeadline(val);
+                          }}
+                          className="px-2 py-1 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 font-bold hover:bg-amber-900/60 transition-all text-[11px] cursor-pointer"
+                          title={`Calcular 1 hora antes do início (${startTime})`}
+                        >
+                          ⚡ 1h antes ({(() => {
+                            const [h, m] = startTime.split(':').map(Number);
+                            let target = (h * 60 + m) - 60;
+                            if (target < 0) target = 0;
+                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
+                          })()})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const [h, m] = startTime.split(':').map(Number);
+                            let target = (h * 60 + m) - 120;
+                            if (target < 0) target = 0;
+                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
+                            const calcM = String(target % 60).padStart(2, '0');
+                            const val = `${calcH}:${calcM}`;
+                            setCustomDeadlineWellness(val);
+                            setCustomDeadline(val);
+                          }}
+                          className="px-2 py-1 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 font-bold hover:bg-amber-900/60 transition-all text-[11px] cursor-pointer"
+                          title={`Calcular 2 horas antes do início (${startTime})`}
+                        >
+                          ⚡ 2h antes ({(() => {
+                            const [h, m] = startTime.split(':').map(Number);
+                            let target = (h * 60 + m) - 120;
+                            if (target < 0) target = 0;
+                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
+                          })()})
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const dCfg = getStoredDeadlineConfig();
+                        const defW = dCfg.wellnessRegularTime || '08:15';
+                        setCustomDeadlineWellness(defW);
+                        setCustomDeadline(defW);
+                      }}
+                      className="px-2 py-1 rounded-lg border border-amber-500/30 bg-slate-800 text-amber-200 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                      title="Forçar Regra Geral Matinal"
+                    >
+                      Regra Geral ({getStoredDeadlineConfig().wellnessRegularTime || '08:15'})
+                    </button>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400">
+                    {customDeadlineWellness ? (
+                      <span className="text-amber-300 font-semibold">
+                        ✓ Limite Wellness para {selectedDate}: {customDeadlineWellness}.
+                      </span>
+                    ) : (
+                      <span>Regra geral ativa ({dayType === 'match' ? 'Dia de Jogo' : 'Treino'}).</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* PSE / RPE Card */}
+              <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                    <span>⚡</span>
+                    <span>PSE / RPE (Pós-Treino)</span>
+                  </span>
+                  {(() => {
+                    const eff = getEffectiveDeadlineForDate(selectedDate, 'rpe');
+                    return (
+                      <span className="text-[10px] font-black text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-full border border-indigo-500/30 whitespace-nowrap">
+                        Ativo: {eff.deadlineTime} ({eff.isCustom ? 'Manual' : eff.isMatchDay ? 'Jogo' : eff.isRelativeToSession ? 'Auto Fim' : 'Geral'})
+                      </span>
+                    );
+                  })()}
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="time"
+                      value={customDeadlineRpe}
+                      onChange={(e) => setCustomDeadlineRpe(e.target.value)}
+                      className="w-36 rounded-xl border border-indigo-500/40 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-indigo-400 focus:outline-none"
+                    />
+                    {customDeadlineRpe && (
+                      <button
+                        type="button"
+                        onClick={() => setCustomDeadlineRpe('')}
+                        className="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                        title="Repor regra geral de PSE"
+                      >
+                        ✕ Repor Geral
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Shortcuts for PSE (relative to endTime or common times) */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    {endTime && endTime.includes(':') && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const [h, m] = endTime.split(':').map(Number);
+                            let target = (h * 60 + m) + 60;
+                            if (target > 1439) target = 1439;
+                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
+                            const calcM = String(target % 60).padStart(2, '0');
+                            setCustomDeadlineRpe(`${calcH}:${calcM}`);
+                          }}
+                          className="px-2 py-1 rounded-lg border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 font-bold hover:bg-indigo-900/60 transition-all text-[11px] cursor-pointer"
+                          title={`Calcular 1 hora após o fim (${endTime})`}
+                        >
+                          ⚡ +1h fim ({(() => {
+                            const [h, m] = endTime.split(':').map(Number);
+                            let target = (h * 60 + m) + 60;
+                            if (target > 1439) target = 1439;
+                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
+                          })()})
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const [h, m] = endTime.split(':').map(Number);
+                            let target = (h * 60 + m) + 120;
+                            if (target > 1439) target = 1439;
+                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
+                            const calcM = String(target % 60).padStart(2, '0');
+                            setCustomDeadlineRpe(`${calcH}:${calcM}`);
+                          }}
+                          className="px-2 py-1 rounded-lg border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 font-bold hover:bg-indigo-900/60 transition-all text-[11px] cursor-pointer"
+                          title={`Calcular 2 horas após o fim (${endTime})`}
+                        >
+                          ⚡ +2h fim ({(() => {
+                            const [h, m] = endTime.split(':').map(Number);
+                            let target = (h * 60 + m) + 120;
+                            if (target > 1439) target = 1439;
+                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
+                          })()})
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setCustomDeadlineRpe('14:00')}
+                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                    >
+                      14:00
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCustomDeadlineRpe('22:00')}
+                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                    >
+                      22:00
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const dCfg = getStoredDeadlineConfig();
+                        const defR = dCfg.rpeRegularTime || '14:00';
+                        setCustomDeadlineRpe(defR);
+                      }}
+                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-200 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
+                      title="Forçar Regra Geral Pós-Treino"
+                    >
+                      Regra Geral ({getStoredDeadlineConfig().rpeRegularTime || '14:00'})
+                    </button>
+                  </div>
+
+                  <p className="text-[11px] text-slate-400">
+                    {customDeadlineRpe ? (
+                      <span className="text-indigo-300 font-semibold">
+                        ✓ Limite PSE para {selectedDate}: {customDeadlineRpe}.
+                      </span>
+                    ) : (
+                      <span>Regra geral ativa ({dayType === 'match' ? 'Dia de Jogo' : 'Treino'}).</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          </>
+        )}
+
+        {/* Conditions Section (Temperature, Location, Focus) */}
+        {(sessionSubTab === 'conditions' || sessionSubTab === 'all') && (
+          <>
+            {/* Temperature Start, Temperature End & Automatic Delta Variation */}
+            <div className="rounded-xl border border-slate-800 bg-dark-surface/40 p-3.5 space-y-3">
             <div className="flex items-center justify-between">
               <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
                 <Thermometer className="h-4 w-4 text-amber-400" />
-                <span>4. Temperatura do Treino (°C) & Variação Automática</span>
+                <span>5. Temperatura do Treino (°C) & Variação Automática</span>
               </label>
 
               {tempDelta !== null && (
@@ -845,9 +1729,14 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 text-xs font-medium text-slate-100 placeholder-slate-500 focus:border-red-500 focus:outline-none"
             />
           </div>
+          </>
+        )}
 
-          {/* 7. Estado Individual do Treino por Jogadora */}
-          <div className="space-y-3 rounded-xl border border-slate-800 bg-dark-surface/40 p-4">
+        {/* Roster Section (Athlete Statuses) */}
+        {(sessionSubTab === 'roster' || sessionSubTab === 'all') && (
+          <>
+            {/* 7. Estado Individual do Treino por Jogadora */}
+            <div className="space-y-3 rounded-xl border border-slate-800 bg-dark-surface/40 p-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
               <div>
                 <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
@@ -999,19 +1888,35 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               })}
             </div>
           </div>
+          </>
+        )}
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="w-full flex items-center justify-center space-x-2 rounded-xl bg-red-600 py-3 text-xs font-black text-white shadow-lg shadow-red-600/30 hover:bg-red-500 transition-all active:scale-98"
+            disabled={isSaving}
+            className={`w-full flex items-center justify-center space-x-2 rounded-xl bg-red-600 py-3 text-xs font-black text-white shadow-lg shadow-red-600/30 hover:bg-red-500 transition-all active:scale-98 cursor-pointer ${
+              isSaving ? 'opacity-70 cursor-wait' : ''
+            }`}
           >
-            <Save className="h-4 w-4" />
-            <span>Guardar Informação do Treino</span>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>A guardar informação do treino...</span>
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                <span>Guardar Informação do Treino</span>
+              </>
+            )}
           </button>
         </form>
+        )}
 
         {/* Side Panel: Selected Date Overview & Athlete Response Stats */}
-        <div className="space-y-4">
+        {(sessionSubTab === 'submissions' || sessionSubTab === 'all') && (
+        <div className={`space-y-4 ${sessionSubTab === 'submissions' ? 'max-w-xl mx-auto w-full' : ''}`}>
           <div className="rounded-2xl border border-slate-800 bg-dark-card p-4 space-y-4 shadow-md">
             <h3 className="text-xs font-black uppercase text-slate-100 border-b border-slate-800 pb-2">
               Respostas das Atletas em {selectedDate}
@@ -1054,7 +1959,11 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <p>
                 <span className="text-slate-500 font-bold">Tipo:</span>{' '}
                 <span className="font-extrabold text-slate-100 uppercase">
-                  {dayType === 'training' ? '⚽ Treino' : dayType === 'match' ? '🏆 Jogo (MD)' : '🏖️ Folga'}
+                  {dayType === 'training'
+                    ? '⚽ Treino'
+                    : dayType === 'match'
+                    ? `🏆 Jogo (${matchCategory === 'cup' ? 'Taça' : matchCategory === 'friendly' ? 'Treino' : 'Campeonato'})`
+                    : '🏖️ Folga'}
                 </span>
               </p>
               <p>
@@ -1098,7 +2007,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             </div>
           </div>
         </div>
+        )}
       </div>
+      )}
     </div>
   );
 };

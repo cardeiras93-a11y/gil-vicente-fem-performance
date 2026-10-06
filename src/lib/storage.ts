@@ -1,4 +1,4 @@
-import { Athlete, AthletePosition, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo } from './types';
+import { Athlete, AthletePosition, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, QuestionnaireDeadlinesConfig, LateSubmissionAuthorization, IndividualFineExemption } from './types';
 import { INITIAL_ATHLETES } from './data';
 import { secureFetch } from './authGuard';
 
@@ -15,6 +15,7 @@ const ADMIN_PIN_KEY = 'femperf_admin_pin';
 const PHYSIO_PIN_KEY = 'femperf_physio_pin';
 const TRAINING_CALENDAR_KEY = 'femperf_training_calendar_schedule_v2';
 const TRAINING_SESSIONS_INFO_KEY = 'femperf_training_sessions_info';
+export const DEADLINE_SETTINGS_KEY = 'femperf_deadline_settings_v1';
 
 const ATHLETE_AVATARS_KEY = 'femperf_athlete_avatars';
 
@@ -394,11 +395,13 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         athletePins: cloudAthletePins,
         athleteAvatars: cloudAthleteAvatars,
         finesEnabledDays: cloudFinesEnabledDays,
+        individualFineExemptions: cloudIndividualFineExemptions,
         editedProfiles: cloudEditedProfiles,
         customAthletes: cloudCustomAthletes,
         deletedAthletes: cloudDeletedAthletes,
         inactiveAthletes: cloudInactiveAthletes,
         reminderConfig: cloudReminderConfig,
+        deadlineConfig: cloudDeadlineConfig,
       } = data.data;
 
       // 1. Activation Code & Admin & Physio PIN: Cloud takes absolute priority
@@ -427,6 +430,11 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
       }
 
+      // 4b. Individual Fine Exemptions: Cloud takes priority
+      if (cloudIndividualFineExemptions && typeof cloudIndividualFineExemptions === 'object') {
+        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(cloudIndividualFineExemptions));
+      }
+
       // 5. Edited Profiles: Cloud is authoritative
       if (cloudEditedProfiles && typeof cloudEditedProfiles === 'object') {
         localStorage.setItem(EDITED_PROFILES_KEY, JSON.stringify(cloudEditedProfiles));
@@ -451,6 +459,11 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
       if (cloudReminderConfig && typeof cloudReminderConfig === 'object') {
         localStorage.setItem('femperf_reminder_settings_v2', JSON.stringify(cloudReminderConfig));
         localStorage.setItem('femperf_reminder_settings_v1', JSON.stringify(cloudReminderConfig));
+      }
+
+      // 10. Deadline Config: Cloud is authoritative
+      if (cloudDeadlineConfig && typeof cloudDeadlineConfig === 'object') {
+        localStorage.setItem(DEADLINE_SETTINGS_KEY, JSON.stringify(cloudDeadlineConfig));
       }
 
       window.dispatchEvent(new Event('femperf_credentials_updated'));
@@ -478,7 +491,68 @@ export async function syncAllDataFromCloud(): Promise<void> {
     if (remoteSessions || remoteSchedule) {
       const localSessions = getStoredTrainingSessions();
       const localSched = getStoredCalendarSchedule();
-      const mergedSessions = { ...localSessions, ...(remoteSessions || {}) };
+      const mergedSessions: Record<string, TrainingSessionInfo> = { ...localSessions };
+      if (remoteSessions) {
+        Object.keys(remoteSessions).forEach((d) => {
+          const loc = localSessions[d];
+          const rem = remoteSessions[d];
+          if (!loc) {
+            mergedSessions[d] = rem;
+            return;
+          }
+          if (!rem) {
+            mergedSessions[d] = loc;
+            return;
+          }
+
+          const locTime = loc.updatedAt || 0;
+          const remTime = rem.updatedAt || 0;
+
+          if (locTime > remTime) {
+            // Local is newer: preserve local customizations completely
+            mergedSessions[d] = {
+              ...rem,
+              ...loc,
+            };
+          } else if (remTime > locTime) {
+            // Remote is newer: preserve remote customizations completely
+            mergedSessions[d] = {
+              ...loc,
+              ...rem,
+            };
+          } else {
+            // Timestamps equal or not yet set:
+            // Never let remote default values overwrite user-customized local values
+            const locHasCustomTime = loc.startTime && (loc.startTime !== '09:00' || loc.dayType === 'match');
+            const remHasCustomTime = rem.startTime && (rem.startTime !== '09:00' || rem.dayType === 'match');
+
+            let bestStartTime = loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00');
+            let bestEndTime = loc.endTime || rem.endTime || (loc.dayType === 'match' ? '11:30' : '10:30');
+
+            if (locHasCustomTime && !remHasCustomTime) {
+              bestStartTime = loc.startTime!;
+              bestEndTime = loc.endTime || bestEndTime;
+            } else if (remHasCustomTime && !locHasCustomTime) {
+              bestStartTime = rem.startTime!;
+              bestEndTime = rem.endTime || bestEndTime;
+            } else if (loc.startTime) {
+              bestStartTime = loc.startTime;
+              bestEndTime = loc.endTime || bestEndTime;
+            }
+
+            mergedSessions[d] = {
+              ...rem,
+              ...loc,
+              dayType: loc.dayType || rem.dayType,
+              matchCategory: loc.matchCategory || rem.matchCategory || undefined,
+              startTime: bestStartTime,
+              endTime: bestEndTime,
+              customDeadlineWellness: loc.customDeadlineWellness || rem.customDeadlineWellness || undefined,
+              customDeadlineRpe: loc.customDeadlineRpe || rem.customDeadlineRpe || undefined,
+            };
+          }
+        });
+      }
       const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
       localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
       localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
@@ -687,6 +761,82 @@ export function saveFinesEnabledDays(map: Record<string, boolean | DayFineConfig
   } catch (e) {
     console.error('Erro ao guardar isenções/multas por dia:', e);
   }
+}
+
+export const FINE_EXEMPTIONS_KEY = 'femperf_individual_fine_exemptions';
+
+export function getStoredFineExemptions(): Record<string, IndividualFineExemption> {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(FINE_EXEMPTIONS_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveFineExemption(exemption: IndividualFineExemption): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getStoredFineExemptions();
+    const key = `${exemption.athleteId}_${exemption.date}_${exemption.type}`;
+    current[key] = exemption;
+    localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
+    secureFetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ individualFineExemptions: current }),
+    }).catch(() => {});
+    window.dispatchEvent(new Event('femperf_fines_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+  } catch (e) {
+    console.error('Erro ao guardar isenção individual de multa:', e);
+  }
+}
+
+export function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'hydration' | 'all'): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getStoredFineExemptions();
+    const key = `${athleteId}_${date}_${type}`;
+    delete current[key];
+    if (type === 'all') {
+      delete current[`${athleteId}_${date}_wellness`];
+      delete current[`${athleteId}_${date}_rpe`];
+      delete current[`${athleteId}_${date}_hydration`];
+    }
+    localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
+    secureFetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ individualFineExemptions: current }),
+    }).catch(() => {});
+    window.dispatchEvent(new Event('femperf_fines_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+  } catch (e) {
+    console.error('Erro ao remover isenção individual de multa:', e);
+  }
+}
+
+export function isFineExempt(
+  exemptions: Record<string, IndividualFineExemption>,
+  athleteId: string,
+  athleteName: string,
+  date: string,
+  type: 'wellness' | 'rpe' | 'hydration'
+): boolean {
+  if (!exemptions) return false;
+  // Check exact id match
+  if (exemptions[`${athleteId}_${date}_${type}`]) return true;
+  if (exemptions[`${athleteId}_${date}_all`]) return true;
+
+  // Check slugified athleteName match for robustness
+  if (athleteName) {
+    const nameSlug = athleteName.trim().toLowerCase().replace(/\s+/g, '-');
+    if (exemptions[`${nameSlug}_${date}_${type}`]) return true;
+    if (exemptions[`${nameSlug}_${date}_all`]) return true;
+  }
+  return false;
 }
 
 const CLEAN_SLATE_KEY = 'femperf_clean_slate_v3';
@@ -999,21 +1149,78 @@ export function saveTrainingSessionInfo(info: TrainingSessionInfo): void {
   if (typeof window === 'undefined') return;
   try {
     const map = getStoredTrainingSessions();
-    map[info.date] = info;
+    const cleanInfo = { ...info };
+    if (!cleanInfo.customDeadline || !cleanInfo.customDeadline.trim()) delete cleanInfo.customDeadline;
+    if (!cleanInfo.customDeadlineWellness || !cleanInfo.customDeadlineWellness.trim()) delete cleanInfo.customDeadlineWellness;
+    if (!cleanInfo.customDeadlineRpe || !cleanInfo.customDeadlineRpe.trim()) delete cleanInfo.customDeadlineRpe;
+    cleanInfo.updatedAt = cleanInfo.updatedAt || Date.now();
+    map[info.date] = cleanInfo;
     localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(map));
 
     const schedule = getStoredCalendarSchedule();
     schedule[info.date] = info.dayType;
-    saveCalendarSchedule(schedule);
+    localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(schedule));
+
+    if (info.customDeadline !== undefined || info.customDeadlineWellness !== undefined || info.customDeadlineRpe !== undefined) {
+      const dConfig = getStoredDeadlineConfig();
+      const customMap = { ...(dConfig.customDateDeadlines || {}) };
+      const customWellnessMap = { ...(dConfig.customDateDeadlinesWellness || {}) };
+      const customRpeMap = { ...(dConfig.customDateDeadlinesRpe || {}) };
+
+      if (info.customDeadline && info.customDeadline.trim()) {
+        customMap[info.date] = info.customDeadline.trim();
+      } else if (info.customDeadline !== undefined) {
+        delete customMap[info.date];
+      }
+
+      if (info.customDeadlineWellness && info.customDeadlineWellness.trim()) {
+        customWellnessMap[info.date] = info.customDeadlineWellness.trim();
+      } else if (info.customDeadlineWellness !== undefined) {
+        delete customWellnessMap[info.date];
+      }
+
+      if (info.customDeadlineRpe && info.customDeadlineRpe.trim()) {
+        customRpeMap[info.date] = info.customDeadlineRpe.trim();
+      } else if (info.customDeadlineRpe !== undefined) {
+        delete customRpeMap[info.date];
+      }
+
+      dConfig.customDateDeadlines = customMap;
+      dConfig.customDateDeadlinesWellness = customWellnessMap;
+      dConfig.customDateDeadlinesRpe = customRpeMap;
+      saveDeadlineConfig(dConfig);
+    }
 
     secureFetch('/api/training-sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'session', info }),
+      body: JSON.stringify({ type: 'session', info: cleanInfo }),
     }).catch(() => {});
     dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar informação de treino:', e);
+  }
+}
+
+export async function saveTrainingSessionInfoAsync(info: TrainingSessionInfo): Promise<boolean> {
+  saveTrainingSessionInfo(info);
+  try {
+    const cleanInfo = {
+      ...info,
+      updatedAt: info.updatedAt || Date.now(),
+    };
+    if (!cleanInfo.customDeadline || !cleanInfo.customDeadline.trim()) delete cleanInfo.customDeadline;
+    if (!cleanInfo.customDeadlineWellness || !cleanInfo.customDeadlineWellness.trim()) delete cleanInfo.customDeadlineWellness;
+    if (!cleanInfo.customDeadlineRpe || !cleanInfo.customDeadlineRpe.trim()) delete cleanInfo.customDeadlineRpe;
+
+    const res = await secureFetch('/api/training-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'session', info: cleanInfo }),
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }
 
@@ -1052,5 +1259,582 @@ export function compressImageFile(file: File, callback: (dataUrl: string) => voi
     img.src = event.target?.result as string;
   };
   reader.readAsDataURL(file);
+}
+
+// ---------------------------------------------------------------------------
+// QUESTIONNAIRE DEADLINES & CUTOFF MANAGEMENT
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
+  enabled: true,
+  mode: 'fixed',
+  defaultRegularTime: '08:15',
+  defaultMatchTime: '11:00',
+  relativeMinutesBeforeSession: 60,
+  strictBlock: true,
+  allowLateWithApproval: false,
+  applyToWellness: true,
+  applyToRpe: true,
+  applyToHydration: false,
+  wellnessRegularTime: '08:15',
+  wellnessMatchTime: '11:00',
+  wellnessRelativeMinutesBefore: 60,
+  rpeRegularTime: '14:00',
+  rpeMatchTime: '22:00',
+  rpeRelativeMinutesAfter: 90,
+  customDateDeadlines: {},
+  customDateDeadlinesWellness: {},
+  customDateDeadlinesRpe: {},
+  athleteLateAuthorizations: {},
+};
+
+export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
+  if (typeof window === 'undefined') return DEFAULT_DEADLINE_CONFIG;
+  try {
+    const raw = localStorage.getItem(DEADLINE_SETTINGS_KEY);
+    if (!raw) return DEFAULT_DEADLINE_CONFIG;
+    const parsed = JSON.parse(raw);
+    return {
+      ...DEFAULT_DEADLINE_CONFIG,
+      ...parsed,
+      strictBlock: parsed.strictBlock !== undefined ? Boolean(parsed.strictBlock) : true,
+      allowLateWithApproval: parsed.allowLateWithApproval ? true : false,
+      customDateDeadlines: {
+        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlines || {}),
+        ...(parsed.customDateDeadlines || {}),
+      },
+      customDateDeadlinesWellness: {
+        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlinesWellness || {}),
+        ...(parsed.customDateDeadlinesWellness || {}),
+      },
+      customDateDeadlinesRpe: {
+        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlinesRpe || {}),
+        ...(parsed.customDateDeadlinesRpe || {}),
+      },
+      athleteLateAuthorizations: {
+        ...(DEFAULT_DEADLINE_CONFIG.athleteLateAuthorizations || {}),
+        ...(parsed.athleteLateAuthorizations || {}),
+      },
+    };
+  } catch {
+    return DEFAULT_DEADLINE_CONFIG;
+  }
+}
+
+export function saveDeadlineConfig(config: QuestionnaireDeadlinesConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(DEADLINE_SETTINGS_KEY, JSON.stringify(config));
+    secureFetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deadlineConfig: config }),
+    }).catch(() => {});
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+    window.dispatchEvent(new Event('femperf_data_updated'));
+  } catch (e) {
+    console.error('Erro ao guardar configurações de prazos:', e);
+  }
+}
+
+export interface EffectiveDeadlineResult {
+  hasDeadline: boolean;
+  deadlineTime: string; // "HH:mm"
+  isMatchDay: boolean;
+  isTrainingDay: boolean;
+  isRestDay: boolean;
+  isCustom: boolean;
+  isRelativeToSession: boolean;
+  sessionStartTime?: string;
+  sourceDescription: string;
+}
+
+export function getEffectiveDeadlineForDate(
+  dateStr: string,
+  questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness'
+): EffectiveDeadlineResult {
+  const config = getStoredDeadlineConfig();
+  if (!config.enabled) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite de horário ativo',
+    };
+  }
+
+  // Check if deadline applies to this questionnaire type
+  if (questionnaireType === 'wellness' && !config.applyToWellness) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite ativo para Wellness',
+    };
+  }
+  if (questionnaireType === 'rpe' && !config.applyToRpe) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite ativo para PSE',
+    };
+  }
+  if (questionnaireType === 'hydration' && !config.applyToHydration) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite ativo para Pesagem',
+    };
+  }
+
+  const schedule = getStoredCalendarSchedule();
+  const sessions = getStoredTrainingSessions();
+  const session = sessions[dateStr];
+  const dayType = schedule[dateStr] || session?.dayType || 'training';
+  const isMatchDay = dayType === 'match';
+  const isTrainingDay = dayType === 'training';
+  const isRestDay = dayType === 'rest';
+
+  // 1. Specific custom deadline for this date and questionnaireType
+  let customDeadline: string | undefined = undefined;
+  if (questionnaireType === 'wellness') {
+    customDeadline =
+      (config.customDateDeadlinesWellness && config.customDateDeadlinesWellness[dateStr]) ||
+      session?.customDeadlineWellness ||
+      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
+      session?.customDeadline;
+  } else if (questionnaireType === 'rpe') {
+    customDeadline =
+      (config.customDateDeadlinesRpe && config.customDateDeadlinesRpe[dateStr]) ||
+      session?.customDeadlineRpe ||
+      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
+      session?.customDeadline;
+  } else {
+    customDeadline = (config.customDateDeadlines && config.customDateDeadlines[dateStr]) || session?.customDeadline;
+  }
+
+  if (customDeadline && customDeadline.includes(':')) {
+    return {
+      hasDeadline: true,
+      deadlineTime: customDeadline,
+      isMatchDay,
+      isTrainingDay,
+      isRestDay,
+      isCustom: true,
+      isRelativeToSession: false,
+      sessionStartTime: session?.startTime,
+      sourceDescription: `Personalizado para ${questionnaireType.toUpperCase()} (${customDeadline})`,
+    };
+  }
+
+  // 2. Specific session schedule defined ("outro horário no treino ou jogo")
+  // Whenever the coach defines another schedule for the training or match:
+  // - A match day with a scheduled start time
+  // - A training with a specific startTime (differing from standard 09:00 morning session)
+  // - Or global mode is 'relative_to_session'
+  // The default fixed time is automatically deactivated for this session!
+  const hasSpecificSchedule = Boolean(
+    session?.startTime &&
+    session.startTime.includes(':') &&
+    (
+      isMatchDay ||
+      session.startTime !== '09:00' ||
+      config.mode === 'relative_to_session'
+    )
+  );
+
+  if (hasSpecificSchedule && session?.startTime) {
+    if (questionnaireType === 'wellness') {
+      const [h, m] = session.startTime.split(':').map(Number);
+      const sessionMinutes = (h || 0) * 60 + (m || 0);
+      const relMin = config.wellnessRelativeMinutesBefore || config.relativeMinutesBeforeSession || 60;
+      let targetMin = sessionMinutes - relMin;
+      if (targetMin < 0) targetMin = 0;
+      const tH = Math.floor(targetMin / 60);
+      const tM = targetMin % 60;
+      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
+      return {
+        hasDeadline: true,
+        deadlineTime: calcTime,
+        isMatchDay,
+        isTrainingDay,
+        isRestDay,
+        isCustom: false,
+        isRelativeToSession: true,
+        sessionStartTime: session.startTime,
+        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} das ${session.startTime} (${relMin}min antes: ${calcTime})`,
+      };
+    } else if (questionnaireType === 'rpe') {
+      const baseTime = session.endTime || session.startTime;
+      const [h, m] = baseTime.split(':').map(Number);
+      const baseMinutes = (h || 0) * 60 + (m || 0) + (session.endTime ? 0 : 90);
+      const relMin = config.rpeRelativeMinutesAfter || 60;
+      let targetMin = baseMinutes + relMin;
+      if (targetMin > 1439) targetMin = 1439;
+      const tH = Math.floor(targetMin / 60);
+      const tM = targetMin % 60;
+      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
+      return {
+        hasDeadline: true,
+        deadlineTime: calcTime,
+        isMatchDay,
+        isTrainingDay,
+        isRestDay,
+        isCustom: false,
+        isRelativeToSession: true,
+        sessionStartTime: session.startTime,
+        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} (Fim ${baseTime} +${relMin}min: ${calcTime})`,
+      };
+    }
+  }
+
+  // 3. Match day fallback logic (when no specific startTime was scheduled for the match)
+  if (isMatchDay) {
+    let matchTime = config.defaultMatchTime || '11:00';
+    if (questionnaireType === 'wellness') {
+      matchTime = config.wellnessMatchTime || config.defaultMatchTime || '11:00';
+    } else if (questionnaireType === 'rpe') {
+      matchTime = config.rpeMatchTime || config.defaultMatchTime || '22:00';
+    }
+
+    return {
+      hasDeadline: true,
+      deadlineTime: matchTime,
+      isMatchDay: true,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sessionStartTime: session?.startTime,
+      sourceDescription: `Dia de Jogo Padrão (${matchTime})`,
+    };
+  }
+
+  // 4. Default regular time (standard 10:00 training / rest fixed)
+  let regTime = config.defaultRegularTime || '08:15';
+  if (questionnaireType === 'wellness') {
+    regTime = config.wellnessRegularTime || config.defaultRegularTime || '08:15';
+  } else if (questionnaireType === 'rpe') {
+    regTime = config.rpeRegularTime || '14:00';
+  }
+
+  return {
+    hasDeadline: true,
+    deadlineTime: regTime,
+    isMatchDay: false,
+    isTrainingDay,
+    isRestDay,
+    isCustom: false,
+    isRelativeToSession: false,
+    sessionStartTime: session?.startTime,
+    sourceDescription: isRestDay ? `Dia de Folga (${regTime})` : `Regra Geral (${regTime})`,
+  };
+}
+
+export interface DeadlineCheckResult {
+  hasDeadline: boolean;
+  isPast: boolean;
+  strictBlock: boolean;
+  isAuthorizedLate?: boolean;
+  allowLateWithApproval?: boolean;
+  requireApproval?: boolean;
+  deadlineTime: string;
+  minutesLeft: number;
+  minutesRemaining?: number;
+  formattedTimeLeft: string;
+  effectiveInfo: EffectiveDeadlineResult;
+}
+
+export function isAthleteAuthorizedForLateSubmission(
+  athleteId: string,
+  dateStr?: string,
+  questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness'
+): boolean {
+  if (!athleteId) return false;
+  const config = getStoredDeadlineConfig();
+  const auths = config.athleteLateAuthorizations || {};
+
+  // 1. Check date-specific authorization: `${athleteId}_${dateStr}`
+  if (dateStr) {
+    const dateKey = `${athleteId}_${dateStr}`;
+    const dateAuth = auths[dateKey];
+    if (dateAuth) {
+      if (!dateAuth.questionnaireType || dateAuth.questionnaireType === 'all' || dateAuth.questionnaireType === questionnaireType) {
+        return true;
+      }
+    }
+  }
+
+  // 2. Check permanent / general authorization: athleteId
+  const permAuth = auths[athleteId];
+  if (permAuth) {
+    if (!permAuth.date || !dateStr || permAuth.date === dateStr) {
+      if (!permAuth.questionnaireType || permAuth.questionnaireType === 'all' || permAuth.questionnaireType === questionnaireType) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+export function grantAthleteLateAuthorization(
+  athleteId: string,
+  athleteName: string,
+  dateStr?: string,
+  questionnaireType: 'all' | 'wellness' | 'rpe' | 'hydration' = 'all'
+): void {
+  const config = getStoredDeadlineConfig();
+  const auths = { ...(config.athleteLateAuthorizations || {}) };
+  const key = dateStr ? `${athleteId}_${dateStr}` : athleteId;
+
+  auths[key] = {
+    athleteId,
+    athleteName,
+    date: dateStr || undefined,
+    questionnaireType,
+    grantedAt: new Date().toISOString(),
+    grantedBy: 'Admin',
+  };
+
+  config.athleteLateAuthorizations = auths;
+  saveDeadlineConfig(config);
+}
+
+export function revokeAthleteLateAuthorization(
+  athleteId: string,
+  dateStr?: string
+): void {
+  const config = getStoredDeadlineConfig();
+  const auths = { ...(config.athleteLateAuthorizations || {}) };
+
+  if (dateStr) {
+    delete auths[`${athleteId}_${dateStr}`];
+  }
+  delete auths[athleteId];
+
+  config.athleteLateAuthorizations = auths;
+  saveDeadlineConfig(config);
+}
+
+export function getAllAthleteLateAuthorizations(): LateSubmissionAuthorization[] {
+  const config = getStoredDeadlineConfig();
+  const auths = config.athleteLateAuthorizations || {};
+  return Object.values(auths);
+}
+
+export function isSubmissionPastDeadline(
+  dateStr: string,
+  questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness',
+  athleteId?: string
+): DeadlineCheckResult {
+  const config = getStoredDeadlineConfig();
+  const effective = getEffectiveDeadlineForDate(dateStr, questionnaireType);
+
+  // Check if this specific athlete is authorized by the coach to submit late
+  const isAuthorized = Boolean(athleteId && isAthleteAuthorizedForLateSubmission(athleteId, dateStr, questionnaireType));
+
+  // Policy resolution:
+  // - If authorized VIP: never blocked, never pending (always immediately approved)
+  // - If strictBlock is true: player is strictly blocked from filling/submitting (unless authorized VIP)
+  // - If allowLateWithApproval is true and strictBlock is false: player can submit, but requires coach approval
+  // - Otherwise: player can submit directly with late tag
+  const isStrictBlock = Boolean(config.strictBlock);
+  const allowLateWithApproval = !isStrictBlock && Boolean(config.allowLateWithApproval);
+  const effectiveStrictBlock = isAuthorized ? false : isStrictBlock;
+
+  if (!config.enabled || !effective.hasDeadline) {
+    return {
+      hasDeadline: false,
+      isPast: false,
+      strictBlock: false,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval,
+      requireApproval: false,
+      deadlineTime: '23:59',
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: '',
+      effectiveInfo: effective,
+    };
+  }
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // If the target date is in the past (e.g. yesterday), it is past deadline
+  if (dateStr < todayStr) {
+    const requireApproval = !isAuthorized && allowLateWithApproval;
+    return {
+      hasDeadline: true,
+      isPast: true,
+      strictBlock: effectiveStrictBlock,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval,
+      requireApproval,
+      deadlineTime: effective.deadlineTime,
+      minutesLeft: -1,
+      minutesRemaining: -1,
+      formattedTimeLeft: isAuthorized ? 'Autorizada pelo Treinador' : (requireApproval ? 'Requer aprovação' : 'Prazo expirado'),
+      effectiveInfo: effective,
+    };
+  }
+
+  // If target date is in the future, it is not past deadline yet
+  if (dateStr > todayStr) {
+    return {
+      hasDeadline: true,
+      isPast: false,
+      strictBlock: effectiveStrictBlock,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval,
+      requireApproval: false,
+      deadlineTime: effective.deadlineTime,
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: `Até às ${effective.deadlineTime}`,
+      effectiveInfo: effective,
+    };
+  }
+
+  // Target date is today: compare current time HH:mm with effective.deadlineTime
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [dH, dM] = effective.deadlineTime.split(':').map(Number);
+  const deadlineMinutes = (dH || 0) * 60 + (dM || 0);
+
+  const diff = deadlineMinutes - currentMinutes;
+  const isPast = diff <= 0;
+  const requireApproval = isPast && !isAuthorized && allowLateWithApproval;
+
+  let formattedTimeLeft = '';
+  if (isPast) {
+    formattedTimeLeft = isAuthorized ? 'Autorizada pelo Treinador' : (requireApproval ? 'Requer aprovação do treinador' : 'Prazo expirado');
+  } else if (diff < 60) {
+    formattedTimeLeft = `restam ${diff} min`;
+  } else {
+    const hLeft = Math.floor(diff / 60);
+    const mLeft = diff % 60;
+    formattedTimeLeft = mLeft > 0 ? `restam ${hLeft}h ${mLeft}m` : `restam ${hLeft}h`;
+  }
+
+  return {
+    hasDeadline: true,
+    isPast,
+    strictBlock: effectiveStrictBlock,
+    isAuthorizedLate: isAuthorized,
+    allowLateWithApproval,
+    requireApproval,
+    deadlineTime: effective.deadlineTime,
+    minutesLeft: diff,
+    minutesRemaining: diff,
+    formattedTimeLeft,
+    effectiveInfo: effective,
+  };
+}
+
+export function approveWellnessSubmission(entryId: string, reviewer = 'Treinador', keepFine = false): void {
+  const list = getWellnessLocally();
+  const index = list.findIndex((w) => w.id === entryId);
+  if (index !== -1) {
+    list[index].approvalStatus = 'approved';
+    list[index].keepFine = keepFine;
+    list[index].reviewedAt = new Date().toISOString();
+    list[index].reviewedBy = reviewer;
+    saveWellnessLocally(list[index]);
+  }
+}
+
+export function rejectWellnessSubmission(entryId: string, reviewer = 'Treinador'): void {
+  const list = getWellnessLocally();
+  const index = list.findIndex((w) => w.id === entryId);
+  if (index !== -1) {
+    list[index].approvalStatus = 'rejected';
+    list[index].reviewedAt = new Date().toISOString();
+    list[index].reviewedBy = reviewer;
+    saveWellnessLocally(list[index]);
+  }
+}
+
+export function approveRPESubmission(entryId: string, reviewer = 'Treinador', keepFine = false): void {
+  const list = getRPELocally();
+  const index = list.findIndex((r) => r.id === entryId);
+  if (index !== -1) {
+    list[index].approvalStatus = 'approved';
+    list[index].keepFine = keepFine;
+    list[index].reviewedAt = new Date().toISOString();
+    list[index].reviewedBy = reviewer;
+    saveRPELocally(list[index]);
+  }
+}
+
+export function rejectRPESubmission(entryId: string, reviewer = 'Treinador'): void {
+  const list = getRPELocally();
+  const index = list.findIndex((r) => r.id === entryId);
+  if (index !== -1) {
+    list[index].approvalStatus = 'rejected';
+    list[index].reviewedAt = new Date().toISOString();
+    list[index].reviewedBy = reviewer;
+    saveRPELocally(list[index]);
+  }
+}
+
+export function approveAllPendingSubmissions(dateStr?: string, reviewer = 'Treinador', keepFine = false): void {
+  const wList = getWellnessLocally();
+  wList.forEach((w) => {
+    if (w.approvalStatus === 'pending' && (!dateStr || w.date === dateStr)) {
+      w.approvalStatus = 'approved';
+      w.keepFine = keepFine;
+      w.reviewedAt = new Date().toISOString();
+      w.reviewedBy = reviewer;
+      saveWellnessLocally(w);
+    }
+  });
+
+  const rList = getRPELocally();
+  rList.forEach((r) => {
+    if (r.approvalStatus === 'pending' && (!dateStr || r.date === dateStr)) {
+      r.approvalStatus = 'approved';
+      r.keepFine = keepFine;
+      r.reviewedAt = new Date().toISOString();
+      r.reviewedBy = reviewer;
+      saveRPELocally(r);
+    }
+  });
+}
+
+export function formatSubmissionTime(dateOrIso?: string): string {
+  if (!dateOrIso) return '-';
+  const str = dateOrIso.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+    return '-';
+  }
+  if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(str)) {
+    return str.substring(0, 5);
+  }
+  try {
+    const d = new Date(str);
+    if (isNaN(d.getTime())) return '-';
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return '-';
+  }
 }
 

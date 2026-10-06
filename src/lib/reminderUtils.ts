@@ -204,6 +204,7 @@ export function saveReminderConfig(config: ReminderConfig): void {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(REMINDER_SETTINGS_KEY, JSON.stringify(config));
+    localStorage.setItem('femperf_reminder_settings_v1', JSON.stringify(config));
     import('./authGuard').then(({ secureFetch }) => {
       secureFetch('/api/credentials', {
         method: 'POST',
@@ -211,6 +212,7 @@ export function saveReminderConfig(config: ReminderConfig): void {
         body: JSON.stringify({ reminderConfig: config }),
       }).catch(() => {});
     });
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
   } catch (e) {
     console.error('Erro ao guardar configurações de lembretes:', e);
   }

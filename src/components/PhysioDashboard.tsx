@@ -14,7 +14,9 @@ import {
   setPhysioPin as savePhysioPinToStorage,
   getClubActivationCode,
   syncAllDataFromCloud,
+  syncCredentialsFromCloud,
   getDynamicAthletes,
+  formatSubmissionTime,
 } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { translateTextToPortuguese, normalizeMenstrualCycleToPortuguese } from '@/lib/translationUtils';
@@ -176,6 +178,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     const existing = hydrationList.find((h) => h.athleteId === athlete.id && h.date === selectedDate);
 
     let newEntry: HydrationEntry;
+    const nowIso = new Date().toISOString();
 
     if (weighingStage === 'pre') {
       const postW = existing ? existing.postWeight : 0;
@@ -195,7 +198,11 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
         refillNeededLiters: calc ? calc.refillNeededLiters : 0,
         recommendation: calc ? calc.recommendation : 'Pesagem pré-treino registada. Aguarda pesagem pós-treino.',
         biologicalImpact: calc ? calc.biologicalImpact : 'Registo de entrada efetuado.',
-        createdAt: existing?.createdAt || new Date().toISOString(),
+        preWeightTime: nowIso,
+        submittedAtPre: nowIso,
+        postWeightTime: existing?.postWeightTime,
+        submittedAtPost: existing?.submittedAtPost,
+        createdAt: existing?.createdAt || nowIso,
       };
     } else {
       const preW = existing && existing.preWeight > 0 ? existing.preWeight : weight + 0.8;
@@ -215,7 +222,11 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
         refillNeededLiters: calc.refillNeededLiters,
         recommendation: calc.recommendation,
         biologicalImpact: calc.biologicalImpact,
-        createdAt: existing?.createdAt || new Date().toISOString(),
+        preWeightTime: existing?.preWeightTime || existing?.submittedAtPre || existing?.createdAt || nowIso,
+        submittedAtPre: existing?.submittedAtPre || existing?.preWeightTime || existing?.createdAt || nowIso,
+        postWeightTime: nowIso,
+        submittedAtPost: nowIso,
+        createdAt: existing?.createdAt || nowIso,
       };
     }
 
@@ -255,8 +266,23 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
-      syncAllDataFromCloud();
-      loadData();
+      syncAllDataFromCloud().then(() => {
+        loadData();
+      });
+
+      // Auto-poll cloud every 8 seconds to synchronize any updates made from other devices
+      const intervalId = setInterval(() => {
+        syncAllDataFromCloud().then(() => {
+          loadData();
+        });
+      }, 8000);
+
+      const onFocus = () => {
+        syncAllDataFromCloud().then(() => {
+          loadData();
+        });
+      };
+      window.addEventListener('focus', onFocus);
 
       const handleDataUpdate = () => {
         loadData();
@@ -264,13 +290,25 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
 
       window.addEventListener('femperf_data_updated', handleDataUpdate);
       return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('focus', onFocus);
         window.removeEventListener('femperf_data_updated', handleDataUpdate);
       };
     }
   }, [isOpen, isAuthenticated, selectedDate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Sync credentials from cloud as soon as modal opens, even before logging in
+  useEffect(() => {
+    if (isOpen) {
+      syncCredentialsFromCloud();
+    }
+  }, [isOpen]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await syncCredentialsFromCloud();
+    } catch {}
     const storedPin = getPhysioPin();
     const cleanInput = physioPin.trim();
     const activationCode = getClubActivationCode();
@@ -772,8 +810,38 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
                     filteredHydration.map((h) => (
                       <tr key={h.id} className="hover:bg-slate-800/40">
                         <td className="py-3 px-3 font-bold text-slate-100">{h.athleteName}</td>
-                        <td className="py-3 px-3 text-slate-300">{h.preWeight} kg</td>
-                        <td className="py-3 px-3 text-slate-300">{h.postWeight > 0 ? `${h.postWeight} kg` : '-'}</td>
+                        <td className="py-3 px-3 text-slate-300">
+                          <div className="flex flex-col gap-0.5">
+                            <span>{h.preWeight} kg</span>
+                            {(() => {
+                              const preTime = formatSubmissionTime(h.preWeightTime || h.submittedAtPre || (h.preWeight > 0 ? h.createdAt : undefined));
+                              return preTime !== '-' ? (
+                                <span className="text-[10px] text-blue-400 font-semibold flex items-center gap-0.5">
+                                  <Clock className="h-2.5 w-2.5" />
+                                  <span>{preTime}</span>
+                                </span>
+                              ) : null;
+                            })()}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-slate-300">
+                          {h.postWeight > 0 ? (
+                            <div className="flex flex-col gap-0.5">
+                              <span>{h.postWeight} kg</span>
+                              {(() => {
+                                const postTime = formatSubmissionTime(h.postWeightTime || h.submittedAtPost || h.createdAt);
+                                return postTime !== '-' ? (
+                                  <span className="text-[10px] text-amber-400 font-semibold flex items-center gap-0.5">
+                                    <Clock className="h-2.5 w-2.5" />
+                                    <span>{postTime}</span>
+                                  </span>
+                                ) : null;
+                              })()}
+                            </div>
+                          ) : (
+                            <span className="text-slate-500 italic">Pendente</span>
+                          )}
+                        </td>
                         <td className="py-3 px-3 font-bold text-amber-400">{h.postWeight > 0 ? `-${h.weightLoss} kg` : '-'}</td>
                         <td className="py-3 px-3 font-bold text-cyan-300">{h.postWeight > 0 ? `${h.dehydrationRate}%` : '-'}</td>
                         <td className="py-3 px-3 font-bold text-emerald-400">{h.postWeight > 0 ? `+${h.refillNeededLiters} L` : '-'}</td>

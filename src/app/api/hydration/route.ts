@@ -5,6 +5,10 @@ import { verifyApiAuth } from '@/lib/authGuard';
 import fs from 'fs';
 import path from 'path';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = 'force-no-store';
+
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'hydration_entries.json');
 
@@ -86,6 +90,10 @@ export async function GET(request: Request) {
               refillNeededLiters: Number(item.refill_needed_liters),
               recommendation: item.recommendation,
               biologicalImpact: item.biological_impact,
+              preWeightTime: item.pre_weight_time || item.submitted_at_pre || item.preWeightTime || null,
+              postWeightTime: item.post_weight_time || item.submitted_at_post || item.postWeightTime || null,
+              submittedAtPre: item.submitted_at_pre || item.pre_weight_time || item.submittedAtPre || null,
+              submittedAtPost: item.submitted_at_post || item.post_weight_time || item.submittedAtPost || null,
               createdAt: item.created_at || item.date,
             };
             entryMap.set(mapped.id, mapped);
@@ -126,7 +134,16 @@ export async function GET(request: Request) {
 
     result.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json(
+      { success: true, data: result },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Erro no servidor' }, { status: 500 });
   }
@@ -181,6 +198,10 @@ export async function POST(request: Request) {
       refillNeededLiters: calc.refillNeededLiters,
       recommendation: calc.recommendation,
       biologicalImpact: calc.biologicalImpact,
+      preWeightTime: body.preWeightTime || body.submittedAtPre || null,
+      postWeightTime: body.postWeightTime || body.submittedAtPost || null,
+      submittedAtPre: body.submittedAtPre || body.preWeightTime || null,
+      submittedAtPost: body.submittedAtPost || body.postWeightTime || null,
       createdAt: body.createdAt || new Date().toISOString(),
     };
 

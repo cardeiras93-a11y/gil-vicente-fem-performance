@@ -73,16 +73,19 @@ export async function POST(request: Request) {
         };
 
         try {
-          await webpush.sendNotification(pushSubscription, payload);
+          await webpush.sendNotification(pushSubscription, payload, {
+            TTL: 86400,
+            urgency: 'high',
+          });
           sentCount++;
         } catch (err: any) {
           failedCount++;
+          // ONLY purge on 410 (Gone) or 404 (Not Found)
           if (
             err?.statusCode === 410 ||
             err?.statusCode === 404 ||
-            err?.statusCode === 400 ||
-            err?.message?.includes('65 bytes') ||
-            err?.message?.includes('invalid')
+            err?.message?.includes('410') ||
+            err?.message?.includes('404')
           ) {
             purgedCount++;
             await purgeExpiredPushSubscription(sub.endpoint);

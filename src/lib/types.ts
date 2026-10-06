@@ -40,8 +40,17 @@ export interface WellnessEntry {
   muscleFatigue: MuscleFatigueMap;
   needsPhysio: boolean;
   physioReason?: string;
+  isLate?: boolean;
+  isAuthorizedLate?: boolean;
+  approvalStatus?: SubmissionApprovalStatus;
+  keepFine?: boolean; // When approved late: if true, fine remains; if false, fine is waived
+  reviewedAt?: string;
+  reviewedBy?: string;
+  submittedAt?: string;
   createdAt: string;
 }
+
+export type SubmissionApprovalStatus = 'approved' | 'pending' | 'rejected';
 
 export interface RPEEntry {
   id: string;
@@ -55,6 +64,13 @@ export interface RPEEntry {
   muscleFatigue: MuscleFatigueMap;
   preWorkoutPlans: string[];
   comments?: string;
+  isLate?: boolean;
+  isAuthorizedLate?: boolean;
+  approvalStatus?: SubmissionApprovalStatus;
+  keepFine?: boolean; // When approved late: if true, fine remains; if false, fine is waived
+  reviewedAt?: string;
+  reviewedBy?: string;
+  submittedAt?: string;
   createdAt: string;
 }
 
@@ -75,6 +91,10 @@ export interface HydrationEntry {
   refillNeededLiters: number; // L
   recommendation: string;
   biologicalImpact: string;
+  preWeightTime?: string; // HH:mm or ISO timestamp when pre-weight was recorded
+  postWeightTime?: string; // HH:mm or ISO timestamp when post-weight was recorded
+  submittedAtPre?: string;
+  submittedAtPost?: string;
   createdAt: string;
 }
 
@@ -84,10 +104,22 @@ export interface TrainingDayConfig {
   notes?: string;
 }
 
+export interface IndividualFineExemption {
+  id: string; // e.g. `${athleteId}_${date}_${type}`
+  athleteId: string;
+  athleteName: string;
+  date: string; // YYYY-MM-DD
+  type: 'wellness' | 'rpe' | 'hydration' | 'all';
+  reason?: string;
+  waivedAt: string; // ISO date
+}
+
 export interface FailedDateDetail {
   date: string;
   missingWellness: boolean;
+  wellnessReason?: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined';
   missingRpe: boolean;
+  rpeReason?: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined';
   missingHydration: boolean;
   subtotalFines: number;
 }
@@ -101,6 +133,7 @@ export interface AthleteComplianceReport {
   totalFails: number;
   totalFineEuros: number;
   failedDates: FailedDateDetail[];
+  waivedFines?: IndividualFineExemption[];
 }
 
 export type AthleteTrainingStatus = 'normal' | 'conditioned' | 'injured' | 'absent';
@@ -117,8 +150,8 @@ export interface TrainingSessionInfo {
   dayType: 'training' | 'match' | 'rest';
   matchCategory?: 'friendly' | 'championship' | 'cup';
   matchDayOffset: MatchDayOffset;
-  startTime?: string; // HH:mm (e.g. "10:00")
-  endTime?: string; // HH:mm (e.g. "11:30")
+  startTime?: string; // HH:mm (e.g. "09:00")
+  endTime?: string; // HH:mm (e.g. "10:30")
   durationMin: number; // Calculated automatically from startTime and endTime
   tempStart?: number; // °C (e.g. 21.0)
   tempEnd?: number; // °C (e.g. 26.5)
@@ -126,4 +159,50 @@ export interface TrainingSessionInfo {
   locationTime?: string;
   focusNotes?: string;
   athleteStatuses?: Record<string, AthleteSessionStatus>;
+  customDeadline?: string; // General HH:mm override for this date's session
+  customDeadlineWellness?: string; // Specific Wellness HH:mm override
+  customDeadlineRpe?: string; // Specific PSE (RPE) HH:mm override
+  updatedAt?: number; // Epoch timestamp (ms) of last modification
+}
+
+export interface QuestionnaireDeadlinesConfig {
+  enabled: boolean;
+  mode: 'fixed' | 'relative_to_session';
+  // General fallbacks
+  defaultRegularTime: string; // e.g. "08:15"
+  defaultMatchTime: string; // e.g. "11:00"
+  relativeMinutesBeforeSession: number; // e.g. 60
+  strictBlock: boolean; // true: blocks submission; false: allows late with warning
+  allowLateWithApproval?: boolean; // When true, late submissions are allowed but placed in 'pending' review for coach approval
+  applyToWellness: boolean;
+  applyToRpe: boolean;
+  applyToHydration: boolean;
+
+  // Specific per-questionnaire default settings:
+  wellnessRegularTime?: string; // e.g. "08:15"
+  wellnessMatchTime?: string; // e.g. "11:00"
+  wellnessRelativeMinutesBefore?: number; // e.g. 60
+
+  rpeRegularTime?: string; // e.g. "14:00"
+  rpeMatchTime?: string; // e.g. "22:00"
+  rpeRelativeMinutesAfter?: number; // e.g. 90 (minutes after session end)
+
+  // Per-date custom deadlines:
+  customDateDeadlines?: Record<string, string>; // legacy/general map of "YYYY-MM-DD" -> "HH:mm"
+  customDateDeadlinesWellness?: Record<string, string>; // map of "YYYY-MM-DD" -> "HH:mm"
+  customDateDeadlinesRpe?: Record<string, string>; // map of "YYYY-MM-DD" -> "HH:mm"
+
+  // Special Admin authorizations for specific athletes to submit after the deadline:
+  // Key format: athleteId (permanent) OR `${athleteId}_${date}` (date-specific)
+  athleteLateAuthorizations?: Record<string, LateSubmissionAuthorization>;
+}
+
+export interface LateSubmissionAuthorization {
+  athleteId: string;
+  athleteName: string;
+  date?: string; // YYYY-MM-DD. If omitted/empty, authorization applies to all dates (permanent)
+  questionnaireType?: 'all' | 'wellness' | 'rpe' | 'hydration'; // default 'all'
+  grantedAt: string; // ISO string
+  grantedBy?: string; // e.g. "Admin"
+  notes?: string;
 }

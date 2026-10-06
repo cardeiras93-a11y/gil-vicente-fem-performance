@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { WellnessEntry, RPEEntry, HydrationEntry, AthleteComplianceReport, Athlete } from '@/lib/types';
+import { WellnessEntry, RPEEntry, HydrationEntry, AthleteComplianceReport, Athlete, IndividualFineExemption } from '@/lib/types';
 import { getDynamicAthletes } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
 import {
@@ -12,13 +12,20 @@ import {
   saveFinesEnabledDays,
   DayFineConfig,
   normalizeDayFineConfig,
-  isDayAnyFineActive
+  isDayAnyFineActive,
+  getEffectiveDeadlineForDate,
+  getStoredFineExemptions,
+  saveFineExemption,
+  removeFineExemption,
+  isFineExempt,
+  approveWellnessSubmission,
+  approveRPESubmission
 } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import {
   AlertTriangle, Calendar, CheckCircle2, ChevronDown, ChevronUp, Copy,
   Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy, Check, X,
-  HeartPulse, Scale, Settings2
+  HeartPulse, Scale, Settings2, Clock, Trash2, RotateCcw, LayoutGrid, List, Users
 } from 'lucide-react';
 
 interface FinesComplianceViewProps {
@@ -67,6 +74,24 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const [expandedAthleteId, setExpandedAthleteId] = useState<string | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
 
+  // Sub-navigation state: 'table' | 'calendar' | 'summary' | 'all'
+  const [finesSubTab, setFinesSubTab] = useState<'table' | 'calendar' | 'summary' | 'all'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('femperf_fines_sub_tab');
+      if (saved === 'table' || saved === 'calendar' || saved === 'summary' || saved === 'all') {
+        return saved;
+      }
+    }
+    return 'table';
+  });
+
+  const handleSubTabChange = (tab: 'table' | 'calendar' | 'summary' | 'all') => {
+    setFinesSubTab(tab);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('femperf_fines_sub_tab', tab);
+    }
+  };
+
   // Saved manual calendar schedule overrides (dateStr -> 'training' | 'match' | 'rest')
   const [manualDayTypes, setManualDayTypes] = useState<Record<string, CalendarDayType>>({});
 
@@ -79,17 +104,24 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     hydration: true,
   });
 
+  // Individual fine exemptions (athleteId_date_type -> IndividualFineExemption)
+  const [fineExemptions, setFineExemptions] = useState<Record<string, IndividualFineExemption>>(() => getStoredFineExemptions());
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
   useEffect(() => {
     setManualDayTypes(getStoredCalendarSchedule());
     setFinesEnabledDays(getStoredFinesEnabledDays());
+    setFineExemptions(getStoredFineExemptions());
 
     const handleDataUpdate = () => {
       setManualDayTypes(getStoredCalendarSchedule());
       setFinesEnabledDays(getStoredFinesEnabledDays());
+      setFineExemptions(getStoredFineExemptions());
     };
 
     window.addEventListener('femperf_credentials_updated', handleDataUpdate);
     window.addEventListener('femperf_data_updated', handleDataUpdate);
+    window.addEventListener('femperf_fines_updated', handleDataUpdate);
 
     secureFetch('/api/training-sessions')
       .then((res) => res.json())
@@ -104,10 +136,87 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     return () => {
       window.removeEventListener('femperf_credentials_updated', handleDataUpdate);
       window.removeEventListener('femperf_data_updated', handleDataUpdate);
+      window.removeEventListener('femperf_fines_updated', handleDataUpdate);
     };
   }, []);
 
+  // Eliminate fine individually for an athlete on a specific date
+  const handleEliminateFine = (
+    athleteId: string,
+    athleteName: string,
+    date: string,
+    type: 'wellness' | 'rpe' | 'hydration' | 'all'
+  ) => {
+    // If an approved submission exists with keepFine, also set keepFine to false
+    if (type === 'wellness' || type === 'all') {
+      const wEntry = wellnessList.find(
+        (w) => w.date === date && (w.athleteId === athleteId || w.athleteName === athleteName)
+      );
+      if (wEntry && wEntry.keepFine) {
+        approveWellnessSubmission(wEntry.id, 'Treinador', false);
+      }
+    }
+    if (type === 'rpe' || type === 'all') {
+      const rEntry = rpeList.find(
+        (r) => r.date === date && (r.athleteId === athleteId || r.athleteName === athleteName)
+      );
+      if (rEntry && rEntry.keepFine) {
+        approveRPESubmission(rEntry.id, 'Treinador', false);
+      }
+    }
+
+    const newExemption: IndividualFineExemption = {
+      id: `${athleteId}_${date}_${type}`,
+      athleteId,
+      athleteName,
+      date,
+      type,
+      waivedAt: new Date().toISOString(),
+      reason: 'Eliminada pelo treinador',
+    };
+
+    saveFineExemption(newExemption);
+    setFineExemptions(getStoredFineExemptions());
+
+    const typeLabel =
+      type === 'wellness'
+        ? 'Falta Wellness'
+        : type === 'rpe'
+        ? 'Falta PSE'
+        : type === 'hydration'
+        ? 'Falta Pesagem'
+        : 'Multa';
+
+    setActionFeedback(`✓ ${typeLabel} (${date}) eliminada com sucesso para ${athleteName}.`);
+    setTimeout(() => setActionFeedback(null), 4000);
+  };
+
+  // Restore/re-activate fine individually
+  const handleRestoreFine = (
+    athleteId: string,
+    athleteName: string,
+    date: string,
+    type: 'wellness' | 'rpe' | 'hydration' | 'all'
+  ) => {
+    removeFineExemption(athleteId, date, type);
+    setFineExemptions(getStoredFineExemptions());
+
+    const typeLabel =
+      type === 'wellness'
+        ? 'Falta Wellness'
+        : type === 'rpe'
+        ? 'Falta PSE'
+        : type === 'hydration'
+        ? 'Falta Pesagem'
+        : 'Multa';
+
+    setActionFeedback(`✓ ${typeLabel} (${date}) restaurada para ${athleteName}.`);
+    setTimeout(() => setActionFeedback(null), 4000);
+  };
+
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const [calendarViewMode, setCalendarViewMode] = useState<'grid' | 'strip'>('grid');
 
   // Get all days in selected month (full month from 1 to end of month)
   const datesInMonth = useMemo(() => {
@@ -124,6 +233,26 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     }
     return list;
   }, [selectedMonth]);
+
+  const calendarMonthData = useMemo(() => {
+    const [yearStr, monthStr] = selectedMonth.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+
+    const firstDate = new Date(year, month - 1, 1);
+    let startingDayOfWeek = firstDate.getDay() - 1;
+    if (startingDayOfWeek === -1) startingDayOfWeek = 6;
+
+    const paddingLeading: null[] = Array(startingDayOfWeek).fill(null);
+    const totalCells = paddingLeading.length + datesInMonth.length;
+    const trailingCount = (7 - (totalCells % 7)) % 7;
+    const paddingTrailing: null[] = Array(trailingCount).fill(null);
+
+    return {
+      paddingLeading,
+      paddingTrailing,
+    };
+  }, [selectedMonth, datesInMonth]);
 
   // Determine day type for each date ('training' | 'match' | 'rest')
   const dayTypesMap = useMemo(() => {
@@ -285,35 +414,77 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       pastAndTodayFineActiveDates.forEach((dateStr) => {
         const fineCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
 
-        const hasWellness = wellnessList.some(
+        const athleteWellness = wellnessList.find(
           (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name)
         );
-        const hasRpe = rpeList.some(
+        const hasWellness = athleteWellness ? (
+          athleteWellness.isAuthorizedLate ||
+          (athleteWellness.approvalStatus === 'approved' && !athleteWellness.keepFine) ||
+          (!athleteWellness.isLate && athleteWellness.approvalStatus !== 'rejected')
+        ) : false;
+
+        const athleteRpe = rpeList.find(
           (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name)
         );
+        const hasRpe = athleteRpe ? (
+          athleteRpe.isAuthorizedLate ||
+          (athleteRpe.approvalStatus === 'approved' && !athleteRpe.keepFine) ||
+          (!athleteRpe.isLate && athleteRpe.approvalStatus !== 'rejected')
+        ) : false;
+
         const hasHydration = hydrationList.some(
           (h) => h.date === dateStr && (h.athleteId === ath.id || h.athleteName === ath.name)
         );
 
-        // Only count as missing if that questionnaire is enabled for fines on this date!
-        const missingW = fineCfg.wellness && !hasWellness;
-        const missingR = fineCfg.rpe && !hasRpe;
-        const missingH = fineCfg.hydration && !hasHydration;
+        // Check if fine is waived individually for this athlete on this date
+        const isWellnessWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'wellness');
+        const isRpeWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'rpe');
+        const isHydrationWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'hydration');
+
+        // Only count as missing if that questionnaire is enabled for fines on this date AND NOT WAIVED!
+        const missingW = fineCfg.wellness && !hasWellness && !isWellnessWaived;
+        const missingR = fineCfg.rpe && !hasRpe && !isRpeWaived;
+        const missingH = fineCfg.hydration && !hasHydration && !isHydrationWaived;
 
         if (missingW || missingR || missingH) {
           if (missingW) missingWellnessCount++;
           if (missingR) missingRpeCount++;
           if (missingH) missingHydrationCount++;
 
+          let wellnessReason: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined' | undefined;
+          if (missingW) {
+            if (!athleteWellness) wellnessReason = 'not_submitted';
+            else if (athleteWellness.approvalStatus === 'rejected') wellnessReason = 'late_rejected';
+            else if (athleteWellness.approvalStatus === 'approved' && athleteWellness.keepFine) wellnessReason = 'late_approved_fined';
+            else wellnessReason = 'late_pending';
+          }
+
+          let rpeReason: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined' | undefined;
+          if (missingR) {
+            if (!athleteRpe) rpeReason = 'not_submitted';
+            else if (athleteRpe.approvalStatus === 'rejected') rpeReason = 'late_rejected';
+            else if (athleteRpe.approvalStatus === 'approved' && athleteRpe.keepFine) rpeReason = 'late_approved_fined';
+            else rpeReason = 'late_pending';
+          }
+
           const failsOnDate = (missingW ? 1 : 0) + (missingR ? 1 : 0) + (missingH ? 1 : 0);
           failedDates.push({
             date: dateStr,
             missingWellness: missingW,
+            wellnessReason,
             missingRpe: missingR,
+            rpeReason,
             missingHydration: missingH,
             subtotalFines: failsOnDate * finePerFault,
           });
         }
+      });
+
+      // Collect waived fines for this athlete within the selected month
+      const waivedFines = Object.values(fineExemptions).filter((ex) => {
+        const matchesAthlete = ex.athleteId === ath.id || ex.athleteName === ath.name || ex.id?.startsWith(`${ath.id}_`);
+        const matchesMonth = ex.date?.startsWith(selectedMonth);
+        return matchesAthlete && matchesMonth;
       });
 
       const totalFails = missingWellnessCount + missingRpeCount + missingHydrationCount;
@@ -328,9 +499,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         totalFails,
         totalFineEuros,
         failedDates,
+        waivedFines,
       };
     }).sort((a, b) => b.totalFineEuros - a.totalFineEuros);
-  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault, finesConfigMap, finesEnabledDays, dayTypesMap]);
+  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault, finesConfigMap, finesEnabledDays, dayTypesMap, fineExemptions, selectedMonth]);
 
   // Overall KPIs
   const totalSquadFinesEuros = useMemo(
@@ -396,6 +568,23 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in">
+      {/* Action Feedback Banner */}
+      {actionFeedback && (
+        <div className="flex items-center justify-between gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3 text-xs font-bold text-emerald-300 animate-fade-in">
+          <div className="flex items-center space-x-2">
+            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+            <span>{actionFeedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setActionFeedback(null)}
+            className="p-1 rounded text-slate-400 hover:text-white"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Top Header & Settings Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between bg-dark-card border border-slate-800 p-4 rounded-2xl gap-4">
         <div>
@@ -454,73 +643,169 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         </div>
       )}
 
-      {/* Monthly Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Total Fines Euros */}
-        <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-dark-card to-rose-950/20 p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-400">Total Multas no Mês</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
-              <Euro className="h-5 w-5" />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-rose-400">{totalSquadFinesEuros.toFixed(2)} €</p>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">{totalActualFails} falhas totais contabilizadas</p>
-        </div>
+      {/* Sub-navigation Pills for Fines View */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar bg-dark-card/60 p-1.5 rounded-2xl border border-slate-800">
+        <button
+          type="button"
+          onClick={() => handleSubTabChange('table')}
+          className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
+            finesSubTab === 'table'
+              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Users className="h-4 w-4" />
+          <span>👥 Tabela por Jogadora</span>
+          <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+            {complianceReports.length}
+          </span>
+        </button>
 
-        {/* Active Fine Days */}
-        <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-dark-card to-blue-950/20 p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-400">Dias com Multa Ativa</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
-              <Dumbbell className="h-5 w-5" />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-blue-400">{fineActiveDates.length} dias</p>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">
-            {pastAndTodayFineActiveDates.length} avaliados até hoje
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => handleSubTabChange('calendar')}
+          className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
+            finesSubTab === 'calendar'
+              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Calendar className="h-4 w-4" />
+          <span>📅 Calendário de Multas</span>
+          <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30">
+            {fineActiveDates.length} dias
+          </span>
+        </button>
 
-        {/* Squad Compliance Rate % */}
-        <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-dark-card to-emerald-950/20 p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-400">Cumprimento do Plantel</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
-              <CheckCircle2 className="h-5 w-5" />
-            </div>
-          </div>
-          <p className="mt-2 text-2xl font-black text-emerald-400">{squadComplianceRate}%</p>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">Taxa nos dias com multa</p>
-        </div>
+        <button
+          type="button"
+          onClick={() => handleSubTabChange('summary')}
+          className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ${
+            finesSubTab === 'summary'
+              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+          }`}
+        >
+          <Euro className="h-4 w-4" />
+          <span>📊 Resumo & Estatísticas</span>
+          <span className="ml-1 text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
+            {totalSquadFinesEuros.toFixed(0)} €
+          </span>
+        </button>
 
-        {/* Top Missing Player */}
-        <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-dark-card to-amber-950/20 p-4 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold uppercase text-slate-400">Maior Acumulação</span>
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
-              <UserX className="h-5 w-5" />
-            </div>
-          </div>
-          <p className="mt-2 text-lg font-extrabold text-amber-400 truncate">
-            {topMissingAthlete ? topMissingAthlete.athleteName : 'Nenhuma'}
-          </p>
-          <p className="text-[11px] text-slate-400 mt-1 font-medium">
-            {topMissingAthlete ? `${topMissingAthlete.totalFineEuros.toFixed(2)} € (${topMissingAthlete.totalFails} faltas)` : '100% Rigor'}
-          </p>
-        </div>
+        <button
+          type="button"
+          onClick={() => handleSubTabChange('all')}
+          className={`flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all whitespace-nowrap ml-auto ${
+            finesSubTab === 'all'
+              ? 'bg-slate-800 text-brand-lime border border-brand-lime/40 shadow-sm'
+              : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
+          }`}
+        >
+          <span>📑 Ver Tudo</span>
+        </button>
       </div>
 
+      {/* Monthly Summary KPI Cards */}
+      {(finesSubTab === 'summary' || finesSubTab === 'all') && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+          {/* Total Fines Euros */}
+          <div className="rounded-2xl border border-rose-500/30 bg-gradient-to-br from-dark-card to-rose-950/20 p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase text-slate-400">Total Multas no Mês</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
+                <Euro className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="mt-2 text-2xl font-black text-rose-400">{totalSquadFinesEuros.toFixed(2)} €</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">{totalActualFails} falhas totais contabilizadas</p>
+          </div>
+
+          {/* Active Fine Days */}
+          <div className="rounded-2xl border border-blue-500/30 bg-gradient-to-br from-dark-card to-blue-950/20 p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase text-slate-400">Dias com Multa Ativa</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/20 text-blue-400">
+                <Dumbbell className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="mt-2 text-2xl font-black text-blue-400">{fineActiveDates.length} dias</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">
+              {pastAndTodayFineActiveDates.length} avaliados até hoje
+            </p>
+          </div>
+
+          {/* Squad Compliance Rate % */}
+          <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-dark-card to-emerald-950/20 p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase text-slate-400">Cumprimento do Plantel</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-400">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="mt-2 text-2xl font-black text-emerald-400">{squadComplianceRate}%</p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">Taxa nos dias com multa</p>
+          </div>
+
+          {/* Top Missing Player */}
+          <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-br from-dark-card to-amber-950/20 p-4 shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase text-slate-400">Maior Acumulação</span>
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400">
+                <UserX className="h-5 w-5" />
+              </div>
+            </div>
+            <p className="mt-2 text-lg font-extrabold text-amber-400 truncate">
+              {topMissingAthlete ? topMissingAthlete.athleteName : 'Nenhuma'}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-1 font-medium">
+              {topMissingAthlete ? `${topMissingAthlete.totalFineEuros.toFixed(2)} € (${topMissingAthlete.totalFails} faltas)` : '100% Rigor'}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Calendar Strip: Treino vs Jogo vs Folga + Fine Day Selection */}
-      <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-4">
+      {(finesSubTab === 'calendar' || finesSubTab === 'all') && (
+        <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-4 animate-fade-in">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
           <div className="flex items-center space-x-2 text-slate-300">
             <Calendar className="h-4 w-4 text-brand-lime" />
             <h3 className="text-xs font-extrabold uppercase tracking-wide">Dias do Mês & Seleção de Multas por Dia</h3>
           </div>
           
-          {/* Quick Bulk Actions */}
+          {/* Quick Bulk Actions & View Toggle */}
           <div className="flex flex-wrap items-center gap-2">
+            {/* View Mode Toggle: Grid vs Strip */}
+            <div className="flex items-center p-0.5 rounded-xl bg-slate-900 border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setCalendarViewMode('grid')}
+                className={`flex items-center space-x-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  calendarViewMode === 'grid'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+                title="Vista em Grelha de Calendário Mensal"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+                <span>Calendário</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCalendarViewMode('strip')}
+                className={`flex items-center space-x-1.5 px-2 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  calendarViewMode === 'strip'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+                title="Vista em Linha Horizontal"
+              >
+                <List className="h-3.5 w-3.5" />
+                <span>Linha</span>
+              </button>
+            </div>
+
             <button
               type="button"
               onClick={enableAllFinesForActivityDays}
@@ -563,85 +848,204 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           </div>
         </div>
 
-        <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
-          {datesInMonth.map((dStr) => {
-            const dayType = dayTypesMap[dStr] || 'rest';
-            const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
-            const hasFine = isDayAnyFineActive(cfg);
-            const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
-            const dayNum = dStr.split('-')[2];
-            const isToday = dStr === todayStr;
+        {calendarViewMode === 'grid' ? (
+          /* Calendar Grid View (7 Columns) */
+          <div className="space-y-1.5">
+            {/* Weekday column headers */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-[10px] sm:text-xs font-black uppercase text-slate-400 py-1.5 border-b border-slate-800/80">
+              <div className="text-slate-300">Segunda</div>
+              <div className="text-slate-300">Terça</div>
+              <div className="text-slate-300">Quarta</div>
+              <div className="text-slate-300">Quinta</div>
+              <div className="text-slate-300">Sexta</div>
+              <div className="text-amber-400/90 font-extrabold">Sábado</div>
+              <div className="text-rose-400/90 font-extrabold">Domingo</div>
+            </div>
 
-            let icon = '🏖️';
-            let label = 'Folga';
-            let style = 'border-slate-800 bg-slate-900/80 text-slate-500 hover:bg-slate-800';
+            {/* Grid Cells */}
+            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+              {/* Padding before month */}
+              {calendarMonthData.paddingLeading.map((_, idx) => (
+                <div
+                  key={`pad-lead-fines-${idx}`}
+                  className="min-h-[72px] sm:min-h-[86px] rounded-xl border border-slate-800/30 bg-slate-950/20 opacity-25"
+                />
+              ))}
 
-            if (dayType === 'training') {
-              icon = '⚽';
-              label = 'Treino';
-              style = 'border-blue-500/60 bg-blue-950/60 text-blue-200 hover:bg-blue-900/60';
-            } else if (dayType === 'match') {
-              icon = '🏆';
-              label = 'Jogo';
-              style = 'border-emerald-500/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70 font-black';
-            }
+              {/* Day cells */}
+              {datesInMonth.map((dStr) => {
+                const dayType = dayTypesMap[dStr] || 'rest';
+                const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
+                const hasFine = isDayAnyFineActive(cfg);
+                const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
+                const dayNum = dStr.split('-')[2];
+                const isToday = dStr === todayStr;
 
-            if (isToday) {
-              style += ' ring-2 ring-red-500 border-red-500 shadow-lg';
-            }
+                let icon = '🏖️';
+                let label = 'Folga';
+                let cardStyle = 'border-slate-800/80 bg-slate-900/60 text-slate-400 hover:bg-slate-850 hover:border-slate-700';
 
-            let badgeText = '🚫 NÃO';
-            let badgeTitle = `${dStr}: Dia Isento de multas. Clica para escolher questionários.`;
-            let badgeStyle = 'bg-slate-800/90 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
+                if (dayType === 'training') {
+                  icon = '⚽';
+                  label = 'Treino';
+                  cardStyle = 'border-blue-500/40 bg-blue-950/30 text-blue-200 hover:bg-blue-950/50 hover:border-blue-500/70 shadow-sm';
+                } else if (dayType === 'match') {
+                  icon = '🏆';
+                  label = 'Jogo';
+                  cardStyle = 'border-emerald-500/50 bg-emerald-950/30 text-emerald-200 hover:bg-emerald-950/50 hover:border-emerald-500/80 shadow-sm';
+                }
 
-            if (allActive) {
-              badgeText = '💶 TODAS';
-              badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
-              badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30';
-            } else if (hasFine) {
-              const activeLabels: string[] = [];
-              if (cfg.wellness) activeLabels.push('W');
-              if (cfg.rpe) activeLabels.push('PSE');
-              if (cfg.hydration) activeLabels.push('PES');
-              badgeText = `💶 ${activeLabels.join('·')}`;
-              badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
-              badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30';
-            }
+                if (isToday) {
+                  cardStyle += ' ring-2 ring-red-500 border-red-500 shadow-lg';
+                }
 
-            return (
-              <div
-                key={dStr}
-                onClick={() => cycleDayType(dStr)}
-                title={`${dStr}: Clica para alternar tipo (${label}). Clica na etiqueta para escolher questionários sujeitos a multa.`}
-                className={`flex flex-col items-center justify-between min-w-[58px] min-h-[74px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative cursor-pointer ${style}`}
-              >
-                <div className="flex flex-col items-center">
-                  <span className="text-[10px] opacity-75">{dayNum}</span>
-                  <span className="text-sm font-black">{icon}</span>
-                  {isToday && (
-                    <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
-                      Hoje
-                    </span>
-                  )}
-                </div>
+                let badgeText = '🚫 NÃO';
+                let badgeTitle = `${dStr}: Dia Isento de multas. Clica para escolher questionários.`;
+                let badgeStyle = 'bg-slate-800/90 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
 
-                {/* Interactive Fine Active Badge / Questionnaire Selector */}
-                <button
-                  type="button"
-                  onClick={(e) => handleOpenConfigModal(dStr, e)}
-                  title={badgeTitle}
-                  className={`mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all flex items-center justify-center w-full truncate ${badgeStyle}`}
+                if (allActive) {
+                  badgeText = '💶 TODAS';
+                  badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
+                  badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30 font-bold';
+                } else if (hasFine) {
+                  const activeLabels: string[] = [];
+                  if (cfg.wellness) activeLabels.push('W');
+                  if (cfg.rpe) activeLabels.push('PSE');
+                  if (cfg.hydration) activeLabels.push('PES');
+                  badgeText = `💶 ${activeLabels.join('·')}`;
+                  badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
+                  badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30 font-bold';
+                }
+
+                return (
+                  <div
+                    key={dStr}
+                    onClick={() => cycleDayType(dStr)}
+                    title={`${dStr}: Clica para alternar (${label}). Clica na etiqueta para personalizar multas.`}
+                    className={`group relative flex flex-col justify-between p-1.5 sm:p-2 rounded-xl border transition-all cursor-pointer min-h-[72px] sm:min-h-[86px] select-none ${cardStyle}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs sm:text-sm font-black text-slate-200">
+                        {dayNum}
+                      </span>
+                      {isToday && (
+                        <span className="text-[7px] sm:text-[8px] uppercase font-black bg-red-600 text-white px-1.5 py-0.2 rounded-full shadow-sm">
+                          Hoje
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-center my-0.5">
+                      <span className="text-sm sm:text-base font-black">{icon}</span>
+                      <span className="hidden sm:inline text-[10px] font-bold ml-1">{label}</span>
+                    </div>
+
+                    {/* Interactive Fine Active Badge */}
+                    <button
+                      type="button"
+                      onClick={(e) => handleOpenConfigModal(dStr, e)}
+                      title={badgeTitle}
+                      className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] uppercase transition-all flex items-center justify-center w-full truncate border cursor-pointer ${badgeStyle}`}
+                    >
+                      <span className="truncate">{badgeText}</span>
+                    </button>
+                  </div>
+                );
+              })}
+
+              {/* Padding after month */}
+              {calendarMonthData.paddingTrailing.map((_, idx) => (
+                <div
+                  key={`pad-trail-fines-${idx}`}
+                  className="min-h-[72px] sm:min-h-[86px] rounded-xl border border-slate-800/30 bg-slate-950/20 opacity-25"
+                />
+              ))}
+            </div>
+          </div>
+        ) : (
+          /* Strip View */
+          <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
+            {datesInMonth.map((dStr) => {
+              const dayType = dayTypesMap[dStr] || 'rest';
+              const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
+              const hasFine = isDayAnyFineActive(cfg);
+              const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
+              const dayNum = dStr.split('-')[2];
+              const isToday = dStr === todayStr;
+
+              let icon = '🏖️';
+              let label = 'Folga';
+              let style = 'border-slate-800 bg-slate-900/80 text-slate-500 hover:bg-slate-800';
+
+              if (dayType === 'training') {
+                icon = '⚽';
+                label = 'Treino';
+                style = 'border-blue-500/60 bg-blue-950/60 text-blue-200 hover:bg-blue-900/60';
+              } else if (dayType === 'match') {
+                icon = '🏆';
+                label = 'Jogo';
+                style = 'border-emerald-500/80 bg-emerald-950/70 text-emerald-300 hover:bg-emerald-900/70 font-black';
+              }
+
+              if (isToday) {
+                style += ' ring-2 ring-red-500 border-red-500 shadow-lg';
+              }
+
+              let badgeText = '🚫 NÃO';
+              let badgeTitle = `${dStr}: Dia Isento de multas. Clica para escolher questionários.`;
+              let badgeStyle = 'bg-slate-800/90 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200';
+
+              if (allActive) {
+                badgeText = '💶 TODAS';
+                badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
+                badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30';
+              } else if (hasFine) {
+                const activeLabels: string[] = [];
+                if (cfg.wellness) activeLabels.push('W');
+                if (cfg.rpe) activeLabels.push('PSE');
+                if (cfg.hydration) activeLabels.push('PES');
+                badgeText = `💶 ${activeLabels.join('·')}`;
+                badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
+                badgeStyle = 'bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500/30';
+              }
+
+              return (
+                <div
+                  key={dStr}
+                  onClick={() => cycleDayType(dStr)}
+                  title={`${dStr}: Clica para alternar tipo (${label}). Clica na etiqueta para escolher questionários sujeitos a multa.`}
+                  className={`flex flex-col items-center justify-between min-w-[58px] min-h-[74px] py-1.5 px-1 rounded-xl border transition-all text-xs font-bold relative cursor-pointer ${style}`}
                 >
-                  <span className="truncate">{badgeText}</span>
-                </button>
-              </div>
-            );
-          })}
+                  <div className="flex flex-col items-center">
+                    <span className="text-[10px] opacity-75">{dayNum}</span>
+                    <span className="text-sm font-black">{icon}</span>
+                    {isToday && (
+                      <span className="text-[7px] uppercase font-black bg-red-600 text-white px-1 rounded-full mt-0.5">
+                        Hoje
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Interactive Fine Active Badge / Questionnaire Selector */}
+                  <button
+                    type="button"
+                    onClick={(e) => handleOpenConfigModal(dStr, e)}
+                    title={badgeTitle}
+                    className={`mt-1 px-1.5 py-0.5 rounded text-[8px] font-black uppercase transition-all flex items-center justify-center w-full truncate ${badgeStyle}`}
+                  >
+                    <span className="truncate">{badgeText}</span>
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
         </div>
-      </div>
+      )}
 
       {/* Roster Fines & Compliance Master Table */}
-      <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-5">
+      {(finesSubTab === 'table' || finesSubTab === 'all') && (
+        <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-5 animate-fade-in">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-extrabold text-slate-100 uppercase tracking-wide">
             Contabilização do Plantel ({complianceReports.length} Jogadoras)
@@ -728,11 +1132,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                       </td>
 
                       <td className="py-3 px-3 text-center">
-                        {report.failedDates.length > 0 && (
+                        {(report.failedDates.length > 0 || (report.waivedFines && report.waivedFines.length > 0)) && (
                           <button
                             type="button"
                             onClick={() => setExpandedAthleteId(isExpanded ? null : report.athleteId)}
                             className="p-1 rounded-lg text-slate-400 hover:bg-slate-700 hover:text-slate-200 transition-all"
+                            title={isExpanded ? "Recolher detalhes" : "Ver detalhe das faltas"}
                           >
                             {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                           </button>
@@ -740,44 +1145,195 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                       </td>
                     </tr>
 
-                    {/* Expandable Breakdown of Failed Dates */}
-                    {isExpanded && report.failedDates.length > 0 && (
+                    {/* Expandable Breakdown of Failed Dates & Waived Fines */}
+                    {isExpanded && (report.failedDates.length > 0 || (report.waivedFines && report.waivedFines.length > 0)) && (
                       <tr className="bg-slate-900/90">
                         <td colSpan={7} className="p-4 border-b border-slate-800">
-                          <div className="space-y-2">
-                            <h4 className="text-[11px] font-extrabold uppercase text-slate-300 tracking-wider">
-                              Datas com Faltas Registadas — {report.athleteName}
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                              {report.failedDates.map((fd) => (
-                                <div
-                                  key={fd.date}
-                                  className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-2.5 text-xs space-y-1"
-                                >
-                                  <div className="flex justify-between items-center font-bold text-slate-200">
-                                    <span>📅 {fd.date}</span>
-                                    <span className="text-rose-400 font-black">+{fd.subtotalFines.toFixed(2)} €</span>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1 text-[10px]">
-                                    {fd.missingWellness && (
-                                      <span className="bg-rose-500/20 text-rose-300 px-2 py-0.5 rounded-full font-bold">
-                                        Falta Wellness
-                                      </span>
-                                    )}
-                                    {fd.missingRpe && (
-                                      <span className="bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                                        Falta PSE
-                                      </span>
-                                    )}
-                                    {fd.missingHydration && (
-                                      <span className="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-bold">
-                                        Falta Pesagem
-                                      </span>
-                                    )}
-                                  </div>
+                          <div className="space-y-4">
+                            {report.failedDates.length > 0 && (
+                              <div className="space-y-2">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                                  <h4 className="text-[11px] font-extrabold uppercase text-slate-300 tracking-wider">
+                                    Datas com Faltas Registadas — {report.athleteName}
+                                  </h4>
+                                  {report.failedDates.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        report.failedDates.forEach((fd) => {
+                                          handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'all');
+                                        });
+                                      }}
+                                      className="inline-flex items-center space-x-1 text-[10px] text-rose-400 hover:text-rose-300 font-bold bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 transition-all cursor-pointer self-start sm:self-auto"
+                                      title="Eliminar todas as multas deste mês para esta atleta"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                      <span>Eliminar Todas as Multas ({report.failedDates.length})</span>
+                                    </button>
+                                  )}
                                 </div>
-                              ))}
-                            </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  {report.failedDates.map((fd) => (
+                                    <div
+                                      key={fd.date}
+                                      className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-2.5 text-xs space-y-2"
+                                    >
+                                      <div className="flex justify-between items-center font-bold text-slate-200">
+                                        <span>📅 {fd.date}</span>
+                                        <div className="flex items-center space-x-1.5">
+                                          <span className="text-rose-400 font-black">+{fd.subtotalFines.toFixed(2)} €</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'all')}
+                                            className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 text-[10px] font-black transition-all cursor-pointer active:scale-95 shadow-sm"
+                                            title="Eliminar multa desta data"
+                                          >
+                                            <Trash2 className="h-3 w-3" />
+                                            <span>Eliminar</span>
+                                          </button>
+                                        </div>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1 text-[10px]">
+                                        {fd.missingWellness && (
+                                          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
+                                            fd.wellnessReason === 'late_pending'
+                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                              : fd.wellnessReason === 'late_approved_fined'
+                                              ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
+                                              : 'bg-rose-500/20 text-rose-300'
+                                          }`}>
+                                            <span>
+                                              {fd.wellnessReason === 'late_pending'
+                                                ? 'Wellness Fora de Horas (Pendente de Validação)'
+                                                : fd.wellnessReason === 'late_approved_fined'
+                                                ? 'Wellness Aceite c/ Multa (Atraso)'
+                                                : fd.wellnessReason === 'late_rejected'
+                                                ? 'Wellness Recusado (Não Aceite)'
+                                                : 'Falta Wellness'}
+                                            </span>
+                                            {(fd.missingRpe || fd.missingHydration) && (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'wellness');
+                                                }}
+                                                className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
+                                                title="Eliminar apenas multa de Wellness"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </button>
+                                            )}
+                                          </span>
+                                        )}
+                                        {fd.missingRpe && (
+                                          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
+                                            fd.rpeReason === 'late_pending'
+                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                              : fd.rpeReason === 'late_approved_fined'
+                                              ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
+                                              : 'bg-amber-500/20 text-amber-300'
+                                          }`}>
+                                            <span>
+                                              {fd.rpeReason === 'late_pending'
+                                                ? 'PSE Fora de Horas (Pendente de Validação)'
+                                                : fd.rpeReason === 'late_approved_fined'
+                                                ? 'PSE Aceite c/ Multa (Atraso)'
+                                                : fd.rpeReason === 'late_rejected'
+                                                ? 'PSE Recusado (Não Aceite)'
+                                                : 'Falta PSE'}
+                                            </span>
+                                            {(fd.missingWellness || fd.missingHydration) && (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'rpe');
+                                                }}
+                                                className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
+                                                title="Eliminar apenas multa de PSE"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </button>
+                                            )}
+                                          </span>
+                                        )}
+                                        {fd.missingHydration && (
+                                          <span className="inline-flex items-center space-x-1 bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-bold">
+                                            <span>Falta Pesagem</span>
+                                            {(fd.missingWellness || fd.missingRpe) && (
+                                              <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'hydration');
+                                                }}
+                                                className="ml-1 p-0.5 rounded hover:bg-blue-500/40 text-slate-300 hover:text-white"
+                                                title="Eliminar apenas multa de Pesagem"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </button>
+                                            )}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* All active fines forgiven state */}
+                            {report.failedDates.length === 0 && report.waivedFines && report.waivedFines.length > 0 && (
+                              <div className="flex items-center space-x-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-semibold">
+                                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                                <span>🎉 Todas as faltas registadas deste mês foram isentas / eliminadas para esta atleta.</span>
+                              </div>
+                            )}
+
+                            {/* Waived / Eliminated Fines Section with Restore action */}
+                            {report.waivedFines && report.waivedFines.length > 0 && (
+                              <div className="space-y-2 pt-2 border-t border-slate-800">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider flex items-center space-x-1.5">
+                                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                                    <span>Multas Eliminadas / Isentas ({report.waivedFines.length})</span>
+                                  </h4>
+                                  <span className="text-[10px] text-slate-400">
+                                    Podes restaurar a qualquer momento se tiver sido um engano
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                                  {report.waivedFines.map((wf) => (
+                                    <div
+                                      key={wf.id || `${wf.athleteId}_${wf.date}_${wf.type}`}
+                                      className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-2.5 text-xs flex items-center justify-between"
+                                    >
+                                      <div className="space-y-0.5">
+                                        <div className="flex items-center space-x-1.5 font-bold text-slate-200">
+                                          <span>📅 {wf.date}</span>
+                                          <span className="text-[10px] text-emerald-400 bg-emerald-500/20 px-1.5 py-0.2 rounded border border-emerald-500/30 font-black">
+                                            0.00 € (Isenta)
+                                          </span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400">
+                                          {wf.type === 'wellness' ? 'Falta Wellness' : wf.type === 'rpe' ? 'Falta PSE' : wf.type === 'hydration' ? 'Falta Pesagem' : 'Todas as Faltas'}
+                                        </p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRestoreFine(wf.athleteId, report.athleteName, wf.date, wf.type)}
+                                        className="inline-flex items-center space-x-1 px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[10px] font-bold transition-all cursor-pointer active:scale-95"
+                                        title="Restaurar / Reativar multa"
+                                      >
+                                        <RotateCcw className="h-3 w-3 text-cyan-400" />
+                                        <span>Restaurar</span>
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -788,7 +1344,8 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Questionnaire Fine Configuration Modal */}
       {configuringDate && (
@@ -826,6 +1383,42 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                 <X className="h-5 w-5" />
               </button>
             </div>
+
+            {/* Active Deadline Banner */}
+            {(() => {
+              const effW = getEffectiveDeadlineForDate(configuringDate, 'wellness');
+              const effR = getEffectiveDeadlineForDate(configuringDate, 'rpe');
+              return (
+                <div className="p-3 rounded-2xl border border-amber-500/30 bg-amber-950/20 text-xs space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span className="text-slate-200 font-extrabold">
+                      Prazos de Limite Ativos:
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                    <div className="bg-dark-bg/60 p-2 rounded-xl border border-amber-500/20 flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-amber-400 font-bold">☀️ Wellness</span>
+                        <span className="font-mono font-black text-amber-300 text-xs bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                          {effW.deadlineTime}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 truncate">{effW.sourceDescription}</span>
+                    </div>
+                    <div className="bg-dark-bg/60 p-2 rounded-xl border border-indigo-500/20 flex flex-col justify-between">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-indigo-400 font-bold">⚡ PSE / RPE</span>
+                        <span className="font-mono font-black text-indigo-300 text-xs bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
+                          {effR.deadlineTime}
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 truncate">{effR.sourceDescription}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Quick Presets */}
             <div className="space-y-1.5">

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { WellnessEntry, RPEEntry, HydrationEntry, Athlete, AthletePosition } from '@/lib/types';
+import { WellnessEntry, RPEEntry, HydrationEntry, Athlete, AthletePosition, QuestionnaireDeadlinesConfig } from '@/lib/types';
 import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus } from '@/lib/data';
-import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, getAthleteAvatar, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, clearSelectiveHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage, getClubActivationCode, setClubActivationCode as saveClubActivationCodeToStorage, getDynamicAthletes, saveAthleteProfile, addNewAthlete, deleteAthlete, compressImageFile, setAthleteActiveStatus, setAllAthletesActive, syncAllDataFromCloud } from '@/lib/storage';
+import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, getAthleteAvatar, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, clearSelectiveHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage, getClubActivationCode, setClubActivationCode as saveClubActivationCodeToStorage, getDynamicAthletes, saveAthleteProfile, addNewAthlete, deleteAthlete, compressImageFile, setAthleteActiveStatus, setAllAthletesActive, syncAllDataFromCloud, syncCredentialsFromCloud, getStoredDeadlineConfig, saveDeadlineConfig, getStoredTrainingSessions, saveTrainingSessionInfo, grantAthleteLateAuthorization, revokeAthleteLateAuthorization, isAthleteAuthorizedForLateSubmission, formatSubmissionTime, approveWellnessSubmission, rejectWellnessSubmission, approveRPESubmission, rejectRPESubmission, approveAllPendingSubmissions } from '@/lib/storage';
 import { exportWellnessToExcel, exportRPEToExcel, exportHydrationToExcel, exportWeightToExcel, exportAllDataToExcel } from '@/lib/exportUtils';
 import { getStoredReminderConfig, saveReminderConfig, requestNotificationPermission, getNotificationPermission, sendMobileNotification, getPendingQuestionnairesStatus, ReminderConfig } from '@/lib/reminderUtils';
 import { useLanguage } from '@/context/LanguageContext';
@@ -15,12 +15,14 @@ import { CollectiveSquadView } from './CollectiveSquadView';
 import { TrainingSessionManager } from './TrainingSessionManager';
 import { SquadMuscleHeatmap } from './SquadMuscleHeatmap';
 import { MatchDashboard } from './MatchDashboard';
+import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
-  Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy
+  Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
+  Unlock, UserCheck
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -103,14 +105,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const [searchFilter, setSearchFilter] = useState<string>('');
 
-  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport'>(() => {
+  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_admin_active_tab') as any) || 'schedule';
     }
     return 'schedule';
   });
 
-  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport') => {
+  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_active_tab', tab);
@@ -128,6 +130,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     setSubTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_sub_tab', tab);
+    }
+  };
+
+  const [pinsSubTab, setPinsSubTabState] = useState<'deadlines' | 'authorizations' | 'playerPins' | 'notifications' | 'credentials' | 'all'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('femperf_admin_pins_sub_tab') as any) || 'deadlines';
+    }
+    return 'deadlines';
+  });
+
+  const setPinsSubTab = (tab: 'deadlines' | 'authorizations' | 'playerPins' | 'notifications' | 'credentials' | 'all') => {
+    setPinsSubTabState(tab);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('femperf_admin_pins_sub_tab', tab);
     }
   };
 
@@ -199,12 +215,221 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   };
 
   const [reminderConfig, setReminderConfig] = useState<ReminderConfig>(getStoredReminderConfig());
+  const [deadlineConfig, setDeadlineConfig] = useState<QuestionnaireDeadlinesConfig>(getStoredDeadlineConfig());
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [broadcastMessage, setBroadcastMessage] = useState<string | null>(null);
   const [isSendingBroadcast, setIsSendingBroadcast] = useState<boolean>(false);
   const [forceBroadcast, setForceBroadcast] = useState<boolean>(false);
   const [activeSubscribers, setActiveSubscribers] = useState<any[]>([]);
   const [isLoadingSubscribers, setIsLoadingSubscribers] = useState<boolean>(false);
+  const [specificDateInput, setSpecificDateInput] = useState<string>(() => getTodayLocalDateStr());
+  const [specificWellnessTime, setSpecificWellnessTime] = useState<string>('08:15');
+  const [specificRpeTime, setSpecificRpeTime] = useState<string>('14:00');
+  const [specificExceptionToast, setSpecificExceptionToast] = useState<string | null>(null);
+
+  const handleUpdateDeadlineConfig = (updated: Partial<QuestionnaireDeadlinesConfig>) => {
+    const newCfg = { ...deadlineConfig, ...updated };
+    setDeadlineConfig(newCfg);
+    saveDeadlineConfig(newCfg);
+  };
+
+  const handleSaveSpecificDeadline = () => {
+    if (!specificDateInput) return;
+    const currentCustom = { ...(deadlineConfig.customDateDeadlines || {}) };
+    const currentWellness = { ...(deadlineConfig.customDateDeadlinesWellness || {}) };
+    const currentRpe = { ...(deadlineConfig.customDateDeadlinesRpe || {}) };
+
+    if (specificWellnessTime && specificWellnessTime.trim()) {
+      currentWellness[specificDateInput] = specificWellnessTime.trim();
+      currentCustom[specificDateInput] = specificWellnessTime.trim();
+    } else {
+      delete currentWellness[specificDateInput];
+    }
+
+    if (specificRpeTime && specificRpeTime.trim()) {
+      currentRpe[specificDateInput] = specificRpeTime.trim();
+    } else {
+      delete currentRpe[specificDateInput];
+    }
+
+    handleUpdateDeadlineConfig({
+      customDateDeadlines: currentCustom,
+      customDateDeadlinesWellness: currentWellness,
+      customDateDeadlinesRpe: currentRpe,
+    });
+
+    try {
+      const sessions = getStoredTrainingSessions();
+      if (sessions[specificDateInput]) {
+        sessions[specificDateInput].customDeadline = specificWellnessTime;
+        sessions[specificDateInput].customDeadlineWellness = specificWellnessTime;
+        sessions[specificDateInput].customDeadlineRpe = specificRpeTime;
+        saveTrainingSessionInfo(sessions[specificDateInput]);
+      }
+    } catch {}
+
+    setSpecificExceptionToast(`✓ Limites para ${specificDateInput} guardados: Wellness (${specificWellnessTime}) | PSE (${specificRpeTime})!`);
+    setTimeout(() => setSpecificExceptionToast(null), 4000);
+  };
+
+  const handleRemoveSpecificDeadline = (dateToRemove: string) => {
+    const currentCustom = { ...(deadlineConfig.customDateDeadlines || {}) };
+    const currentWellness = { ...(deadlineConfig.customDateDeadlinesWellness || {}) };
+    const currentRpe = { ...(deadlineConfig.customDateDeadlinesRpe || {}) };
+
+    delete currentCustom[dateToRemove];
+    delete currentWellness[dateToRemove];
+    delete currentRpe[dateToRemove];
+
+    handleUpdateDeadlineConfig({
+      customDateDeadlines: currentCustom,
+      customDateDeadlinesWellness: currentWellness,
+      customDateDeadlinesRpe: currentRpe,
+    });
+
+    try {
+      const sessions = getStoredTrainingSessions();
+      if (sessions[dateToRemove]) {
+        delete sessions[dateToRemove].customDeadline;
+        delete sessions[dateToRemove].customDeadlineWellness;
+        delete sessions[dateToRemove].customDeadlineRpe;
+        saveTrainingSessionInfo(sessions[dateToRemove]);
+      }
+    } catch {}
+
+    setSpecificExceptionToast(`✓ Exceção do dia ${dateToRemove} removida. Segue agora a regra geral.`);
+    setTimeout(() => setSpecificExceptionToast(null), 4000);
+  };
+
+  const [selectedAuthAthleteId, setSelectedAuthAthleteId] = useState<string>('');
+  const [authScopeType, setAuthScopeType] = useState<'today' | 'date' | 'permanent'>('today');
+  const [authCustomDate, setAuthCustomDate] = useState<string>(() => getTodayLocalDateStr());
+  const [authQuestionnaireType, setAuthQuestionnaireType] = useState<'all' | 'wellness' | 'rpe'>('all');
+  const [authSearchQuery, setAuthSearchQuery] = useState<string>('');
+  const [authToast, setAuthToast] = useState<string | null>(null);
+
+  const handleGrantAthleteAuthorization = (athleteId?: string, isPermanent = false) => {
+    const targetId = athleteId || selectedAuthAthleteId;
+    if (!targetId) return;
+
+    const ath = athletesList.find((a) => a.id === targetId);
+    const athName = ath ? ath.name : targetId;
+    const today = getTodayLocalDateStr();
+    const targetDate = isPermanent ? undefined : (authScopeType === 'permanent' ? undefined : (authScopeType === 'date' ? authCustomDate : today));
+
+    grantAthleteLateAuthorization(targetId, athName, targetDate, authQuestionnaireType);
+    setDeadlineConfig(getStoredDeadlineConfig());
+
+    setAuthToast(`✓ Autorização concedida a ${athName} (${targetDate ? `para o dia ${targetDate}` : 'Permanente'})!`);
+    setTimeout(() => setAuthToast(null), 4000);
+  };
+
+  const handleRevokeAthleteAuthorization = (athleteId: string, dateStr?: string) => {
+    const ath = athletesList.find((a) => a.id === athleteId);
+    const athName = ath ? ath.name : athleteId;
+
+    revokeAthleteLateAuthorization(athleteId, dateStr);
+    setDeadlineConfig(getStoredDeadlineConfig());
+
+    setAuthToast(`✓ Autorização de ${athName} removida.`);
+    setTimeout(() => setAuthToast(null), 4000);
+  };
+
+  // Pending submissions approval state & handlers
+  const [approvalToast, setApprovalToast] = useState<string | null>(null);
+
+  const pendingWellnessList = useMemo(() => {
+    return allWellnessList.filter((w) => w.approvalStatus === 'pending');
+  }, [allWellnessList]);
+
+  const pendingRpeList = useMemo(() => {
+    return allRpeList.filter((r) => r.approvalStatus === 'pending');
+  }, [allRpeList]);
+
+  const totalPendingReviews = pendingWellnessList.length + pendingRpeList.length;
+
+  const handleApproveWellness = async (id: string, keepFine = true) => {
+    approveWellnessSubmission(id, 'Treinador', keepFine);
+    loadAllData(selectedDate);
+    setApprovalToast(
+      keepFine
+        ? '⚠️ Submissão de Wellness aceite mantendo a multa por atraso.'
+        : '✅ Submissão de Wellness aceite e isenta de multa.'
+    );
+    setTimeout(() => setApprovalToast(null), 3500);
+
+    const updated = getWellnessLocally().find((e) => e.id === id);
+    if (updated) {
+      secureFetch('/api/wellness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    }
+  };
+
+  const handleRejectWellness = async (id: string) => {
+    rejectWellnessSubmission(id, 'Treinador');
+    loadAllData(selectedDate);
+    setApprovalToast('❌ Submissão de Wellness rejeitada (marcada como não válida).');
+    setTimeout(() => setApprovalToast(null), 3500);
+
+    const updated = getWellnessLocally().find((e) => e.id === id);
+    if (updated) {
+      secureFetch('/api/wellness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    }
+  };
+
+  const handleApproveRPE = async (id: string, keepFine = true) => {
+    approveRPESubmission(id, 'Treinador', keepFine);
+    loadAllData(selectedDate);
+    setApprovalToast(
+      keepFine
+        ? '⚠️ Submissão de PSE aceite mantendo a multa por atraso.'
+        : '✅ Submissão de PSE aceite e isenta de multa.'
+    );
+    setTimeout(() => setApprovalToast(null), 3500);
+
+    const updated = getRPELocally().find((e) => e.id === id);
+    if (updated) {
+      secureFetch('/api/rpe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    }
+  };
+
+  const handleRejectRPE = async (id: string) => {
+    rejectRPESubmission(id, 'Treinador');
+    loadAllData(selectedDate);
+    setApprovalToast('❌ Submissão de PSE rejeitada (marcada como não válida).');
+    setTimeout(() => setApprovalToast(null), 3500);
+
+    const updated = getRPELocally().find((e) => e.id === id);
+    if (updated) {
+      secureFetch('/api/rpe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    }
+  };
+
+  const handleApproveAllPending = async (keepFine = true) => {
+    approveAllPendingSubmissions(selectedDate, 'Treinador', keepFine);
+    loadAllData(selectedDate);
+    setApprovalToast(
+      keepFine
+        ? '⚠️ Todas as submissões aceites mantendo a multa por atraso.'
+        : '✅ Todas as submissões aceites e isentas de multa.'
+    );
+    setTimeout(() => setApprovalToast(null), 3500);
+  };
 
   const fetchActiveSubscribers = async () => {
     setIsLoadingSubscribers(true);
@@ -293,6 +518,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     setTimeout(() => setBroadcastMessage(null), 6000);
   };
 
+  const handleSendWhatsAppReminder = (type: 'all' | 'wellness' | 'preHydration' | 'postTraining' | 'rpe', customName?: string) => {
+    let message = '';
+    const appUrl = 'https://fem-performance-app.vercel.app';
+    if (customName) {
+      if (type === 'wellness') {
+        message = `Olá ${customName}! 👋\nLembra-te de preencher o teu Questionário Wellness de hoje na app Gil Vicente FC:\n🔗 ${appUrl}\nObrigado! ⚽`;
+      } else if (type === 'preHydration') {
+        message = `Olá ${customName}! 👋\nLembra-te de registar a tua Pesagem Pré-Treino de hoje:\n🔗 ${appUrl}\nBom treino! ⚽`;
+      } else if (type === 'postTraining' || type === 'rpe') {
+        message = `Olá ${customName}! 👋\nLembra-te de registar a tua Pesagem Pós-Treino e o PSE (RPE) de hoje:\n🔗 ${appUrl}\nBom descanso! ⚽`;
+      } else {
+        message = `Olá ${customName}! 👋\nTens questionários pendentes na app Gil Vicente FC:\n🔗 ${appUrl}\nPor favor responde assim que puderes! ⚽`;
+      }
+    } else {
+      if (type === 'wellness') {
+        message = `⚽ *GIL VICENTE FC • QUESTIONÁRIO WELLNESS* ⚽\n\nBom dia meninas! Lembrete para preencherem o vosso Wellness desta manhã na app:\n🔗 ${appUrl}\n\nBom treino a todas! 💪🔴🔵`;
+      } else if (type === 'preHydration') {
+        message = `⚽ *GIL VICENTE FC • PESAGEM PRÉ-TREINO* ⚽\n\nMeninas, lembrete para registarem a vossa pesagem pré-treino de hoje na app:\n🔗 ${appUrl}\n\nFoco no treino! 💪🔴🔵`;
+      } else if (type === 'postTraining' || type === 'rpe') {
+        message = `⚽ *GIL VICENTE FC • REGISTO PÓS-TREINO & PSE (RPE)* ⚽\n\nMeninas, treino concluído! Não se esqueçam de registar a pesagem pós-treino e o vosso PSE (RPE) na app:\n🔗 ${appUrl}\n\nBom descanso! 💪🔴🔵`;
+      } else {
+        message = `⚽ *GIL VICENTE FC • LEMBRETE DIÁRIO* ⚽\n\nMeninas, por favor confirmem se têm todos os vossos questionários e pesagens preenchidos na app:\n🔗 ${appUrl}\n\n(Wellness, Pesagens e PSE)\nObrigado pelo compromisso! 💪🔴🔵`;
+      }
+    }
+
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   const handleExecuteExport = () => {
     const selectedAthleteObj = athletesList.find((a) => a.id === exportAthleteId);
     const athleteFilterName = exportAthleteId === 'ALL' ? undefined : (selectedAthleteObj?.name || exportAthleteId);
@@ -371,9 +625,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
-      syncAllDataFromCloud();
-      loadAllData(selectedDate);
-      loadAllPins();
+      syncAllDataFromCloud().then(() => {
+        loadAllData(selectedDate);
+        loadAllPins();
+      });
+
+      // Auto-poll cloud every 8 seconds to synchronize any updates made from other devices
+      const intervalId = setInterval(() => {
+        syncAllDataFromCloud().then(() => {
+          loadAllData(selectedDate);
+          loadAllPins();
+        });
+      }, 8000);
+
+      const onFocus = () => {
+        syncAllDataFromCloud().then(() => {
+          loadAllData(selectedDate);
+          loadAllPins();
+        });
+      };
+      window.addEventListener('focus', onFocus);
 
       const handleDataUpdate = () => {
         loadAllData(selectedDate);
@@ -388,20 +659,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       window.addEventListener('femperf_data_updated', handleDataUpdate);
       window.addEventListener('femperf_credentials_updated', handleCredsUpdate);
       return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('focus', onFocus);
         window.removeEventListener('femperf_data_updated', handleDataUpdate);
         window.removeEventListener('femperf_credentials_updated', handleCredsUpdate);
       };
     }
   }, [isOpen, isAuthenticated, selectedDate]);
 
-  const handleManualSyncCloudData = () => {
+  // Sync credentials from cloud as soon as modal opens, even before logging in
+  useEffect(() => {
+    if (isOpen) {
+      syncCredentialsFromCloud().then(() => {
+        loadAllPins();
+      });
+    }
+  }, [isOpen]);
+
+  const handleManualSyncCloudData = async () => {
     setIsSyncingCloud(true);
-    syncAllDataFromCloud();
-    setTimeout(() => {
+    try {
+      await syncAllDataFromCloud();
       loadAllData(selectedDate);
       loadAllPins();
+    } finally {
       setIsSyncingCloud(false);
-    }, 1200);
+    }
   };
 
   // Compute weight statistics for weight management sub-tab
@@ -426,9 +709,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
         (h) => h.athleteName.toLowerCase() === ath.name.toLowerCase()
       );
 
-      if (monthEntries.length > 0) {
+      const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+      if (monthPreEntries.length > 0) {
+        const fw = monthPreEntries[0].preWeight;
+        const lw = monthPreEntries[monthPreEntries.length - 1].preWeight;
+        if (fw) initialWeights.push(fw);
+        if (lw) lastWeights.push(lw);
+      } else if (monthEntries.length > 0) {
         const fw = monthEntries[0].preWeight || monthEntries[0].postWeight;
-        const lw = monthEntries[monthEntries.length - 1].postWeight || monthEntries[monthEntries.length - 1].preWeight;
+        const lw = monthEntries[monthEntries.length - 1].preWeight || monthEntries[monthEntries.length - 1].postWeight;
         if (fw) initialWeights.push(fw);
         if (lw) lastWeights.push(lw);
       }
@@ -561,6 +850,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     setCurrentActivationCodeState(getClubActivationCode());
     setCurrentAdminPinState(getAdminPin());
     setCurrentPhysioPinState(getPhysioPin());
+    setReminderConfig(getStoredReminderConfig());
+    setDeadlineConfig(getStoredDeadlineConfig());
 
     const currentAthletes = getDynamicAthletes(true);
     setAthletesList(currentAthletes);
@@ -622,8 +913,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
   };
 
-  const handleAdminPinSubmit = (e: React.FormEvent) => {
+  const handleAdminPinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await syncCredentialsFromCloud();
+    } catch {}
     const storedPin = getAdminPin();
     const cleanInput = adminLoginPin.trim();
     const activationCode = getClubActivationCode();
@@ -857,7 +1151,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     : 0;
   const alertHydrationCount = completedHydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
 
-  // Helper for monthly weight tracking (1º peso do mês, último peso do mês, peso pré-treino)
+  // Helper for monthly weight tracking (1º peso pré-treino do mês, último peso pré-treino do mês, peso pré-treino hoje)
   const getAthleteWeightMetrics = (athleteName: string) => {
     const monthPrefix = selectedDate.substring(0, 7); // e.g. "2026-09"
     const allHydration = getHydrationLocally();
@@ -874,13 +1168,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       (h) => h.athleteName.toLowerCase() === athleteName.toLowerCase()
     );
 
-    const firstEntry = monthEntries.length > 0 ? monthEntries[0] : null;
-    const lastEntry = monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null;
+    // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna (baseline vs baseline)
+    const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+    const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
+    const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
     const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
     const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
 
-    const lastWeightMonth = lastEntry ? (lastEntry.postWeight || lastEntry.preWeight) : null;
+    // Ambos 1º e último peso do mês utilizam o peso pré-treino!
+    const lastWeightMonth = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
     const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
 
     const preWeightToday = todayEntry ? todayEntry.preWeight : null;
@@ -1026,101 +1323,272 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
         </div>
 
         {/* Top-Level Navigation Tabs */}
-        <div className="flex space-x-2 border-b border-slate-800 pb-3 overflow-x-auto">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2 border-b border-slate-800 pb-3">
           <button
             type="button"
             onClick={() => setActiveTab('schedule')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'schedule'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <Calendar className="h-4 w-4 text-brand-lime" />
-            <span>Info do Treino & Calendário</span>
+            <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-brand-lime shrink-0" />
+            <span>Treino & Calendário</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('overview')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'overview'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <Activity className="h-4 w-4" />
-            <span>Resumo Diário do Plantel</span>
+            <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-400 shrink-0" />
+            <span>Resumo Diário</span>
+            {totalPendingReviews > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black animate-pulse shadow-sm">
+                {totalPendingReviews}
+              </span>
+            )}
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('collective')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'collective'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <Users className="h-4 w-4 text-cyan-400" />
+            <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400 shrink-0" />
             <span>Análise Coletiva</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('individual')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'individual'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <User className="h-4 w-4 text-brand-lime" />
+            <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-brand-lime shrink-0" />
             <span>Análise Individual</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('matchReport')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'matchReport'
-                ? 'bg-gradient-to-r from-sky-600 to-sky-500 text-white shadow-md shadow-sky-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-gradient-to-r from-sky-600 to-sky-500 text-white shadow-md shadow-sky-600/30 border border-sky-400/50'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <Trophy className="h-4 w-4 text-amber-300" />
-            <span>⚽ Dashboard Jogos</span>
+            <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-300 shrink-0" />
+            <span>Dashboard Jogos</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('matchMinutes')}
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
+              activeTab === 'matchMinutes'
+                ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-md shadow-red-600/30 border border-rose-400/50'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
+            }`}
+          >
+            <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-400 shrink-0" />
+            <span>Tempo de Jogo</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('fines')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'fines'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <Euro className="h-4 w-4 text-amber-400" />
-            <span>{t.admin?.fines?.tabFines || 'Contabilização de Multas & Faltas'}</span>
+            <Euro className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
+            <span>{t.admin?.fines?.tabFines || 'Multas & Cumprimento'}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('pins')}
-            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'pins'
-                ? 'bg-red-600 text-white shadow-md shadow-red-600/30'
-                : 'text-slate-400 hover:bg-slate-800'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <KeyRound className="h-4 w-4 text-amber-400" />
-            <span>🔑 PINs das Jogadoras & Credenciais</span>
+            <KeyRound className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
+            <span>PINs & Acessos</span>
           </button>
         </div>
 
         {activeTab === 'overview' ? (
           <div className="space-y-5">
+            {/* Approval Toast Notification */}
+            {approvalToast && (
+              <div className="p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 text-xs font-bold animate-fade-in flex items-center justify-between shadow-lg">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>{approvalToast}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setApprovalToast(null)}
+                  className="text-emerald-400 hover:text-emerald-200 p-1"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
+
+            {/* Pending Approvals Review Queue Card */}
+            {totalPendingReviews > 0 && (
+              <div className="rounded-2xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-dark-card to-dark-surface p-4 shadow-xl space-y-3 animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-500/20 pb-2.5">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black text-amber-200 uppercase tracking-wide flex items-center space-x-2">
+                        <span>Submissões Fora do Prazo a Aguardar Validação</span>
+                        <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-black border border-amber-500/40">
+                          {totalPendingReviews} pendente{totalPendingReviews > 1 ? 's' : ''}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-300">
+                        Atletas que submeteram questionários após a hora limite estipulada. Aceita para validar as respostas ou rejeita para manter a falta/multa.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleApproveAllPending(true)}
+                      className="px-2.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold text-[11px] transition-all shadow-md flex items-center justify-center space-x-1 shrink-0 active:scale-95 cursor-pointer"
+                      title="Aceitar todas as submissões mantendo a multa por atraso"
+                    >
+                      <Check className="h-3.5 w-3.5 stroke-[3]" />
+                      <span>Aceitar Todas (c/ Multa)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApproveAllPending(false)}
+                      className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[11px] transition-all shadow-md flex items-center justify-center space-x-1 shrink-0 active:scale-95 cursor-pointer"
+                      title="Aceitar todas as submissões e perdoar/isentar a multa"
+                    >
+                      <Check className="h-3.5 w-3.5 stroke-[3]" />
+                      <span>Aceitar Todas (s/ Multa)</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                  {pendingWellnessList.map((w) => (
+                    <div key={w.id} className="p-3 rounded-xl bg-slate-900/90 border border-amber-500/30 flex items-center justify-between text-xs space-x-2">
+                      <div className="truncate space-y-0.5">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-black text-slate-100">{w.athleteName}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-black border border-emerald-500/40 uppercase">
+                            Wellness
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          📅 {w.date} às {formatSubmissionTime(w.submittedAt || w.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1 shrink-0 flex-wrap justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleApproveWellness(w.id, true)}
+                          className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[10px] transition-all shadow flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Aceitar submissão mantendo a multa por atraso"
+                        >
+                          <Check className="h-3 w-3 stroke-[2.5]" />
+                          <span>c/ Multa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApproveWellness(w.id, false)}
+                          className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] transition-all shadow flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Aceitar submissão e perdoar/isentar a multa"
+                        >
+                          <Check className="h-3 w-3 stroke-[2.5]" />
+                          <span>s/ Multa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRejectWellness(w.id)}
+                          className="px-1.5 py-1 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 font-black text-[10px] transition-all flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Rejeitar submissão"
+                        >
+                          <X className="h-3 w-3" />
+                          <span>Rejeitar</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {pendingRpeList.map((r) => (
+                    <div key={r.id} className="p-3 rounded-xl bg-slate-900/90 border border-amber-500/30 flex items-center justify-between text-xs space-x-2">
+                      <div className="truncate space-y-0.5">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="font-black text-slate-100">{r.athleteName}</span>
+                          <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 text-[9px] font-black border border-cyan-500/40 uppercase">
+                            PSE (RPE)
+                          </span>
+                        </div>
+                        <span className="text-[10px] text-slate-400 block truncate">
+                          📅 {r.date} às {formatSubmissionTime(r.submittedAt || r.createdAt)}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1 shrink-0 flex-wrap justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleApproveRPE(r.id, true)}
+                          className="px-2 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[10px] transition-all shadow flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Aceitar submissão mantendo a multa por atraso"
+                        >
+                          <Check className="h-3 w-3 stroke-[2.5]" />
+                          <span>c/ Multa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleApproveRPE(r.id, false)}
+                          className="px-2 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] transition-all shadow flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Aceitar submissão e perdoar/isentar a multa"
+                        >
+                          <Check className="h-3 w-3 stroke-[2.5]" />
+                          <span>s/ Multa</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRejectRPE(r.id)}
+                          className="px-1.5 py-1 rounded-lg bg-rose-950/70 hover:bg-rose-900 border border-rose-500/40 text-rose-300 font-black text-[10px] transition-all flex items-center space-x-1 cursor-pointer active:scale-95"
+                          title="Rejeitar submissão"
+                        >
+                          <X className="h-3 w-3" />
+                          <span>Rejeitar</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Sub-Navigation Pills for Resumo Diário do Plantel */}
             <div className="flex flex-wrap gap-2 bg-dark-card/80 p-2 rounded-2xl border border-slate-800">
               <button
@@ -1432,6 +1900,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         <thead>
                           <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                             <th className="py-2.5 px-3">Atleta</th>
+                            <th className="py-2.5 px-3 whitespace-nowrap">Hora Submissão</th>
                             <th className="py-2.5 px-3">Wellness Total</th>
                             <th className="py-2.5 px-3">Ciclo Menstrual</th>
                             <th className="py-2.5 px-3 text-center">Sono (Qual/Dur)</th>
@@ -1448,9 +1917,100 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                             .filter((w) => w.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
                             .map((w) => {
                               const score = getWellnessTotalScore(w);
+                              const subTime = formatSubmissionTime(w.submittedAt || w.createdAt);
+
                               return (
                                 <tr key={w.id} className="hover:bg-slate-800/40">
-                                  <td className="py-3 px-3 font-bold text-slate-100">{w.athleteName}</td>
+                                  <td className="py-3 px-3 font-bold text-slate-100">
+                                    {w.athleteName}
+                                  </td>
+
+                                  <td className="py-3 px-3 whitespace-nowrap">
+                                    <div className="flex items-center space-x-1.5">
+                                      <Clock className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                                      <span className="font-extrabold text-slate-200 text-xs">
+                                        {subTime}
+                                      </span>
+                                      {w.isAuthorizedLate && (
+                                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black" title="Autorizada fora de horas">
+                                          🔓 VIP
+                                        </span>
+                                      )}
+                                      {w.approvalStatus === 'pending' ? (
+                                        <div className="inline-flex items-center space-x-1 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-300">
+                                          <span className="animate-pulse">⏳ Pendente:</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveWellness(w.id, true)}
+                                            className="px-1.5 py-0.5 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 font-black cursor-pointer active:scale-90"
+                                            title="Aceitar mantendo multa por atraso"
+                                          >
+                                            ✓ c/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveWellness(w.id, false)}
+                                            className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-black cursor-pointer active:scale-90"
+                                            title="Aceitar e isentar de multa"
+                                          >
+                                            ✓ s/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRejectWellness(w.id)}
+                                            className="px-1 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-black cursor-pointer active:scale-90"
+                                            title="Rejeitar submissão"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      ) : w.approvalStatus === 'rejected' ? (
+                                        <div className="inline-flex items-center space-x-1 bg-rose-500/20 border border-rose-500/40 px-1.5 py-0.5 rounded text-[9px] font-black text-rose-300">
+                                          <span>❌ Não Aceite</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveWellness(w.id, true)}
+                                            className="ml-1 px-1.5 py-0.5 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold border border-amber-500 text-[8px] cursor-pointer"
+                                            title="Mudar para Aceite com Multa"
+                                          >
+                                            c/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveWellness(w.id, false)}
+                                            className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold border border-emerald-500 text-[8px] cursor-pointer"
+                                            title="Mudar para Aceite sem Multa"
+                                          >
+                                            s/ Multa
+                                          </button>
+                                        </div>
+                                      ) : w.approvalStatus === 'approved' && w.isLate && !w.isAuthorizedLate ? (
+                                        <div className="inline-flex items-center space-x-1">
+                                          {w.keepFine ? (
+                                            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black" title="Aceite mas mantém a multa por atraso">
+                                              ⚠️ Aceite c/ Multa
+                                            </span>
+                                          ) : (
+                                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black" title="Aceite e isento de multa">
+                                              ✅ Aceite s/ Multa
+                                            </span>
+                                          )}
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveWellness(w.id, !w.keepFine)}
+                                            className="px-1 py-0.2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[8px] font-bold border border-slate-700 cursor-pointer"
+                                            title={w.keepFine ? "Retirar multa" : "Manter multa"}
+                                          >
+                                            {w.keepFine ? "Isentar" : "Multar"}
+                                          </button>
+                                        </div>
+                                      ) : w.isLate && !w.isAuthorizedLate ? (
+                                        <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-black" title="Submetido fora de prazo">
+                                          ⚠️ Fora
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </td>
                                   
                                   <td className="py-3 px-3">
                                     {renderWellnessTotalBadge(score)}
@@ -1573,6 +2133,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         <thead>
                           <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                             <th className="py-2.5 px-3">Atleta</th>
+                            <th className="py-2.5 px-3 whitespace-nowrap">Hora Submissão</th>
                             <th className="py-2.5 px-3">Exigência Física (Borg)</th>
                             <th className="py-2.5 px-3">Fadiga Pós-Treino</th>
                             <th className="py-2.5 px-3">Trabalho Prévio</th>
@@ -1587,10 +2148,100 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                               const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
                               const borgLabel = t.rpe.borgDescriptors[r.physicalDemand as keyof typeof t.rpe.borgDescriptors] || borgObj?.label;
                               const fatigueLabel = t.rpe.fatigueDescriptors[r.postFatigue as keyof typeof t.rpe.fatigueDescriptors];
+                              const subTime = formatSubmissionTime(r.submittedAt || r.createdAt);
 
                               return (
                                 <tr key={r.id} className="hover:bg-slate-800/40">
-                                  <td className="py-3 px-3 font-bold text-slate-100">{r.athleteName}</td>
+                                  <td className="py-3 px-3 font-bold text-slate-100">
+                                    {r.athleteName}
+                                  </td>
+
+                                  <td className="py-3 px-3 whitespace-nowrap">
+                                    <div className="flex items-center space-x-1.5">
+                                      <Clock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                                      <span className="font-extrabold text-slate-200 text-xs">
+                                        {subTime}
+                                      </span>
+                                      {r.isAuthorizedLate && (
+                                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black" title="Autorizada fora de horas">
+                                          🔓 VIP
+                                        </span>
+                                      )}
+                                      {r.approvalStatus === 'pending' ? (
+                                        <div className="inline-flex items-center space-x-1 bg-amber-500/15 border border-amber-500/40 px-1.5 py-0.5 rounded text-[9px] font-black text-amber-300">
+                                          <span className="animate-pulse">⏳ Pendente:</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveRPE(r.id, true)}
+                                            className="px-1.5 py-0.5 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 font-black cursor-pointer active:scale-90"
+                                            title="Aceitar mantendo multa por atraso"
+                                          >
+                                            ✓ c/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveRPE(r.id, false)}
+                                            className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-black cursor-pointer active:scale-90"
+                                            title="Aceitar e isentar de multa"
+                                          >
+                                            ✓ s/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRejectRPE(r.id)}
+                                            className="px-1 py-0.5 rounded bg-rose-600 hover:bg-rose-500 text-white font-black cursor-pointer active:scale-90"
+                                            title="Rejeitar submissão"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+                                      ) : r.approvalStatus === 'rejected' ? (
+                                        <div className="inline-flex items-center space-x-1 bg-rose-500/20 border border-rose-500/40 px-1.5 py-0.5 rounded text-[9px] font-black text-rose-300">
+                                          <span>❌ Não Aceite</span>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveRPE(r.id, true)}
+                                            className="ml-1 px-1.5 py-0.5 rounded bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold border border-amber-500 text-[8px] cursor-pointer"
+                                            title="Mudar para Aceite com Multa"
+                                          >
+                                            c/ Multa
+                                          </button>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveRPE(r.id, false)}
+                                            className="px-1.5 py-0.5 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold border border-emerald-500 text-[8px] cursor-pointer"
+                                            title="Mudar para Aceite sem Multa"
+                                          >
+                                            s/ Multa
+                                          </button>
+                                        </div>
+                                      ) : r.approvalStatus === 'approved' && r.isLate && !r.isAuthorizedLate ? (
+                                        <div className="inline-flex items-center space-x-1">
+                                          {r.keepFine ? (
+                                            <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[9px] font-black" title="Aceite mas mantém a multa por atraso">
+                                              ⚠️ Aceite c/ Multa
+                                            </span>
+                                          ) : (
+                                            <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[9px] font-black" title="Aceite e isento de multa">
+                                              ✅ Aceite s/ Multa
+                                            </span>
+                                          )}
+                                          <button
+                                            type="button"
+                                            onClick={() => handleApproveRPE(r.id, !r.keepFine)}
+                                            className="px-1 py-0.2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[8px] font-bold border border-slate-700 cursor-pointer"
+                                            title={r.keepFine ? "Retirar multa" : "Manter multa"}
+                                          >
+                                            {r.keepFine ? "Isentar" : "Multar"}
+                                          </button>
+                                        </div>
+                                      ) : r.isLate && !r.isAuthorizedLate ? (
+                                        <span className="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-black" title="Submetido fora de prazo">
+                                          ⚠️ Fora
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </td>
 
                                   {/* Borg score */}
                                   <td className="py-3 px-3">
@@ -1723,12 +2374,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                 <tr key={h.id} className="hover:bg-slate-800/40">
                                   <td className="py-3 px-3 font-bold text-slate-100">{h.athleteName}</td>
                                   <td className="py-3 px-3">
-                                    <span className="font-extrabold text-blue-400 bg-blue-950/30 px-2 py-0.5 rounded-lg border border-blue-500/20">
-                                      {h.preWeight} kg
-                                    </span>
+                                    <div className="flex flex-col gap-1 items-start">
+                                      <span className="font-extrabold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-500/30">
+                                        {h.preWeight} kg
+                                      </span>
+                                      {(() => {
+                                        const preTime = formatSubmissionTime(h.preWeightTime || h.submittedAtPre || (h.preWeight > 0 ? h.createdAt : undefined));
+                                        return preTime !== '-' ? (
+                                          <span className="inline-flex items-center space-x-1 text-[10px] text-slate-300 font-bold bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-700/80">
+                                            <Clock className="h-2.5 w-2.5 text-blue-400 shrink-0" />
+                                            <span>{preTime}</span>
+                                          </span>
+                                        ) : null;
+                                      })()}
+                                    </div>
                                   </td>
                                   <td className="py-3 px-3 text-slate-300">
-                                    {h.postWeight > 0 ? `${h.postWeight} kg` : '-'}
+                                    {h.postWeight > 0 ? (
+                                      <div className="flex flex-col gap-1 items-start">
+                                        <span className="font-extrabold text-slate-100 bg-slate-800/80 px-2 py-0.5 rounded-lg border border-slate-700">
+                                          {h.postWeight} kg
+                                        </span>
+                                        {(() => {
+                                          const postTime = formatSubmissionTime(h.postWeightTime || h.submittedAtPost || h.createdAt);
+                                          return postTime !== '-' ? (
+                                            <span className="inline-flex items-center space-x-1 text-[10px] text-slate-300 font-bold bg-slate-900/90 px-1.5 py-0.5 rounded border border-slate-700/80">
+                                              <Clock className="h-2.5 w-2.5 text-amber-400 shrink-0" />
+                                              <span>{postTime}</span>
+                                            </span>
+                                          ) : null;
+                                        })()}
+                                      </div>
+                                    ) : (
+                                      <span className="text-slate-500 text-xs italic">Pendente</span>
+                                    )}
                                   </td>
                                   <td className="py-3 px-3 font-bold text-amber-400">
                                     {h.postWeight > 0 ? `-${h.weightLoss} kg` : '-'}
@@ -1876,20 +2555,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                       </h3>
                     </div>
                     <span className="text-[11px] font-bold text-slate-400">
-                      Consulta de Peso Pré-Treino, Peso Pós-Treino, 1º e Último Peso do Mês
+                      Consulta de Peso Pré-Treino, Peso Pós-Treino e Evolução Mensal (Ambos Pré-Treino)
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="rounded-xl border border-amber-500/20 bg-dark-card p-3 text-center">
-                      <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso Registado no Mês (Média)</span>
+                      <span className="text-[11px] font-bold text-amber-400 uppercase block">1º Peso do Mês (Média Pré)</span>
                       <span className="text-xl font-black text-slate-100">
                         {weightAnalytics.avgFirstMonthWeight ? `${weightAnalytics.avgFirstMonthWeight} kg` : '-'}
                       </span>
                     </div>
 
                     <div className="rounded-xl border border-cyan-500/20 bg-dark-card p-3 text-center">
-                      <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso Registado no Mês (Média)</span>
+                      <span className="text-[11px] font-bold text-cyan-400 uppercase block">Último Peso do Mês (Média Pré)</span>
                       <span className="text-xl font-black text-slate-100">
                         {weightAnalytics.avgLastMonthWeight ? `${weightAnalytics.avgLastMonthWeight} kg` : '-'}
                       </span>
@@ -1912,7 +2591,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         <Scale className="h-4 w-4 text-amber-400" />
                         <span>Registo de Controlo Ponderal do Plantel ({selectedDate})</span>
                       </h3>
-                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, 1º/último peso do mês e variação.</p>
+                      <p className="text-xs text-slate-400">Consulta de peso pré-treino, peso pós-treino, 1º/último pré do mês e variação fidedigna.</p>
                     </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -1933,8 +2612,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                           <th className="py-2.5 px-3">Atleta</th>
                           <th className="py-2.5 px-3">Peso Pré-Treino (kg)</th>
                           <th className="py-2.5 px-3">Peso Pós-Treino (kg)</th>
-                          <th className="py-2.5 px-3">1º Peso do Mês</th>
-                          <th className="py-2.5 px-3">Último Peso do Mês</th>
+                          <th className="py-2.5 px-3">1º Peso do Mês (Pré)</th>
+                          <th className="py-2.5 px-3">Último Peso do Mês (Pré)</th>
                           <th className="py-2.5 px-3">Variação Mensal</th>
                           <th className="py-2.5 px-3 text-center">Ações</th>
                         </tr>
@@ -2059,6 +2738,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           />
         ) : activeTab === 'matchReport' ? (
           <MatchDashboard userRole="admin" />
+        ) : activeTab === 'matchMinutes' ? (
+          <MatchMinutesDashboard />
         ) : (
           /* PIN Management Section */
           <div className="space-y-6 animate-fade-in">
@@ -2080,10 +2761,105 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               </div>
             )}
 
+            {/* Sub-Navigation Pills for PINs & Acessos */}
+            <div className="flex flex-wrap gap-2 bg-dark-card/80 p-2 rounded-2xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('deadlines')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'deadlines'
+                    ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold ring-1 ring-amber-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Clock className="h-3.5 w-3.5 text-amber-400" />
+                <span>Horários Limite & Deadlines</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('authorizations')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'authorizations'
+                    ? 'bg-emerald-500 text-slate-950 shadow-md font-extrabold ring-1 ring-emerald-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Unlock className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Autorizações Individuais</span>
+                {deadlineConfig.athleteLateAuthorizations && Object.keys(deadlineConfig.athleteLateAuthorizations).length > 0 && (
+                  <span className="ml-1 rounded-full bg-emerald-950/80 px-2 py-0.5 text-[10px] text-emerald-300 font-extrabold border border-emerald-500/40">
+                    {Object.keys(deadlineConfig.athleteLateAuthorizations).length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('playerPins')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'playerPins'
+                    ? 'bg-rose-500 text-white shadow-md font-extrabold ring-1 ring-rose-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Users className="h-3.5 w-3.5 text-rose-400" />
+                <span>PINs das Jogadoras</span>
+                <span className="ml-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] text-rose-300 font-extrabold">
+                  {athletesList.length}
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('notifications')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'notifications'
+                    ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold ring-1 ring-cyan-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Bell className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Notificações & WhatsApp</span>
+                {activeSubscribers.length > 0 && (
+                  <span className="ml-1 rounded-full bg-cyan-950/80 px-2 py-0.5 text-[10px] text-cyan-300 font-extrabold border border-cyan-500/40">
+                    {activeSubscribers.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('credentials')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'credentials'
+                    ? 'bg-slate-100 text-slate-950 shadow-md font-extrabold ring-1 ring-white/50'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <KeyRound className="h-3.5 w-3.5 text-amber-400" />
+                <span>Credenciais Mestres</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('all')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'all'
+                    ? 'bg-slate-700 text-white shadow-md font-extrabold'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <LayoutGrid className="h-3.5 w-3.5 text-slate-300" />
+                <span>Ver Tudo</span>
+              </button>
+            </div>
+
             {/* 1. System Master Credentials Redefinition (Activation Code, Admin & Physio) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {/* Activation Code Card */}
-              <div className="rounded-2xl border border-amber-500/30 bg-dark-card p-4 space-y-3 shadow-md flex flex-col justify-between">
+            {(pinsSubTab === 'credentials' || pinsSubTab === 'all') && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Activation Code Card */}
+                <div className="rounded-2xl border border-amber-500/30 bg-dark-card p-4 space-y-3 shadow-md flex flex-col justify-between">
                 <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
                   <div className="flex items-center space-x-2">
                     <Smartphone className="h-5 w-5 text-amber-400" />
@@ -2273,16 +3049,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 )}
               </div>
             </div>
+            )}
 
             {/* 2. Mobile Notification & Reminders Settings Section */}
-            <div className="rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-dark-card to-dark-card p-4 space-y-4 shadow-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
-                <div className="flex items-center space-x-2.5">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                    <Bell className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-extrabold text-slate-100 uppercase">
+            {(pinsSubTab === 'notifications' || pinsSubTab === 'all') && (
+              <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/20 via-dark-card to-dark-card p-4 space-y-4 shadow-lg animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                      <Bell className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-extrabold text-slate-100 uppercase">
                       Lembretes & Notificações nos Telemóveis
                     </h3>
                     <p className="text-xs text-slate-400">
@@ -2389,6 +3167,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                     </div>
                   </div>
                 )}
+
+                {/* Jogadoras que ainda não ativaram notificações no telemóvel */}
+                {(() => {
+                  const subscribedAthleteIds = new Set(activeSubscribers.map((s) => s.athleteId).filter(Boolean));
+                  const unregisteredAthletes = athletesList.filter((a) => !subscribedAthleteIds.has(a.id));
+
+                  if (unregisteredAthletes.length === 0) {
+                    return (
+                      <div className="flex items-center space-x-2 text-[11px] font-bold text-emerald-400 bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-500/30">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <span>Excelente! Todas as {athletesList.length} jogadoras do plantel têm notificações ativas no telemóvel.</span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+                        <span className="text-[11px] font-black text-amber-300 flex items-center space-x-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                          <span>{unregisteredAthletes.length} jogadoras ainda não ativaram notificações no telemóvel:</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const names = unregisteredAthletes.map((a) => a.name).join(', ');
+                            const msg = `⚽ *GIL VICENTE FC • ATIVAÇÃO DE NOTIFICAÇÕES* ⚽\n\nMeninas, precisamos que ativem os alertas no telemóvel para receberem os lembretes com a app fechada:\n🔗 https://fem-performance-app.vercel.app\n\nJogadoras em falta: ${names}\n(No iPhone: Safari ➔ Partilhar ➔ Adicionar ao Ecrã Principal ➔ Ativar Alertas)`;
+                            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
+                          }}
+                          className="inline-flex items-center space-x-1 text-[10px] font-black text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/90 px-2.5 py-1 rounded-lg border border-emerald-500/40 transition-all active:scale-95"
+                        >
+                          <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
+                          <span>Avisar Jogadoras no WhatsApp</span>
+                        </button>
+                      </div>
+
+                      <div className="flex flex-wrap gap-1">
+                        {unregisteredAthletes.map((ath) => (
+                          <span
+                            key={ath.id}
+                            className="inline-flex items-center gap-1 text-[10px] font-bold bg-amber-950/50 text-amber-200 border border-amber-500/30 px-2 py-0.5 rounded-md"
+                          >
+                            <span>{ath.name}</span>
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
@@ -2442,7 +3269,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <span className="text-xs font-black text-slate-200 flex items-center space-x-1.5">
                     <BellRing className="h-4 w-4 text-red-400 animate-pulse" />
-                    <span>Disparo Manual Imediato de Notificações</span>
+                    <span>Disparo Manual Imediato de Notificações Push</span>
                   </span>
                   <label className="inline-flex items-center space-x-2 cursor-pointer select-none bg-slate-900/90 px-2.5 py-1 rounded-lg border border-slate-800 hover:border-slate-700 transition-colors">
                     <input
@@ -2468,14 +3295,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                   <span>
                     {isSendingBroadcast
                       ? 'A ENVIAR NOTIFICAÇÕES A TODAS AS JOGADORAS...'
-                      : '📢 ENVIAR NOTIFICAÇÃO PARA TODOS OS QUESTIONÁRIOS'}
+                      : '📢 ENVIAR NOTIFICAÇÃO PUSH PARA TODOS OS QUESTIONÁRIOS'}
                   </span>
                 </button>
 
                 {/* Botões Individuais por Categoria */}
                 <div className="space-y-1.5">
                   <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">
-                    Ou enviar lembrete individual por questionário:
+                    Ou enviar notificação push individual por questionário:
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button
@@ -2512,12 +3339,868 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                     </button>
                   </div>
                 </div>
+
+                {/* 100% RELIABLE WHATSAPP SQUAD REMINDER */}
+                <div className="space-y-2 pt-3 border-t border-slate-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <span className="text-xs font-black text-emerald-400 flex items-center space-x-1.5">
+                      <MessageCircle className="h-4 w-4 text-emerald-400" />
+                      <span>Lembrete de Equipa no WhatsApp (100% Infalível)</span>
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-400">
+                      Disparo instantâneo com link direto da app para o grupo
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSendWhatsAppReminder('all')}
+                    className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-xs sm:text-sm tracking-wide shadow-xl shadow-emerald-950/40 flex items-center justify-center space-x-2 border border-emerald-400/40 active:scale-[0.99] transition-all cursor-pointer"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    <span>📲 ENVIAR LEMBRETE NO GRUPO DO WHATSAPP (1 CLIQUE)</span>
+                  </button>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSendWhatsAppReminder('wellness')}
+                      className="py-2 px-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 text-[11px] font-bold hover:bg-emerald-900/60 transition-all text-center cursor-pointer"
+                    >
+                      💬 WhatsApp Wellness
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSendWhatsAppReminder('preHydration')}
+                      className="py-2 px-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 text-[11px] font-bold hover:bg-emerald-900/60 transition-all text-center cursor-pointer"
+                    >
+                      💬 WhatsApp Pré
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSendWhatsAppReminder('postTraining')}
+                      className="py-2 px-2 rounded-xl border border-emerald-500/40 bg-emerald-950/40 text-emerald-300 text-[11px] font-bold hover:bg-emerald-900/60 transition-all text-center cursor-pointer"
+                    >
+                      💬 WhatsApp Pós / PSE
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
+            )}
 
-            {/* 3. Tabela de Gestão do Plantel, Perfis & PINs */}
-            <div className="rounded-2xl border border-red-500/30 bg-dark-card p-4 space-y-4 shadow-lg">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
+            {/* 2.5 Limitação de Horários de Preenchimento (Deadlines) */}
+            {(pinsSubTab === 'deadlines' || pinsSubTab === 'all') && (
+              <div className="rounded-2xl border border-amber-500/30 bg-dark-card p-4 space-y-4 shadow-lg animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
+                <div className="flex items-center space-x-2.5">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
+                      <span>Limitação de Horários de Preenchimento (Deadlines)</span>
+                      {deadlineConfig.enabled && (
+                        <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-black">
+                          ATIVO
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Define a hora limite até à qual as atletas podem responder aos questionários nos smartphones.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleUpdateDeadlineConfig({ enabled: !deadlineConfig.enabled })}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black border transition-all shrink-0 cursor-pointer ${
+                    deadlineConfig.enabled
+                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md font-black hover:bg-amber-400'
+                      : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  {deadlineConfig.enabled ? '⏰ Limite Ativo' : '⚪ Sem Limite (Desativado)'}
+                </button>
+              </div>
+
+              {deadlineConfig.enabled && (
+                <div className="space-y-4 animate-fade-in">
+                  {/* Mode Selector & Action Selector */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Mode Selector: Horas Fixas vs Relativo ao Treino */}
+                    <div className="space-y-1.5 bg-dark-bg/60 p-3 rounded-xl border border-slate-800">
+                      <label className="text-[11px] font-extrabold uppercase text-slate-300 block">
+                        1. Modo de Cálculo em Dias de Treino:
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeadlineConfig({ mode: 'fixed' })}
+                          className={`p-2.5 rounded-xl border text-xs font-extrabold transition-all text-center cursor-pointer ${
+                            deadlineConfig.mode === 'fixed'
+                              ? 'border-amber-500 bg-amber-950/70 text-amber-200 ring-2 ring-amber-500/40'
+                              : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="block font-black">🕒 Hora Fixa</span>
+                          <span className="text-[10px] text-slate-400 font-normal">Sempre à mesma hora</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeadlineConfig({ mode: 'relative_to_session' })}
+                          className={`p-2.5 rounded-xl border text-xs font-extrabold transition-all text-center cursor-pointer ${
+                            deadlineConfig.mode === 'relative_to_session'
+                              ? 'border-cyan-500 bg-cyan-950/70 text-cyan-200 ring-2 ring-cyan-500/40'
+                              : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          <span className="block font-black">⚡ Relativo ao Treino</span>
+                          <span className="text-[10px] text-slate-400 font-normal">Ajusta à hora do treino</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Action: Strict Block vs Allow with Approval vs Allow Direct */}
+                    <div className="space-y-1.5 bg-dark-bg/60 p-3 rounded-xl border border-slate-800 md:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11px] font-extrabold uppercase text-slate-300 block">
+                          2. Política de Submissão Fora do Horário Limite:
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          Configura como o sistema lida com respostas após a hora limite
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeadlineConfig({ strictBlock: true, allowLateWithApproval: false })}
+                          className={`p-3 rounded-xl border text-xs font-extrabold transition-all text-left cursor-pointer ${
+                            Boolean(deadlineConfig.strictBlock)
+                              ? 'border-red-500 bg-red-950/70 text-red-200 ring-2 ring-red-500/40 shadow-md'
+                              : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-sm">🔒</span>
+                            <span className="block font-black text-slate-100">Bloqueio Estrito</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-normal block mt-1 leading-snug">
+                            O questionário bloqueia totalmente após a hora limite (exceto para atletas com autorização VIP individual).
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeadlineConfig({ strictBlock: false, allowLateWithApproval: true })}
+                          className={`p-3 rounded-xl border text-xs font-extrabold transition-all text-left cursor-pointer ${
+                            !deadlineConfig.strictBlock && Boolean(deadlineConfig.allowLateWithApproval)
+                              ? 'border-brand-cyan bg-cyan-950/70 text-cyan-200 ring-2 ring-brand-cyan/40 shadow-md'
+                              : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-sm">📋</span>
+                            <span className="block font-black text-slate-100">Permitir c/ Validação</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-normal block mt-1 leading-snug">
+                            A atleta consegue preencher, mas a submissão fica <strong className="text-amber-300 font-semibold">pendente</strong> até o treinador aceitar ou recusar.
+                          </span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateDeadlineConfig({ strictBlock: false, allowLateWithApproval: false })}
+                          className={`p-3 rounded-xl border text-xs font-extrabold transition-all text-left cursor-pointer ${
+                            !deadlineConfig.strictBlock && !deadlineConfig.allowLateWithApproval
+                              ? 'border-amber-500 bg-amber-950/70 text-amber-200 ring-2 ring-amber-500/40 shadow-md'
+                              : 'border-slate-800 bg-dark-bg text-slate-400 hover:bg-slate-800'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-sm">⚠️</span>
+                            <span className="block font-black text-slate-100">Permitir Direto</span>
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-normal block mt-1 leading-snug">
+                            Aceita automaticamente mesmo fora de horas, ficando registada com etiqueta de atraso sem necessitar de validação manual.
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* General Config Boxes: Distinct for Wellness and PSE */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {/* Wellness Box */}
+                    <div className="bg-dark-bg/60 p-3.5 rounded-xl border border-amber-500/30 space-y-2.5">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                        <div className="flex items-center space-x-1.5 text-amber-300 font-extrabold text-xs">
+                          <span>☀️ Regra Geral: Wellness (Matinal)</span>
+                        </div>
+                        <label className="inline-flex items-center space-x-1 text-[11px] font-bold text-slate-300 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={deadlineConfig.applyToWellness}
+                            onChange={(e) => handleUpdateDeadlineConfig({ applyToWellness: e.target.checked })}
+                            className="rounded border-slate-700 bg-slate-800 text-amber-500 h-3.5 w-3.5"
+                          />
+                          <span>Ativo</span>
+                        </label>
+                      </div>
+
+                      {deadlineConfig.mode === 'fixed' ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-slate-300 block">⚽ Limite Dias Treino:</span>
+                            <input
+                              type="time"
+                              value={deadlineConfig.wellnessRegularTime || deadlineConfig.defaultRegularTime || '08:15'}
+                              onChange={(e) => handleUpdateDeadlineConfig({ wellnessRegularTime: e.target.value })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-slate-100 focus:border-amber-500 focus:outline-none"
+                            />
+                            <span className="text-[9px] text-slate-500 block">Antes do treino matinal</span>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-emerald-400 block">🏆 Limite Dia de Jogo:</span>
+                            <input
+                              type="time"
+                              value={deadlineConfig.wellnessMatchTime || deadlineConfig.defaultMatchTime || '11:00'}
+                              onChange={(e) => handleUpdateDeadlineConfig({ wellnessMatchTime: e.target.value })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-emerald-200 focus:border-emerald-400 focus:outline-none"
+                            />
+                            <span className="text-[9px] text-slate-500 block">Manhã de Match Day</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-cyan-300 block">⚡ Antecedência ao Treino:</span>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min={15}
+                              max={300}
+                              step={15}
+                              value={deadlineConfig.wellnessRelativeMinutesBefore || 60}
+                              onChange={(e) => handleUpdateDeadlineConfig({ wellnessRelativeMinutesBefore: parseInt(e.target.value, 10) || 60 })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-slate-100 focus:border-cyan-500 focus:outline-none"
+                            />
+                            <span className="text-xs font-bold text-slate-400">min antes</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 block">Ex: 60 min antes do início do treino</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* PSE (RPE) Box */}
+                    <div className="bg-dark-bg/60 p-3.5 rounded-xl border border-cyan-500/30 space-y-2.5">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                        <div className="flex items-center space-x-1.5 text-cyan-300 font-extrabold text-xs">
+                          <span>⚡ Regra Geral: PSE / RPE (Pós-Treino)</span>
+                        </div>
+                        <label className="inline-flex items-center space-x-1 text-[11px] font-bold text-slate-300 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={deadlineConfig.applyToRpe}
+                            onChange={(e) => handleUpdateDeadlineConfig({ applyToRpe: e.target.checked })}
+                            className="rounded border-slate-700 bg-slate-800 text-cyan-500 h-3.5 w-3.5"
+                          />
+                          <span>Ativo</span>
+                        </label>
+                      </div>
+
+                      {deadlineConfig.mode === 'fixed' ? (
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-slate-300 block">⚽ Limite Dias Treino:</span>
+                            <input
+                              type="time"
+                              value={deadlineConfig.rpeRegularTime || '14:00'}
+                              onChange={(e) => handleUpdateDeadlineConfig({ rpeRegularTime: e.target.value })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-slate-100 focus:border-cyan-500 focus:outline-none"
+                            />
+                            <span className="text-[9px] text-slate-500 block">Pós-treino habitual</span>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-emerald-400 block">🏆 Limite Dia de Jogo:</span>
+                            <input
+                              type="time"
+                              value={deadlineConfig.rpeMatchTime || '22:00'}
+                              onChange={(e) => handleUpdateDeadlineConfig({ rpeMatchTime: e.target.value })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-emerald-200 focus:border-emerald-400 focus:outline-none"
+                            />
+                            <span className="text-[9px] text-slate-500 block">Após o apito final</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <span className="text-[10px] font-bold text-cyan-300 block">⚡ Tolerância Pós-Treino:</span>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="number"
+                              min={15}
+                              max={600}
+                              step={15}
+                              value={deadlineConfig.rpeRelativeMinutesAfter || 90}
+                              onChange={(e) => handleUpdateDeadlineConfig({ rpeRelativeMinutesAfter: parseInt(e.target.value, 10) || 90 })}
+                              className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-slate-100 focus:border-cyan-500 focus:outline-none"
+                            />
+                            <span className="text-xs font-bold text-slate-400">min após fim</span>
+                          </div>
+                          <span className="text-[10px] text-slate-500 block">Ex: 90 min após o apito final / fim</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 3. Exceções por Treino / Data Específica */}
+                  {(() => {
+                    const allSessions = typeof window !== 'undefined' ? getStoredTrainingSessions() : {};
+                    const currentSelectedSession = allSessions[specificDateInput];
+
+                    // Combined unique dates from all custom deadline maps
+                    const allDateKeys = Array.from(new Set([
+                      ...Object.keys(deadlineConfig.customDateDeadlinesWellness || {}),
+                      ...Object.keys(deadlineConfig.customDateDeadlinesRpe || {}),
+                      ...Object.keys(deadlineConfig.customDateDeadlines || {}),
+                    ])).sort((a, b) => a.localeCompare(b));
+
+                    return (
+                      <div className="rounded-xl border border-amber-500/40 bg-dark-bg/80 p-3.5 space-y-3">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800 pb-2">
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="h-4 w-4 text-amber-400" />
+                            <span className="text-xs font-black uppercase text-slate-200">
+                              3. Definir Horários para um Treino em Específico
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-amber-300 font-semibold">
+                            Permite definir horas diferentes para Wellness e PSE neste treino
+                          </span>
+                        </div>
+
+                        {/* Interactive Form to add/edit exception */}
+                        <div className="space-y-3 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+                          {/* Row 1: Date & Session Info */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+                            <div className="flex items-center space-x-2">
+                              <label className="text-[11px] font-bold text-slate-300 shrink-0">
+                                Data do Treino:
+                              </label>
+                              <input
+                                type="date"
+                                value={specificDateInput}
+                                onChange={(e) => {
+                                  const newDate = e.target.value;
+                                  setSpecificDateInput(newDate);
+
+                                  // Load specific wellness or fallback
+                                  if (deadlineConfig.customDateDeadlinesWellness?.[newDate]) {
+                                    setSpecificWellnessTime(deadlineConfig.customDateDeadlinesWellness[newDate]);
+                                  } else if (deadlineConfig.customDateDeadlines?.[newDate]) {
+                                    setSpecificWellnessTime(deadlineConfig.customDateDeadlines[newDate]);
+                                  } else {
+                                    const s = allSessions[newDate];
+                                    if (s?.startTime) {
+                                      const [h, m] = s.startTime.split(':').map(Number);
+                                      const target = Math.max(0, (h * 60 + m) - 60);
+                                      setSpecificWellnessTime(`${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`);
+                                    } else {
+                                      setSpecificWellnessTime(deadlineConfig.wellnessRegularTime || '08:15');
+                                    }
+                                  }
+
+                                  // Load specific RPE
+                                  if (deadlineConfig.customDateDeadlinesRpe?.[newDate]) {
+                                    setSpecificRpeTime(deadlineConfig.customDateDeadlinesRpe[newDate]);
+                                  } else {
+                                    const s = allSessions[newDate];
+                                    if (s?.endTime) {
+                                      const [h, m] = s.endTime.split(':').map(Number);
+                                      const target = Math.min(1439, (h * 60 + m) + 90);
+                                      setSpecificRpeTime(`${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`);
+                                    } else {
+                                      setSpecificRpeTime(deadlineConfig.rpeRegularTime || '14:00');
+                                    }
+                                  }
+                                }}
+                                className="rounded-lg border border-slate-700 bg-dark-card p-1.5 text-xs font-bold text-slate-100 focus:border-amber-500 focus:outline-none"
+                              />
+                            </div>
+
+                            {currentSelectedSession && (
+                              <span className="text-[11px] text-slate-300 bg-dark-bg px-2.5 py-1 rounded-md border border-slate-700">
+                                {currentSelectedSession.dayType === 'match' ? '🏆 Jogo' : '⚽ Treino'}:{' '}
+                                <strong>{currentSelectedSession.startTime} - {currentSelectedSession.endTime || '?'}</strong>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Row 2: Wellness Time & RPE Time side-by-side */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* Wellness Input */}
+                            <div className="space-y-1.5 p-2.5 rounded-lg bg-dark-bg/60 border border-amber-500/30">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-black text-amber-300">
+                                  ☀️ Limite Wellness (Matinal):
+                                </span>
+                              </div>
+                              <input
+                                type="time"
+                                value={specificWellnessTime}
+                                onChange={(e) => setSpecificWellnessTime(e.target.value)}
+                                className="w-full rounded-lg border border-amber-500/40 bg-dark-card p-2 text-xs font-bold text-amber-200 focus:border-amber-400 focus:outline-none"
+                              />
+                              {currentSelectedSession?.startTime && (() => {
+                                const [h, m] = currentSelectedSession.startTime.split(':').map(Number);
+                                const target1h = Math.max(0, (h * 60 + m) - 60);
+                                const time1h = `${String(Math.floor(target1h / 60)).padStart(2, '0')}:${String(target1h % 60).padStart(2, '0')}`;
+                                const target2h = Math.max(0, (h * 60 + m) - 120);
+                                const time2h = `${String(Math.floor(target2h / 60)).padStart(2, '0')}:${String(target2h % 60).padStart(2, '0')}`;
+                                return (
+                                  <div className="flex gap-1.5 text-[10px] pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSpecificWellnessTime(time1h)}
+                                      className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-300 font-bold hover:bg-amber-900/60 cursor-pointer"
+                                    >
+                                      ⚡ 1h antes ({time1h})
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSpecificWellnessTime(time2h)}
+                                      className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-300 font-bold hover:bg-amber-900/60 cursor-pointer"
+                                    >
+                                      ⚡ 2h antes ({time2h})
+                                    </button>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            {/* RPE Input */}
+                            <div className="space-y-1.5 p-2.5 rounded-lg bg-dark-bg/60 border border-cyan-500/30">
+                              <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-black text-cyan-300">
+                                  ⚡ Limite PSE / RPE (Pós-Treino):
+                                </span>
+                              </div>
+                              <input
+                                type="time"
+                                value={specificRpeTime}
+                                onChange={(e) => setSpecificRpeTime(e.target.value)}
+                                className="w-full rounded-lg border border-cyan-500/40 bg-dark-card p-2 text-xs font-bold text-cyan-200 focus:border-cyan-400 focus:outline-none"
+                              />
+                              {(() => {
+                                const base = currentSelectedSession?.endTime || currentSelectedSession?.startTime;
+                                if (base) {
+                                  const [h, m] = base.split(':').map(Number);
+                                  const target1h = Math.min(1439, (h * 60 + m) + 60);
+                                  const time1h = `${String(Math.floor(target1h / 60)).padStart(2, '0')}:${String(target1h % 60).padStart(2, '0')}`;
+                                  const target2h = Math.min(1439, (h * 60 + m) + 120);
+                                  const time2h = `${String(Math.floor(target2h / 60)).padStart(2, '0')}:${String(target2h % 60).padStart(2, '0')}`;
+                                  return (
+                                    <div className="flex gap-1.5 text-[10px] pt-1">
+                                      <button
+                                        type="button"
+                                        onClick={() => setSpecificRpeTime(time1h)}
+                                        className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-cyan-900/60 cursor-pointer"
+                                      >
+                                        ⚡ +1h ({time1h})
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => setSpecificRpeTime(time2h)}
+                                        className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-cyan-900/60 cursor-pointer"
+                                      >
+                                        ⚡ +2h ({time2h})
+                                      </button>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="flex gap-1.5 text-[10px] pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSpecificRpeTime('14:00')}
+                                      className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-cyan-900/60 cursor-pointer"
+                                    >
+                                      14:00
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSpecificRpeTime('22:00')}
+                                      className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-cyan-900/60 cursor-pointer"
+                                    >
+                                      22:00 (Noite)
+                                    </button>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Row 3: Submit Button */}
+                          <button
+                            type="button"
+                            onClick={handleSaveSpecificDeadline}
+                            className="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black transition-all shadow-md active:scale-95 flex items-center justify-center space-x-2 cursor-pointer"
+                          >
+                            <Check className="h-4 w-4 stroke-[3]" />
+                            <span>Guardar Horários para este Treino</span>
+                          </button>
+
+                          {/* Feedback Toast */}
+                          {specificExceptionToast && (
+                            <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs font-bold animate-fade-in flex items-center space-x-2">
+                              <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                              <span>{specificExceptionToast}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Active Exceptions List */}
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1">
+                            <span>Treinos com Horários Personalizados:</span>
+                            <span>{allDateKeys.length} treino(s)</span>
+                          </div>
+
+                          {allDateKeys.length === 0 ? (
+                            <div className="text-slate-400 text-xs italic bg-slate-900/40 p-3 rounded-xl border border-slate-800 text-center">
+                              Nenhum treino com limite específico definido. Todos os treinos seguem as regras gerais.
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              {allDateKeys.map((dateKey) => {
+                                const s = allSessions[dateKey];
+                                const wTime = deadlineConfig.customDateDeadlinesWellness?.[dateKey] || deadlineConfig.customDateDeadlines?.[dateKey];
+                                const rTime = deadlineConfig.customDateDeadlinesRpe?.[dateKey];
+
+                                return (
+                                  <div
+                                    key={dateKey}
+                                    className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-amber-500/30 text-xs"
+                                  >
+                                    <div className="flex items-center space-x-2 truncate">
+                                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
+                                        <Calendar className="h-4 w-4" />
+                                      </div>
+                                      <div className="truncate">
+                                        <span className="font-black text-slate-200 block truncate">
+                                          {dateKey}
+                                        </span>
+                                        <span className="text-[10px] text-slate-400 block truncate">
+                                          {s ? `${s.dayType === 'match' ? 'Jogo' : 'Treino'} às ${s.startTime}` : 'Exceção Diária'}
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center space-x-2 shrink-0 ml-2">
+                                      <div className="flex flex-col items-end gap-1">
+                                        {wTime && (
+                                          <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-[10px]">
+                                            ☀️ {wTime}
+                                          </span>
+                                        )}
+                                        {rTime && (
+                                          <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 font-black text-[10px]">
+                                            ⚡ {rTime}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRemoveSpecificDeadline(dateKey)}
+                                        className="p-1.5 rounded-lg bg-red-950/40 text-red-400 border border-red-500/30 hover:bg-red-900/50 hover:text-red-200 transition-all text-xs cursor-pointer"
+                                        title="Remover limite deste treino e voltar à regra geral"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          )}
+
+            {/* 4. Autorizações Individuais para Submissão Fora de Horas */}
+            {(pinsSubTab === 'authorizations' || pinsSubTab === 'all') && (
+              <div className="rounded-2xl border border-emerald-500/30 bg-dark-card p-4 space-y-4 shadow-lg animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      <Unlock className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-100 uppercase tracking-wider flex items-center gap-2">
+                        <span>Autorização Individual por Jogadora (Submeter Após Prazo)</span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-black">
+                          VIP / Exceção
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-400">
+                        Autorize uma atleta específica a submeter os questionários mesmo que o prazo já tenha terminado e o bloqueio estrito esteja ativo.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                    {/* Selector & Form */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                          Selecionar Jogadora:
+                        </label>
+                        <select
+                          value={selectedAuthAthleteId}
+                          onChange={(e) => setSelectedAuthAthleteId(e.target.value)}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                          <option value="">-- Escolher Jogadora --</option>
+                          {athletesList.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.name} ({a.position || 'Geral'})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                          Validade da Autorização:
+                        </label>
+                        <select
+                          value={authScopeType}
+                          onChange={(e) => setAuthScopeType(e.target.value as 'today' | 'date' | 'permanent')}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                          <option value="today">Apenas Hoje ({getTodayLocalDateStr()})</option>
+                          <option value="date">Data Específica...</option>
+                          <option value="permanent">Permanente (Sempre Autorizada)</option>
+                        </select>
+                        {authScopeType === 'date' && (
+                          <input
+                            type="date"
+                            value={authCustomDate}
+                            onChange={(e) => setAuthCustomDate(e.target.value)}
+                            className="w-full mt-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-100 focus:outline-none focus:border-emerald-500"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-300 mb-1">
+                          Questionários:
+                        </label>
+                        <select
+                          value={authQuestionnaireType}
+                          onChange={(e) => setAuthQuestionnaireType(e.target.value as 'all' | 'wellness' | 'rpe')}
+                          className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 cursor-pointer"
+                        >
+                          <option value="all">Todos (Wellness + PSE)</option>
+                          <option value="wellness">Apenas Wellness (Manhã)</option>
+                          <option value="rpe">Apenas PSE (Pós-Treino)</option>
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-3 pt-1">
+                        <button
+                          type="button"
+                          disabled={!selectedAuthAthleteId}
+                          onClick={() => handleGrantAthleteAuthorization()}
+                          className={`w-full py-2 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer ${
+                            selectedAuthAthleteId
+                              ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md active:scale-95'
+                              : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
+                          }`}
+                        >
+                          <Unlock className="h-4 w-4" />
+                          <span>Conceder Autorização para Submissão Fora do Prazo</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Toast */}
+                    {authToast && (
+                      <div className="p-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/40 text-emerald-300 text-xs font-bold animate-fade-in flex items-center space-x-2">
+                        <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                        <span>{authToast}</span>
+                      </div>
+                    )}
+
+                    {/* List of Active Authorizations */}
+                    <div className="space-y-2 pt-1">
+                      <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1">
+                        <span>Autorizações Ativas no Sistema:</span>
+                        <span>
+                          {Object.keys(deadlineConfig.athleteLateAuthorizations || {}).length} registadas
+                        </span>
+                      </div>
+
+                      {Object.keys(deadlineConfig.athleteLateAuthorizations || {}).length === 0 ? (
+                        <div className="text-slate-400 text-xs italic bg-slate-900/40 p-3 rounded-xl border border-slate-800 text-center">
+                          Nenhuma atleta tem autorização especial ativa no momento. Todas estão sujeitas ao horário de fecho estrito.
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {Object.entries(deadlineConfig.athleteLateAuthorizations || {}).map(([key, auth]) => {
+                            const ath = athletesList.find((a) => a.id === auth.athleteId);
+                            const qTypeLabel =
+                              auth.questionnaireType === 'wellness'
+                                ? 'Apenas Wellness'
+                                : auth.questionnaireType === 'rpe'
+                                ? 'Apenas PSE'
+                                : 'Todos (Wellness + PSE)';
+
+                            const scopeLabel = auth.date ? `Dia ${auth.date}` : 'Permanente (Sem Prazo)';
+
+                            return (
+                              <div
+                                key={key}
+                                className="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/90 border border-emerald-500/30 text-xs"
+                              >
+                                <div className="flex items-center space-x-2.5 truncate">
+                                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shrink-0">
+                                    <UserCheck className="h-4 w-4" />
+                                  </div>
+                                  <div className="truncate">
+                                    <span className="font-black text-slate-100 block truncate">
+                                      {auth.athleteName || ath?.name || auth.athleteId}
+                                    </span>
+                                    <span className="text-[10px] text-emerald-300 block truncate font-medium">
+                                      🔓 {scopeLabel} • {qTypeLabel}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleRevokeAthleteAuthorization(auth.athleteId, auth.date)}
+                                  className="p-1.5 rounded-lg bg-red-950/40 text-red-400 border border-red-500/30 hover:bg-red-900/50 hover:text-red-200 transition-all text-xs cursor-pointer shrink-0 ml-2"
+                                  title="Revogar autorização e bloquear submissão tardia"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Quick Access Roster Search */}
+                    <div className="mt-2 pt-2 border-t border-slate-800/80">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[11px] font-bold text-slate-300 flex items-center gap-1.5">
+                          <span>Acesso Rápido por Jogadora</span>
+                          <span className="text-[10px] text-slate-400 font-normal">
+                            (Clique para autorizar hoje em 1 toque)
+                          </span>
+                        </span>
+                        <div className="relative w-40 sm:w-52">
+                          <input
+                            type="text"
+                            placeholder="Filtrar jogadora..."
+                            value={authSearchQuery}
+                            onChange={(e) => setAuthSearchQuery(e.target.value)}
+                            className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                          />
+                          <Search className="h-3 w-3 text-slate-500 absolute left-2 top-2" />
+                        </div>
+                      </div>
+
+                      <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-800/40">
+                        {athletesList
+                          .filter((a) => !authSearchQuery || a.name.toLowerCase().includes(authSearchQuery.toLowerCase()))
+                          .map((athlete) => {
+                            const isAuthToday = isAthleteAuthorizedForLateSubmission(athlete.id, getTodayLocalDateStr());
+                            const isAuthPermanent = isAthleteAuthorizedForLateSubmission(athlete.id);
+
+                            return (
+                              <div
+                                key={athlete.id}
+                                className="flex items-center justify-between py-1.5 px-2 rounded-lg hover:bg-slate-800/50 text-xs transition-colors"
+                              >
+                                <div className="flex items-center space-x-2 truncate">
+                                  <div className="h-6 w-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-black text-slate-300 shrink-0">
+                                    {athlete.name.charAt(0)}
+                                  </div>
+                                  <div className="truncate">
+                                    <span className="text-slate-200 font-medium truncate block">
+                                      {athlete.name}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">
+                                      {athlete.position || 'Geral'}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center space-x-1.5 shrink-0 ml-2">
+                                  {isAuthToday || isAuthPermanent ? (
+                                    <div className="flex items-center space-x-1">
+                                      <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-bold text-[10px]">
+                                        🔓 Autorizada {isAuthPermanent ? 'Permanente' : 'Hoje'}
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleRevokeAthleteAuthorization(athlete.id, isAuthPermanent ? undefined : getTodayLocalDateStr())}
+                                        className="px-2 py-0.5 rounded bg-red-950/40 text-red-400 border border-red-500/30 hover:bg-red-900/50 hover:text-red-200 text-[10px] font-bold cursor-pointer transition-all"
+                                      >
+                                        Bloquear
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleGrantAthleteAuthorization(athlete.id)}
+                                      className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-emerald-600 hover:text-white text-slate-300 border border-slate-700 hover:border-emerald-500 text-[11px] font-bold cursor-pointer transition-all flex items-center space-x-1"
+                                    >
+                                      <Unlock className="h-3 w-3" />
+                                      <span>Autorizar Hoje</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-400 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
+                    <span className="flex items-center space-x-1.5">
+                      <span className="text-amber-400">💡</span>
+                      <span>
+                        Pode também ajustar a hora limite diretamente ao criar ou editar qualquer treino no separador <strong>Sessões / Calendário</strong>.
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveTabState('schedule');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="text-amber-400 hover:text-amber-300 font-bold flex items-center space-x-1 shrink-0 cursor-pointer"
+                    >
+                      <span>Abrir Calendário de Treinos</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            {/* 5. Tabela de Gestão do Plantel, Perfis & PINs */}
+            {(pinsSubTab === 'playerPins' || pinsSubTab === 'all') && (
+              <div className="rounded-2xl border border-rose-500/30 bg-dark-card p-4 space-y-4 shadow-lg animate-fade-in">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
                 <div className="flex items-center space-x-2.5">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-red-600/20 text-red-400 border border-red-500/30">
                     <Users className="h-5 w-5" />
@@ -2603,7 +4286,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                   {athlete.name.substring(0, 2)}
                                 </span>
                               )}
-                              <span className="text-xs font-black">{athlete.name}</span>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-black flex items-center gap-1.5">
+                                  {athlete.name}
+                                  {activeSubscribers.some((s) => s.athleteId === athlete.id) ? (
+                                    <span title="Dispositivo registado para Push" className="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1 py-0.2 rounded">
+                                      📱 Push
+                                    </span>
+                                  ) : (
+                                    <span title="Ainda não ativou notificações" className="text-[9px] font-bold text-amber-400/80 bg-amber-950/40 border border-amber-500/20 px-1 py-0.2 rounded">
+                                      🔕 Sem Push
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
                             </div>
                           </td>
 
@@ -2690,6 +4386,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                               <div className="flex items-center justify-end space-x-2">
                                 <button
                                   type="button"
+                                  onClick={() => handleSendWhatsAppReminder('all', athlete.name)}
+                                  title={`Enviar lembrete individual no WhatsApp para ${athlete.name}`}
+                                  className="flex items-center space-x-1 rounded-xl border border-emerald-500/40 bg-emerald-950/60 px-2.5 py-1.5 text-xs font-black text-emerald-300 hover:bg-emerald-900/80 transition-all shadow-sm active:scale-95"
+                                >
+                                  <MessageCircle className="h-3.5 w-3.5 text-emerald-400" />
+                                  <span className="hidden sm:inline">WhatsApp</span>
+                                </button>
+
+                                <button
+                                  type="button"
                                   onClick={() => {
                                     setEditingAthleteProfile(athlete);
                                     setEditProfileName(athlete.name);
@@ -2713,6 +4419,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 </table>
               </div>
             </div>
+            )}
           </div>
         )}
 
