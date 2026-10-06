@@ -119,6 +119,7 @@ export async function GET(request: Request) {
           if (fallbackCreds.inactiveAthletes) result.inactiveAthletes = fallbackCreds.inactiveAthletes;
           if (fallbackCreds.reminderConfig) result.reminderConfig = fallbackCreds.reminderConfig;
           if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
+          if (fallbackCreds.physioAttendance) result.physioAttendance = fallbackCreds.physioAttendance;
         }
       } catch (e) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
@@ -201,6 +202,7 @@ export async function POST(request: Request) {
           if (fromCloud.deletedAthletes) current.deletedAthletes = fromCloud.deletedAthletes;
           if (fromCloud.inactiveAthletes) current.inactiveAthletes = fromCloud.inactiveAthletes;
           if (fromCloud.reminderConfig) current.reminderConfig = fromCloud.reminderConfig;
+          if (fromCloud.physioAttendance) current.physioAttendance = { ...fromCloud.physioAttendance, ...current.physioAttendance };
         }
       } catch {}
     }
@@ -213,6 +215,9 @@ export async function POST(request: Request) {
     }
     if (body.physioPin !== undefined) {
       current.physioPin = body.physioPin;
+    }
+    if (body.physioAttendance !== undefined) {
+      current.physioAttendance = { ...(current.physioAttendance || {}), ...body.physioAttendance };
     }
     if (body.athletePins !== undefined) {
       current.athletePins = { ...current.athletePins, ...body.athletePins };

@@ -2,7 +2,15 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MatchInfo, MatchPlayerGps, getAllMatches, posColorClassMap } from '@/data/matchRegistry';
-import { getDynamicAthletes, getStoredTrainingSessions } from '@/lib/storage';
+import {
+  getDynamicAthletes,
+  getStoredTrainingSessions,
+  MATCH_MINUTES_STORAGE_KEY,
+  MATCH_CATEGORY_STORAGE_KEY,
+  CUSTOM_MATCHES_STORAGE_KEY,
+  syncMatchDataFromCloud,
+  saveMatchCustomizationsToCloud,
+} from '@/lib/storage';
 import { normalizeAthleteName } from '@/lib/matchAcl';
 import { Athlete } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
@@ -10,7 +18,7 @@ import {
   Timer, Clock, Trophy, Shield, Search, Filter, CheckCircle2,
   Edit3, Save, RotateCcw, Download, Copy, Check, ChevronRight, X,
   Flame, TrendingUp, AlertCircle, Calendar, Users, SlidersHorizontal,
-  Layers, BarChart3, HelpCircle, ArrowUpDown, ChevronDown, Plus, Trash2
+  Layers, BarChart3, HelpCircle, ArrowUpDown, ChevronDown, Plus, Trash2, Cloud, RefreshCw
 } from 'lucide-react';
 
 export type MatchCategory = 'friendly' | 'championship' | 'cup';
@@ -18,9 +26,8 @@ export type FilterContext = 'all' | 'official' | 'friendly';
 export type OfficialSubFilter = 'all_official' | 'championship' | 'cup';
 export type SortOption = 'minutes_desc' | 'minutes_asc' | 'matches_desc' | 'avg_desc' | 'name_asc';
 
-const CATEGORY_STORAGE_KEY = 'femperf_match_category_overrides';
-const MINUTES_STORAGE_KEY = 'femperf_player_minutes_overrides';
-const CUSTOM_MATCHES_STORAGE_KEY = 'femperf_custom_matches';
+const CATEGORY_STORAGE_KEY = MATCH_CATEGORY_STORAGE_KEY;
+const MINUTES_STORAGE_KEY = MATCH_MINUTES_STORAGE_KEY;
 
 interface PlayerMatchDetail {
   matchId: string;
@@ -103,31 +110,59 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
     return combined.sort((a, b) => (b.matchDate || '').localeCompare(a.matchDate || ''));
   }, [customMatches]);
 
-  // Load athletes, stored overrides, and custom matches
-  useEffect(() => {
+  const [isCloudSyncing, setIsCloudSyncing] = useState<boolean>(false);
+  const [lastCloudSyncAt, setLastCloudSyncAt] = useState<number | null>(null);
+
+  const loadLocalOverrides = useCallback(() => {
     setAthletes(getDynamicAthletes(true));
 
     try {
-      const storedCat = localStorage.getItem(CATEGORY_STORAGE_KEY);
+      const storedCat = localStorage.getItem(CATEGORY_STORAGE_KEY) || localStorage.getItem('femperf_match_category_overrides');
       if (storedCat) setCategoryOverrides(JSON.parse(storedCat));
     } catch (e) {
       console.error('Error loading category overrides:', e);
     }
 
     try {
-      const storedMin = localStorage.getItem(MINUTES_STORAGE_KEY);
+      const storedMin = localStorage.getItem(MINUTES_STORAGE_KEY) || localStorage.getItem('femperf_player_minutes_overrides');
       if (storedMin) setMinutesOverrides(JSON.parse(storedMin));
     } catch (e) {
       console.error('Error loading minutes overrides:', e);
     }
 
     try {
-      const storedCustom = localStorage.getItem(CUSTOM_MATCHES_STORAGE_KEY);
+      const storedCustom = localStorage.getItem(CUSTOM_MATCHES_STORAGE_KEY) || localStorage.getItem('femperf_custom_matches');
       if (storedCustom) setCustomMatches(JSON.parse(storedCustom));
     } catch (e) {
       console.error('Error loading custom matches:', e);
     }
   }, []);
+
+  // Load athletes, stored overrides, and real-time cloud sync
+  useEffect(() => {
+    loadLocalOverrides();
+
+    const handleSync = () => {
+      loadLocalOverrides();
+      setLastCloudSyncAt(Date.now());
+    };
+
+    window.addEventListener('femperf_match_data_updated', handleSync);
+    window.addEventListener('femperf_data_updated', handleSync);
+
+    // Fetch latest cloud state immediately for multi-device parity
+    setIsCloudSyncing(true);
+    syncMatchDataFromCloud().finally(() => {
+      loadLocalOverrides();
+      setIsCloudSyncing(false);
+      setLastCloudSyncAt(Date.now());
+    });
+
+    return () => {
+      window.removeEventListener('femperf_match_data_updated', handleSync);
+      window.removeEventListener('femperf_data_updated', handleSync);
+    };
+  }, [loadLocalOverrides]);
 
   // Helper to resolve match category
   const getMatchCategory = useCallback((m: MatchInfo): MatchCategory => {
@@ -202,6 +237,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
     } catch (e) {
       console.error('Error saving category override:', e);
     }
+    saveMatchCustomizationsToCloud({ categoryOverrides: updated });
   };
 
   // Reset Category Overrides
@@ -211,6 +247,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
       try {
         localStorage.removeItem(CATEGORY_STORAGE_KEY);
       } catch {}
+      saveMatchCustomizationsToCloud({ replaceCategoryOverrides: {} });
     }
   };
 
@@ -225,6 +262,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
     } catch (e) {
       console.error('Error saving minutes override:', e);
     }
+    saveMatchCustomizationsToCloud({ minutesOverrides: { [key]: Math.max(0, minutes) } });
   };
 
   // Reset Player Minute Overrides for a specific athlete
@@ -241,6 +279,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
     try {
       localStorage.setItem(MINUTES_STORAGE_KEY, JSON.stringify(updated));
     } catch {}
+    saveMatchCustomizationsToCloud({ replaceMinutesOverrides: updated });
   };
 
   // Reset Single Match Minute Override for an athlete
@@ -255,6 +294,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
     } catch (e) {
       console.error('Error removing match minute override:', e);
     }
+    saveMatchCustomizationsToCloud({ replaceMinutesOverrides: updated });
   };
 
   // Save Custom Match Form
@@ -293,6 +333,12 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
       console.error('Error saving custom match:', err);
     }
 
+    // Persist to cloud immediately
+    saveMatchCustomizationsToCloud({
+      customMatches: updated,
+      categoryOverrides: { ...categoryOverrides, [newId]: matchCat },
+    });
+
     // Set category override for new match
     handleSetCategory(newId, matchCat);
 
@@ -313,6 +359,7 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
       } catch (err) {
         console.error('Error deleting custom match:', err);
       }
+      saveMatchCustomizationsToCloud({ customMatches: updated });
     }
   };
 
@@ -681,10 +728,14 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
                 <Timer className="h-6 w-6" />
               </div>
               <div>
-                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center flex-wrap gap-2">
                   Gestão & Tempo de Jogo
                   <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold border border-slate-700">
                     GPS & Rotação
+                  </span>
+                  <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1">
+                    <Cloud className="h-3 w-3" />
+                    {isCloudSyncing ? 'A sincronizar...' : 'Sincronizado (Multi-Dispositivo)'}
                   </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400">
@@ -695,6 +746,21 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setIsCloudSyncing(true);
+                syncMatchDataFromCloud().finally(() => {
+                  loadLocalOverrides();
+                  setIsCloudSyncing(false);
+                });
+              }}
+              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-all active:scale-95"
+              title="Atualizar dados da nuvem"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isCloudSyncing ? 'animate-spin text-sky-400' : ''}`} />
+              <span className="hidden sm:inline">Sincronizar</span>
+            </button>
             <button
               type="button"
               onClick={() => setShowCategoryManager(!showCategoryManager)}

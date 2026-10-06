@@ -466,6 +466,11 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem(DEADLINE_SETTINGS_KEY, JSON.stringify(cloudDeadlineConfig));
       }
 
+      // 11. Physio Attendance: Cloud is authoritative
+      if (data.data.physioAttendance && typeof data.data.physioAttendance === 'object') {
+        localStorage.setItem('femperf_physio_attendance_status', JSON.stringify(data.data.physioAttendance));
+      }
+
       window.dispatchEvent(new Event('femperf_credentials_updated'));
       return true;
     }
@@ -476,11 +481,78 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
   }
 }
 
+export const MATCH_MINUTES_STORAGE_KEY = 'femperf_match_minutes_overrides_v2';
+export const MATCH_CATEGORY_STORAGE_KEY = 'femperf_match_category_overrides_v1';
+export const CUSTOM_MATCHES_STORAGE_KEY = 'femperf_custom_matches_v1';
+
+export async function syncMatchDataFromCloud(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  try {
+    const res = await secureFetch(`/api/matches?sync=true&t=${Date.now()}`, { cache: 'no-store' });
+    const json = await res.json();
+    if (json.success && json.data) {
+      const { minutesOverrides, categoryOverrides, customMatches } = json.data;
+
+      if (minutesOverrides && typeof minutesOverrides === 'object') {
+        const local = JSON.parse(localStorage.getItem(MATCH_MINUTES_STORAGE_KEY) || '{}');
+        const merged = { ...local, ...minutesOverrides };
+        localStorage.setItem(MATCH_MINUTES_STORAGE_KEY, JSON.stringify(merged));
+      }
+
+      if (categoryOverrides && typeof categoryOverrides === 'object') {
+        const local = JSON.parse(localStorage.getItem(MATCH_CATEGORY_STORAGE_KEY) || '{}');
+        const merged = { ...local, ...categoryOverrides };
+        localStorage.setItem(MATCH_CATEGORY_STORAGE_KEY, JSON.stringify(merged));
+      }
+
+      if (Array.isArray(customMatches)) {
+        localStorage.setItem(CUSTOM_MATCHES_STORAGE_KEY, JSON.stringify(customMatches));
+      }
+
+      window.dispatchEvent(new Event('femperf_match_data_updated'));
+      dispatchDataUpdatedEvent();
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Erro ao sincronizar dados de jogos da nuvem:', e);
+    return false;
+  }
+}
+
+export async function saveMatchCustomizationsToCloud(updates: {
+  minutesOverrides?: Record<string, number>;
+  replaceMinutesOverrides?: Record<string, number>;
+  categoryOverrides?: Record<string, string>;
+  replaceCategoryOverrides?: Record<string, string>;
+  customMatches?: any[];
+}): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  try {
+    const res = await secureFetch('/api/matches', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+    if (res.ok) {
+      window.dispatchEvent(new Event('femperf_match_data_updated'));
+      dispatchDataUpdatedEvent();
+    }
+    return res.ok;
+  } catch (e) {
+    console.error('Erro ao guardar personalizações de jogos na nuvem:', e);
+    return false;
+  }
+}
+
 export async function syncAllDataFromCloud(): Promise<void> {
   if (typeof window === 'undefined') return;
 
   // 1. Sync credentials / PINs first
   await syncCredentialsFromCloud();
+
+  // 1b. Sync matches customizations (minutes, categories, custom matches across all devices)
+  await syncMatchDataFromCloud();
 
   // 2. Sync training sessions & calendar schedule
   try {
@@ -508,47 +580,29 @@ export async function syncAllDataFromCloud(): Promise<void> {
           const locTime = loc.updatedAt || 0;
           const remTime = rem.updatedAt || 0;
 
-          if (locTime > remTime) {
-            // Local is newer: preserve local customizations completely
+          if (remTime > locTime || (!locTime && remTime)) {
+            // Remote is newer or local has no timestamp: remote is authoritative
             mergedSessions[d] = {
-              ...rem,
               ...loc,
+              ...rem,
             };
-          } else if (remTime > locTime) {
-            // Remote is newer: preserve remote customizations completely
+          } else if (locTime > remTime) {
+            // Local is newer: preserve local customizations
             mergedSessions[d] = {
-              ...loc,
               ...rem,
+              ...loc,
             };
           } else {
-            // Timestamps equal or not yet set:
-            // Never let remote default values overwrite user-customized local values
-            const locHasCustomTime = loc.startTime && (loc.startTime !== '09:00' || loc.dayType === 'match');
-            const remHasCustomTime = rem.startTime && (rem.startTime !== '09:00' || rem.dayType === 'match');
-
-            let bestStartTime = loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00');
-            let bestEndTime = loc.endTime || rem.endTime || (loc.dayType === 'match' ? '11:30' : '10:30');
-
-            if (locHasCustomTime && !remHasCustomTime) {
-              bestStartTime = loc.startTime!;
-              bestEndTime = loc.endTime || bestEndTime;
-            } else if (remHasCustomTime && !locHasCustomTime) {
-              bestStartTime = rem.startTime!;
-              bestEndTime = rem.endTime || bestEndTime;
-            } else if (loc.startTime) {
-              bestStartTime = loc.startTime;
-              bestEndTime = loc.endTime || bestEndTime;
-            }
-
+            // Timestamps equal or not set: remote takes priority for shared state
             mergedSessions[d] = {
-              ...rem,
               ...loc,
-              dayType: loc.dayType || rem.dayType,
-              matchCategory: loc.matchCategory || rem.matchCategory || undefined,
-              startTime: bestStartTime,
-              endTime: bestEndTime,
-              customDeadlineWellness: loc.customDeadlineWellness || rem.customDeadlineWellness || undefined,
-              customDeadlineRpe: loc.customDeadlineRpe || rem.customDeadlineRpe || undefined,
+              ...rem,
+              dayType: rem.dayType || loc.dayType,
+              matchCategory: rem.matchCategory || loc.matchCategory || undefined,
+              startTime: rem.startTime || loc.startTime || (rem.dayType === 'match' ? '10:00' : '09:00'),
+              endTime: rem.endTime || loc.endTime || (rem.dayType === 'match' ? '11:30' : '10:30'),
+              customDeadlineWellness: rem.customDeadlineWellness || loc.customDeadlineWellness || undefined,
+              customDeadlineRpe: rem.customDeadlineRpe || loc.customDeadlineRpe || undefined,
             };
           }
         });

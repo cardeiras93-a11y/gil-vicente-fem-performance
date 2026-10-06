@@ -335,6 +335,25 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       const localSched = getStoredCalendarSchedule();
       setTrainingSessions(localSessions);
       setCalendarSchedule(localSched);
+
+      // Re-populate form state for selectedDate if remote cloud data arrived
+      const currentSession = localSessions[selectedDate];
+      if (currentSession) {
+        isInitialLoad.current = true;
+        if (currentSession.dayType) setDayType(currentSession.dayType);
+        if (currentSession.matchCategory) setMatchCategory(currentSession.matchCategory);
+        if (currentSession.matchDayOffset) setMatchDayOffset(currentSession.matchDayOffset);
+        if (currentSession.startTime) setStartTime(currentSession.startTime);
+        if (currentSession.endTime) setEndTime(currentSession.endTime);
+        if (currentSession.tempStart !== undefined) setTempStart(currentSession.tempStart.toString());
+        if (currentSession.tempEnd !== undefined) setTempEnd(currentSession.tempEnd.toString());
+        if (currentSession.locationTime) setLocationName(currentSession.locationTime);
+        if (currentSession.focusNotes !== undefined) setFocusNotes(currentSession.focusNotes);
+        if (currentSession.athleteStatuses) setAthleteStatuses(currentSession.athleteStatuses);
+        setTimeout(() => {
+          isInitialLoad.current = false;
+        }, 250);
+      }
     };
 
     window.addEventListener('femperf_data_updated', handleDataUpdate);
@@ -343,18 +362,18 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return () => {
       window.removeEventListener('femperf_data_updated', handleDataUpdate);
     };
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     isInitialLoad.current = true;
     loadAllStoredData();
     const timer = setTimeout(() => {
       isInitialLoad.current = false;
-    }, 150);
+    }, 250);
     return () => clearTimeout(timer);
   }, [selectedDate]);
 
-  // Auto-save session configuration on any field change (debounced)
+  // Auto-save session configuration on any field change (debounced and synced to cloud)
   useEffect(() => {
     if (isInitialLoad.current || !selectedDate) return;
 
@@ -386,7 +405,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         updatedAt: Date.now(),
       };
 
-      saveTrainingSessionInfo(info);
+      // Persist locally and to cloud async
+      saveTrainingSessionInfoAsync(info);
       setTrainingSessions((prev) => ({
         ...prev,
         [selectedDate]: info,
@@ -395,7 +415,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         ...prev,
         [selectedDate]: dayType,
       }));
-    }, 700);
+    }, 800);
 
     return () => {
       if (autoSaveTimerRef.current) {

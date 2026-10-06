@@ -345,6 +345,11 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     setAttendanceMap(updated);
     try {
       localStorage.setItem(PHYSIO_ATTENDANCE_KEY, JSON.stringify(updated));
+      secureFetch('/api/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ physioAttendance: updated }),
+      }).catch(() => {});
     } catch (e) {
       console.error('Erro ao guardar estado da fisioterapia:', e);
     }
