@@ -19,7 +19,7 @@
       "fullName": "Chelsea",
       "pos": "LAT",
       "posName": "Lateral",
-      "min": 68,
+      "min": 94,
       "dist": 6926.9,
       "sprint": 444.7,
       "sprint23": 72.6,
@@ -38,7 +38,7 @@
       "fullName": "Nicole",
       "pos": "LAT",
       "posName": "Lateral",
-      "min": 59,
+      "min": 47,
       "dist": 5784.1,
       "sprint": 227.2,
       "sprint23": 57.2,
@@ -54,7 +54,7 @@
     },
     {
       "name": "Simães",
-      "fullName": "Simaes",
+      "fullName": "Simães",
       "pos": "LAT",
       "posName": "Lateral",
       "min": 47,
@@ -67,9 +67,9 @@
       "dec": 36,
       "rpe": 7,
       "fatigue": 2,
-      "prevDist": 1384.7,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 6466.9,
+      "prevSprint": 354.8,
+      "prevSprint23": 71.0
     },
     {
       "name": "Ribeiro",
@@ -105,9 +105,9 @@
       "dec": 42,
       "rpe": 7,
       "fatigue": 2,
-      "prevDist": 0.0,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 1839.2,
+      "prevSprint": 126.4,
+      "prevSprint23": 63.2
     },
     {
       "name": "Sara T.",
@@ -133,7 +133,7 @@
       "fullName": "Sara Alves",
       "pos": "DC",
       "posName": "Defesa Central",
-      "min": 73,
+      "min": 94,
       "dist": 7458.9,
       "sprint": 172.7,
       "sprint23": 7.9,
@@ -143,16 +143,16 @@
       "dec": 32,
       "rpe": 7,
       "fatigue": 2,
-      "prevDist": 210.3,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 3274.1,
+      "prevSprint": 130.3,
+      "prevSprint23": 49.6
     },
     {
       "name": "Marthe",
       "fullName": "Marthe",
       "pos": "DC",
       "posName": "Defesa Central",
-      "min": 64,
+      "min": 94,
       "dist": 5992.8,
       "sprint": 212.9,
       "sprint23": 35.9,
@@ -162,9 +162,9 @@
       "dec": 31,
       "rpe": 7,
       "fatigue": 2,
-      "prevDist": 84.5,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 8160.3,
+      "prevSprint": 198.0,
+      "prevSprint23": 28.7
     },
     {
       "name": "Faith",
@@ -206,10 +206,10 @@
     },
     {
       "name": "Ticha",
-      "fullName": "Ticha",
+      "fullName": "Patrícia Barreiros",
       "pos": "MED",
       "posName": "Média",
-      "min": 74,
+      "min": 94,
       "dist": 6719.8,
       "sprint": 87.3,
       "sprint23": 3.9,
@@ -228,7 +228,7 @@
       "fullName": "Izzy",
       "pos": "MED",
       "posName": "Média",
-      "min": 31,
+      "min": 47,
       "dist": 2704.5,
       "sprint": 76.1,
       "sprint23": 0.0,
@@ -238,16 +238,16 @@
       "dec": 13,
       "rpe": 7,
       "fatigue": 2,
-      "prevDist": 0.0,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": null,
+      "prevSprint": null,
+      "prevSprint23": null
     },
     {
       "name": "Cartaxo",
       "fullName": "Sara Cartaxo",
       "pos": "EXT",
       "posName": "Extrema",
-      "min": 70,
+      "min": 94,
       "dist": 7701.7,
       "sprint": 395.0,
       "sprint23": 69.7,
@@ -263,7 +263,7 @@
     },
     {
       "name": "Tita",
-      "fullName": "Patricia Dias",
+      "fullName": "Patrícia Dias",
       "pos": "EXT",
       "posName": "Extrema",
       "min": 47,
@@ -285,7 +285,7 @@
       "fullName": "Serena",
       "pos": "EXT",
       "posName": "Extrema",
-      "min": 52,
+      "min": 47,
       "dist": 3650.5,
       "sprint": 0.0,
       "sprint23": 0.0,
@@ -301,7 +301,7 @@
     },
     {
       "name": "Verónica",
-      "fullName": "Veronica",
+      "fullName": "Verónica Khudyakova",
       "pos": "AV",
       "posName": "Avançada",
       "min": 94,
@@ -320,10 +320,10 @@
     },
     {
       "name": "Malta",
-      "fullName": "Malta",
+      "fullName": "Maria Malta",
       "pos": "AV",
       "posName": "Avançada",
-      "min": 70,
+      "min": 94,
       "dist": 7495.3,
       "sprint": 319.1,
       "sprint23": 114.4,
@@ -336,6 +336,25 @@
       "prevDist": 6988.5,
       "prevSprint": 271.2,
       "prevSprint23": 50.7
+    },
+    {
+      "name": "Meriva",
+      "fullName": "Meriva",
+      "pos": "AV",
+      "posName": "Avançada",
+      "min": 94,
+      "dist": 7096.2,
+      "sprint": 507.7,
+      "sprint23": 168.4,
+      "running": 4351.1,
+      "topSpeed": 27.18,
+      "acc": 57,
+      "dec": 67,
+      "rpe": 7,
+      "fatigue": 2,
+      "prevDist": 4873.8,
+      "prevSprint": 399.6,
+      "prevSprint23": 82.6
     },
     {
       "name": "Carlota",
@@ -355,25 +374,6 @@
       "prevDist": 10052.7,
       "prevSprint": 227.7,
       "prevSprint23": 11.9
-    },
-    {
-      "name": "Meriva",
-      "fullName": "Meriva",
-      "pos": "AV",
-      "posName": "Avançada",
-      "min": 66,
-      "dist": 7096.2,
-      "sprint": 507.7,
-      "sprint23": 168.4,
-      "running": 4351.1,
-      "topSpeed": 27.18,
-      "acc": 57,
-      "dec": 67,
-      "rpe": 7,
-      "fatigue": 2,
-      "prevDist": 4873.8,
-      "prevSprint": 399.6,
-      "prevSprint23": 82.6
     }
   ]
 }
