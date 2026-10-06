@@ -11,7 +11,7 @@
   "weather": "23.5ºC (22ºC ➔ 25ºC), Céu Limpo",
   "comparisonDate": "2026-08-15",
   "comparisonLabel": "Jogo Atual",
-  "monitoredCount": 16,
+  "monitoredCount": 17,
   "players": [
     {
       "name": "Simães",
@@ -316,6 +316,25 @@
       "running": 4346,
       "rpe": 8,
       "fatigue": 6
+    },
+    {
+      "name": "Rita R.",
+      "fullName": "Rita Rodrigues",
+      "pos": "DC",
+      "posName": "Defesa Central",
+      "min": 35,
+      "dist": 1967.3,
+      "sprint": 49.5,
+      "sprint23": 10.5,
+      "topSpeed": 23.63,
+      "acc": 49,
+      "dec": 63,
+      "running": 955.5,
+      "rpe": 7,
+      "fatigue": 2,
+      "prevDist": 0,
+      "prevSprint": 0,
+      "prevSprint23": 0
     }
   ]
 }

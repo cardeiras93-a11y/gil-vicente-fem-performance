@@ -14,7 +14,8 @@ export function normalizeAthleteName(name: string): string {
   if (upper === 'PATRICIA BARREIROS' || upper === 'TICHA') return 'Ticha';
   if (upper === 'MARIA MALTA' || upper === 'MALTA') return 'Malta';
   if (upper === 'MARIA RIBEIRO' || upper === 'RIBEIRO') return 'Ribeiro';
-  if (upper === 'RITA RODRIGUES' || upper === 'MARTHE' || upper === 'RITA R.') return 'Marthe';
+  if (upper === 'MARTHE' || upper === 'MARTHE ENLID' || upper === 'MARTHE E.') return 'Marthe';
+  if (upper === 'RITA RODRIGUES' || upper === 'RITA R.') return 'Rita R.';
   if (upper === 'LARA CORREIA' || upper === 'LARA') return 'Lara';
   if (upper === 'RITA RAMOS' || upper === 'RAMOS') return 'Ramos';
   if (upper === 'CARLOTA') return 'Carlota';
