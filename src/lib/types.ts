@@ -37,6 +37,7 @@ export interface WellnessEntry {
   soreness: number; // 1-5
   heavyLegs: number; // 1-5
   wellnessTotal?: number; // Sum of the 7 variables (7 to 35)
+  morningWeight?: number; // Morning body weight in kg
   muscleFatigue: MuscleFatigueMap;
   needsPhysio: boolean;
   physioReason?: string;

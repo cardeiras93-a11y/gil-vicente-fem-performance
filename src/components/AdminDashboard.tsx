@@ -2610,7 +2610,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                       <thead>
                         <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                           <th className="py-2.5 px-3">Atleta</th>
-                          <th className="py-2.5 px-3">Peso Pré-Treino (kg)</th>
+                          <th className="py-2.5 px-3">Peso Matinal / Pré (kg)</th>
                           <th className="py-2.5 px-3">Peso Pós-Treino (kg)</th>
                           <th className="py-2.5 px-3">1º Peso do Mês (Pré)</th>
                           <th className="py-2.5 px-3">Último Peso do Mês (Pré)</th>

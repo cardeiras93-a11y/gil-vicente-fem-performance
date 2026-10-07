@@ -414,7 +414,7 @@ function MainAppContent() {
               >
                 <HeartPulse className="h-4 w-4 shrink-0" />
                 <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
-                  1. Wellness <span className="hidden sm:inline">Pré</span>
+                  1. Wellness & Peso
                 </span>
               </button>
 
@@ -429,7 +429,7 @@ function MainAppContent() {
               >
                 <Dumbbell className="h-4 w-4 shrink-0" />
                 <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
-                  2. PSE <span className="text-[9px] font-bold sm:text-[10px]">(RPE)</span>
+                  2. PSE <span className="text-[9px] font-bold sm:text-[10px]">(Pós-Treino)</span>
                 </span>
               </button>
 
@@ -471,7 +471,7 @@ function MainAppContent() {
               {activeTab === 'wellness' && (
                 <WellnessForm
                   activeAthlete={activeAthlete}
-                  onSubmitSuccess={() => setActiveTab('rpe')}
+                  onSubmitSuccess={() => {}}
                 />
               )}
 

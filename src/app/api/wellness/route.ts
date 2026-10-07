@@ -206,7 +206,34 @@ export async function POST(request: Request) {
       reviewedAt: body.reviewedAt || null,
       reviewedBy: body.reviewedBy || null,
       createdAt: body.createdAt || new Date().toISOString(),
+      morningWeight: body.morningWeight ? Number(body.morningWeight) : undefined,
     };
+
+    // Auto-sync morningWeight to hydration_entries as a reliable safety net
+    if (body.morningWeight && Number(body.morningWeight) > 0 && isSupabaseConfigured && supabase) {
+      try {
+        const hydId = `hyd-${date}-${athleteId}`;
+        const numWeight = Number(body.morningWeight);
+        await supabase.from('hydration_entries').upsert([
+          {
+            id: hydId,
+            athlete_id: athleteId,
+            athlete_name: athleteName,
+            date: date,
+            duration_min: 90,
+            pre_weight: numWeight,
+            post_weight: 0,
+            fluids_intake: 0,
+            weight_loss: 0,
+            dehydration_rate: 0,
+            status: 'Pendente',
+            refill_needed_liters: 0,
+            recommendation: 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
+            biological_impact: 'Aguardando pesagem pós-treino',
+          }
+        ], { onConflict: 'id' });
+      } catch {}
+    }
 
     // 1. Save to local JSON file backup
     saveEntryToFile(entryToSave);

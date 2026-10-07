@@ -382,12 +382,12 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
               : 'border-amber-500/40 bg-amber-950/20 text-amber-300 font-extrabold'
           }`}
         >
-          <span className="text-[10px] font-bold text-slate-400">3. Pesagem</span>
+          <span className="text-[10px] font-bold text-slate-400">3. Peso</span>
           <span className="text-xs font-black sm:ml-1.5">
             {status.hasPreHydration && status.hasPostHydration
-              ? '✅ Preenchido'
+              ? '✅ Pré + Pós'
               : status.hasPreHydration
-              ? '🟡 Pré OK'
+              ? '✅ Matinal/Pré'
               : status.hasPostHydration
               ? '🟡 Pós OK'
               : '❌ Pendente'}

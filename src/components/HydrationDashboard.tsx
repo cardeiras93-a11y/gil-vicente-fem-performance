@@ -139,7 +139,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     }
   };
 
-  // Submit Stage 1: Pre-Training Weight (À Chegada)
+  // Submit Stage 1: Pre-Training / Morning Weight
   const handlePreWeightSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const pre = parseNum(preWeight);
@@ -147,24 +147,29 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
 
     setIsSubmitting(true);
     const nowIso = new Date().toISOString();
+    const list = getHydrationLocally(activeAthlete.id);
+    const existingEntry = list.find((item) => item.date === todayStr);
+
     const partialEntry: HydrationEntry = {
-      id: `hyd-${todayStr}-${activeAthlete.id}`,
+      id: existingEntry?.id || `hyd-${todayStr}-${activeAthlete.id}`,
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: todayStr,
-      durationMin: 90,
+      durationMin: existingEntry?.durationMin || 90,
       preWeight: pre,
-      postWeight: 0,
-      fluidsIntake: 0,
-      weightLoss: 0,
-      dehydrationRate: 0,
-      status: 'Pendente',
-      refillNeededLiters: 0,
-      recommendation: 'Peso Pré-Treino registado. Conclui a pesagem no final do treino.',
-      biologicalImpact: 'Aguardando pesagem pós-treino',
-      preWeightTime: nowIso,
-      submittedAtPre: nowIso,
-      createdAt: nowIso,
+      postWeight: existingEntry?.postWeight || 0,
+      fluidsIntake: existingEntry?.fluidsIntake || 0,
+      weightLoss: existingEntry?.weightLoss || 0,
+      dehydrationRate: existingEntry?.dehydrationRate || 0,
+      status: existingEntry?.status || 'Pendente',
+      refillNeededLiters: existingEntry?.refillNeededLiters || 0,
+      recommendation: existingEntry?.recommendation || 'Peso Matinal / Pré-Treino registado. Conclui a pesagem no final do treino.',
+      biologicalImpact: existingEntry?.biologicalImpact || 'Aguardando pesagem pós-treino',
+      preWeightTime: existingEntry?.preWeightTime || existingEntry?.submittedAtPre || nowIso,
+      submittedAtPre: existingEntry?.submittedAtPre || existingEntry?.preWeightTime || nowIso,
+      postWeightTime: existingEntry?.postWeightTime || undefined,
+      submittedAtPost: existingEntry?.submittedAtPost || undefined,
+      createdAt: existingEntry?.createdAt || nowIso,
     };
 
     saveHydrationLocally(partialEntry);
@@ -182,12 +187,14 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     }).catch(() => {});
 
     setSavedPreWeight(pre);
-    setPostWeight((pre - 0.8).toFixed(2));
-    setStep('post');
-    setActiveSubTab('post');
+    if (!existingEntry || !existingEntry.postWeight || existingEntry.postWeight === 0) {
+      setPostWeight((pre - 0.8).toFixed(2));
+      setStep('post');
+      setActiveSubTab('post');
+    }
     setIsSubmitting(false);
 
-    setFeedbackMsg(`✅ Peso Pré-Treino de ${pre} kg registado! Podes agora realizar o teu treino. Volta aqui no final da sessão para a pesagem pós-treino.`);
+    setFeedbackMsg(`✅ Peso Matinal / Pré-Treino de ${pre} kg registado com sucesso!`);
     setTimeout(() => setFeedbackMsg(null), 6000);
   };
 
@@ -317,7 +324,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             </div>
             <div>
               <span className="text-[10px] uppercase font-black tracking-wider text-cyan-400">
-                Registo de Hidratação na Aplicação
+                Controlo de Peso & Hidratação
               </span>
               <h2 className="text-base font-black text-slate-100">{activeAthlete.name}</h2>
             </div>
@@ -348,7 +355,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
           }`}
         >
           <Scale className="h-4 w-4" />
-          <span>1. Pesagem PRÉ-Treino</span>
+          <span>1. Peso Matinal / Pré</span>
           {savedPreWeight !== null && <span className="ml-1 text-[10px]">✅</span>}
         </button>
 
@@ -362,7 +369,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
           }`}
         >
           <Droplet className="h-4 w-4" />
-          <span>2. Pesagem PÓS-Treino</span>
+          <span>2. Peso Pós-Treino</span>
           {step === 'completed' && <span className="ml-1 text-[10px]">✅</span>}
         </button>
       </div>
@@ -374,27 +381,27 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
         </div>
       )}
 
-      {/* STAGE 1: Pre-Training Weight (À Chegada) */}
+      {/* STAGE 1: Pre-Training / Morning Weight */}
       {activeSubTab === 'pre' && (
         <form onSubmit={handlePreWeightSubmit} className="space-y-5 rounded-2xl border border-cyan-500/50 bg-dark-card p-5 shadow-2xl animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-cyan-400">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500 text-slate-950 text-xs font-black">1</span>
-              <h3 className="text-sm font-black uppercase tracking-wide">ETAPA 1: À Chegada (Pré-Treino)</h3>
+              <h3 className="text-sm font-black uppercase tracking-wide">ETAPA 1: Peso Matinal / Pré-Treino</h3>
             </div>
             <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
-              Antes de treinar
+              Ao acordar ou antes do treino
             </span>
           </div>
 
           <p className="text-xs text-slate-300 font-medium">
-            Subir para a balança no balneário e introduzir o peso em kg antes do aquecimento.
+            Regista o teu peso ao acordar em jejum ou no balneário antes do aquecimento.
           </p>
 
           <div className="space-y-2 rounded-xl border border-slate-800 bg-dark-surface/80 p-4">
             <div className="flex justify-between items-center">
               <label className="text-xs font-extrabold text-slate-200">
-                Peso Pré-Treino (kg) *
+                Peso Matinal / Pré-Treino (kg) *
               </label>
               <span className="text-xs font-extrabold text-cyan-400">{preWeight} kg</span>
             </div>
@@ -446,7 +453,13 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             disabled={isSubmitting}
             className="w-full flex items-center justify-center space-x-2 rounded-xl bg-cyan-500 py-3.5 text-xs font-black text-slate-950 shadow-lg shadow-cyan-500/30 hover:bg-cyan-400 active:scale-98 transition-all"
           >
-            <span>{isSubmitting ? 'A Guardar...' : 'Guardar Peso Pré-Treino (À Chegada)'}</span>
+            <span>
+              {isSubmitting
+                ? 'A Guardar...'
+                : savedPreWeight !== null
+                ? 'Atualizar Peso Matinal / Pré-Treino'
+                : 'Guardar Peso Matinal / Pré-Treino'}
+            </span>
             <ArrowRight className="h-4 w-4" />
           </button>
         </form>
@@ -465,13 +478,20 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             </span>
           </div>
 
-          {/* Pre-Weight Read-Only Display in Stage 2 */}
+          {/* Pre-Weight Display in Stage 2 with quick edit switch */}
           <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/30 p-3.5 flex items-center justify-between shadow-inner">
             <div className="flex items-center space-x-2.5">
               <CheckCircle className="h-5 w-5 text-cyan-400 shrink-0" />
               <div>
-                <p className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">Peso Pré-Treino Registado (À Chegada)</p>
-                <p className="text-[10px] text-slate-400">Gravado na etapa 1 — Não editável</p>
+                <p className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">Peso Matinal / Pré-Treino</p>
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab('pre')}
+                  className="text-[10px] text-cyan-400 hover:text-cyan-200 underline font-bold flex items-center gap-1 mt-0.5"
+                >
+                  <Pencil className="h-3 w-3" />
+                  <span>Editar ou Corrigir Peso Pré</span>
+                </button>
               </div>
             </div>
             <div className="text-right">
