@@ -3730,14 +3730,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                 onChange={(e) => setSpecificWellnessTime(e.target.value)}
                                 className="w-full rounded-lg border border-amber-500/40 bg-dark-card p-2 text-xs font-bold text-amber-200 focus:border-amber-400 focus:outline-none"
                               />
-                              {currentSelectedSession?.startTime && (() => {
-                                const [h, m] = currentSelectedSession.startTime.split(':').map(Number);
-                                const target1h = Math.max(0, (h * 60 + m) - 60);
-                                const time1h = `${String(Math.floor(target1h / 60)).padStart(2, '0')}:${String(target1h % 60).padStart(2, '0')}`;
-                                const target2h = Math.max(0, (h * 60 + m) - 120);
-                                const time2h = `${String(Math.floor(target2h / 60)).padStart(2, '0')}:${String(target2h % 60).padStart(2, '0')}`;
-                                return (
-                                  <div className="flex gap-1.5 text-[10px] pt-1">
+                              <div className="flex flex-wrap gap-1.5 text-[10px] pt-1">
+                                <button
+                                  type="button"
+                                  onClick={() => setSpecificWellnessTime('08:15')}
+                                  className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-300 font-bold hover:bg-amber-900/60 cursor-pointer"
+                                >
+                                  08:15
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setSpecificWellnessTime('12:00')}
+                                  className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-bold hover:bg-emerald-900/60 cursor-pointer"
+                                >
+                                  12:00 (Jogo)
+                                </button>
+                                {currentSelectedSession?.startTime && (() => {
+                                  const [h, m] = currentSelectedSession.startTime.split(':').map(Number);
+                                  const target1h = Math.max(0, (h * 60 + m) - 60);
+                                  const time1h = `${String(Math.floor(target1h / 60)).padStart(2, '0')}:${String(target1h % 60).padStart(2, '0')}`;
+                                  return (
                                     <button
                                       type="button"
                                       onClick={() => setSpecificWellnessTime(time1h)}
@@ -3745,16 +3757,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                     >
                                       ⚡ 1h antes ({time1h})
                                     </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => setSpecificWellnessTime(time2h)}
-                                      className="px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/30 text-amber-300 font-bold hover:bg-amber-900/60 cursor-pointer"
-                                    >
-                                      ⚡ 2h antes ({time2h})
-                                    </button>
-                                  </div>
-                                );
-                              })()}
+                                  );
+                                })()}
+                              </div>
                             </div>
 
                             {/* RPE Input */}

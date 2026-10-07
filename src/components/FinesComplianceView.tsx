@@ -14,6 +14,10 @@ import {
   normalizeDayFineConfig,
   isDayAnyFineActive,
   getEffectiveDeadlineForDate,
+  getStoredDeadlineConfig,
+  saveDeadlineConfig,
+  getStoredTrainingSessions,
+  saveTrainingSessionInfo,
   getStoredFineExemptions,
   saveFineExemption,
   removeFineExemption,
@@ -103,6 +107,8 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     rpe: true,
     hydration: true,
   });
+  const [modalWellnessTime, setModalWellnessTime] = useState<string>('08:15');
+  const [modalRpeTime, setModalRpeTime] = useState<string>('14:00');
 
   // Individual fine exemptions (athleteId_date_type -> IndividualFineExemption)
   const [fineExemptions, setFineExemptions] = useState<Record<string, IndividualFineExemption>>(() => getStoredFineExemptions());
@@ -343,6 +349,28 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     if (e) e.stopPropagation();
     const currentCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
     setModalFineConfig({ ...currentCfg });
+
+    const dCfg = getStoredDeadlineConfig();
+    const sessions = getStoredTrainingSessions();
+    const s = sessions[dateStr];
+    const effW = getEffectiveDeadlineForDate(dateStr, 'wellness');
+    const effR = getEffectiveDeadlineForDate(dateStr, 'rpe');
+
+    setModalWellnessTime(
+      dCfg.customDateDeadlinesWellness?.[dateStr] ||
+      s?.customDeadlineWellness ||
+      dCfg.customDateDeadlines?.[dateStr] ||
+      effW.deadlineTime ||
+      (dayTypesMap[dateStr] === 'match' ? '12:00' : '08:15')
+    );
+
+    setModalRpeTime(
+      dCfg.customDateDeadlinesRpe?.[dateStr] ||
+      s?.customDeadlineRpe ||
+      effR.deadlineTime ||
+      (dayTypesMap[dateStr] === 'match' ? '18:30' : '14:00')
+    );
+
     setConfiguringDate(dateStr);
   };
 
@@ -364,6 +392,49 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
     setFinesEnabledDays(updated);
     saveFinesEnabledDays(updated);
+
+    // Save custom deadlines for this specific date
+    try {
+      const dCfg = getStoredDeadlineConfig();
+      const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
+      const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
+      const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
+
+      const defaultW = targetType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
+      const defaultR = targetType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
+
+      if (modalWellnessTime && modalWellnessTime.trim() && modalWellnessTime.trim() !== defaultW) {
+        currentWellness[configuringDate] = modalWellnessTime.trim();
+        currentCustom[configuringDate] = modalWellnessTime.trim();
+      } else {
+        delete currentWellness[configuringDate];
+        delete currentCustom[configuringDate];
+      }
+
+      if (modalRpeTime && modalRpeTime.trim() && modalRpeTime.trim() !== defaultR) {
+        currentRpe[configuringDate] = modalRpeTime.trim();
+      } else {
+        delete currentRpe[configuringDate];
+      }
+
+      saveDeadlineConfig({
+        ...dCfg,
+        customDateDeadlines: currentCustom,
+        customDateDeadlinesWellness: currentWellness,
+        customDateDeadlinesRpe: currentRpe,
+      });
+
+      const sessions = getStoredTrainingSessions();
+      if (sessions[configuringDate]) {
+        sessions[configuringDate].customDeadline = currentWellness[configuringDate] || '';
+        sessions[configuringDate].customDeadlineWellness = currentWellness[configuringDate] || '';
+        sessions[configuringDate].customDeadlineRpe = currentRpe[configuringDate] || '';
+        saveTrainingSessionInfo(sessions[configuringDate]);
+      }
+    } catch (e) {
+      console.warn('Erro ao guardar prazos pontuais do dia:', e);
+    }
+
     setConfiguringDate(null);
   };
 
@@ -1384,36 +1455,138 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               </button>
             </div>
 
-            {/* Active Deadline Banner */}
+            {/* Interactive Deadline Adjustment for this specific Date */}
             {(() => {
-              const effW = getEffectiveDeadlineForDate(configuringDate, 'wellness');
-              const effR = getEffectiveDeadlineForDate(configuringDate, 'rpe');
+              const sessions = getStoredTrainingSessions();
+              const s = sessions[configuringDate];
+              const isMatch = dayTypesMap[configuringDate] === 'match';
+              const defaultW = isMatch ? '12:00' : '08:15';
+              const defaultR = isMatch ? '18:30' : '14:00';
+              const isCustom = modalWellnessTime !== defaultW || modalRpeTime !== defaultR;
+
               return (
-                <div className="p-3 rounded-2xl border border-amber-500/30 bg-amber-950/20 text-xs space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4 text-amber-400 shrink-0" />
-                    <span className="text-slate-200 font-extrabold">
-                      Prazos de Limite Ativos:
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                    <div className="bg-dark-bg/60 p-2 rounded-xl border border-amber-500/20 flex flex-col justify-between">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-amber-400 font-bold">☀️ Wellness</span>
-                        <span className="font-mono font-black text-amber-300 text-xs bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                          {effW.deadlineTime}
+                <div className="p-3.5 rounded-2xl border border-amber-500/40 bg-amber-950/20 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="h-4 w-4 text-amber-400 shrink-0" />
+                      <span className="text-xs font-black text-slate-100 uppercase">
+                        Horários Limite deste Dia (Pontual)
+                      </span>
+                      {isCustom && (
+                        <span className="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded-full font-black">
+                          Exceção
                         </span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 truncate">{effW.sourceDescription}</span>
+                      )}
                     </div>
-                    <div className="bg-dark-bg/60 p-2 rounded-xl border border-indigo-500/20 flex flex-col justify-between">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-indigo-400 font-bold">⚡ PSE / RPE</span>
-                        <span className="font-mono font-black text-indigo-300 text-xs bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20">
-                          {effR.deadlineTime}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalWellnessTime(defaultW);
+                        setModalRpeTime(defaultR);
+                      }}
+                      className="text-[10px] font-bold text-amber-300 hover:text-amber-200 underline cursor-pointer"
+                    >
+                      Repor Padrão
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Wellness Time Input */}
+                    <div className="bg-dark-bg/80 p-2.5 rounded-xl border border-amber-500/30 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black text-amber-300">
+                          ☀️ Limite Wellness (Pré):
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {modalWellnessTime}
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-400 truncate">{effR.sourceDescription}</span>
+                      <input
+                        type="time"
+                        value={modalWellnessTime}
+                        onChange={(e) => setModalWellnessTime(e.target.value)}
+                        className="w-full rounded-lg border border-amber-500/40 bg-dark-card p-2 text-xs font-bold text-amber-100 focus:border-amber-400 focus:outline-none"
+                      />
+                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setModalWellnessTime('08:15')}
+                          className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
+                        >
+                          08:15
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setModalWellnessTime('12:00')}
+                          className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
+                        >
+                          12:00 (Jogo)
+                        </button>
+                        {s?.startTime ? (() => {
+                          const [h, m] = s.startTime.split(':').map(Number);
+                          const t = Math.max(0, (h * 60 + m) - 60);
+                          const tStr = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setModalWellnessTime(tStr)}
+                              className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold hover:bg-amber-900/80 cursor-pointer"
+                            >
+                              -1h treino ({tStr})
+                            </button>
+                          );
+                        })() : null}
+                      </div>
+                    </div>
+
+                    {/* RPE Time Input */}
+                    <div className="bg-dark-bg/80 p-2.5 rounded-xl border border-cyan-500/30 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black text-cyan-300">
+                          ⚡ Limite PSE / RPE (Pós):
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          {modalRpeTime}
+                        </span>
+                      </div>
+                      <input
+                        type="time"
+                        value={modalRpeTime}
+                        onChange={(e) => setModalRpeTime(e.target.value)}
+                        className="w-full rounded-lg border border-cyan-500/40 bg-dark-card p-2 text-xs font-bold text-cyan-100 focus:border-cyan-400 focus:outline-none"
+                      />
+                      <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setModalRpeTime('14:00')}
+                          className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
+                        >
+                          14:00
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setModalRpeTime('18:30')}
+                          className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
+                        >
+                          18:30 (Jogo)
+                        </button>
+                        {(() => {
+                          const base = s?.endTime || s?.startTime;
+                          if (!base) return null;
+                          const [h, m] = base.split(':').map(Number);
+                          const t = Math.min(1439, (h * 60 + m) + 60);
+                          const tStr = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => setModalRpeTime(tStr)}
+                              className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-bold hover:bg-cyan-900/80 cursor-pointer"
+                            >
+                              +1h fim ({tStr})
+                            </button>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>

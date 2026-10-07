@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
-import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig } from '@/lib/storage';
+import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
@@ -423,6 +423,48 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         ...prev,
         [selectedDate]: dayType,
       }));
+
+      try {
+        const dCfg = getStoredDeadlineConfig();
+        const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
+        const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
+        const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
+
+        const defaultW = dayType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
+        const defaultR = dayType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
+
+        let changed = false;
+        if (customDeadlineWellness.trim() && customDeadlineWellness.trim() !== defaultW) {
+          if (currentWellness[selectedDate] !== customDeadlineWellness.trim()) {
+            currentWellness[selectedDate] = customDeadlineWellness.trim();
+            currentCustom[selectedDate] = customDeadlineWellness.trim();
+            changed = true;
+          }
+        } else if (currentWellness[selectedDate]) {
+          delete currentWellness[selectedDate];
+          delete currentCustom[selectedDate];
+          changed = true;
+        }
+
+        if (customDeadlineRpe.trim() && customDeadlineRpe.trim() !== defaultR) {
+          if (currentRpe[selectedDate] !== customDeadlineRpe.trim()) {
+            currentRpe[selectedDate] = customDeadlineRpe.trim();
+            changed = true;
+          }
+        } else if (currentRpe[selectedDate]) {
+          delete currentRpe[selectedDate];
+          changed = true;
+        }
+
+        if (changed) {
+          saveDeadlineConfig({
+            ...dCfg,
+            customDateDeadlines: currentCustom,
+            customDateDeadlinesWellness: currentWellness,
+            customDateDeadlinesRpe: currentRpe,
+          });
+        }
+      } catch {}
     }, 800);
 
     return () => {
@@ -760,6 +802,40 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     }));
 
     await saveTrainingSessionInfoAsync(info);
+
+    try {
+      const dCfg = getStoredDeadlineConfig();
+      const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
+      const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
+      const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
+
+      const defaultW = dayType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
+      const defaultR = dayType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
+
+      if (customDeadlineWellness.trim() && customDeadlineWellness.trim() !== defaultW) {
+        currentWellness[selectedDate] = customDeadlineWellness.trim();
+        currentCustom[selectedDate] = customDeadlineWellness.trim();
+      } else {
+        delete currentWellness[selectedDate];
+        delete currentCustom[selectedDate];
+      }
+
+      if (customDeadlineRpe.trim() && customDeadlineRpe.trim() !== defaultR) {
+        currentRpe[selectedDate] = customDeadlineRpe.trim();
+      } else {
+        delete currentRpe[selectedDate];
+      }
+
+      saveDeadlineConfig({
+        ...dCfg,
+        customDateDeadlines: currentCustom,
+        customDateDeadlinesWellness: currentWellness,
+        customDateDeadlinesRpe: currentRpe,
+      });
+    } catch (e) {
+      console.warn('Erro ao sincronizar deadlineConfig em handleSaveSession:', e);
+    }
+
     setIsSaving(false);
 
     setSaveSuccess(`Informação do ${dayType === 'match' ? 'jogo' : 'treino'} para ${selectedDate} guardada com sucesso!`);
@@ -1400,6 +1476,137 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                   onChange={(e) => handleEndTimeChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* 3.1 Horários Limite dos Questionários (Exceção Pontual para este Dia) */}
+          <div className="rounded-xl border border-amber-500/30 bg-amber-950/15 p-3.5 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-amber-500/20 pb-2">
+              <div className="flex items-center space-x-2">
+                <Clock className="h-4 w-4 text-amber-400" />
+                <span className="text-xs font-extrabold uppercase text-slate-200">
+                  3.1 Horários Limite dos Questionários (Exceção Pontual)
+                </span>
+              </div>
+              <div className="flex items-center space-x-2">
+                {(customDeadlineWellness || customDeadlineRpe) && (
+                  <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-black">
+                    Personalizado
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomDeadlineWellness('');
+                    setCustomDeadlineRpe('');
+                    setCustomDeadline('');
+                  }}
+                  className="text-[10px] font-bold text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
+                >
+                  Repor Padrão
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Wellness Cutoff */}
+              <div className="space-y-1.5 p-2.5 rounded-xl bg-dark-bg/60 border border-amber-500/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-amber-300 flex items-center space-x-1">
+                    <span>☀️ Limite Wellness (Pré):</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {customDeadlineWellness || (dayType === 'match' ? '12:00 (Padrão Jogo)' : '08:15 (Padrão Treino)')}
+                  </span>
+                </div>
+                <input
+                  type="time"
+                  value={customDeadlineWellness}
+                  placeholder={dayType === 'match' ? '12:00' : '08:15'}
+                  onChange={(e) => setCustomDeadlineWellness(e.target.value)}
+                  className="w-full rounded-lg border border-amber-500/40 bg-dark-card p-2 text-xs font-bold text-amber-100 focus:border-amber-400 focus:outline-none"
+                />
+                <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setCustomDeadlineWellness('08:15')}
+                    className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
+                  >
+                    08:15
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomDeadlineWellness('12:00')}
+                    className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
+                  >
+                    12:00 (Jogo)
+                  </button>
+                  {startTime && (() => {
+                    const [h, m] = startTime.split(':').map(Number);
+                    const t = Math.max(0, (h * 60 + m) - 60);
+                    const tStr = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setCustomDeadlineWellness(tStr)}
+                        className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold hover:bg-amber-900/80 cursor-pointer"
+                      >
+                        -1h ({tStr})
+                      </button>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* RPE Cutoff */}
+              <div className="space-y-1.5 p-2.5 rounded-xl bg-dark-bg/60 border border-cyan-500/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-cyan-300 flex items-center space-x-1">
+                    <span>⚡ Limite PSE / RPE (Pós):</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {customDeadlineRpe || (dayType === 'match' ? '18:30 (Padrão Jogo)' : '14:00 (Padrão Treino)')}
+                  </span>
+                </div>
+                <input
+                  type="time"
+                  value={customDeadlineRpe}
+                  placeholder={dayType === 'match' ? '18:30' : '14:00'}
+                  onChange={(e) => setCustomDeadlineRpe(e.target.value)}
+                  className="w-full rounded-lg border border-cyan-500/40 bg-dark-card p-2 text-xs font-bold text-cyan-100 focus:border-cyan-400 focus:outline-none"
+                />
+                <div className="flex flex-wrap gap-1 text-[10px] pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setCustomDeadlineRpe('14:00')}
+                    className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
+                  >
+                    14:00
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCustomDeadlineRpe('18:30')}
+                    className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
+                  >
+                    18:30 (Jogo)
+                  </button>
+                  {(endTime || startTime) && (() => {
+                    const base = endTime || startTime;
+                    const [h, m] = base.split(':').map(Number);
+                    const t = Math.min(1439, (h * 60 + m) + 60);
+                    const tStr = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+                    return (
+                      <button
+                        type="button"
+                        onClick={() => setCustomDeadlineRpe(tStr)}
+                        className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-bold hover:bg-cyan-900/80 cursor-pointer"
+                      >
+                        +1h ({tStr})
+                      </button>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </div>
