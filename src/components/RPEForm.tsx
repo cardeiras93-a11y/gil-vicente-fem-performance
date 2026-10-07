@@ -41,9 +41,6 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id)
   );
 
-  const [submittedLateNotice, setSubmittedLateNotice] = useState<{
-    deadlineTime: string;
-  } | null>(null);
 
   useEffect(() => {
     const refreshData = () => {
@@ -137,13 +134,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       createdAt: existingToday?.createdAt || new Date().toISOString(),
     };
 
-    if (isLate && !isAuthorizedLate) {
-      setSubmittedLateNotice({ deadlineTime: currentDeadlineCheck.deadlineTime });
-    } else {
-      setSubmittedLateNotice(null);
-    }
-
-    const redirectDelay = isLate && !isAuthorizedLate ? 3000 : 1800;
+    const redirectDelay = 1800;
 
     try {
       await secureFetch('/api/rpe', {
@@ -207,27 +198,6 @@ export const RPEForm: React.FC<RPEFormProps> = ({
           {activeAthlete.name}
         </p>
 
-        {submittedLateNotice && (
-          <div className="mt-2 w-full max-w-sm rounded-xl bg-amber-500/15 border border-amber-500/40 p-4 text-left space-y-2.5 animate-fade-in shadow-md">
-            <div className="flex items-center space-x-2 text-amber-300 font-bold text-xs">
-              <Clock className="h-4 w-4 shrink-0 text-amber-400" />
-              <span>Aviso: Submissão Fora de Horas</span>
-            </div>
-            <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              O formulário de PSE foi submetido após o horário limite ({submittedLateNotice.deadlineTime}). De acordo com o regulamento interno, o registo foi assinalado com atraso (multa no final do mês).
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setIsSuccess(false);
-                onSubmitSuccess();
-              }}
-              className="w-full mt-1 py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs transition-colors cursor-pointer"
-            >
-              Compreendi
-            </button>
-          </div>
-        )}
       </div>
     );
   }
@@ -272,49 +242,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
               {existingToday.postFatigue} / 10
             </span>
           </div>
-          {existingToday.approvalStatus === 'pending' ? (
-            <div className="rounded-xl bg-amber-500/15 border border-amber-500/40 p-3 space-y-1.5 text-xs text-amber-200">
-              <div className="flex items-center space-x-2 text-amber-300 font-bold">
-                <Clock className="h-4 w-4 text-amber-400 shrink-0 animate-pulse" />
-                <span>Submissão Fora de Horas • Aguarda Validação</span>
-              </div>
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                Preencheste este questionário após o horário limite. A submissão ficou registada fora de horas e a equipa técnica irá analisar o teu envio.
-              </p>
-            </div>
-          ) : existingToday.approvalStatus === 'rejected' ? (
-            <div className="rounded-xl bg-rose-500/15 border border-rose-500/40 p-3 space-y-1.5 text-xs text-rose-200">
-              <div className="flex items-center space-x-2 text-rose-300 font-bold">
-                <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
-                <span>Submissão Não Aceite pela Equipa Técnica</span>
-              </div>
-              <p className="text-[11px] text-rose-200/90 leading-relaxed">
-                A submissão fora de horas não foi aceite pela equipa técnica e ficou registada como não conforme.
-              </p>
-            </div>
-          ) : existingToday.isAuthorizedLate ? (
-            <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 space-y-1.5 text-xs text-emerald-200">
-              <div className="flex items-center space-x-2 text-emerald-300 font-bold">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Autorização Especial de Submissão</span>
-              </div>
-              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
-                Submetido com autorização prévia da equipa técnica.
-              </p>
-            </div>
-          ) : existingToday.isLate ? (
-            <div className="rounded-xl bg-amber-500/15 border border-amber-500/40 p-3 space-y-1.5 text-xs text-amber-200">
-              <div className="flex items-center space-x-2 text-amber-300 font-bold">
-                <Clock className="h-4 w-4 text-amber-400 shrink-0" />
-                <span>Submissão Registada com Atraso</span>
-              </div>
-              <p className="text-[11px] text-amber-200/90 leading-relaxed">
-                {existingToday.keepFine
-                  ? 'Submissão efetuada após o horário limite. Contabilizada com multa no mapa mensal.'
-                  : 'Submissão efetuada após o horário limite (multa dispensada).'}
-              </p>
-            </div>
-          ) : null}
+
         </div>
 
         <div className="pt-2">
@@ -383,32 +311,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         </div>
       )}
 
-      {/* Deadline Warning / Special Authorization Banner */}
-      {deadlineCheck.hasDeadline && deadlineCheck.isPast && (
-        deadlineCheck.isAuthorizedLate ? (
-          <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3.5 flex items-start space-x-2.5 text-xs text-emerald-300 animate-fade-in shadow-sm">
-            <span className="text-base shrink-0">🔓</span>
-            <div className="space-y-0.5">
-              <span className="font-extrabold text-emerald-200">Autorização Especial da Equipa Técnica</span>
-              <p className="text-[11px] text-emerald-200/90 leading-snug">
-                Tens autorização da equipa técnica para submeter o registo de PSE após o horário limite ({deadlineCheck.deadlineTime}) sem aplicação de multa.
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3.5 flex items-start space-x-2.5 text-xs text-amber-300 animate-fade-in shadow-sm">
-            <Clock className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" />
-            <div className="space-y-0.5">
-              <span className="font-extrabold text-amber-200">
-                Aviso: Submissão após o horário limite ({deadlineCheck.deadlineTime})
-              </span>
-              <p className="text-[11px] text-amber-200/80 leading-snug">
-                Podes preencher e gravar normalmente a qualquer hora. A tua resposta ficará registada com atraso para efeitos de regulamento interno (multa no final do mês).
-              </p>
-            </div>
-          </div>
-        )
-      )}
+
 
       {/* 1. Exigência Física do Treino (Escala Borg CR10) */}
       <div className="space-y-4 rounded-xl border border-dark-border bg-dark-card p-4 shadow-sm">
