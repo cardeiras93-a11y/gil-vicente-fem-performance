@@ -163,6 +163,11 @@ export async function GET(request: Request) {
 
     result.activationCode = result.activationCode || 'GVFC2026@';
     const existingDeadlineConfig = result.deadlineConfig || {};
+    let getWellnessMatch = existingDeadlineConfig.wellnessMatchTime;
+    if (!getWellnessMatch || getWellnessMatch === '11:00') getWellnessMatch = '12:00';
+    let getRpeMatch = existingDeadlineConfig.rpeMatchTime;
+    if (!getRpeMatch || getRpeMatch === '22:00') getRpeMatch = '18:30';
+
     result.deadlineConfig = {
       ...existingDeadlineConfig,
       enabled: existingDeadlineConfig.enabled !== undefined ? existingDeadlineConfig.enabled : true,
@@ -172,7 +177,9 @@ export async function GET(request: Request) {
       applyToHydration: false,
       allowLateWithApproval: false,
       wellnessRegularTime: existingDeadlineConfig.wellnessRegularTime || '08:15',
+      wellnessMatchTime: getWellnessMatch,
       rpeRegularTime: existingDeadlineConfig.rpeRegularTime || '14:00',
+      rpeMatchTime: getRpeMatch,
     };
 
     return NextResponse.json(
@@ -268,11 +275,18 @@ export async function POST(request: Request) {
     }
     if (body.deadlineConfig !== undefined) {
       const incoming = body.deadlineConfig || {};
+      let postWellnessMatch = incoming.wellnessMatchTime;
+      if (!postWellnessMatch || postWellnessMatch === '11:00') postWellnessMatch = '12:00';
+      let postRpeMatch = incoming.rpeMatchTime;
+      if (!postRpeMatch || postRpeMatch === '22:00') postRpeMatch = '18:30';
+
       current.deadlineConfig = {
         ...incoming,
         enabled: incoming.enabled !== undefined ? incoming.enabled : true,
         wellnessRegularTime: incoming.wellnessRegularTime || '08:15',
+        wellnessMatchTime: postWellnessMatch,
         rpeRegularTime: incoming.rpeRegularTime || '14:00',
+        rpeMatchTime: postRpeMatch,
         strictBlock: false, // Nunca bloqueia o preenchimento
         applyToHydration: false, // Pesagem sempre sem restrição
         applyToWellness: incoming.applyToWellness !== undefined ? incoming.applyToWellness : true,

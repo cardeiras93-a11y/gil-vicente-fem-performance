@@ -171,7 +171,7 @@ export interface QuestionnaireDeadlinesConfig {
   mode: 'fixed' | 'relative_to_session';
   // General fallbacks
   defaultRegularTime: string; // e.g. "08:15"
-  defaultMatchTime: string; // e.g. "11:00"
+  defaultMatchTime: string; // e.g. "12:00"
   relativeMinutesBeforeSession: number; // e.g. 60
   strictBlock: boolean; // true: blocks submission; false: allows late with warning
   allowLateWithApproval?: boolean; // When true, late submissions are allowed but placed in 'pending' review for coach approval
@@ -181,11 +181,11 @@ export interface QuestionnaireDeadlinesConfig {
 
   // Specific per-questionnaire default settings:
   wellnessRegularTime?: string; // e.g. "08:15"
-  wellnessMatchTime?: string; // e.g. "11:00"
+  wellnessMatchTime?: string; // e.g. "12:00"
   wellnessRelativeMinutesBefore?: number; // e.g. 60
 
   rpeRegularTime?: string; // e.g. "14:00"
-  rpeMatchTime?: string; // e.g. "22:00"
+  rpeMatchTime?: string; // e.g. "18:30"
   rpeRelativeMinutesAfter?: number; // e.g. 90 (minutes after session end)
 
   // Per-date custom deadlines:

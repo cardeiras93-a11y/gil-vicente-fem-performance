@@ -280,15 +280,23 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       let initRpe = existing.customDeadlineRpe || dCfg.customDateDeadlinesRpe?.[selectedDate] || '';
 
       if (!initWellness && existing.startTime && existing.startTime.includes(':') && (existing.startTime !== '09:00' || existing.dayType === 'match')) {
-        const [h, m] = existing.startTime.split(':').map(Number);
-        const targetW = Math.max(0, (h * 60 + m) - 60);
-        initWellness = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+        if (existing.dayType === 'match' && dCfg.mode !== 'relative_to_session') {
+          initWellness = dCfg.wellnessMatchTime || '12:00';
+        } else {
+          const [h, m] = existing.startTime.split(':').map(Number);
+          const targetW = Math.max(0, (h * 60 + m) - 60);
+          initWellness = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+        }
       }
       if (!initRpe && (existing.endTime || existing.startTime) && ((existing.startTime && existing.startTime !== '09:00') || existing.dayType === 'match')) {
-        const base = existing.endTime || existing.startTime || (existing.dayType === 'match' ? '11:30' : '10:30');
-        const [h, m] = base.split(':').map(Number);
-        const targetR = Math.min(1439, (h * 60 + m) + 60);
-        initRpe = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        if (existing.dayType === 'match' && dCfg.mode !== 'relative_to_session') {
+          initRpe = dCfg.rpeMatchTime || '18:30';
+        } else {
+          const base = existing.endTime || existing.startTime || (existing.dayType === 'match' ? '11:30' : '10:30');
+          const [h, m] = base.split(':').map(Number);
+          const targetR = Math.min(1439, (h * 60 + m) + 60);
+          initRpe = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        }
       }
 
       setCustomDeadlineWellness(initWellness);

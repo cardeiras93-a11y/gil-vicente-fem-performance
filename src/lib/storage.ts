@@ -1365,7 +1365,7 @@ export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
   enabled: true,
   mode: 'fixed',
   defaultRegularTime: '08:15',
-  defaultMatchTime: '11:00',
+  defaultMatchTime: '12:00',
   relativeMinutesBeforeSession: 60,
   strictBlock: false,
   allowLateWithApproval: false,
@@ -1373,10 +1373,10 @@ export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
   applyToRpe: true,
   applyToHydration: false, // Sem limites de horário para pesagem
   wellnessRegularTime: '08:15',
-  wellnessMatchTime: '11:00',
+  wellnessMatchTime: '12:00',
   wellnessRelativeMinutesBefore: 60,
   rpeRegularTime: '14:00',
-  rpeMatchTime: '22:00',
+  rpeMatchTime: '18:30',
   rpeRelativeMinutesAfter: 90,
   customDateDeadlines: {},
   customDateDeadlinesWellness: {},
@@ -1390,6 +1390,14 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
     const raw = localStorage.getItem(DEADLINE_SETTINGS_KEY);
     if (!raw) return DEFAULT_DEADLINE_CONFIG;
     const parsed = JSON.parse(raw);
+    let wellnessMatch = parsed.wellnessMatchTime;
+    if (!wellnessMatch || wellnessMatch === '11:00') {
+      wellnessMatch = '12:00';
+    }
+    let rpeMatch = parsed.rpeMatchTime;
+    if (!rpeMatch || rpeMatch === '22:00') {
+      rpeMatch = '18:30';
+    }
     return {
       ...DEFAULT_DEADLINE_CONFIG,
       ...parsed,
@@ -1399,7 +1407,9 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
       applyToWellness: parsed.applyToWellness !== undefined ? parsed.applyToWellness : true,
       applyToRpe: parsed.applyToRpe !== undefined ? parsed.applyToRpe : true,
       wellnessRegularTime: parsed.wellnessRegularTime || '08:15',
+      wellnessMatchTime: wellnessMatch,
       rpeRegularTime: parsed.rpeRegularTime || '14:00',
+      rpeMatchTime: rpeMatch,
       customDateDeadlines: parsed.customDateDeadlines || {},
       customDateDeadlinesWellness: parsed.customDateDeadlinesWellness || {},
       customDateDeadlinesRpe: parsed.customDateDeadlinesRpe || {},
@@ -1501,9 +1511,22 @@ export function getEffectiveDeadlineForDate(
   const sessions = getStoredTrainingSessions();
   const session = sessions[dateStr];
   const dayType = schedule[dateStr] || session?.dayType || 'training';
-  const isMatchDay = dayType === 'match';
-  const isTrainingDay = dayType === 'training';
-  const isRestDay = dayType === 'rest';
+  let isMatchDay = dayType === 'match' || session?.dayType === 'match' || session?.matchDayOffset === 'MD';
+
+  if (!isMatchDay && typeof window !== 'undefined') {
+    try {
+      const customMatchesRaw = localStorage.getItem(CUSTOM_MATCHES_STORAGE_KEY);
+      if (customMatchesRaw) {
+        const customMatches = JSON.parse(customMatchesRaw);
+        if (Array.isArray(customMatches) && customMatches.some((m: any) => m.matchDate === dateStr || m.date === dateStr)) {
+          isMatchDay = true;
+        }
+      }
+    } catch {}
+  }
+
+  const isTrainingDay = !isMatchDay && dayType === 'training';
+  const isRestDay = !isMatchDay && dayType === 'rest';
 
   // 1. Specific custom deadline for this date and questionnaireType
   let customDeadline: string | undefined = undefined;
@@ -1535,14 +1558,14 @@ export function getEffectiveDeadlineForDate(
     };
   }
 
-  // 2. Specific session schedule defined ("outro horário no treino ou jogo")
+  // 2. Specific session schedule defined
+  // Em modo fixo (padrão), jogos têm horários fixos (12:00 / 18:30) e dias de treino têm 08:15 / 14:00 (a menos que a sessão de treino tenha horário específico diferente de 09:00)
   const hasSpecificSchedule = Boolean(
     session?.startTime &&
     session.startTime.includes(':') &&
     (
-      isMatchDay ||
-      session.startTime !== '09:00' ||
-      config.mode === 'relative_to_session'
+      config.mode === 'relative_to_session' ||
+      (!isMatchDay && session.startTime !== '09:00')
     )
   );
 
@@ -1591,13 +1614,13 @@ export function getEffectiveDeadlineForDate(
     }
   }
 
-  // 3. Match day fallback logic
+  // 3. Match day fixed logic (Pré-Jogo: 12:00, Pós-Jogo: 18:30)
   if (isMatchDay) {
-    let matchTime = '11:00';
+    let matchTime = '12:00';
     if (questionnaireType === 'wellness') {
-      matchTime = config.wellnessMatchTime || config.defaultMatchTime || '11:00';
+      matchTime = config.wellnessMatchTime || config.defaultMatchTime || '12:00';
     } else if (questionnaireType === 'rpe') {
-      matchTime = config.rpeMatchTime || config.defaultMatchTime || '22:00';
+      matchTime = config.rpeMatchTime || '18:30';
     }
 
     return {
@@ -1609,7 +1632,7 @@ export function getEffectiveDeadlineForDate(
       isCustom: false,
       isRelativeToSession: false,
       sessionStartTime: session?.startTime,
-      sourceDescription: `Dia de Jogo Padrão (${matchTime})`,
+      sourceDescription: `Dia de Jogo (${matchTime})`,
     };
   }
 

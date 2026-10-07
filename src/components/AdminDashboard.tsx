@@ -3544,7 +3544,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                             <span className="text-[10px] font-bold text-emerald-400 block">🏆 Limite Dia de Jogo:</span>
                             <input
                               type="time"
-                              value={deadlineConfig.wellnessMatchTime || deadlineConfig.defaultMatchTime || '11:00'}
+                              value={deadlineConfig.wellnessMatchTime || deadlineConfig.defaultMatchTime || '12:00'}
                               onChange={(e) => handleUpdateDeadlineConfig({ wellnessMatchTime: e.target.value })}
                               className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-emerald-200 focus:border-emerald-400 focus:outline-none"
                             />
@@ -3604,7 +3604,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                             <span className="text-[10px] font-bold text-emerald-400 block">🏆 Limite Dia de Jogo:</span>
                             <input
                               type="time"
-                              value={deadlineConfig.rpeMatchTime || '22:00'}
+                              value={deadlineConfig.rpeMatchTime || '18:30'}
                               onChange={(e) => handleUpdateDeadlineConfig({ rpeMatchTime: e.target.value })}
                               className="w-full rounded-lg border border-slate-700 bg-dark-card p-2 text-xs font-bold text-emerald-200 focus:border-emerald-400 focus:outline-none"
                             />
@@ -3805,6 +3805,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                       className="px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 font-bold hover:bg-cyan-900/60 cursor-pointer"
                                     >
                                       14:00
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => setSpecificRpeTime('18:30')}
+                                      className="px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 font-bold hover:bg-emerald-900/60 cursor-pointer"
+                                    >
+                                      18:30 (Jogo)
                                     </button>
                                     <button
                                       type="button"

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v17-clean-silent-deadlines-20261007';
+const CACHE_NAME = 'femperf-v18-match-day-deadlines-20261007';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
