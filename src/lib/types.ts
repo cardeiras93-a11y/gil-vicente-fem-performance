@@ -4,6 +4,7 @@ export interface Athlete {
   id: string;
   name: string;
   position?: AthletePosition;
+  jerseyNumber?: number | string;
   avatarUrl?: string;
   pin?: string;
   isActive?: boolean;

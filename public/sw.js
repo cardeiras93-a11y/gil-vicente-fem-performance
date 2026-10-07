@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v19-custom-punctual-deadlines-20261007';
+const CACHE_NAME = 'femperf-v20-admin-kiosk-mode-20261007';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

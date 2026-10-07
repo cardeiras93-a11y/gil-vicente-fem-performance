@@ -16,12 +16,13 @@ import { TrainingSessionManager } from './TrainingSessionManager';
 import { SquadMuscleHeatmap } from './SquadMuscleHeatmap';
 import { MatchDashboard } from './MatchDashboard';
 import { MatchMinutesDashboard } from './MatchMinutesDashboard';
+import { KioskModeView } from './KioskModeView';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
-  Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
+  Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Tablet, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
   Unlock, UserCheck
 } from 'lucide-react';
 
@@ -68,6 +69,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   const [allRpeList, setAllRpeList] = useState<RPEEntry[]>([]);
   const [allHydrationList, setAllHydrationList] = useState<HydrationEntry[]>([]);
   const [athletesList, setAthletesList] = useState<Athlete[]>(() => getDynamicAthletes(true));
+  const [isKioskOpen, setIsKioskOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('kiosk') === 'true';
+    }
+    return false;
+  });
 
   const [selectedDate, setSelectedDateState] = useState<string>(() => {
     if (typeof window !== 'undefined') {
@@ -670,6 +678,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       syncCredentialsFromCloud().then(() => {
         loadAllPins();
       });
+    }
+  }, [isOpen]);
+
+  // Auto-open Kiosk mode if URL contains ?kiosk=true
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('kiosk') === 'true') {
+        setIsKioskOpen(true);
+      }
     }
   }, [isOpen]);
 
@@ -1276,6 +1294,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
+
+            {/* Kiosk Mode Button (iPad / Balneário) */}
+            <button
+              type="button"
+              onClick={() => setIsKioskOpen(true)}
+              className="flex items-center space-x-1.5 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 px-3.5 py-2 text-xs font-black text-amber-300 hover:from-amber-500/30 hover:to-orange-500/30 transition-all shadow-md active:scale-95 cursor-pointer"
+              title="Ativar Modo Quiosque para iPad / Balneário (Sem PIN)"
+            >
+              <Tablet className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+              <span>📱 Modo Quiosque</span>
+            </button>
 
             {/* Sync Cloud Data Button */}
             <button
@@ -5065,6 +5094,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
             </div>
           </div>
         </div>
+      )}
+
+      {/* Kiosk Mode Overlay (iPad / Balneário / Qualquer dispositivo com conta admin) */}
+      {isKioskOpen && (
+        <KioskModeView
+          onClose={() => setIsKioskOpen(false)}
+          athletes={athletesList}
+          wellnessList={allWellnessList.length > 0 ? allWellnessList : wellnessList}
+          rpeList={allRpeList.length > 0 ? allRpeList : rpeList}
+          hydrationList={allHydrationList.length > 0 ? allHydrationList : hydrationList}
+        />
       )}
       </div>
     </div>

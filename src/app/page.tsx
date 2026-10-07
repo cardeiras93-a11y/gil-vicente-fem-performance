@@ -42,6 +42,8 @@ function MainAppContent() {
 
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('kiosk') === 'true' || params.get('admin') === 'true') return true;
       return localStorage.getItem(VIEW_MODE_KEY) === 'admin';
     }
     return false;
@@ -56,6 +58,8 @@ function MainAppContent() {
 
   const [isChangingAthlete, setIsChangingAthlete] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('kiosk') === 'true' || params.get('admin') === 'true') return false;
       const mode = localStorage.getItem(VIEW_MODE_KEY);
       if (mode === 'admin' || mode === 'physio') return false;
       const stored = getStoredActiveAthlete();
@@ -91,6 +95,16 @@ function MainAppContent() {
       setActiveTab('wellness');
     }
   }, [isAthleteGoalkeeper, activeTab]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('kiosk') === 'true' || params.get('admin') === 'true') {
+        setIsAdminOpen(true);
+        setIsChangingAthlete(false);
+      }
+    }
+  }, []);
 
   const [globalFeedback, setGlobalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
