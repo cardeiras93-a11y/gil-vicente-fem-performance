@@ -133,14 +133,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
   };
 
-  const [pinsSubTab, setPinsSubTabState] = useState<'deadlines' | 'authorizations' | 'playerPins' | 'notifications' | 'credentials' | 'all'>(() => {
+  const [pinsSubTab, setPinsSubTabState] = useState<'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'all'>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('femperf_admin_pins_sub_tab') as any) || 'deadlines';
+      const stored = localStorage.getItem('femperf_admin_pins_sub_tab');
+      if (stored === 'notifications') return 'deadlines';
+      return (stored as any) || 'deadlines';
     }
     return 'deadlines';
   });
 
-  const setPinsSubTab = (tab: 'deadlines' | 'authorizations' | 'playerPins' | 'notifications' | 'credentials' | 'all') => {
+  const setPinsSubTab = (tab: 'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'all') => {
     setPinsSubTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_pins_sub_tab', tab);
@@ -479,12 +481,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   };
 
   useEffect(() => {
-    setNotifPermission(getNotificationPermission());
-    if (isOpen && isAuthenticated) {
-      fetchActiveSubscribers();
-      const interval = setInterval(fetchActiveSubscribers, 8000);
-      return () => clearInterval(interval);
-    }
+    // Notificações desativadas a pedido do utilizador
   }, [isOpen, isAuthenticated]);
 
   const handleUpdateReminderConfig = (updated: Partial<ReminderConfig>) => {
@@ -2812,24 +2809,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
               <button
                 type="button"
-                onClick={() => setPinsSubTab('notifications')}
-                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  pinsSubTab === 'notifications'
-                    ? 'bg-cyan-500 text-slate-950 shadow-md font-extrabold ring-1 ring-cyan-400'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
-                }`}
-              >
-                <Bell className="h-3.5 w-3.5 text-cyan-400" />
-                <span>Notificações & WhatsApp</span>
-                {activeSubscribers.length > 0 && (
-                  <span className="ml-1 rounded-full bg-cyan-950/80 px-2 py-0.5 text-[10px] text-cyan-300 font-extrabold border border-cyan-500/40">
-                    {activeSubscribers.length}
-                  </span>
-                )}
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setPinsSubTab('credentials')}
                 className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   pinsSubTab === 'credentials'
@@ -3051,8 +3030,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
             </div>
             )}
 
-            {/* 2. Mobile Notification & Reminders Settings Section */}
-            {(pinsSubTab === 'notifications' || pinsSubTab === 'all') && (
+            {/* 2. Mobile Notification & Reminders Settings Section (Desativado a pedido do utilizador) */}
+            {false && (
               <div className="rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/20 via-dark-card to-dark-card p-4 space-y-4 shadow-lg animate-fade-in">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-2">
                   <div className="flex items-center space-x-2.5">
@@ -4287,17 +4266,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                 </span>
                               )}
                               <div className="flex flex-col">
-                                <span className="text-xs font-black flex items-center gap-1.5">
+                                <span className="text-xs font-black">
                                   {athlete.name}
-                                  {activeSubscribers.some((s) => s.athleteId === athlete.id) ? (
-                                    <span title="Dispositivo registado para Push" className="text-[9px] font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1 py-0.2 rounded">
-                                      📱 Push
-                                    </span>
-                                  ) : (
-                                    <span title="Ainda não ativou notificações" className="text-[9px] font-bold text-amber-400/80 bg-amber-950/40 border border-amber-500/20 px-1 py-0.2 rounded">
-                                      🔕 Sem Push
-                                    </span>
-                                  )}
                                 </span>
                               </div>
                             </div>

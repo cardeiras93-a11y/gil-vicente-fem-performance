@@ -370,20 +370,12 @@ export function checkGlobalAutomaticScheduledReminders(): void {
   );
 }
 
-// Start background automatic reminder scheduler globally on app landing page
+// Start background automatic reminder scheduler globally on app landing page (Desativado)
 export function startGlobalAutomaticReminderScheduler(): () => void {
-  if (typeof window === 'undefined') return () => {};
-
-  checkGlobalAutomaticScheduledReminders();
-
-  const intervalId = setInterval(() => {
-    checkGlobalAutomaticScheduledReminders();
-  }, 60000);
-
-  return () => clearInterval(intervalId);
+  return () => {};
 }
 
-// Start background automatic reminder scheduler (polling every 60s)
+// Start background automatic reminder scheduler (Desativado)
 export function startAutomaticReminderScheduler(
   athleteId: string,
   athleteName: string,
@@ -391,13 +383,5 @@ export function startAutomaticReminderScheduler(
   rpeList?: RPEEntry[],
   hydrationList?: HydrationEntry[]
 ): () => void {
-  if (typeof window === 'undefined') return () => {};
-
-  checkAutomaticScheduledReminders(athleteId, athleteName, wellnessList, rpeList, hydrationList);
-
-  const intervalId = setInterval(() => {
-    checkAutomaticScheduledReminders(athleteId, athleteName, wellnessList, rpeList, hydrationList);
-  }, 60000);
-
-  return () => clearInterval(intervalId);
+  return () => {};
 }

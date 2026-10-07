@@ -3,10 +3,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Athlete } from '@/lib/types';
 import { getAthletePin, setAthletePin, getAthleteAvatar, setAthleteAvatar } from '@/lib/storage';
-import { registerPushSubscription } from '@/lib/pushSubscription';
 import { secureFetch } from '@/lib/authGuard';
 import { useLanguage } from '@/context/LanguageContext';
-import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert, Bell, Send } from 'lucide-react';
+import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert } from 'lucide-react';
 
 interface AthleteProfileModalProps {
   athlete: Athlete | null;
@@ -42,54 +41,6 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
   }, [athlete, isOpen]);
 
   if (!isOpen || !athlete) return null;
-
-  const handleEnablePushDevice = async () => {
-    setPinError('');
-    setSuccessMessage(null);
-    const res = await registerPushSubscription(athlete.id);
-    if (res.success) {
-      setSuccessMessage(res.message || 'Notificações Push ativadas com sucesso!');
-      setTimeout(() => setSuccessMessage(null), 4000);
-    } else {
-      setPinError(res.message || 'Erro ao ativar notificações.');
-    }
-  };
-
-  const handleSendTestNotification = async () => {
-    setPinError('');
-    setSuccessMessage(null);
-
-    // 1. Send local system notification via Service Worker if permission granted
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      try {
-        if ('serviceWorker' in navigator) {
-          const reg = await navigator.serviceWorker.ready;
-          await reg.showNotification('⚽ Gil Vicente FC • Notificação de Teste', {
-            body: `Olá ${athlete.name}! As tuas notificações estão ativas e a funcionar perfeitamente!`,
-            icon: '/icon-192.png',
-            badge: '/icon-192.png',
-            tag: 'test-notification',
-          });
-        }
-      } catch (e) {
-        console.warn('Erro ao disparar notificação local:', e);
-      }
-    }
-
-    // 2. Trigger server-side push broadcast
-    try {
-      const res = await secureFetch('/api/notifications/test-send', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        setSuccessMessage(`📢 Notificação de teste enviada com sucesso! (${data.sent} dispositivo(s) notificado(s))`);
-        setTimeout(() => setSuccessMessage(null), 5000);
-      } else {
-        setPinError(data.error || 'Erro ao enviar notificação de teste.');
-      }
-    } catch (e: any) {
-      setPinError(`Erro ao contactar o servidor: ${e?.message || 'Falha na rede.'}`);
-    }
-  };
 
   // Handle Photo Upload & Canvas Compression (max 300x300)
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -324,27 +275,6 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
               <span>Guardar Novo PIN</span>
             </button>
           </form>
-
-          {/* Web Push Device Notification Toggle */}
-          <div className="pt-2 border-t border-slate-800 space-y-2">
-            <button
-              type="button"
-              onClick={handleEnablePushDevice}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl border border-amber-500/40 bg-amber-500/10 py-2.5 text-xs font-black text-amber-300 hover:bg-amber-500/20 transition-all shadow-sm"
-            >
-              <Bell className="h-4 w-4 text-amber-400" />
-              <span>Ativar Notificações Push Neste Dispositivo</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleSendTestNotification}
-              className="w-full flex items-center justify-center space-x-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 py-2.5 text-xs font-black text-emerald-300 hover:bg-emerald-500/20 transition-all shadow-sm"
-            >
-              <Send className="h-4 w-4 text-emerald-400" />
-              <span>Enviar Notificação de Teste Agora</span>
-            </button>
-          </div>
         </div>
 
         {/* Modal Close Footer */}

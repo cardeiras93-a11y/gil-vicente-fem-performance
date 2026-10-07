@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v13-editing-unlocked-20261007';
+const CACHE_NAME = 'femperf-v14-clean-no-notifs-20261007';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

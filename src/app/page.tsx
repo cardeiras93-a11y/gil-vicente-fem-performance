@@ -13,14 +13,11 @@ import { AdminDashboard } from '@/components/AdminDashboard';
 import { PhysioDashboard } from '@/components/PhysioDashboard';
 import { AthleteProfileModal } from '@/components/AthleteProfileModal';
 import { AppAccessGate } from '@/components/AppAccessGate';
-import { PushNotificationBanner } from '@/components/PushNotificationBanner';
 import { ReminderBanner } from '@/components/ReminderBanner';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
-import { startGlobalAutomaticReminderScheduler } from '@/lib/reminderUtils';
-import { registerPushSubscription, syncPushSubscriptionIfGranted } from '@/lib/pushSubscription';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { isGoalkeeper } from '@/lib/data';
-import { HeartPulse, Dumbbell, Droplet, User, Smartphone, Shield, Stethoscope, AlertTriangle, Bell, Trash2, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
+import { HeartPulse, Dumbbell, Droplet, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
 
 const VIEW_MODE_KEY = 'femperf_active_view_mode';
 
@@ -95,24 +92,7 @@ function MainAppContent() {
     }
   }, [isAthleteGoalkeeper, activeTab]);
 
-  // Silently auto-sync Web Push subscription in background whenever app opens or active athlete changes
-  useEffect(() => {
-    syncPushSubscriptionIfGranted(activeAthlete?.id);
-  }, [activeAthlete?.id]);
-
   const [globalFeedback, setGlobalFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  const handleQuickEnableNotifications = async () => {
-    setGlobalFeedback(null);
-    const res = await registerPushSubscription(activeAthlete?.id);
-    if (res.success) {
-      setGlobalFeedback({ type: 'success', message: res.message || 'Notificações em 2º plano (App Fechada) ativadas com sucesso!' });
-      setTimeout(() => setGlobalFeedback(null), 5000);
-    } else {
-      setGlobalFeedback({ type: 'error', message: res.message || 'Erro ao ativar notificações.' });
-      setTimeout(() => setGlobalFeedback(null), 6000);
-    }
-  };
 
   const handleQuickClearCache = async () => {
     setGlobalFeedback(null);
@@ -167,10 +147,6 @@ function MainAppContent() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncAllDataFromCloud();
-        const ath = getStoredActiveAthlete();
-        if (ath) {
-          syncPushSubscriptionIfGranted(ath.id);
-        }
       }
     };
     const handleFocus = () => {
@@ -186,12 +162,8 @@ function MainAppContent() {
       if (athleteObj) {
         setActiveAthlete(athleteObj);
         setIsChangingAthlete(false);
-        syncPushSubscriptionIfGranted(athleteObj.id);
       }
     }
-
-    // Start global automatic scheduled reminders (works even when no athlete profile is selected yet)
-    const cleanupReminders = startGlobalAutomaticReminderScheduler();
 
     // Online / Offline listener
     const updateOnlineStatus = () => {
@@ -210,7 +182,6 @@ function MainAppContent() {
       const athleteObj = getStoredActiveAthlete();
       if (athleteObj) {
         setActiveAthlete(athleteObj);
-        syncPushSubscriptionIfGranted(athleteObj.id);
       }
     };
     window.addEventListener('femperf_credentials_updated', handleCredentialsUpdate);
@@ -221,7 +192,6 @@ function MainAppContent() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('femperf_credentials_updated', handleCredentialsUpdate);
-      cleanupReminders();
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
     };
@@ -231,7 +201,6 @@ function MainAppContent() {
     setActiveAthlete(athlete);
     setAthleteSession(athlete.id);
     setIsChangingAthlete(false);
-    syncPushSubscriptionIfGranted(athlete.id);
   };
 
   const handleOpenAdmin = () => {
@@ -300,26 +269,14 @@ function MainAppContent() {
 
       {/* Main Content Area */}
       <main className={`flex-1 px-3 sm:px-4 py-4 ${!isAthleteGoalkeeper && activeTab === 'matchday' ? 'max-w-5xl' : 'max-w-lg md:max-w-xl lg:max-w-2xl'} mx-auto w-full space-y-4`}>
-        {/* Web Push Notification Consent Banner (Visible to all users until subscribed) */}
-        <PushNotificationBanner athleteId={activeAthlete?.id} />
-
-        {/* Home Screen Quick Actions Bar: Ativar Notificações & Limpar Cache */}
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={handleQuickEnableNotifications}
-            className="flex items-center justify-center space-x-1.5 rounded-xl border border-red-500/40 bg-gradient-to-r from-red-600 to-red-700 py-2.5 px-3 text-xs font-black uppercase text-white shadow-md hover:from-red-500 hover:to-red-600 active:scale-98 transition-all"
-          >
-            <Bell className="h-4 w-4 text-amber-300 shrink-0" />
-            <span className="truncate">Ativar Alertas 2º Plano</span>
-          </button>
-
+        {/* Home Screen Quick Actions Bar: Limpar Cache */}
+        <div className="flex justify-end">
           <button
             type="button"
             onClick={handleQuickClearCache}
-            className="flex items-center justify-center space-x-1.5 rounded-xl border border-amber-500/40 bg-dark-card py-2.5 px-3 text-xs font-black uppercase text-amber-300 hover:bg-slate-800 hover:text-amber-200 active:scale-98 transition-all shadow-md"
+            className="flex items-center justify-center space-x-1.5 rounded-xl border border-amber-500/40 bg-dark-card py-2 px-3.5 text-xs font-black uppercase text-amber-300 hover:bg-slate-800 hover:text-amber-200 active:scale-98 transition-all shadow-md cursor-pointer"
           >
-            <Trash2 className="h-4 w-4 text-amber-400 shrink-0" />
+            <Trash2 className="h-3.5 w-3.5 text-amber-400 shrink-0" />
             <span className="truncate">Limpar Cache</span>
           </button>
         </div>
