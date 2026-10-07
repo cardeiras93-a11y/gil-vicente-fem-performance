@@ -37,8 +37,10 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   const [expandedLegend, setExpandedLegend] = useState<{ [key: string]: boolean }>({});
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const localEntries = getWellnessLocally(activeAthlete.id);
-  const existingToday = localEntries.find((e) => e.date === todayStr);
+  const [existingToday, setExistingToday] = useState<WellnessEntry | null>(() => {
+    const localEntries = getWellnessLocally(activeAthlete.id);
+    return localEntries.find((e) => e.date === todayStr) || null;
+  });
 
   const [deadlineCheck, setDeadlineCheck] = useState(() =>
     isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id)
@@ -71,18 +73,50 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   };
 
   useEffect(() => {
-    syncHydrationWeight();
-    secureFetch(`/api/hydration?athleteId=${activeAthlete.id}`)
+    const refreshData = () => {
+      const localEntries = getWellnessLocally(activeAthlete.id);
+      const found = localEntries.find((e) => e.date === todayStr) || null;
+      setExistingToday(found);
+      setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id));
+      syncHydrationWeight();
+    };
+
+    refreshData();
+
+    // Sincronização direta e instantânea com Supabase para garantir que submissões feitas noutro dispositivo aparecem no telemóvel
+    secureFetch(`/api/wellness?athleteId=${activeAthlete.id}&t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((resData) => {
+        const items = resData?.entries || resData?.data;
+        if (Array.isArray(items) && items.length > 0) {
+          items.forEach((item: WellnessEntry) => {
+            saveWellnessLocally(item);
+          });
+          refreshData();
+        }
+      })
+      .catch(() => {});
+
+    secureFetch(`/api/hydration?athleteId=${activeAthlete.id}&t=${Date.now()}`)
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
           resData.data.forEach((item: HydrationEntry) => {
             saveHydrationLocally(item);
           });
-          syncHydrationWeight();
+          refreshData();
         }
       })
       .catch(() => {});
+
+    const interval = setInterval(refreshData, 5000);
+    window.addEventListener('femperf_credentials_updated', refreshData);
+    window.addEventListener('femperf_data_updated', refreshData);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('femperf_credentials_updated', refreshData);
+      window.removeEventListener('femperf_data_updated', refreshData);
+    };
   }, [activeAthlete.id, todayStr]);
 
   const adjustWeight = (delta: number) => {
@@ -140,21 +174,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     setTodayHydration(partialEntry);
     return partialEntry;
   };
-
-  useEffect(() => {
-    const updateCheck = () => {
-      setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id));
-    };
-    updateCheck();
-    const interval = setInterval(updateCheck, 10000);
-    window.addEventListener('femperf_credentials_updated', updateCheck);
-    window.addEventListener('femperf_data_updated', updateCheck);
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('femperf_credentials_updated', updateCheck);
-      window.removeEventListener('femperf_data_updated', updateCheck);
-    };
-  }, [todayStr, activeAthlete.id]);
 
   const handleEditClick = () => {
     if (existingToday) {

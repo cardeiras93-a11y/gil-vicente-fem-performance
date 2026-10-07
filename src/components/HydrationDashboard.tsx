@@ -92,28 +92,40 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     syncAndApplyData(initialList);
 
     // 2. Async fetch from Supabase to sync remote entries
-    secureFetch(`/api/hydration?athleteId=${activeAthlete.id}`)
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
-          resData.data.forEach((item: HydrationEntry) => {
-            saveHydrationLocally(item);
-          });
-          const updatedList = getHydrationLocally(activeAthlete.id);
-          syncAndApplyData(updatedList);
-        }
-      })
-      .catch(() => {});
+    const fetchRemote = () => {
+      secureFetch(`/api/hydration?athleteId=${activeAthlete.id}&t=${Date.now()}`)
+        .then((res) => res.json())
+        .then((resData) => {
+          if (!isMounted) return;
+          if (resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
+            resData.data.forEach((item: HydrationEntry) => {
+              saveHydrationLocally(item);
+            });
+            const updatedList = getHydrationLocally(activeAthlete.id);
+            syncAndApplyData(updatedList);
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchRemote();
 
     const handleDataUpdate = () => {
       const updatedList = getHydrationLocally(activeAthlete.id);
       syncAndApplyData(updatedList);
     };
 
+    const interval = setInterval(() => {
+      if (typeof document !== 'undefined' && !document.hidden) {
+        fetchRemote();
+      }
+    }, 5000);
+
     window.addEventListener('femperf_data_updated', handleDataUpdate);
 
     return () => {
       isMounted = false;
+      clearInterval(interval);
       window.removeEventListener('femperf_data_updated', handleDataUpdate);
     };
   }, [activeAthlete.id, language, todayStr]);

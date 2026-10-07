@@ -32,8 +32,10 @@ export const RPEForm: React.FC<RPEFormProps> = ({
   const [showFatigueLegend, setShowFatigueLegend] = useState<boolean>(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const localEntries = getRPELocally(activeAthlete.id);
-  const existingToday = localEntries.find((e) => e.date === todayStr);
+  const [existingToday, setExistingToday] = useState<RPEEntry | null>(() => {
+    const localEntries = getRPELocally(activeAthlete.id);
+    return localEntries.find((e) => e.date === todayStr) || null;
+  });
 
   const [deadlineCheck, setDeadlineCheck] = useState(() =>
     isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id)
@@ -44,17 +46,36 @@ export const RPEForm: React.FC<RPEFormProps> = ({
   } | null>(null);
 
   useEffect(() => {
-    const updateCheck = () => {
+    const refreshData = () => {
+      const localEntries = getRPELocally(activeAthlete.id);
+      const found = localEntries.find((e) => e.date === todayStr) || null;
+      setExistingToday(found);
       setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id));
     };
-    updateCheck();
-    const interval = setInterval(updateCheck, 10000);
-    window.addEventListener('femperf_credentials_updated', updateCheck);
-    window.addEventListener('femperf_data_updated', updateCheck);
+
+    refreshData();
+
+    // Sincronização direta e instantânea com Supabase para garantir que submissões de PSE feitas noutro dispositivo aparecem no telemóvel
+    secureFetch(`/api/rpe?athleteId=${activeAthlete.id}&t=${Date.now()}`)
+      .then((res) => res.json())
+      .then((resData) => {
+        const items = resData?.entries || resData?.data;
+        if (Array.isArray(items) && items.length > 0) {
+          items.forEach((item: RPEEntry) => {
+            saveRPELocally(item);
+          });
+          refreshData();
+        }
+      })
+      .catch(() => {});
+
+    const interval = setInterval(refreshData, 5000);
+    window.addEventListener('femperf_credentials_updated', refreshData);
+    window.addEventListener('femperf_data_updated', refreshData);
     return () => {
       clearInterval(interval);
-      window.removeEventListener('femperf_credentials_updated', updateCheck);
-      window.removeEventListener('femperf_data_updated', updateCheck);
+      window.removeEventListener('femperf_credentials_updated', refreshData);
+      window.removeEventListener('femperf_data_updated', refreshData);
     };
   }, [todayStr, activeAthlete.id]);
 

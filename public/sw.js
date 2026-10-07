@@ -1,6 +1,5 @@
-const CACHE_NAME = 'femperf-v6-push-active';
+const CACHE_NAME = 'femperf-v11-instant-sync-20261007';
 const ASSETS_TO_CACHE = [
-  '/',
   '/manifest.json',
   '/favicon.ico',
   '/gil-vicente-crest.png',
@@ -8,12 +7,11 @@ const ASSETS_TO_CACHE = [
   '/icon-512.png',
 ];
 
-// Install event: skip waiting immediately and cache assets safely
+// Install event: skip waiting immediately and cache static icons safely
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(async (cache) => {
-      // Safe non-blocking asset caching: never fail service worker installation if one asset errors
       await Promise.allSettled(
         ASSETS_TO_CACHE.map((url) =>
           fetch(url, { cache: 'no-cache' })
@@ -29,7 +27,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Activate event: purge old caches and claim clients immediately
+// Activate event: purge ALL old caches and claim clients immediately
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -51,25 +49,30 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Fetch event: Network-First strategy for HTML pages, NextJS chunks, and API routes
+// Fetch event: Never cache API requests, Network-First for HTML navigation
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Bypass cache completely for credentials API so mobile devices always get fresh cloud PINs
-  if (url.pathname === '/api/credentials') {
+  // 1. ALL API routes MUST bypass SW cache completely so data across devices is 100% real-time
+  if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request, { cache: 'no-store' }).catch(() => caches.match(event.request))
+      fetch(event.request, { cache: 'no-store' }).catch(() => {
+        return new Response(JSON.stringify({ error: 'Offline', offline: true }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      })
     );
     return;
   }
 
-  // Network-First for HTML navigation pages, API routes, and Next.js assets
-  if (event.request.mode === 'navigate' || url.pathname.startsWith('/api') || url.pathname.startsWith('/_next')) {
+  // 2. Network-First for HTML navigation pages and Next.js assets
+  if (event.request.mode === 'navigate' || url.pathname.startsWith('/_next')) {
     event.respondWith(
-      fetch(event.request)
+      fetch(event.request, { cache: 'no-cache' })
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && url.pathname.startsWith('/_next/static')) {
             const cacheCopy = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
           }
@@ -87,7 +90,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-While-Revalidate for static assets (images, icons)
+  // 3. Stale-While-Revalidate for static assets (images, icons)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       const fetchPromise = fetch(event.request)
@@ -158,4 +161,3 @@ self.addEventListener('notificationclick', (event) => {
     })
   );
 });
-

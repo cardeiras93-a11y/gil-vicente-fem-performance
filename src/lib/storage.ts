@@ -641,7 +641,19 @@ export async function syncAllDataFromCloud(): Promise<void> {
         return item.id || `wel_${Math.random()}`;
       };
       local.forEach((item) => map.set(getKey(item), item));
-      items.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => {
+        const key = getKey(item);
+        const existing = map.get(key);
+        if (existing) {
+          map.set(key, {
+            ...existing,
+            ...item,
+            morningWeight: Number(item.morningWeight) > 0 ? item.morningWeight : existing.morningWeight,
+          });
+        } else {
+          map.set(key, item);
+        }
+      });
       const merged = Array.from(map.values());
       localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
       dispatchDataUpdatedEvent();
@@ -662,7 +674,15 @@ export async function syncAllDataFromCloud(): Promise<void> {
         return item.id || `rpe_${Math.random()}`;
       };
       local.forEach((item) => map.set(getKey(item), item));
-      items.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => {
+        const key = getKey(item);
+        const existing = map.get(key);
+        if (existing) {
+          map.set(key, { ...existing, ...item });
+        } else {
+          map.set(key, item);
+        }
+      });
       const merged = Array.from(map.values());
       localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
       dispatchDataUpdatedEvent();
@@ -683,7 +703,21 @@ export async function syncAllDataFromCloud(): Promise<void> {
         return item.id || `hyd_${Math.random()}`;
       };
       local.forEach((item) => map.set(getKey(item), item));
-      items.forEach((item) => map.set(getKey(item), item));
+      items.forEach((item) => {
+        const key = getKey(item);
+        const existing = map.get(key);
+        if (existing) {
+          map.set(key, {
+            ...existing,
+            ...item,
+            preWeight: Number(item.preWeight) > 0 ? item.preWeight : existing.preWeight,
+            postWeight: Number(item.postWeight) > 0 ? item.postWeight : existing.postWeight,
+            fluidsIntake: Number(item.fluidsIntake) > 0 ? item.fluidsIntake : existing.fluidsIntake,
+          });
+        } else {
+          map.set(key, item);
+        }
+      });
       const merged = Array.from(map.values());
       localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
       dispatchDataUpdatedEvent();
