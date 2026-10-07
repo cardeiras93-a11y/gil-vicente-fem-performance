@@ -1328,16 +1328,16 @@ export function compressImageFile(file: File, callback: (dataUrl: string) => voi
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
-  enabled: false,
+  enabled: true,
   mode: 'fixed',
   defaultRegularTime: '08:15',
   defaultMatchTime: '11:00',
   relativeMinutesBeforeSession: 60,
-  strictBlock: false,
+  strictBlock: true,
   allowLateWithApproval: false,
-  applyToWellness: false,
-  applyToRpe: false,
-  applyToHydration: false,
+  applyToWellness: true, // Só os questionários Wellness têm horário limite
+  applyToRpe: false, // PSE sempre disponível
+  applyToHydration: false, // Peso sempre disponível
   wellnessRegularTime: '08:15',
   wellnessMatchTime: '11:00',
   wellnessRelativeMinutesBefore: 60,
@@ -1359,12 +1359,12 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
     return {
       ...DEFAULT_DEADLINE_CONFIG,
       ...parsed,
-      enabled: false, // Sempre disponível
-      strictBlock: false, // NUNCA bloquear
-      allowLateWithApproval: false,
-      applyToWellness: false,
-      applyToRpe: false,
-      applyToHydration: false,
+      enabled: true,
+      applyToWellness: true, // Só os questionários Wellness têm horário limite
+      applyToRpe: false, // PSE sempre disponível
+      applyToHydration: false, // Peso sempre disponível
+      strictBlock: parsed.strictBlock !== undefined ? Boolean(parsed.strictBlock) : true,
+      allowLateWithApproval: parsed.allowLateWithApproval ? true : false,
       customDateDeadlines: {
         ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlines || {}),
         ...(parsed.customDateDeadlines || {}),
@@ -1723,9 +1723,9 @@ export function isSubmissionPastDeadline(
   // - If strictBlock is true: player is strictly blocked from filling/submitting (unless authorized VIP)
   // - If allowLateWithApproval is true and strictBlock is false: player can submit, but requires coach approval
   // - Otherwise: player can submit directly with late tag
-  const isStrictBlock = false;
-  const allowLateWithApproval = false;
-  const effectiveStrictBlock = false;
+  const isStrictBlock = questionnaireType === 'wellness' && Boolean(config.strictBlock);
+  const allowLateWithApproval = !isStrictBlock && Boolean(config.allowLateWithApproval);
+  const effectiveStrictBlock = isAuthorized ? false : isStrictBlock;
 
   if (!config.enabled || !effective.hasDeadline) {
     return {

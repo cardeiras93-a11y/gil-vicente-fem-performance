@@ -612,13 +612,145 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         </div>
 
         <div className="pt-2">
-          <button
-            type="button"
-            onClick={handleEditClick}
-            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
-          >
-            <span>✏️ Rever ou Atualizar Respostas</span>
-          </button>
+          {deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock ? (
+            <div className="w-full text-center text-xs font-semibold text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center justify-center space-x-1.5">
+              <Lock className="h-4 w-4 text-slate-400" />
+              <span>Edição do questionário fechada após as {deadlineCheck.deadlineTime}</span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
+            >
+              <span>✏️ Rever ou Atualizar Respostas</span>
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (!existingToday && deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock) {
+    return (
+      <div className="rounded-2xl border border-rose-500/40 bg-dark-card p-6 space-y-4 shadow-xl animate-fade-in">
+        <div className="text-center space-y-3">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-lg shadow-rose-500/10">
+            <Lock className="h-7 w-7 stroke-[2.5]" />
+          </div>
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
+              Horário Limite Ultrapassado
+            </span>
+            <h2 className="text-lg font-black text-slate-100">Questionário Wellness Fechado</h2>
+            <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1">
+              A hora limite para o preenchimento do Wellness ({deadlineCheck.deadlineTime}) já expirou hoje.
+            </p>
+          </div>
+        </div>
+
+        {/* Card Dedicado para registar o Peso Matinal mesmo com Wellness fechado */}
+        <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 via-dark-surface to-dark-card p-4 space-y-3 shadow-md text-left">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                <Scale className="h-4 w-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
+                  Registar Peso Matinal ({todayStr})
+                </span>
+                <h4 className="text-xs font-bold text-slate-200">
+                  {todayHydration && Number(todayHydration.preWeight) > 0
+                    ? `Peso registado: ${todayHydration.preWeight} kg`
+                    : 'Podes registar o teu peso matinal aqui:'}
+                </h4>
+              </div>
+            </div>
+
+            {todayHydration && Number(todayHydration.preWeight) > 0 ? (
+              <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-500/30">
+                ✅ {todayHydration.preWeight} kg
+              </span>
+            ) : (
+              <span className="text-xs font-black text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-500/30 animate-pulse">
+                ⚠️ Pendente
+              </span>
+            )}
+          </div>
+
+          <div className="space-y-2 pt-1">
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => adjustWeight(-0.5)}
+                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                -0.5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustWeight(-0.1)}
+                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                -0.1
+              </button>
+              <input
+                type="text"
+                inputMode="decimal"
+                value={morningWeight}
+                onChange={(e) => setMorningWeight(e.target.value)}
+                placeholder="62.5"
+                className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
+              />
+              <button
+                type="button"
+                onClick={() => adjustWeight(0.1)}
+                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                +0.1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustWeight(0.5)}
+                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                +0.5
+              </button>
+            </div>
+
+            <button
+              type="button"
+              disabled={isSavingQuickWeight}
+              onClick={async () => {
+                const num = parseFloat((morningWeight || '').replace(',', '.'));
+                if (num > 0) {
+                  setIsSavingQuickWeight(true);
+                  await saveMorningWeightToHydration(num);
+                  setIsSavingQuickWeight(false);
+                  setQuickWeightFeedback(`✅ Peso matinal de ${num} kg registado com sucesso!`);
+                  setTimeout(() => setQuickWeightFeedback(null), 5000);
+                }
+              }}
+              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md active:scale-98"
+            >
+              <Scale className="h-4 w-4" />
+              <span>
+                {isSavingQuickWeight
+                  ? 'A guardar...'
+                  : todayHydration && Number(todayHydration.preWeight) > 0
+                  ? 'Atualizar Peso Matinal'
+                  : 'Gravar Peso Matinal Agora'}
+              </span>
+            </button>
+
+            {quickWeightFeedback && (
+              <div className="flex items-center justify-center space-x-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold animate-fade-in">
+                <Check className="h-4 w-4 text-emerald-400 shrink-0" />
+                <span>{quickWeightFeedback}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     );
