@@ -374,7 +374,7 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('hydration')}
-          className={`flex flex-col sm:flex-row items-center justify-center p-2 rounded-xl border text-center transition-all ${
+          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
             status.hasPreHydration && status.hasPostHydration
               ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
               : status.hasPreHydration || status.hasPostHydration
@@ -382,8 +382,8 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
               : 'border-amber-500/40 bg-amber-950/20 text-amber-300 font-extrabold'
           }`}
         >
-          <span className="text-[10px] font-bold text-slate-400">3. Peso</span>
-          <span className="text-xs font-black sm:ml-1.5">
+          <span className="text-[10px] font-bold text-slate-400">3. Pesagem (Pré/Pós)</span>
+          <span className="text-xs font-black">
             {status.hasPreHydration && status.hasPostHydration
               ? '✅ Pré + Pós'
               : status.hasPreHydration
@@ -391,6 +391,9 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
               : status.hasPostHydration
               ? '🟡 Pós OK'
               : '❌ Pendente'}
+          </span>
+          <span className="text-[9px] font-bold text-cyan-400 mt-0.5">
+            Sem limite horário
           </span>
         </button>
       </div>

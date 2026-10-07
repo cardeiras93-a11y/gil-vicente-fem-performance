@@ -1458,7 +1458,7 @@ export function getEffectiveDeadlineForDate(
       sourceDescription: 'Sem limite ativo para PSE',
     };
   }
-  if (questionnaireType === 'hydration' && !config.applyToHydration) {
+  if (questionnaireType === 'hydration') {
     return {
       hasDeadline: false,
       deadlineTime: '23:59',
@@ -1467,7 +1467,7 @@ export function getEffectiveDeadlineForDate(
       isRestDay: false,
       isCustom: false,
       isRelativeToSession: false,
-      sourceDescription: 'Sem limite ativo para Pesagem',
+      sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
     };
   }
 
@@ -1712,6 +1712,32 @@ export function isSubmissionPastDeadline(
   questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness',
   athleteId?: string
 ): DeadlineCheckResult {
+  // Pesagem (Pré e Pós-Treino) NUNCA tem restrições de horários
+  if (questionnaireType === 'hydration') {
+    return {
+      hasDeadline: false,
+      isPast: false,
+      strictBlock: false,
+      isAuthorizedLate: false,
+      allowLateWithApproval: false,
+      requireApproval: false,
+      deadlineTime: '23:59',
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: 'Sem limite de horário',
+      effectiveInfo: {
+        hasDeadline: false,
+        deadlineTime: '23:59',
+        isMatchDay: false,
+        isTrainingDay: false,
+        isRestDay: false,
+        isCustom: false,
+        isRelativeToSession: false,
+        sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
+      },
+    };
+  }
+
   const config = getStoredDeadlineConfig();
   const effective = getEffectiveDeadlineForDate(dateStr, questionnaireType);
 

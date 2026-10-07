@@ -444,7 +444,7 @@ function MainAppContent() {
               >
                 <Droplet className="h-4 w-4 shrink-0" />
                 <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
-                  3. Pesagem
+                  3. Pesagem <span className="text-[9px] font-bold sm:text-[10px]">(Pré / Pós)</span>
                 </span>
               </button>
 

@@ -211,7 +211,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     const list = getHydrationLocally(activeAthlete.id);
     const todayEntry = list.find((item) => item.date === todayStr);
 
-    let pre = savedPreWeight || parseNum(preWeight);
+    let pre = parseNum(preWeight) || savedPreWeight || 0;
     if (!pre || pre <= 0) {
       if (todayEntry && Number(todayEntry.preWeight) > 0) {
         pre = Number(todayEntry.preWeight);
@@ -327,6 +327,9 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
                 Controlo de Peso & Hidratação
               </span>
               <h2 className="text-base font-black text-slate-100">{activeAthlete.name}</h2>
+              <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-extrabold text-emerald-400">
+                <span>🔓 Sem restrições de horário • Sempre disponível</span>
+              </div>
             </div>
           </div>
 
@@ -389,13 +392,13 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-cyan-500 text-slate-950 text-xs font-black">1</span>
               <h3 className="text-sm font-black uppercase tracking-wide">ETAPA 1: Peso Matinal / Pré-Treino</h3>
             </div>
-            <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/30">
-              Ao acordar ou antes do treino
+            <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+              🔓 Sem restrições de horário
             </span>
           </div>
 
           <p className="text-xs text-slate-300 font-medium">
-            Regista o teu peso ao acordar em jejum ou no balneário antes do aquecimento.
+            Regista o teu peso ao acordar em jejum ou no balneário antes do treino. Podes registar ou atualizar a qualquer momento do dia.
           </p>
 
           <div className="space-y-2 rounded-xl border border-slate-800 bg-dark-surface/80 p-4">
@@ -471,32 +474,76 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-amber-400">
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-slate-950 text-xs font-black">2</span>
-              <h3 className="text-sm font-black uppercase tracking-wide">ETAPA 2: À Saída (Pós-Treino)</h3>
+              <h3 className="text-sm font-black uppercase tracking-wide">ETAPA 2: Peso Pós-Treino (À Saída)</h3>
             </div>
             <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
-              No final da sessão
+              🔓 Sem restrições de horário
             </span>
           </div>
 
-          {/* Pre-Weight Display in Stage 2 with quick edit switch */}
-          <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/30 p-3.5 flex items-center justify-between shadow-inner">
-            <div className="flex items-center space-x-2.5">
-              <CheckCircle className="h-5 w-5 text-cyan-400 shrink-0" />
-              <div>
-                <p className="text-[11px] font-bold text-cyan-300 uppercase tracking-wider">Peso Matinal / Pré-Treino</p>
-                <button
-                  type="button"
-                  onClick={() => setActiveSubTab('pre')}
-                  className="text-[10px] text-cyan-400 hover:text-cyan-200 underline font-bold flex items-center gap-1 mt-0.5"
-                >
-                  <Pencil className="h-3 w-3" />
-                  <span>Editar ou Corrigir Peso Pré</span>
-                </button>
-              </div>
+          <p className="text-xs text-slate-300 font-medium">
+            Regista o teu peso no final do treino ou a qualquer momento após a sessão.
+          </p>
+
+          {/* 1. Pre-Weight Field inside Stage 2 (Directly editable anytime) */}
+          <div className="space-y-2 rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-4">
+            <div className="flex justify-between items-center">
+              <label className="text-xs font-extrabold text-cyan-300 flex items-center space-x-1.5">
+                <Scale className="h-4 w-4 text-cyan-400" />
+                <span>1. Peso Matinal / Pré-Treino (kg) *</span>
+              </label>
+              <span className="text-xs font-extrabold text-cyan-400">{preWeight} kg</span>
             </div>
-            <div className="text-right">
-              <span className="text-lg font-black text-cyan-300">{savedPreWeight && savedPreWeight > 0 ? savedPreWeight : (parseNum(preWeight) || '—')} kg</span>
+
+            <div className="flex items-center space-x-2">
+              <button
+                type="button"
+                onClick={() => adjustValue('pre', -0.5)}
+                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                -0.5
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustValue('pre', -0.1)}
+                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                -0.1
+              </button>
+
+              <input
+                type="text"
+                inputMode="decimal"
+                required
+                value={preWeight}
+                onChange={(e) => {
+                  setPreWeight(e.target.value);
+                  const p = parseNum(e.target.value);
+                  if (p > 0) setSavedPreWeight(p);
+                }}
+                className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
+              />
+
+              <button
+                type="button"
+                onClick={() => adjustValue('pre', 0.1)}
+                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                +0.1
+              </button>
+              <button
+                type="button"
+                onClick={() => adjustValue('pre', 0.5)}
+                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
+              >
+                +0.5
+              </button>
             </div>
+            <p className="text-[10px] text-slate-400 font-medium">
+              {savedPreWeight && savedPreWeight > 0
+                ? '✅ Peso pré já registado (podes corrigir aqui se necessário).'
+                : 'ℹ️ Insere aqui o peso medido antes do treino.'}
+            </p>
           </div>
 
           {/* Post-Weight Editable Field */}

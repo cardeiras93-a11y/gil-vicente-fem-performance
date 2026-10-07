@@ -516,9 +516,12 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
-                  Peso Matinal de Hoje ({todayStr})
+                  Peso Matinal / Pré-Treino ({todayStr})
                 </span>
-                <h4 className="text-xs font-bold text-slate-200">
+                <div className="text-[9px] font-bold text-emerald-400">
+                  🔓 Sem restrições de horário • Registo sempre disponível
+                </div>
+                <h4 className="text-xs font-bold text-slate-200 mt-0.5">
                   {todayHydration && Number(todayHydration.preWeight) > 0
                     ? `Peso registado: ${todayHydration.preWeight} kg`
                     : 'Ainda não registaste o peso matinal hoje'}
@@ -658,12 +661,15 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
               </div>
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
-                  Registar Peso Matinal ({todayStr})
+                  Registar Peso Matinal / Pré-Treino ({todayStr})
                 </span>
-                <h4 className="text-xs font-bold text-slate-200">
+                <div className="text-[9px] font-bold text-emerald-400">
+                  🔓 Sem restrições de horário • Registo sempre disponível
+                </div>
+                <h4 className="text-xs font-bold text-slate-200 mt-0.5">
                   {todayHydration && Number(todayHydration.preWeight) > 0
                     ? `Peso registado: ${todayHydration.preWeight} kg`
-                    : 'Podes registar o teu peso matinal aqui:'}
+                    : 'Podes registar o teu peso aqui a qualquer hora:'}
                 </h4>
               </div>
             </div>
@@ -867,8 +873,8 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
           <div className="flex items-center space-x-2 text-slate-200">
             <Scale className="h-5 w-5 text-cyan-400" />
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Peso Matinal (kg)</h3>
-              <p className="text-[11px] text-slate-400">Ao acordar em jejum • Sincroniza com o controlo ponderal</p>
+              <h3 className="text-sm font-bold text-slate-100">Peso Matinal / Pré-Treino (kg)</h3>
+              <p className="text-[11px] text-slate-400">Ao acordar ou antes do treino • Sem restrição de horário</p>
             </div>
           </div>
           <span className="text-xs font-black text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-500/30">
