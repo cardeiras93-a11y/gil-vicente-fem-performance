@@ -1362,21 +1362,21 @@ export function compressImageFile(file: File, callback: (dataUrl: string) => voi
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
-  enabled: false,
+  enabled: true,
   mode: 'fixed',
-  defaultRegularTime: '23:59',
-  defaultMatchTime: '23:59',
+  defaultRegularTime: '08:15',
+  defaultMatchTime: '11:00',
   relativeMinutesBeforeSession: 60,
   strictBlock: false,
   allowLateWithApproval: false,
-  applyToWellness: false, // Sem limites de horário
-  applyToRpe: false, // Sem limites de horário
-  applyToHydration: false, // Sem limites de horário
-  wellnessRegularTime: '23:59',
-  wellnessMatchTime: '23:59',
+  applyToWellness: true,
+  applyToRpe: true,
+  applyToHydration: false, // Sem limites de horário para pesagem
+  wellnessRegularTime: '08:15',
+  wellnessMatchTime: '11:00',
   wellnessRelativeMinutesBefore: 60,
-  rpeRegularTime: '23:59',
-  rpeMatchTime: '23:59',
+  rpeRegularTime: '14:00',
+  rpeMatchTime: '22:00',
   rpeRelativeMinutesAfter: 90,
   customDateDeadlines: {},
   customDateDeadlinesWellness: {},
@@ -1393,15 +1393,16 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
     return {
       ...DEFAULT_DEADLINE_CONFIG,
       ...parsed,
-      enabled: false, // Limites de horário 100% desativados
-      applyToWellness: false,
-      applyToRpe: false,
-      applyToHydration: false,
-      strictBlock: false,
-      allowLateWithApproval: false,
-      customDateDeadlines: {},
-      customDateDeadlinesWellness: {},
-      customDateDeadlinesRpe: {},
+      enabled: parsed.enabled !== undefined ? parsed.enabled : true,
+      strictBlock: false, // NUNCA bloqueia as atletas
+      applyToHydration: false, // Pesagem sempre sem restrição
+      applyToWellness: parsed.applyToWellness !== undefined ? parsed.applyToWellness : true,
+      applyToRpe: parsed.applyToRpe !== undefined ? parsed.applyToRpe : true,
+      wellnessRegularTime: parsed.wellnessRegularTime || '08:15',
+      rpeRegularTime: parsed.rpeRegularTime || '14:00',
+      customDateDeadlines: parsed.customDateDeadlines || {},
+      customDateDeadlinesWellness: parsed.customDateDeadlinesWellness || {},
+      customDateDeadlinesRpe: parsed.customDateDeadlinesRpe || {},
       athleteLateAuthorizations: parsed.athleteLateAuthorizations || {},
     };
   } catch {
@@ -1441,15 +1442,195 @@ export function getEffectiveDeadlineForDate(
   dateStr: string,
   questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness'
 ): EffectiveDeadlineResult {
+  // Pesagem (Pré e Pós-Treino) NUNCA tem restrições de horários
+  if (questionnaireType === 'hydration') {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
+    };
+  }
+
+  const config = getStoredDeadlineConfig();
+
+  if (!config.enabled) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limites de horário ativos',
+    };
+  }
+
+  // Check if deadline applies to this questionnaire type
+  if (questionnaireType === 'wellness' && !config.applyToWellness) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite ativo para Wellness',
+    };
+  }
+  if (questionnaireType === 'rpe' && !config.applyToRpe) {
+    return {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem limite ativo para PSE',
+    };
+  }
+
+  const schedule = getStoredCalendarSchedule();
+  const sessions = getStoredTrainingSessions();
+  const session = sessions[dateStr];
+  const dayType = schedule[dateStr] || session?.dayType || 'training';
+  const isMatchDay = dayType === 'match';
+  const isTrainingDay = dayType === 'training';
+  const isRestDay = dayType === 'rest';
+
+  // 1. Specific custom deadline for this date and questionnaireType
+  let customDeadline: string | undefined = undefined;
+  if (questionnaireType === 'wellness') {
+    customDeadline =
+      (config.customDateDeadlinesWellness && config.customDateDeadlinesWellness[dateStr]) ||
+      session?.customDeadlineWellness ||
+      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
+      session?.customDeadline;
+  } else if (questionnaireType === 'rpe') {
+    customDeadline =
+      (config.customDateDeadlinesRpe && config.customDateDeadlinesRpe[dateStr]) ||
+      session?.customDeadlineRpe ||
+      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
+      session?.customDeadline;
+  }
+
+  if (customDeadline && customDeadline.includes(':')) {
+    return {
+      hasDeadline: true,
+      deadlineTime: customDeadline,
+      isMatchDay,
+      isTrainingDay,
+      isRestDay,
+      isCustom: true,
+      isRelativeToSession: false,
+      sessionStartTime: session?.startTime,
+      sourceDescription: `Personalizado para ${questionnaireType === 'wellness' ? 'Wellness (Pré)' : 'PSE (Pós)'} (${customDeadline})`,
+    };
+  }
+
+  // 2. Specific session schedule defined ("outro horário no treino ou jogo")
+  const hasSpecificSchedule = Boolean(
+    session?.startTime &&
+    session.startTime.includes(':') &&
+    (
+      isMatchDay ||
+      session.startTime !== '09:00' ||
+      config.mode === 'relative_to_session'
+    )
+  );
+
+  if (hasSpecificSchedule && session?.startTime) {
+    if (questionnaireType === 'wellness') {
+      const [h, m] = session.startTime.split(':').map(Number);
+      const sessionMinutes = (h || 0) * 60 + (m || 0);
+      const relMin = config.wellnessRelativeMinutesBefore || config.relativeMinutesBeforeSession || 60;
+      let targetMin = sessionMinutes - relMin;
+      if (targetMin < 0) targetMin = 0;
+      const tH = Math.floor(targetMin / 60);
+      const tM = targetMin % 60;
+      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
+      return {
+        hasDeadline: true,
+        deadlineTime: calcTime,
+        isMatchDay,
+        isTrainingDay,
+        isRestDay,
+        isCustom: false,
+        isRelativeToSession: true,
+        sessionStartTime: session.startTime,
+        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} das ${session.startTime} (${relMin}min antes: ${calcTime})`,
+      };
+    } else if (questionnaireType === 'rpe') {
+      const baseTime = session.endTime || session.startTime;
+      const [h, m] = baseTime.split(':').map(Number);
+      const baseMinutes = (h || 0) * 60 + (m || 0) + (session.endTime ? 0 : 90);
+      const relMin = config.rpeRelativeMinutesAfter || 60;
+      let targetMin = baseMinutes + relMin;
+      if (targetMin > 1439) targetMin = 1439;
+      const tH = Math.floor(targetMin / 60);
+      const tM = targetMin % 60;
+      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
+      return {
+        hasDeadline: true,
+        deadlineTime: calcTime,
+        isMatchDay,
+        isTrainingDay,
+        isRestDay,
+        isCustom: false,
+        isRelativeToSession: true,
+        sessionStartTime: session.startTime,
+        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} (Fim ${baseTime} +${relMin}min: ${calcTime})`,
+      };
+    }
+  }
+
+  // 3. Match day fallback logic
+  if (isMatchDay) {
+    let matchTime = '11:00';
+    if (questionnaireType === 'wellness') {
+      matchTime = config.wellnessMatchTime || config.defaultMatchTime || '11:00';
+    } else if (questionnaireType === 'rpe') {
+      matchTime = config.rpeMatchTime || config.defaultMatchTime || '22:00';
+    }
+
+    return {
+      hasDeadline: true,
+      deadlineTime: matchTime,
+      isMatchDay: true,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sessionStartTime: session?.startTime,
+      sourceDescription: `Dia de Jogo Padrão (${matchTime})`,
+    };
+  }
+
+  // 4. Default regular time (Pré-treino: 08:15, Pós-treino: 14:00)
+  let regTime = '08:15';
+  if (questionnaireType === 'wellness') {
+    regTime = config.wellnessRegularTime || config.defaultRegularTime || '08:15';
+  } else if (questionnaireType === 'rpe') {
+    regTime = config.rpeRegularTime || '14:00';
+  }
+
   return {
-    hasDeadline: false,
-    deadlineTime: '23:59',
+    hasDeadline: true,
+    deadlineTime: regTime,
     isMatchDay: false,
-    isTrainingDay: false,
-    isRestDay: false,
+    isTrainingDay,
+    isRestDay,
     isCustom: false,
     isRelativeToSession: false,
-    sourceDescription: 'Sem limites de horário (Sempre disponível)',
+    sessionStartTime: session?.startTime,
+    sourceDescription: isRestDay ? `Dia de Folga (${regTime})` : `Horário Limite Regulamentar (${regTime})`,
   };
 }
 
@@ -1550,27 +1731,130 @@ export function isSubmissionPastDeadline(
   questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness',
   athleteId?: string
 ): DeadlineCheckResult {
+  // Pesagem (Pré e Pós-Treino) NUNCA tem restrições de horários
+  if (questionnaireType === 'hydration') {
+    return {
+      hasDeadline: false,
+      isPast: false,
+      strictBlock: false,
+      isAuthorizedLate: false,
+      allowLateWithApproval: false,
+      requireApproval: false,
+      deadlineTime: '23:59',
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: 'Sem limite de horário',
+      effectiveInfo: {
+        hasDeadline: false,
+        deadlineTime: '23:59',
+        isMatchDay: false,
+        isTrainingDay: false,
+        isRestDay: false,
+        isCustom: false,
+        isRelativeToSession: false,
+        sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
+      },
+    };
+  }
+
+  const config = getStoredDeadlineConfig();
+  const effective = getEffectiveDeadlineForDate(dateStr, questionnaireType);
+
+  // Check if this specific athlete is authorized by the coach to submit late
+  const isAuthorized = Boolean(athleteId && isAthleteAuthorizedForLateSubmission(athleteId, dateStr, questionnaireType));
+
+  // Em conformidade com a regra definida:
+  // NUNCA bloqueia as atletas de preencher (strictBlock é false).
+  // Não requer aprovação prévia para conseguir submeter (requireApproval é false).
+  // A submissão é sempre permitida e imediata, ficando registada com atraso/multa se for após a hora limite.
+  const strictBlock = false;
+  const allowLateWithApproval = false;
+  const requireApproval = false;
+
+  if (!config.enabled || !effective.hasDeadline) {
+    return {
+      hasDeadline: false,
+      isPast: false,
+      strictBlock: false,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval: false,
+      requireApproval: false,
+      deadlineTime: effective.deadlineTime || '23:59',
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: '',
+      effectiveInfo: effective,
+    };
+  }
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+  // If target date is in the past (e.g. yesterday), it is past deadline
+  if (dateStr < todayStr) {
+    return {
+      hasDeadline: true,
+      isPast: true,
+      strictBlock: false,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval: false,
+      requireApproval: false,
+      deadlineTime: effective.deadlineTime,
+      minutesLeft: -1,
+      minutesRemaining: -1,
+      formattedTimeLeft: isAuthorized ? 'Autorizada pelo Treinador' : 'Prazo Expirado',
+      effectiveInfo: effective,
+    };
+  }
+
+  // If target date is in the future, it is not past deadline yet
+  if (dateStr > todayStr) {
+    return {
+      hasDeadline: true,
+      isPast: false,
+      strictBlock: false,
+      isAuthorizedLate: isAuthorized,
+      allowLateWithApproval: false,
+      requireApproval: false,
+      deadlineTime: effective.deadlineTime,
+      minutesLeft: 9999,
+      minutesRemaining: 9999,
+      formattedTimeLeft: `Até às ${effective.deadlineTime}`,
+      effectiveInfo: effective,
+    };
+  }
+
+  // Target date is today: compare current time HH:mm with effective.deadlineTime
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const [dH, dM] = effective.deadlineTime.split(':').map(Number);
+  const deadlineMinutes = (dH || 0) * 60 + (dM || 0);
+
+  const diff = deadlineMinutes - currentMinutes;
+  const isPast = diff <= 0;
+
+  let formattedTimeLeft = '';
+  if (isPast) {
+    formattedTimeLeft = isAuthorized ? 'Autorizada pelo Treinador' : `Atraso (Limite era às ${effective.deadlineTime})`;
+  } else if (diff < 60) {
+    formattedTimeLeft = `restam ${diff} min`;
+  } else {
+    const hLeft = Math.floor(diff / 60);
+    const mLeft = diff % 60;
+    formattedTimeLeft = mLeft > 0 ? `restam ${hLeft}h ${mLeft}m` : `restam ${hLeft}h`;
+  }
+
   return {
-    hasDeadline: false,
-    isPast: false,
+    hasDeadline: true,
+    isPast,
     strictBlock: false,
-    isAuthorizedLate: true,
+    isAuthorizedLate: isAuthorized,
     allowLateWithApproval: false,
     requireApproval: false,
-    deadlineTime: '23:59',
-    minutesLeft: 9999,
-    minutesRemaining: 9999,
-    formattedTimeLeft: 'Sem limite de horário',
-    effectiveInfo: {
-      hasDeadline: false,
-      deadlineTime: '23:59',
-      isMatchDay: false,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sourceDescription: 'Sem restrições de horários (Sempre disponível)',
-    },
+    deadlineTime: effective.deadlineTime,
+    minutesLeft: diff,
+    minutesRemaining: diff,
+    formattedTimeLeft,
+    effectiveInfo: effective,
   };
 }
 

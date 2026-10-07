@@ -107,7 +107,15 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
 
     const currentDeadlineCheck = isSubmissionPastDeadline(today, 'rpe', activeAthlete.id);
-    const isLate = false;
+    const isSubmissionLate = Boolean(
+      currentDeadlineCheck.hasDeadline &&
+      currentDeadlineCheck.isPast &&
+      !currentDeadlineCheck.isAuthorizedLate
+    );
+    // Preserva estado inicial a horas caso esteja apenas a alterar valores durante o dia:
+    const isLate = existingToday ? (existingToday.isLate ?? isSubmissionLate) : isSubmissionLate;
+    const isAuthorizedLate = Boolean(currentDeadlineCheck.isAuthorizedLate || existingToday?.isAuthorizedLate);
+    const keepFine = isAuthorizedLate ? false : (existingToday?.keepFine !== undefined ? existingToday.keepFine : isLate);
 
     const newEntry: RPEEntry = {
       id: existingToday ? existingToday.id : `rpe-${Date.now()}`,
@@ -121,23 +129,21 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       muscleFatigue,
       preWorkoutPlans: [],
       comments: translatedComments,
-      isLate: existingToday ? (existingToday.isLate || isLate) : (isLate || undefined),
-      isAuthorizedLate: currentDeadlineCheck.isAuthorizedLate,
-      approvalStatus: currentDeadlineCheck.isAuthorizedLate
-        ? 'approved'
-        : (currentDeadlineCheck.requireApproval ? 'pending' : (existingToday?.approvalStatus || 'approved')),
+      isLate,
+      isAuthorizedLate,
+      keepFine,
+      approvalStatus: 'approved',
       submittedAt: existingToday?.submittedAt || new Date().toISOString(),
       createdAt: existingToday?.createdAt || new Date().toISOString(),
     };
 
-    const isLatePending = Boolean(currentDeadlineCheck.requireApproval);
-    if (isLatePending) {
+    if (isLate && !isAuthorizedLate) {
       setSubmittedLateNotice({ deadlineTime: currentDeadlineCheck.deadlineTime });
     } else {
       setSubmittedLateNotice(null);
     }
 
-    const redirectDelay = isLatePending ? 4500 : 1800;
+    const redirectDelay = isLate && !isAuthorizedLate ? 3000 : 1800;
 
     try {
       await secureFetch('/api/rpe', {
@@ -208,10 +214,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
               <span>Aviso: Submissão Fora de Horas</span>
             </div>
             <p className="text-[11px] text-amber-200/90 leading-relaxed">
-              O formulário de PSE foi submetido após a hora limite ({submittedLateNotice.deadlineTime}). De acordo com o regulamento de equipa, o registo foi assinalado por atraso.
-            </p>
-            <p className="text-[11px] text-amber-200/80 leading-relaxed">
-              A tua submissão ficou a aguardar validação da equipa técnica, que irá analisar a situação.
+              O formulário de PSE foi submetido após o horário limite ({submittedLateNotice.deadlineTime}). De acordo com o regulamento interno, o registo foi assinalado com atraso (multa no final do mês).
             </p>
             <button
               type="button"
@@ -300,13 +303,15 @@ export const RPEForm: React.FC<RPEFormProps> = ({
               </p>
             </div>
           ) : existingToday.isLate ? (
-            <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3 space-y-1.5 text-xs text-emerald-200">
-              <div className="flex items-center space-x-2 text-emerald-300 font-bold">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>Submissão Aprovada pela Equipa Técnica</span>
+            <div className="rounded-xl bg-amber-500/15 border border-amber-500/40 p-3 space-y-1.5 text-xs text-amber-200">
+              <div className="flex items-center space-x-2 text-amber-300 font-bold">
+                <Clock className="h-4 w-4 text-amber-400 shrink-0" />
+                <span>Submissão Registada com Atraso</span>
               </div>
-              <p className="text-[11px] text-emerald-200/90 leading-relaxed">
-                A tua submissão fora de horas foi validada com sucesso pela equipa técnica.
+              <p className="text-[11px] text-amber-200/90 leading-relaxed">
+                {existingToday.keepFine
+                  ? 'Submissão efetuada após o horário limite. Contabilizada com multa no mapa mensal.'
+                  : 'Submissão efetuada após o horário limite (multa dispensada).'}
               </p>
             </div>
           ) : null}
@@ -379,14 +384,14 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       )}
 
       {/* Deadline Warning / Special Authorization Banner */}
-      {deadlineCheck.hasDeadline && deadlineCheck.isPast && !deadlineCheck.strictBlock && (
+      {deadlineCheck.hasDeadline && deadlineCheck.isPast && (
         deadlineCheck.isAuthorizedLate ? (
           <div className="rounded-xl bg-emerald-500/15 border border-emerald-500/40 p-3.5 flex items-start space-x-2.5 text-xs text-emerald-300 animate-fade-in shadow-sm">
             <span className="text-base shrink-0">🔓</span>
             <div className="space-y-0.5">
               <span className="font-extrabold text-emerald-200">Autorização Especial da Equipa Técnica</span>
               <p className="text-[11px] text-emerald-200/90 leading-snug">
-                Tens autorização de administrador para submeter o registo de PSE mesmo após o horário limite ({deadlineCheck.deadlineTime}).
+                Tens autorização da equipa técnica para submeter o registo de PSE após o horário limite ({deadlineCheck.deadlineTime}) sem aplicação de multa.
               </p>
             </div>
           </div>
@@ -395,14 +400,10 @@ export const RPEForm: React.FC<RPEFormProps> = ({
             <Clock className="h-5 w-5 shrink-0 text-amber-400 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-extrabold text-amber-200">
-                {deadlineCheck.requireApproval
-                  ? `Preenchimento Fora do Prazo`
-                  : `Atenção: Submissão após o horário limite (${deadlineCheck.deadlineTime})`}
+                Aviso: Submissão após o horário limite ({deadlineCheck.deadlineTime})
               </span>
               <p className="text-[11px] text-amber-200/80 leading-snug">
-                {deadlineCheck.requireApproval
-                  ? `A hora limite era às ${deadlineCheck.deadlineTime}. Podes preencher o formulário normalmente. A equipa técnica irá validar o teu registo.`
-                  : 'O preenchimento ainda é permitido, mas a tua resposta ficará registada como enviada com atraso.'}
+                Podes preencher e gravar normalmente a qualquer hora. A tua resposta ficará registada com atraso para efeitos de regulamento interno (multa no final do mês).
               </p>
             </div>
           </div>

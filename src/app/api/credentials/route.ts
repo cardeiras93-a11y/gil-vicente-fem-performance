@@ -162,14 +162,17 @@ export async function GET(request: Request) {
     }
 
     result.activationCode = result.activationCode || 'GVFC2026@';
+    const existingDeadlineConfig = result.deadlineConfig || {};
     result.deadlineConfig = {
-      ...(result.deadlineConfig || {}),
-      enabled: false,
+      ...existingDeadlineConfig,
+      enabled: existingDeadlineConfig.enabled !== undefined ? existingDeadlineConfig.enabled : true,
       strictBlock: false,
-      applyToWellness: false,
-      applyToRpe: false,
+      applyToWellness: existingDeadlineConfig.applyToWellness !== undefined ? existingDeadlineConfig.applyToWellness : true,
+      applyToRpe: existingDeadlineConfig.applyToRpe !== undefined ? existingDeadlineConfig.applyToRpe : true,
       applyToHydration: false,
       allowLateWithApproval: false,
+      wellnessRegularTime: existingDeadlineConfig.wellnessRegularTime || '08:15',
+      rpeRegularTime: existingDeadlineConfig.rpeRegularTime || '14:00',
     };
 
     return NextResponse.json(
@@ -264,14 +267,16 @@ export async function POST(request: Request) {
       current.reminderConfig = body.reminderConfig;
     }
     if (body.deadlineConfig !== undefined) {
+      const incoming = body.deadlineConfig || {};
       current.deadlineConfig = {
-        ...body.deadlineConfig,
-        enabled: false,
-        strictBlock: false,
-        applyToWellness: false,
-        applyToRpe: false,
-        applyToHydration: false,
-        allowLateWithApproval: false,
+        ...incoming,
+        enabled: incoming.enabled !== undefined ? incoming.enabled : true,
+        wellnessRegularTime: incoming.wellnessRegularTime || '08:15',
+        rpeRegularTime: incoming.rpeRegularTime || '14:00',
+        strictBlock: false, // Nunca bloqueia o preenchimento
+        applyToHydration: false, // Pesagem sempre sem restrição
+        applyToWellness: incoming.applyToWellness !== undefined ? incoming.applyToWellness : true,
+        applyToRpe: incoming.applyToRpe !== undefined ? incoming.applyToRpe : true,
       };
     }
 
