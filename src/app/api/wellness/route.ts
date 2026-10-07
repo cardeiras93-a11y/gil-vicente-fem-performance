@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { verifyApiAuth } from '@/lib/authGuard';
+import { calculateHydrationStatus } from '@/lib/data';
 import fs from 'fs';
 import path from 'path';
 
@@ -214,24 +215,43 @@ export async function POST(request: Request) {
       try {
         const hydId = `hyd-${date}-${athleteId}`;
         const numWeight = Number(body.morningWeight);
-        await supabase.from('hydration_entries').upsert([
-          {
-            id: hydId,
-            athlete_id: athleteId,
-            athlete_name: athleteName,
-            date: date,
-            duration_min: 90,
+        const { data: existingHyd } = await supabase
+          .from('hydration_entries')
+          .select('*')
+          .eq('id', hydId)
+          .single();
+
+        if (existingHyd && Number(existingHyd.post_weight) > 0) {
+          const calc = calculateHydrationStatus(numWeight, Number(existingHyd.post_weight), Number(existingHyd.fluids_intake || 0));
+          await supabase.from('hydration_entries').update({
             pre_weight: numWeight,
-            post_weight: 0,
-            fluids_intake: 0,
-            weight_loss: 0,
-            dehydration_rate: 0,
-            status: 'Pendente',
-            refill_needed_liters: 0,
-            recommendation: 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
-            biological_impact: 'Aguardando pesagem pós-treino',
-          }
-        ], { onConflict: 'id' });
+            weight_loss: calc.weightLoss,
+            dehydration_rate: calc.dehydrationRate,
+            status: calc.status,
+            refill_needed_liters: calc.refillNeededLiters,
+            recommendation: calc.recommendation,
+            biological_impact: calc.biologicalImpact,
+          }).eq('id', hydId);
+        } else {
+          await supabase.from('hydration_entries').upsert([
+            {
+              id: hydId,
+              athlete_id: athleteId,
+              athlete_name: athleteName,
+              date: date,
+              duration_min: existingHyd?.duration_min || 90,
+              pre_weight: numWeight,
+              post_weight: existingHyd?.post_weight || 0,
+              fluids_intake: existingHyd?.fluids_intake || 0,
+              weight_loss: existingHyd?.weight_loss || 0,
+              dehydration_rate: existingHyd?.dehydration_rate || 0,
+              status: existingHyd?.status || 'Pendente',
+              refill_needed_liters: existingHyd?.refill_needed_liters || 0,
+              recommendation: existingHyd?.recommendation || 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
+              biological_impact: existingHyd?.biological_impact || 'Aguardando pesagem pós-treino',
+            }
+          ], { onConflict: 'id' });
+        }
       } catch {}
     }
 

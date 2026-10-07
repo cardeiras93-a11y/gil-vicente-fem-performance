@@ -1362,21 +1362,21 @@ export function compressImageFile(file: File, callback: (dataUrl: string) => voi
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
-  enabled: true,
+  enabled: false,
   mode: 'fixed',
-  defaultRegularTime: '08:15',
-  defaultMatchTime: '11:00',
+  defaultRegularTime: '23:59',
+  defaultMatchTime: '23:59',
   relativeMinutesBeforeSession: 60,
-  strictBlock: true,
+  strictBlock: false,
   allowLateWithApproval: false,
-  applyToWellness: true, // Só os questionários Wellness têm horário limite
-  applyToRpe: false, // PSE sempre disponível
-  applyToHydration: false, // Peso sempre disponível
-  wellnessRegularTime: '08:15',
-  wellnessMatchTime: '11:00',
+  applyToWellness: false, // Sem limites de horário
+  applyToRpe: false, // Sem limites de horário
+  applyToHydration: false, // Sem limites de horário
+  wellnessRegularTime: '23:59',
+  wellnessMatchTime: '23:59',
   wellnessRelativeMinutesBefore: 60,
-  rpeRegularTime: '14:00',
-  rpeMatchTime: '22:00',
+  rpeRegularTime: '23:59',
+  rpeMatchTime: '23:59',
   rpeRelativeMinutesAfter: 90,
   customDateDeadlines: {},
   customDateDeadlinesWellness: {},
@@ -1393,28 +1393,16 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
     return {
       ...DEFAULT_DEADLINE_CONFIG,
       ...parsed,
-      enabled: true,
-      applyToWellness: true, // Só os questionários Wellness têm horário limite
-      applyToRpe: false, // PSE sempre disponível
-      applyToHydration: false, // Peso sempre disponível
-      strictBlock: parsed.strictBlock !== undefined ? Boolean(parsed.strictBlock) : true,
-      allowLateWithApproval: parsed.allowLateWithApproval ? true : false,
-      customDateDeadlines: {
-        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlines || {}),
-        ...(parsed.customDateDeadlines || {}),
-      },
-      customDateDeadlinesWellness: {
-        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlinesWellness || {}),
-        ...(parsed.customDateDeadlinesWellness || {}),
-      },
-      customDateDeadlinesRpe: {
-        ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlinesRpe || {}),
-        ...(parsed.customDateDeadlinesRpe || {}),
-      },
-      athleteLateAuthorizations: {
-        ...(DEFAULT_DEADLINE_CONFIG.athleteLateAuthorizations || {}),
-        ...(parsed.athleteLateAuthorizations || {}),
-      },
+      enabled: false, // Limites de horário 100% desativados
+      applyToWellness: false,
+      applyToRpe: false,
+      applyToHydration: false,
+      strictBlock: false,
+      allowLateWithApproval: false,
+      customDateDeadlines: {},
+      customDateDeadlinesWellness: {},
+      customDateDeadlinesRpe: {},
+      athleteLateAuthorizations: parsed.athleteLateAuthorizations || {},
     };
   } catch {
     return DEFAULT_DEADLINE_CONFIG;
@@ -1453,199 +1441,15 @@ export function getEffectiveDeadlineForDate(
   dateStr: string,
   questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness'
 ): EffectiveDeadlineResult {
-  const config = getStoredDeadlineConfig();
-  if (!config.enabled) {
-    return {
-      hasDeadline: false,
-      deadlineTime: '23:59',
-      isMatchDay: false,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sourceDescription: 'Sem limite de horário ativo',
-    };
-  }
-
-  // Check if deadline applies to this questionnaire type
-  if (questionnaireType === 'wellness' && !config.applyToWellness) {
-    return {
-      hasDeadline: false,
-      deadlineTime: '23:59',
-      isMatchDay: false,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sourceDescription: 'Sem limite ativo para Wellness',
-    };
-  }
-  if (questionnaireType === 'rpe' && !config.applyToRpe) {
-    return {
-      hasDeadline: false,
-      deadlineTime: '23:59',
-      isMatchDay: false,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sourceDescription: 'Sem limite ativo para PSE',
-    };
-  }
-  if (questionnaireType === 'hydration') {
-    return {
-      hasDeadline: false,
-      deadlineTime: '23:59',
-      isMatchDay: false,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
-    };
-  }
-
-  const schedule = getStoredCalendarSchedule();
-  const sessions = getStoredTrainingSessions();
-  const session = sessions[dateStr];
-  const dayType = schedule[dateStr] || session?.dayType || 'training';
-  const isMatchDay = dayType === 'match';
-  const isTrainingDay = dayType === 'training';
-  const isRestDay = dayType === 'rest';
-
-  // 1. Specific custom deadline for this date and questionnaireType
-  let customDeadline: string | undefined = undefined;
-  if (questionnaireType === 'wellness') {
-    customDeadline =
-      (config.customDateDeadlinesWellness && config.customDateDeadlinesWellness[dateStr]) ||
-      session?.customDeadlineWellness ||
-      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
-      session?.customDeadline;
-  } else if (questionnaireType === 'rpe') {
-    customDeadline =
-      (config.customDateDeadlinesRpe && config.customDateDeadlinesRpe[dateStr]) ||
-      session?.customDeadlineRpe ||
-      (config.customDateDeadlines && config.customDateDeadlines[dateStr]) ||
-      session?.customDeadline;
-  } else {
-    customDeadline = (config.customDateDeadlines && config.customDateDeadlines[dateStr]) || session?.customDeadline;
-  }
-
-  if (customDeadline && customDeadline.includes(':')) {
-    return {
-      hasDeadline: true,
-      deadlineTime: customDeadline,
-      isMatchDay,
-      isTrainingDay,
-      isRestDay,
-      isCustom: true,
-      isRelativeToSession: false,
-      sessionStartTime: session?.startTime,
-      sourceDescription: `Personalizado para ${questionnaireType.toUpperCase()} (${customDeadline})`,
-    };
-  }
-
-  // 2. Specific session schedule defined ("outro horário no treino ou jogo")
-  // Whenever the coach defines another schedule for the training or match:
-  // - A match day with a scheduled start time
-  // - A training with a specific startTime (differing from standard 09:00 morning session)
-  // - Or global mode is 'relative_to_session'
-  // The default fixed time is automatically deactivated for this session!
-  const hasSpecificSchedule = Boolean(
-    session?.startTime &&
-    session.startTime.includes(':') &&
-    (
-      isMatchDay ||
-      session.startTime !== '09:00' ||
-      config.mode === 'relative_to_session'
-    )
-  );
-
-  if (hasSpecificSchedule && session?.startTime) {
-    if (questionnaireType === 'wellness') {
-      const [h, m] = session.startTime.split(':').map(Number);
-      const sessionMinutes = (h || 0) * 60 + (m || 0);
-      const relMin = config.wellnessRelativeMinutesBefore || config.relativeMinutesBeforeSession || 60;
-      let targetMin = sessionMinutes - relMin;
-      if (targetMin < 0) targetMin = 0;
-      const tH = Math.floor(targetMin / 60);
-      const tM = targetMin % 60;
-      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
-      return {
-        hasDeadline: true,
-        deadlineTime: calcTime,
-        isMatchDay,
-        isTrainingDay,
-        isRestDay,
-        isCustom: false,
-        isRelativeToSession: true,
-        sessionStartTime: session.startTime,
-        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} das ${session.startTime} (${relMin}min antes: ${calcTime})`,
-      };
-    } else if (questionnaireType === 'rpe') {
-      const baseTime = session.endTime || session.startTime;
-      const [h, m] = baseTime.split(':').map(Number);
-      const baseMinutes = (h || 0) * 60 + (m || 0) + (session.endTime ? 0 : 90);
-      const relMin = config.rpeRelativeMinutesAfter || 60;
-      let targetMin = baseMinutes + relMin;
-      if (targetMin > 1439) targetMin = 1439;
-      const tH = Math.floor(targetMin / 60);
-      const tM = targetMin % 60;
-      const calcTime = `${String(tH).padStart(2, '0')}:${String(tM).padStart(2, '0')}`;
-      return {
-        hasDeadline: true,
-        deadlineTime: calcTime,
-        isMatchDay,
-        isTrainingDay,
-        isRestDay,
-        isCustom: false,
-        isRelativeToSession: true,
-        sessionStartTime: session.startTime,
-        sourceDescription: `Auto ${isMatchDay ? 'Jogo' : 'Treino'} (Fim ${baseTime} +${relMin}min: ${calcTime})`,
-      };
-    }
-  }
-
-  // 3. Match day fallback logic (when no specific startTime was scheduled for the match)
-  if (isMatchDay) {
-    let matchTime = config.defaultMatchTime || '11:00';
-    if (questionnaireType === 'wellness') {
-      matchTime = config.wellnessMatchTime || config.defaultMatchTime || '11:00';
-    } else if (questionnaireType === 'rpe') {
-      matchTime = config.rpeMatchTime || config.defaultMatchTime || '22:00';
-    }
-
-    return {
-      hasDeadline: true,
-      deadlineTime: matchTime,
-      isMatchDay: true,
-      isTrainingDay: false,
-      isRestDay: false,
-      isCustom: false,
-      isRelativeToSession: false,
-      sessionStartTime: session?.startTime,
-      sourceDescription: `Dia de Jogo Padrão (${matchTime})`,
-    };
-  }
-
-  // 4. Default regular time (standard 10:00 training / rest fixed)
-  let regTime = config.defaultRegularTime || '08:15';
-  if (questionnaireType === 'wellness') {
-    regTime = config.wellnessRegularTime || config.defaultRegularTime || '08:15';
-  } else if (questionnaireType === 'rpe') {
-    regTime = config.rpeRegularTime || '14:00';
-  }
-
   return {
-    hasDeadline: true,
-    deadlineTime: regTime,
+    hasDeadline: false,
+    deadlineTime: '23:59',
     isMatchDay: false,
-    isTrainingDay,
-    isRestDay,
+    isTrainingDay: false,
+    isRestDay: false,
     isCustom: false,
     isRelativeToSession: false,
-    sessionStartTime: session?.startTime,
-    sourceDescription: isRestDay ? `Dia de Folga (${regTime})` : `Regra Geral (${regTime})`,
+    sourceDescription: 'Sem limites de horário (Sempre disponível)',
   };
 }
 
@@ -1746,133 +1550,27 @@ export function isSubmissionPastDeadline(
   questionnaireType: 'wellness' | 'rpe' | 'hydration' = 'wellness',
   athleteId?: string
 ): DeadlineCheckResult {
-  // Pesagem (Pré e Pós-Treino) NUNCA tem restrições de horários
-  if (questionnaireType === 'hydration') {
-    return {
-      hasDeadline: false,
-      isPast: false,
-      strictBlock: false,
-      isAuthorizedLate: false,
-      allowLateWithApproval: false,
-      requireApproval: false,
-      deadlineTime: '23:59',
-      minutesLeft: 9999,
-      minutesRemaining: 9999,
-      formattedTimeLeft: 'Sem limite de horário',
-      effectiveInfo: {
-        hasDeadline: false,
-        deadlineTime: '23:59',
-        isMatchDay: false,
-        isTrainingDay: false,
-        isRestDay: false,
-        isCustom: false,
-        isRelativeToSession: false,
-        sourceDescription: 'Sem restrições de horários para Pesagem (Pré e Pós-treino)',
-      },
-    };
-  }
-
-  const config = getStoredDeadlineConfig();
-  const effective = getEffectiveDeadlineForDate(dateStr, questionnaireType);
-
-  // Check if this specific athlete is authorized by the coach to submit late
-  const isAuthorized = Boolean(athleteId && isAthleteAuthorizedForLateSubmission(athleteId, dateStr, questionnaireType));
-
-  // Policy resolution:
-  // - If authorized VIP: never blocked, never pending (always immediately approved)
-  // - If strictBlock is true: player is strictly blocked from filling/submitting (unless authorized VIP)
-  // - If allowLateWithApproval is true and strictBlock is false: player can submit, but requires coach approval
-  // - Otherwise: player can submit directly with late tag
-  const isStrictBlock = questionnaireType === 'wellness' && Boolean(config.strictBlock);
-  const allowLateWithApproval = !isStrictBlock && Boolean(config.allowLateWithApproval);
-  const effectiveStrictBlock = isAuthorized ? false : isStrictBlock;
-
-  if (!config.enabled || !effective.hasDeadline) {
-    return {
-      hasDeadline: false,
-      isPast: false,
-      strictBlock: false,
-      isAuthorizedLate: isAuthorized,
-      allowLateWithApproval,
-      requireApproval: false,
-      deadlineTime: '23:59',
-      minutesLeft: 9999,
-      minutesRemaining: 9999,
-      formattedTimeLeft: '',
-      effectiveInfo: effective,
-    };
-  }
-
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-
-  // If the target date is in the past (e.g. yesterday), it is past deadline
-  if (dateStr < todayStr) {
-    const requireApproval = !isAuthorized && allowLateWithApproval;
-    return {
-      hasDeadline: true,
-      isPast: true,
-      strictBlock: effectiveStrictBlock,
-      isAuthorizedLate: isAuthorized,
-      allowLateWithApproval,
-      requireApproval,
-      deadlineTime: effective.deadlineTime,
-      minutesLeft: -1,
-      minutesRemaining: -1,
-      formattedTimeLeft: isAuthorized ? 'Autorizada pelo Treinador' : (requireApproval ? 'Requer aprovação' : 'Prazo expirado'),
-      effectiveInfo: effective,
-    };
-  }
-
-  // If target date is in the future, it is not past deadline yet
-  if (dateStr > todayStr) {
-    return {
-      hasDeadline: true,
-      isPast: false,
-      strictBlock: effectiveStrictBlock,
-      isAuthorizedLate: isAuthorized,
-      allowLateWithApproval,
-      requireApproval: false,
-      deadlineTime: effective.deadlineTime,
-      minutesLeft: 9999,
-      minutesRemaining: 9999,
-      formattedTimeLeft: `Até às ${effective.deadlineTime}`,
-      effectiveInfo: effective,
-    };
-  }
-
-  // Target date is today: compare current time HH:mm with effective.deadlineTime
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const [dH, dM] = effective.deadlineTime.split(':').map(Number);
-  const deadlineMinutes = (dH || 0) * 60 + (dM || 0);
-
-  const diff = deadlineMinutes - currentMinutes;
-  const isPast = diff <= 0;
-  const requireApproval = isPast && !isAuthorized && allowLateWithApproval;
-
-  let formattedTimeLeft = '';
-  if (isPast) {
-    formattedTimeLeft = isAuthorized ? 'Autorizada pelo Treinador' : (requireApproval ? 'Requer aprovação do treinador' : 'Prazo expirado');
-  } else if (diff < 60) {
-    formattedTimeLeft = `restam ${diff} min`;
-  } else {
-    const hLeft = Math.floor(diff / 60);
-    const mLeft = diff % 60;
-    formattedTimeLeft = mLeft > 0 ? `restam ${hLeft}h ${mLeft}m` : `restam ${hLeft}h`;
-  }
-
   return {
-    hasDeadline: true,
-    isPast,
-    strictBlock: effectiveStrictBlock,
-    isAuthorizedLate: isAuthorized,
-    allowLateWithApproval,
-    requireApproval,
-    deadlineTime: effective.deadlineTime,
-    minutesLeft: diff,
-    minutesRemaining: diff,
-    formattedTimeLeft,
-    effectiveInfo: effective,
+    hasDeadline: false,
+    isPast: false,
+    strictBlock: false,
+    isAuthorizedLate: true,
+    allowLateWithApproval: false,
+    requireApproval: false,
+    deadlineTime: '23:59',
+    minutesLeft: 9999,
+    minutesRemaining: 9999,
+    formattedTimeLeft: 'Sem limite de horário',
+    effectiveInfo: {
+      hasDeadline: false,
+      deadlineTime: '23:59',
+      isMatchDay: false,
+      isTrainingDay: false,
+      isRestDay: false,
+      isCustom: false,
+      isRelativeToSession: false,
+      sourceDescription: 'Sem restrições de horários (Sempre disponível)',
+    },
   };
 }
 

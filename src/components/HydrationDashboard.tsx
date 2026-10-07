@@ -26,6 +26,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
   // Step state: 'pre' (before training) | 'post' (after training) | 'completed' (both done)
   const [step, setStep] = useState<'pre' | 'post' | 'completed'>('pre');
   const [savedPreWeight, setSavedPreWeight] = useState<number | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
 
   const [currentResult, setCurrentResult] = useState<HydrationEntry | null>(null);
   const [history, setHistory] = useState<HydrationEntry[]>([]);
@@ -39,15 +40,19 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
   // Initialize and detect athlete state for today on mount
   useEffect(() => {
     let isMounted = true;
+    let initialSyncDone = false;
 
-    const syncAndApplyData = (list: HydrationEntry[]) => {
+    const syncAndApplyData = (list: HydrationEntry[], isInitial = false) => {
       if (!isMounted) return;
       setHistory(list);
 
       const todayEntry = list.find((item) => item.date === todayStr);
 
       if (todayEntry) {
-        if (Number(todayEntry.postWeight) > 0) {
+        const hasPost = Number(todayEntry.postWeight) > 0;
+        const preVal = Number(todayEntry.preWeight);
+
+        if (hasPost) {
           // Both pre and post completed
           const calc = calculateHydrationStatus(
             todayEntry.preWeight,
@@ -60,36 +65,44 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
             recommendation: calc.recommendation,
             biologicalImpact: calc.biologicalImpact,
           });
-          setPreWeight(todayEntry.preWeight.toString());
-          setPostWeight(todayEntry.postWeight.toString());
-          setSavedPreWeight(Number(todayEntry.preWeight));
-          setStep('completed');
-          setActiveSubTab('post');
+          setSavedPreWeight(preVal);
+          if (isInitial || !initialSyncDone) {
+            setPreWeight(todayEntry.preWeight.toString());
+            setPostWeight(todayEntry.postWeight.toString());
+            setFluidsIntake((todayEntry.fluidsIntake || 0.5).toString());
+            setDurationMin((todayEntry.durationMin || 90).toString());
+            setStep('completed');
+            setActiveSubTab('post');
+          }
         } else {
           // Pre-weight saved, waiting for post-weight
-          setSavedPreWeight(Number(todayEntry.preWeight));
-          setPreWeight(todayEntry.preWeight.toString());
-          setPostWeight((Number(todayEntry.preWeight) - 0.8).toFixed(2));
-          setStep('post');
-          setActiveSubTab('post');
+          setSavedPreWeight(preVal);
+          if (isInitial || !initialSyncDone) {
+            setPreWeight(todayEntry.preWeight.toString());
+            setPostWeight((preVal - 0.8).toFixed(2));
+            setStep('post');
+            setActiveSubTab('post');
+          }
         }
-      } else if (list.length > 0) {
-        const last = list[0];
-        setPreWeight(last.preWeight.toString());
-        setPostWeight((Number(last.preWeight) - 0.8).toFixed(2));
+      } else if (isInitial || !initialSyncDone) {
+        if (list.length > 0) {
+          const last = list[0];
+          setPreWeight(last.preWeight.toString());
+          setPostWeight((Number(last.preWeight) - 0.8).toFixed(2));
+        }
         setSavedPreWeight(null);
         setStep('pre');
         setActiveSubTab('pre');
-      } else {
-        setSavedPreWeight(null);
-        setStep('pre');
-        setActiveSubTab('pre');
+      }
+
+      if (isInitial) {
+        initialSyncDone = true;
       }
     };
 
     // 1. Initial render from local storage
     const initialList = getHydrationLocally(activeAthlete.id);
-    syncAndApplyData(initialList);
+    syncAndApplyData(initialList, true);
 
     // 2. Async fetch from Supabase to sync remote entries
     const fetchRemote = () => {
@@ -102,7 +115,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
               saveHydrationLocally(item);
             });
             const updatedList = getHydrationLocally(activeAthlete.id);
-            syncAndApplyData(updatedList);
+            syncAndApplyData(updatedList, false);
           }
         })
         .catch(() => {});
@@ -112,7 +125,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
 
     const handleDataUpdate = () => {
       const updatedList = getHydrationLocally(activeAthlete.id);
-      syncAndApplyData(updatedList);
+      syncAndApplyData(updatedList, false);
     };
 
     const interval = setInterval(() => {
@@ -162,6 +175,11 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     const list = getHydrationLocally(activeAthlete.id);
     const existingEntry = list.find((item) => item.date === todayStr);
 
+    const hasPost = existingEntry && Number(existingEntry.postWeight) > 0;
+    const postVal = hasPost ? Number(existingEntry.postWeight) : 0;
+    const fluidsVal = hasPost ? Number(existingEntry.fluidsIntake || 0.5) : 0;
+    const calc = hasPost ? calculateHydrationStatus(pre, postVal, fluidsVal, language) : null;
+
     const partialEntry: HydrationEntry = {
       id: existingEntry?.id || `hyd-${todayStr}-${activeAthlete.id}`,
       athleteId: activeAthlete.id,
@@ -169,14 +187,14 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       date: todayStr,
       durationMin: existingEntry?.durationMin || 90,
       preWeight: pre,
-      postWeight: existingEntry?.postWeight || 0,
-      fluidsIntake: existingEntry?.fluidsIntake || 0,
-      weightLoss: existingEntry?.weightLoss || 0,
-      dehydrationRate: existingEntry?.dehydrationRate || 0,
-      status: existingEntry?.status || 'Pendente',
-      refillNeededLiters: existingEntry?.refillNeededLiters || 0,
-      recommendation: existingEntry?.recommendation || 'Peso Matinal / Pré-Treino registado. Conclui a pesagem no final do treino.',
-      biologicalImpact: existingEntry?.biologicalImpact || 'Aguardando pesagem pós-treino',
+      postWeight: postVal,
+      fluidsIntake: fluidsVal,
+      weightLoss: calc ? calc.weightLoss : 0,
+      dehydrationRate: calc ? calc.dehydrationRate : 0,
+      status: calc ? calc.status : 'Pendente',
+      refillNeededLiters: calc ? calc.refillNeededLiters : 0,
+      recommendation: calc ? calc.recommendation : 'Peso Matinal / Pré-Treino registado. Conclui a pesagem no final do treino.',
+      biologicalImpact: calc ? calc.biologicalImpact : 'Aguardando pesagem pós-treino',
       preWeightTime: existingEntry?.preWeightTime || existingEntry?.submittedAtPre || nowIso,
       submittedAtPre: existingEntry?.submittedAtPre || existingEntry?.preWeightTime || nowIso,
       postWeightTime: existingEntry?.postWeightTime || undefined,
@@ -199,14 +217,24 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     }).catch(() => {});
 
     setSavedPreWeight(pre);
-    if (!existingEntry || !existingEntry.postWeight || existingEntry.postWeight === 0) {
-      setPostWeight((pre - 0.8).toFixed(2));
-      setStep('post');
-      setActiveSubTab('post');
+    if (hasPost && calc) {
+      setCurrentResult({
+        ...partialEntry,
+        recommendation: calc.recommendation,
+        biologicalImpact: calc.biologicalImpact,
+      });
+      setStep('completed');
+      setFeedbackMsg(`✅ Peso Matinal / Pré-Treino atualizado para ${pre} kg! Métricas de hidratação recalculadas.`);
+    } else {
+      if (!existingEntry || !existingEntry.postWeight || existingEntry.postWeight === 0) {
+        setPostWeight((pre - 0.8).toFixed(2));
+        setStep('post');
+        setActiveSubTab('post');
+      }
+      setFeedbackMsg(`✅ Peso Matinal / Pré-Treino de ${pre} kg registado com sucesso!`);
     }
     setIsSubmitting(false);
-
-    setFeedbackMsg(`✅ Peso Matinal / Pré-Treino de ${pre} kg registado com sucesso!`);
+    setIsEditing(false);
     setTimeout(() => setFeedbackMsg(null), 6000);
   };
 
@@ -240,7 +268,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     const nowIso = new Date().toISOString();
 
     const fullEntry: HydrationEntry = {
-      id: `hyd-${todayStr}-${activeAthlete.id}`,
+      id: todayEntry?.id || `hyd-${todayStr}-${activeAthlete.id}`,
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: todayStr,
@@ -286,9 +314,10 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
     setCurrentResult(fullEntry);
     setSavedPreWeight(pre);
     setStep('completed');
+    setIsEditing(false);
     setIsSubmitting(false);
 
-    setFeedbackMsg(`🏆 Pesagem Pós-Treino concluída com sucesso! Perda: ${calc.weightLoss} kg | Taxa: ${calc.dehydrationRate}% | Reposição: ${calc.refillNeededLiters.toFixed(2)} L.`);
+    setFeedbackMsg(`🏆 Pesagem guardada com sucesso! Pré: ${pre} kg | Pós: ${post} kg | Perda: ${calc.weightLoss} kg | Taxa: ${calc.dehydrationRate}%.`);
     setTimeout(() => setFeedbackMsg(null), 6000);
   };
 
@@ -358,37 +387,6 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
         </div>
       </div>
 
-      {/* Sub-Tab Navigation for Pre vs Post Weigh-in */}
-      <div className="grid grid-cols-2 gap-2 rounded-xl bg-dark-surface p-1 border border-slate-800">
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('pre')}
-          className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all ${
-            activeSubTab === 'pre'
-              ? 'bg-cyan-500 text-slate-950 shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Scale className="h-4 w-4" />
-          <span>1. Peso Matinal / Pré</span>
-          {savedPreWeight !== null && <span className="ml-1 text-[10px]">✅</span>}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveSubTab('post')}
-          className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all ${
-            activeSubTab === 'post'
-              ? 'bg-amber-500 text-slate-950 shadow-md'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Droplet className="h-4 w-4" />
-          <span>2. Peso Pós-Treino</span>
-          {step === 'completed' && <span className="ml-1 text-[10px]">✅</span>}
-        </button>
-      </div>
-
       {feedbackMsg && (
         <div className="flex items-center space-x-2 rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-xs font-extrabold text-emerald-300 animate-fade-in">
           <Sparkles className="h-5 w-5 text-emerald-400 shrink-0" />
@@ -396,8 +394,60 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
         </div>
       )}
 
+      {/* Editing Mode Banner */}
+      {isEditing && (
+        <div className="flex items-center justify-between p-3.5 rounded-xl bg-cyan-950/60 border border-cyan-500/50 text-xs shadow-md animate-fade-in">
+          <div className="flex items-center space-x-2 text-cyan-300 font-extrabold">
+            <Pencil className="h-4 w-4 text-cyan-400 shrink-0" />
+            <span>Modo de Alteração de Valores Ativo. Podes alterar qualquer peso ou dados e gravar.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsEditing(false)}
+            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-all cursor-pointer shrink-0 ml-2"
+          >
+            Cancelar Edição
+          </button>
+        </div>
+      )}
+
+      {/* Sub-Tab Navigation & Form (Visible when not completed OR when actively editing) */}
+      {(step !== 'completed' || isEditing) && (
+        <>
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-dark-surface p-1 border border-slate-800">
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('pre')}
+              className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                activeSubTab === 'pre'
+                  ? 'bg-cyan-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Scale className="h-4 w-4" />
+              <span>1. Peso Matinal / Pré</span>
+              {savedPreWeight !== null && <span className="ml-1 text-[10px]">✅</span>}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('post')}
+              className={`flex items-center justify-center space-x-2 py-2.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer ${
+                activeSubTab === 'post'
+                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Droplet className="h-4 w-4" />
+              <span>2. Peso Pós-Treino</span>
+              {step === 'completed' && <span className="ml-1 text-[10px]">✅</span>}
+            </button>
+          </div>
+        </>
+      )}
+
       {/* STAGE 1: Pre-Training / Morning Weight */}
-      {activeSubTab === 'pre' && (
+      {(step !== 'completed' || isEditing) && activeSubTab === 'pre' && (
         <form onSubmit={handlePreWeightSubmit} className="space-y-5 rounded-2xl border border-cyan-500/50 bg-dark-card p-5 shadow-2xl animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-cyan-400">
@@ -481,7 +531,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       )}
 
       {/* STAGE 2: Post-Training Weight (À Saída) */}
-      {activeSubTab === 'post' && (
+      {(step !== 'completed' || isEditing) && activeSubTab === 'post' && (
         <form onSubmit={handlePostWeightSubmit} className="space-y-5 rounded-2xl border border-amber-500/50 bg-dark-card p-5 shadow-2xl animate-fade-in">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div className="flex items-center space-x-2 text-amber-400">
@@ -647,7 +697,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       )}
 
       {/* COMPLETED STATE: Display Full Analysis */}
-      {step === 'completed' && currentResult && (
+      {step === 'completed' && !isEditing && currentResult && (
         <div className="space-y-4 animate-fade-in">
           <div
             className={`rounded-2xl border p-5 shadow-2xl transition-all ${
@@ -743,13 +793,15 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
                   setPreWeight(currentResult.preWeight.toString());
                   setPostWeight(currentResult.postWeight.toString());
                   setFluidsIntake(currentResult.fluidsIntake.toString());
+                  setDurationMin((currentResult.durationMin || 90).toString());
                   setSavedPreWeight(currentResult.preWeight);
-                  setStep('post');
+                  setIsEditing(true);
+                  setActiveSubTab('post');
                 }}
-                className="flex items-center space-x-1.5 text-xs font-bold text-cyan-300 hover:text-cyan-200 bg-cyan-500/20 border border-cyan-500/40 px-3.5 py-2 rounded-xl transition-all active:scale-95"
+                className="flex items-center space-x-2 text-xs font-bold text-slate-950 hover:text-black bg-cyan-400 hover:bg-cyan-300 px-4 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer font-black"
               >
-                <Pencil className="h-3.5 w-3.5" />
-                <span>✏️ Editar Pesagem de Hoje</span>
+                <Pencil className="h-4 w-4" />
+                <span>✏️ Alterar / Editar Valores da Pesagem</span>
               </button>
             </div>
           </div>

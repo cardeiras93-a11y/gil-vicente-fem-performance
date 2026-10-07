@@ -162,6 +162,15 @@ export async function GET(request: Request) {
     }
 
     result.activationCode = result.activationCode || 'GVFC2026@';
+    result.deadlineConfig = {
+      ...(result.deadlineConfig || {}),
+      enabled: false,
+      strictBlock: false,
+      applyToWellness: false,
+      applyToRpe: false,
+      applyToHydration: false,
+      allowLateWithApproval: false,
+    };
 
     return NextResponse.json(
       { success: true, data: result },
@@ -255,7 +264,15 @@ export async function POST(request: Request) {
       current.reminderConfig = body.reminderConfig;
     }
     if (body.deadlineConfig !== undefined) {
-      current.deadlineConfig = body.deadlineConfig;
+      current.deadlineConfig = {
+        ...body.deadlineConfig,
+        enabled: false,
+        strictBlock: false,
+        applyToWellness: false,
+        applyToRpe: false,
+        applyToHydration: false,
+        allowLateWithApproval: false,
+      };
     }
 
     current.activationCode = current.activationCode || 'GVFC2026@';

@@ -294,80 +294,38 @@ export const ReminderBanner: React.FC<ReminderBannerProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('wellness')}
-          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer ${
             status.hasWellness
               ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
-              : wellnessDeadline.hasDeadline && wellnessDeadline.isPast && wellnessDeadline.strictBlock
-              ? 'border-rose-500/40 bg-rose-950/20 text-rose-300'
               : 'border-amber-500/40 bg-amber-950/20 text-amber-300 font-extrabold'
           }`}
         >
           <span className="text-[10px] font-bold text-slate-400">1. Wellness</span>
           <span className="text-xs font-black">
-            {status.hasWellness
-              ? '✅ Preenchido'
-              : wellnessDeadline.hasDeadline && wellnessDeadline.isPast && wellnessDeadline.strictBlock
-              ? '🔒 Fechado'
-              : wellnessDeadline.isAuthorizedLate
-              ? '🔓 Autorizada'
-              : '❌ Pendente'}
+            {status.hasWellness ? '✅ Preenchido' : '❌ Pendente'}
           </span>
-          {!status.hasWellness && wellnessDeadline.hasDeadline && (
-            <span className={`text-[9px] font-semibold mt-0.5 ${
-              wellnessDeadline.isAuthorizedLate
-                ? 'text-emerald-400'
-                : wellnessDeadline.isPast
-                ? 'text-rose-400'
-                : 'text-emerald-400'
-            }`}>
-              {wellnessDeadline.isAuthorizedLate
-                ? 'Pós-prazo permitido'
-                : wellnessDeadline.isPast
-                ? `Expirou (${wellnessDeadline.deadlineTime})`
-                : `Até às ${wellnessDeadline.deadlineTime}`}
-            </span>
-          )}
+          <span className="text-[9px] font-bold text-slate-400 mt-0.5">
+            Sem limite horário
+          </span>
         </button>
 
         {/* RPE Status */}
         <button
           type="button"
           onClick={() => onSelectTab('rpe')}
-          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+          className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer ${
             status.hasRPE
-              ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
-              : rpeDeadline.hasDeadline && rpeDeadline.isPast && rpeDeadline.strictBlock
-              ? 'border-rose-500/40 bg-rose-950/20 text-rose-300'
-              : rpeDeadline.isAuthorizedLate
               ? 'border-emerald-500/40 bg-emerald-950/20 text-emerald-300'
               : 'border-amber-500/40 bg-amber-950/20 text-amber-300 font-extrabold'
           }`}
         >
           <span className="text-[10px] font-bold text-slate-400">2. PSE (RPE)</span>
           <span className="text-xs font-black">
-            {status.hasRPE
-              ? '✅ Preenchido'
-              : rpeDeadline.hasDeadline && rpeDeadline.isPast && rpeDeadline.strictBlock
-              ? '🔒 Fechado'
-              : rpeDeadline.isAuthorizedLate
-              ? '🔓 Autorizada'
-              : '❌ Pendente'}
+            {status.hasRPE ? '✅ Preenchido' : '❌ Pendente'}
           </span>
-          {!status.hasRPE && rpeDeadline.hasDeadline && (
-            <span className={`text-[9px] font-semibold mt-0.5 ${
-              rpeDeadline.isAuthorizedLate
-                ? 'text-emerald-400'
-                : rpeDeadline.isPast
-                ? 'text-rose-400'
-                : 'text-emerald-400'
-            }`}>
-              {rpeDeadline.isAuthorizedLate
-                ? 'Pós-prazo permitido'
-                : rpeDeadline.isPast
-                ? `Expirou (${rpeDeadline.deadlineTime})`
-                : `Até às ${rpeDeadline.deadlineTime}`}
-            </span>
-          )}
+          <span className="text-[9px] font-bold text-slate-400 mt-0.5">
+            Sem limite horário
+          </span>
         </button>
 
         {/* Hydration Status */}

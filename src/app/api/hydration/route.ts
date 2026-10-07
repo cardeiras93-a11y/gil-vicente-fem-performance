@@ -165,8 +165,8 @@ export async function POST(request: Request) {
       fluidsIntake,
     } = body;
 
-    if (!athleteId || preWeight === undefined || postWeight === undefined) {
-      return NextResponse.json({ error: 'Pesos pré e pós-treino são obrigatórios' }, { status: 400 });
+    if (!athleteId || preWeight === undefined) {
+      return NextResponse.json({ error: 'Identificação da atleta e peso pré-treino são obrigatórios' }, { status: 400 });
     }
 
     const parseVal = (v: any): number => {
@@ -177,14 +177,32 @@ export async function POST(request: Request) {
     };
 
     const numPre = parseVal(preWeight);
-    const numPost = parseVal(postWeight);
-    const numFluids = parseVal(fluidsIntake);
+    let numPost = parseVal(postWeight);
+    let numFluids = parseVal(fluidsIntake);
+    const entryDate = date || new Date().toISOString().split('T')[0];
+    const targetId = body.id || `hyd-${entryDate}-${athleteId}`;
+
+    // If post-weight not supplied, check if existing record already has post-weight so we don't erase it
+    if (numPost <= 0 && isSupabaseConfigured && supabase) {
+      try {
+        const { data: existingRow } = await supabase
+          .from('hydration_entries')
+          .select('*')
+          .eq('id', targetId)
+          .single();
+        if (existingRow && Number(existingRow.post_weight) > 0) {
+          numPost = Number(existingRow.post_weight);
+          if (numFluids <= 0 && Number(existingRow.fluids_intake) > 0) {
+            numFluids = Number(existingRow.fluids_intake);
+          }
+        }
+      } catch {}
+    }
 
     const calc = calculateHydrationStatus(numPre, numPost, numFluids);
-    const entryDate = date || new Date().toISOString().split('T')[0];
 
     const entryToSave = {
-      id: body.id || `hyd-${entryDate}-${athleteId}`,
+      id: targetId,
       athleteId,
       athleteName,
       date: entryDate,

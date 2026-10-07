@@ -107,12 +107,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
 
     const currentDeadlineCheck = isSubmissionPastDeadline(today, 'rpe', activeAthlete.id);
-    if (currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast && currentDeadlineCheck.strictBlock) {
-      setError(`O horário limite (${currentDeadlineCheck.deadlineTime}) já expirou hoje. A submissão está bloqueada pela equipa técnica.`);
-      setIsSubmitting(false);
-      return;
-    }
-    const isLate = currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast;
+    const isLate = false;
 
     const newEntry: RPEEntry = {
       id: existingToday ? existingToday.id : `rpe-${Date.now()}`,
@@ -363,6 +358,26 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         </div>
       </div>
 
+      {/* Editing Mode Banner */}
+      {allowEdit && existingToday && (
+        <div className="rounded-xl bg-cyan-500/15 border border-cyan-500/40 p-3.5 flex items-center justify-between text-xs text-cyan-200 animate-fade-in shadow-sm">
+          <div className="flex items-center space-x-2">
+            <span className="text-base shrink-0">✏️</span>
+            <div>
+              <span className="font-extrabold text-cyan-100">Modo de Edição Ativo</span>
+              <p className="text-[11px] text-cyan-200/80">Podes alterar a tua avaliação de esforço/fadiga e guardar novamente.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setAllowEdit(false)}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-[11px] transition-all cursor-pointer shrink-0"
+          >
+            Cancelar Edição
+          </button>
+        </div>
+      )}
+
       {/* Deadline Warning / Special Authorization Banner */}
       {deadlineCheck.hasDeadline && deadlineCheck.isPast && !deadlineCheck.strictBlock && (
         deadlineCheck.isAuthorizedLate ? (
@@ -591,6 +606,8 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       >
         {isSubmitting
           ? t.rpe.submitting
+          : allowEdit
+          ? '💾 Guardar Alterações do PSE (RPE)'
           : deadlineCheck.requireApproval
           ? 'Submeter Questionário (Sujeito a Validação)'
           : t.rpe.submit}

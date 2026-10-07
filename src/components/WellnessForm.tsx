@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Athlete, MenstrualCyclePhase, MuscleFatigueMap, WellnessEntry, HydrationEntry } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
+import { calculateHydrationStatus } from '@/lib/data';
 import { saveWellnessLocally, getWellnessLocally, saveHydrationLocally, getHydrationLocally, isSubmissionPastDeadline } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese } from '@/lib/translationUtils';
@@ -55,20 +56,23 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   const [todayHydration, setTodayHydration] = useState<HydrationEntry | null>(null);
   const [quickWeightFeedback, setQuickWeightFeedback] = useState<string | null>(null);
   const [isSavingQuickWeight, setIsSavingQuickWeight] = useState<boolean>(false);
+  const hasUserEditedWeight = React.useRef<boolean>(false);
 
-  const syncHydrationWeight = () => {
+  const syncHydrationWeight = (force = false) => {
     const hydEntries = getHydrationLocally(activeAthlete.id);
     const todayH = hydEntries.find((h) => h.date === todayStr);
     setTodayHydration(todayH || null);
 
-    if (todayH && Number(todayH.preWeight) > 0) {
-      setMorningWeight(todayH.preWeight.toString());
-    } else if (existingToday?.morningWeight) {
-      setMorningWeight(existingToday.morningWeight.toString());
-    } else if (hydEntries.length > 0 && Number(hydEntries[0].preWeight) > 0) {
-      setMorningWeight(hydEntries[0].preWeight.toString());
-    } else {
-      setMorningWeight('62.5');
+    if (force || !hasUserEditedWeight.current) {
+      if (todayH && Number(todayH.preWeight) > 0) {
+        setMorningWeight(todayH.preWeight.toString());
+      } else if (existingToday?.morningWeight) {
+        setMorningWeight(existingToday.morningWeight.toString());
+      } else if (hydEntries.length > 0 && Number(hydEntries[0].preWeight) > 0) {
+        setMorningWeight(hydEntries[0].preWeight.toString());
+      } else {
+        setMorningWeight('62.5');
+      }
     }
   };
 
@@ -78,10 +82,11 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       const found = localEntries.find((e) => e.date === todayStr) || null;
       setExistingToday(found);
       setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id));
-      syncHydrationWeight();
+      syncHydrationWeight(false);
     };
 
     refreshData();
+    syncHydrationWeight(true);
 
     // Sincronização direta e instantânea com Supabase para garantir que submissões feitas noutro dispositivo aparecem no telemóvel
     secureFetch(`/api/wellness?athleteId=${activeAthlete.id}&t=${Date.now()}`)
@@ -120,6 +125,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
   }, [activeAthlete.id, todayStr]);
 
   const adjustWeight = (delta: number) => {
+    hasUserEditedWeight.current = true;
     const current = parseFloat((morningWeight || '62.0').replace(',', '.')) || 62.0;
     const updated = Math.max(30, Number((current + delta).toFixed(2)));
     setMorningWeight(updated.toString());
@@ -131,6 +137,11 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     const hydEntries = getHydrationLocally(activeAthlete.id);
     const existingH = hydEntries.find((h) => h.date === todayStr);
 
+    const hasPost = existingH && Number(existingH.postWeight) > 0;
+    const postVal = hasPost ? Number(existingH.postWeight) : 0;
+    const fluidsVal = hasPost ? Number(existingH.fluidsIntake || 0.5) : 0;
+    const calc = hasPost ? calculateHydrationStatus(weightVal, postVal, fluidsVal, 'pt') : null;
+
     const partialEntry: HydrationEntry = {
       id: existingH?.id || `hyd-${todayStr}-${activeAthlete.id}`,
       athleteId: activeAthlete.id,
@@ -138,18 +149,18 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       date: todayStr,
       durationMin: existingH?.durationMin || 90,
       preWeight: weightVal,
-      postWeight: existingH?.postWeight || 0,
-      fluidsIntake: existingH?.fluidsIntake || 0,
-      weightLoss: existingH?.weightLoss || 0,
-      dehydrationRate: existingH?.dehydrationRate || 0,
-      status: existingH?.status || 'Pendente',
-      refillNeededLiters: existingH?.refillNeededLiters || 0,
-      recommendation: existingH?.recommendation || 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
-      biologicalImpact: existingH?.biologicalImpact || 'Aguardando pesagem pós-treino',
+      postWeight: postVal,
+      fluidsIntake: fluidsVal,
+      weightLoss: calc ? calc.weightLoss : 0,
+      dehydrationRate: calc ? calc.dehydrationRate : 0,
+      status: calc ? calc.status : 'Pendente',
+      refillNeededLiters: calc ? calc.refillNeededLiters : 0,
+      recommendation: calc ? calc.recommendation : 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
+      biologicalImpact: calc ? calc.biologicalImpact : 'Aguardando pesagem pós-treino',
       preWeightTime: existingH?.preWeightTime || existingH?.submittedAtPre || nowIso,
       submittedAtPre: existingH?.submittedAtPre || existingH?.preWeightTime || nowIso,
-      postWeightTime: existingH?.postWeightTime || undefined,
-      submittedAtPost: existingH?.submittedAtPost || undefined,
+      postWeightTime: existingH?.postWeightTime,
+      submittedAtPost: existingH?.submittedAtPost,
       createdAt: existingH?.createdAt || nowIso,
     };
 
@@ -171,7 +182,23 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       }).catch(() => {});
     } catch {}
 
+    // ALSO update existingToday in wellness if present so both are synchronized
+    if (existingToday) {
+      const updatedWellness: WellnessEntry = {
+        ...existingToday,
+        morningWeight: weightVal,
+      };
+      saveWellnessLocally(updatedWellness);
+      setExistingToday(updatedWellness);
+      secureFetch('/api/wellness', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedWellness),
+      }).catch(() => {});
+    }
+
     setTodayHydration(partialEntry);
+    hasUserEditedWeight.current = false;
     return partialEntry;
   };
 
@@ -231,12 +258,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     const translatedReason = needsPhysio && physioReason.trim() ? translateTextToPortuguese(physioReason.trim()) : undefined;
 
     const currentDeadlineCheck = isSubmissionPastDeadline(today, 'wellness', activeAthlete.id);
-    if (currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast && currentDeadlineCheck.strictBlock) {
-      setError(`O horário limite (${currentDeadlineCheck.deadlineTime}) já expirou hoje. A submissão está bloqueada pela equipa técnica.`);
-      setIsSubmitting(false);
-      return;
-    }
-    const isLate = currentDeadlineCheck.hasDeadline && currentDeadlineCheck.isPast;
+    const isLate = false;
 
     const parsedWeight = parseFloat((morningWeight || '').replace(',', '.'));
     const validWeight = !isNaN(parsedWeight) && parsedWeight > 0 ? parsedWeight : undefined;
@@ -634,148 +656,13 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         </div>
 
         <div className="pt-2">
-          {deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock ? (
-            <div className="w-full text-center text-xs font-semibold text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center justify-center space-x-1.5">
-              <Lock className="h-4 w-4 text-slate-400" />
-              <span>Edição do questionário fechada após as {deadlineCheck.deadlineTime}</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleEditClick}
-              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
-            >
-              <span>✏️ Rever ou Atualizar Respostas</span>
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (!existingToday && deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock) {
-    return (
-      <div className="rounded-2xl border border-rose-500/40 bg-dark-card p-6 space-y-4 shadow-xl animate-fade-in">
-        <div className="text-center space-y-3">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-lg shadow-rose-500/10">
-            <Lock className="h-7 w-7 stroke-[2.5]" />
-          </div>
-          <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
-              Horário Limite Ultrapassado
-            </span>
-            <h2 className="text-lg font-black text-slate-100">Questionário Wellness Fechado</h2>
-            <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1">
-              A hora limite para o preenchimento do Wellness ({deadlineCheck.deadlineTime}) já expirou hoje.
-            </p>
-          </div>
-        </div>
-
-        {/* Card Dedicado para registar o Peso Matinal mesmo com Wellness fechado */}
-        <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 via-dark-surface to-dark-card p-4 space-y-3 shadow-md text-left">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                <Scale className="h-4 w-4" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
-                  Registar Peso Matinal / Pré-Treino ({todayStr})
-                </span>
-                <div className="text-[9px] font-bold text-emerald-400">
-                  🔓 Sem restrições de horário • Registo sempre disponível
-                </div>
-                <h4 className="text-xs font-bold text-slate-200 mt-0.5">
-                  {todayHydration && Number(todayHydration.preWeight) > 0
-                    ? `Peso registado: ${todayHydration.preWeight} kg`
-                    : 'Podes registar o teu peso aqui a qualquer hora:'}
-                </h4>
-              </div>
-            </div>
-
-            {todayHydration && Number(todayHydration.preWeight) > 0 ? (
-              <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                ✅ {todayHydration.preWeight} kg
-              </span>
-            ) : (
-              <span className="text-xs font-black text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-500/30 animate-pulse">
-                ⚠️ Pendente
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => adjustWeight(-0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.5
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustWeight(-0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.1
-              </button>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={morningWeight}
-                onChange={(e) => setMorningWeight(e.target.value)}
-                placeholder="62.5"
-                className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
-              />
-              <button
-                type="button"
-                onClick={() => adjustWeight(0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.1
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustWeight(0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.5
-              </button>
-            </div>
-
-            <button
-              type="button"
-              disabled={isSavingQuickWeight}
-              onClick={async () => {
-                const num = parseFloat((morningWeight || '').replace(',', '.'));
-                if (num > 0) {
-                  setIsSavingQuickWeight(true);
-                  await saveMorningWeightToHydration(num);
-                  setIsSavingQuickWeight(false);
-                  setQuickWeightFeedback(`✅ Peso matinal de ${num} kg registado com sucesso!`);
-                  setTimeout(() => setQuickWeightFeedback(null), 5000);
-                }
-              }}
-              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md active:scale-98"
-            >
-              <Scale className="h-4 w-4" />
-              <span>
-                {isSavingQuickWeight
-                  ? 'A guardar...'
-                  : todayHydration && Number(todayHydration.preWeight) > 0
-                  ? 'Atualizar Peso Matinal'
-                  : 'Gravar Peso Matinal Agora'}
-              </span>
-            </button>
-
-            {quickWeightFeedback && (
-              <div className="flex items-center justify-center space-x-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold animate-fade-in">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>{quickWeightFeedback}</span>
-              </div>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={handleEditClick}
+            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer"
+          >
+            <span>✏️ Rever ou Atualizar Respostas</span>
+          </button>
         </div>
       </div>
     );
@@ -821,6 +708,29 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Editing Mode Banner */}
+      {allowEdit && existingToday && (
+        <div className="rounded-xl bg-amber-500/15 border border-amber-500/40 p-3.5 flex items-center justify-between text-xs text-amber-200 animate-fade-in shadow-sm">
+          <div className="flex items-center space-x-2">
+            <span className="text-base shrink-0">✏️</span>
+            <div>
+              <span className="font-extrabold text-amber-100">Modo de Edição Ativo</span>
+              <p className="text-[11px] text-amber-200/80">Podes alterar qualquer resposta ou valor e guardar novamente.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setAllowEdit(false);
+              hasUserEditedWeight.current = false;
+            }}
+            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-[11px] transition-all cursor-pointer shrink-0"
+          >
+            Cancelar Edição
+          </button>
+        </div>
+      )}
 
       {/* Deadline Warning / Special Authorization Banner */}
       {deadlineCheck.hasDeadline && deadlineCheck.isPast && !deadlineCheck.strictBlock && (
@@ -921,7 +831,10 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
               type="text"
               inputMode="decimal"
               value={morningWeight}
-              onChange={(e) => setMorningWeight(e.target.value)}
+              onChange={(e) => {
+                hasUserEditedWeight.current = true;
+                setMorningWeight(e.target.value);
+              }}
               placeholder="ex: 62.5"
               className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
             />
@@ -1074,6 +987,8 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       >
         {isSubmitting
           ? t.wellness.submitting
+          : allowEdit
+          ? '💾 Guardar Alterações do Questionário'
           : deadlineCheck.requireApproval
           ? 'Submeter Questionário (Sujeito a Validação)'
           : t.wellness.submit}
