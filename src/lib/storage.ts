@@ -1328,15 +1328,15 @@ export function compressImageFile(file: File, callback: (dataUrl: string) => voi
 // ---------------------------------------------------------------------------
 
 export const DEFAULT_DEADLINE_CONFIG: QuestionnaireDeadlinesConfig = {
-  enabled: true,
+  enabled: false,
   mode: 'fixed',
   defaultRegularTime: '08:15',
   defaultMatchTime: '11:00',
   relativeMinutesBeforeSession: 60,
-  strictBlock: true,
+  strictBlock: false,
   allowLateWithApproval: false,
-  applyToWellness: true,
-  applyToRpe: true,
+  applyToWellness: false,
+  applyToRpe: false,
   applyToHydration: false,
   wellnessRegularTime: '08:15',
   wellnessMatchTime: '11:00',
@@ -1359,8 +1359,12 @@ export function getStoredDeadlineConfig(): QuestionnaireDeadlinesConfig {
     return {
       ...DEFAULT_DEADLINE_CONFIG,
       ...parsed,
-      strictBlock: parsed.strictBlock !== undefined ? Boolean(parsed.strictBlock) : true,
-      allowLateWithApproval: parsed.allowLateWithApproval ? true : false,
+      enabled: false, // Sempre disponível
+      strictBlock: false, // NUNCA bloquear
+      allowLateWithApproval: false,
+      applyToWellness: false,
+      applyToRpe: false,
+      applyToHydration: false,
       customDateDeadlines: {
         ...(DEFAULT_DEADLINE_CONFIG.customDateDeadlines || {}),
         ...(parsed.customDateDeadlines || {}),
@@ -1719,9 +1723,9 @@ export function isSubmissionPastDeadline(
   // - If strictBlock is true: player is strictly blocked from filling/submitting (unless authorized VIP)
   // - If allowLateWithApproval is true and strictBlock is false: player can submit, but requires coach approval
   // - Otherwise: player can submit directly with late tag
-  const isStrictBlock = Boolean(config.strictBlock);
-  const allowLateWithApproval = !isStrictBlock && Boolean(config.allowLateWithApproval);
-  const effectiveStrictBlock = isAuthorized ? false : isStrictBlock;
+  const isStrictBlock = false;
+  const allowLateWithApproval = false;
+  const effectiveStrictBlock = false;
 
   if (!config.enabled || !effective.hasDeadline) {
     return {

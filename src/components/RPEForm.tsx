@@ -297,48 +297,13 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         </div>
 
         <div className="pt-2">
-          {deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock ? (
-            <div className="w-full text-center text-xs font-semibold text-slate-400 bg-slate-900/60 p-3 rounded-xl border border-slate-800 flex items-center justify-center space-x-1.5">
-              <Lock className="h-4 w-4 text-slate-400" />
-              <span>Edição bloqueada após as {deadlineCheck.deadlineTime}</span>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleEditClick}
-              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
-            >
-              <span>✏️ Rever ou Atualizar Respostas</span>
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  if (!existingToday && deadlineCheck.hasDeadline && deadlineCheck.isPast && deadlineCheck.strictBlock) {
-    return (
-      <div className="rounded-2xl border border-rose-500/40 bg-dark-card p-6 text-center space-y-4 shadow-xl animate-fade-in">
-        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-lg shadow-rose-500/10">
-          <Lock className="h-8 w-8 stroke-[2.5]" />
-        </div>
-        <div className="space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-rose-400">
-            Horário Limite Ultrapassado
-          </span>
-          <h2 className="text-xl font-black text-slate-100">Questionário Fechado</h2>
-          <p className="text-xs text-slate-300 max-w-sm mx-auto">
-            A hora limite para o preenchimento da PSE (RPE) ({deadlineCheck.deadlineTime}) já expirou hoje.
-          </p>
-        </div>
-        <div className="rounded-xl bg-slate-900/90 p-4 border border-slate-800 text-left space-y-2 text-xs">
-          <div className="flex items-center space-x-2 text-rose-300 font-bold">
-            <AlertCircle className="h-4 w-4 shrink-0 text-rose-400" />
-            <span>Submissão Bloqueada pela Equipa Técnica</span>
-          </div>
-          <p className="text-slate-400 text-[11px] leading-relaxed">
-            De acordo com o regulamento de equipa, os questionários não podem ser submetidos após o horário limite. Se tiveste algum impedimento ou problema de conexão, fala diretamente com a equipa técnica.
-          </p>
+          <button
+            type="button"
+            onClick={handleEditClick}
+            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
+          >
+            <span>✏️ Rever ou Atualizar Respostas</span>
+          </button>
         </div>
       </div>
     );
