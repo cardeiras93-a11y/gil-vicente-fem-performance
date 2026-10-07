@@ -797,7 +797,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           }`}
         >
           <Clock className="h-3.5 w-3.5 text-amber-400" />
-          <span>Horários & Limites</span>
+          <span>Horário do Treino</span>
           <span className="ml-1 rounded-full bg-slate-900/60 px-2 py-0.5 text-[10px] text-amber-300 font-extrabold border border-amber-500/30">
             {startTime} - {endTime}
           </span>
@@ -1396,277 +1396,6 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             </div>
           </div>
 
-          {/* 4. Horas Limite de Preenchimento para Este Dia */}
-          <div className="rounded-xl border border-amber-500/40 bg-dark-surface/40 p-4 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
-              <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
-                <Clock className="h-4 w-4 text-amber-400" />
-                <span>4. Horas Limite de Preenchimento para Este Dia ({selectedDate})</span>
-              </label>
-              <span className="text-[11px] text-slate-400">
-                Pode definir horários diferentes para o <strong>Wellness</strong> e para o <strong>PSE</strong>.
-              </span>
-            </div>
-
-            {startTime && (startTime !== '09:00' || dayType === 'match') && (
-              <div className="flex items-center gap-2.5 p-3 rounded-xl bg-cyan-950/30 border border-cyan-500/30 text-cyan-300 text-xs">
-                <span className="text-base shrink-0">⚡</span>
-                <div className="leading-snug">
-                  <span className="font-extrabold text-cyan-200 block">
-                    Horário de {dayType === 'match' ? 'Jogo' : 'Treino'} Específico Ativo ({startTime} - {endTime})
-                  </span>
-                  <span className="text-[11px] text-cyan-300/80">
-                    A regra geral por defeito foi desativada automaticamente para este dia. As horas limite foram adaptadas ao horário deste {dayType === 'match' ? 'jogo' : 'treino'}.
-                  </span>
-                </div>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Wellness Card */}
-              <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
-                    <span>☀️</span>
-                    <span>Wellness (Matinal / Pré-Treino)</span>
-                  </span>
-                  {(() => {
-                    const eff = getEffectiveDeadlineForDate(selectedDate, 'wellness');
-                    return (
-                      <span className="text-[10px] font-black text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-full border border-amber-500/30 whitespace-nowrap">
-                        Ativo: {eff.deadlineTime} ({eff.isCustom ? 'Manual' : eff.isMatchDay ? 'Jogo' : eff.isRelativeToSession ? 'Auto Início' : 'Geral'})
-                      </span>
-                    );
-                  })()}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={customDeadlineWellness}
-                      onChange={(e) => {
-                        setCustomDeadlineWellness(e.target.value);
-                        setCustomDeadline(e.target.value);
-                      }}
-                      className="w-36 rounded-xl border border-amber-500/40 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-amber-400 focus:outline-none"
-                    />
-                    {customDeadlineWellness && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setCustomDeadlineWellness('');
-                          setCustomDeadline('');
-                        }}
-                        className="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                        title="Repor regra geral de Wellness"
-                      >
-                        ✕ Repor Geral
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Shortcuts for Wellness (relative to startTime) */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                    {startTime && startTime.includes(':') && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const [h, m] = startTime.split(':').map(Number);
-                            let target = (h * 60 + m) - 60;
-                            if (target < 0) target = 0;
-                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
-                            const calcM = String(target % 60).padStart(2, '0');
-                            const val = `${calcH}:${calcM}`;
-                            setCustomDeadlineWellness(val);
-                            setCustomDeadline(val);
-                          }}
-                          className="px-2 py-1 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 font-bold hover:bg-amber-900/60 transition-all text-[11px] cursor-pointer"
-                          title={`Calcular 1 hora antes do início (${startTime})`}
-                        >
-                          ⚡ 1h antes ({(() => {
-                            const [h, m] = startTime.split(':').map(Number);
-                            let target = (h * 60 + m) - 60;
-                            if (target < 0) target = 0;
-                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
-                          })()})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const [h, m] = startTime.split(':').map(Number);
-                            let target = (h * 60 + m) - 120;
-                            if (target < 0) target = 0;
-                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
-                            const calcM = String(target % 60).padStart(2, '0');
-                            const val = `${calcH}:${calcM}`;
-                            setCustomDeadlineWellness(val);
-                            setCustomDeadline(val);
-                          }}
-                          className="px-2 py-1 rounded-lg border border-amber-500/40 bg-amber-950/40 text-amber-300 font-bold hover:bg-amber-900/60 transition-all text-[11px] cursor-pointer"
-                          title={`Calcular 2 horas antes do início (${startTime})`}
-                        >
-                          ⚡ 2h antes ({(() => {
-                            const [h, m] = startTime.split(':').map(Number);
-                            let target = (h * 60 + m) - 120;
-                            if (target < 0) target = 0;
-                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
-                          })()})
-                        </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const dCfg = getStoredDeadlineConfig();
-                        const defW = dCfg.wellnessRegularTime || '08:15';
-                        setCustomDeadlineWellness(defW);
-                        setCustomDeadline(defW);
-                      }}
-                      className="px-2 py-1 rounded-lg border border-amber-500/30 bg-slate-800 text-amber-200 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                      title="Forçar Regra Geral Matinal"
-                    >
-                      Regra Geral ({getStoredDeadlineConfig().wellnessRegularTime || '08:15'})
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400">
-                    {customDeadlineWellness ? (
-                      <span className="text-amber-300 font-semibold">
-                        ✓ Limite Wellness para {selectedDate}: {customDeadlineWellness}.
-                      </span>
-                    ) : (
-                      <span>Regra geral ativa ({dayType === 'match' ? 'Dia de Jogo' : 'Treino'}).</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              {/* PSE / RPE Card */}
-              <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
-                    <span>⚡</span>
-                    <span>PSE / RPE (Pós-Treino)</span>
-                  </span>
-                  {(() => {
-                    const eff = getEffectiveDeadlineForDate(selectedDate, 'rpe');
-                    return (
-                      <span className="text-[10px] font-black text-indigo-300 bg-indigo-500/15 px-2 py-0.5 rounded-full border border-indigo-500/30 whitespace-nowrap">
-                        Ativo: {eff.deadlineTime} ({eff.isCustom ? 'Manual' : eff.isMatchDay ? 'Jogo' : eff.isRelativeToSession ? 'Auto Fim' : 'Geral'})
-                      </span>
-                    );
-                  })()}
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={customDeadlineRpe}
-                      onChange={(e) => setCustomDeadlineRpe(e.target.value)}
-                      className="w-36 rounded-xl border border-indigo-500/40 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-indigo-400 focus:outline-none"
-                    />
-                    {customDeadlineRpe && (
-                      <button
-                        type="button"
-                        onClick={() => setCustomDeadlineRpe('')}
-                        className="px-2 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                        title="Repor regra geral de PSE"
-                      >
-                        ✕ Repor Geral
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Shortcuts for PSE (relative to endTime or common times) */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
-                    {endTime && endTime.includes(':') && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const [h, m] = endTime.split(':').map(Number);
-                            let target = (h * 60 + m) + 60;
-                            if (target > 1439) target = 1439;
-                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
-                            const calcM = String(target % 60).padStart(2, '0');
-                            setCustomDeadlineRpe(`${calcH}:${calcM}`);
-                          }}
-                          className="px-2 py-1 rounded-lg border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 font-bold hover:bg-indigo-900/60 transition-all text-[11px] cursor-pointer"
-                          title={`Calcular 1 hora após o fim (${endTime})`}
-                        >
-                          ⚡ +1h fim ({(() => {
-                            const [h, m] = endTime.split(':').map(Number);
-                            let target = (h * 60 + m) + 60;
-                            if (target > 1439) target = 1439;
-                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
-                          })()})
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const [h, m] = endTime.split(':').map(Number);
-                            let target = (h * 60 + m) + 120;
-                            if (target > 1439) target = 1439;
-                            const calcH = String(Math.floor(target / 60)).padStart(2, '0');
-                            const calcM = String(target % 60).padStart(2, '0');
-                            setCustomDeadlineRpe(`${calcH}:${calcM}`);
-                          }}
-                          className="px-2 py-1 rounded-lg border border-indigo-500/40 bg-indigo-950/40 text-indigo-300 font-bold hover:bg-indigo-900/60 transition-all text-[11px] cursor-pointer"
-                          title={`Calcular 2 horas após o fim (${endTime})`}
-                        >
-                          ⚡ +2h fim ({(() => {
-                            const [h, m] = endTime.split(':').map(Number);
-                            let target = (h * 60 + m) + 120;
-                            if (target > 1439) target = 1439;
-                            return `${String(Math.floor(target / 60)).padStart(2, '0')}:${String(target % 60).padStart(2, '0')}`;
-                          })()})
-                        </button>
-                      </>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => setCustomDeadlineRpe('14:00')}
-                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                    >
-                      14:00
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setCustomDeadlineRpe('22:00')}
-                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-300 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                    >
-                      22:00
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const dCfg = getStoredDeadlineConfig();
-                        const defR = dCfg.rpeRegularTime || '14:00';
-                        setCustomDeadlineRpe(defR);
-                      }}
-                      className="px-2 py-1 rounded-lg border border-indigo-500/30 bg-slate-800 text-indigo-200 font-bold hover:bg-slate-700 transition-all text-[11px] cursor-pointer"
-                      title="Forçar Regra Geral Pós-Treino"
-                    >
-                      Regra Geral ({getStoredDeadlineConfig().rpeRegularTime || '14:00'})
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-slate-400">
-                    {customDeadlineRpe ? (
-                      <span className="text-indigo-300 font-semibold">
-                        ✓ Limite PSE para {selectedDate}: {customDeadlineRpe}.
-                      </span>
-                    ) : (
-                      <span>Regra geral ativa ({dayType === 'match' ? 'Dia de Jogo' : 'Treino'}).</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
           </>
         )}
 
@@ -1678,7 +1407,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             <div className="flex items-center justify-between">
               <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
                 <Thermometer className="h-4 w-4 text-amber-400" />
-                <span>5. Temperatura do Treino (°C) & Variação Automática</span>
+                <span>4. Temperatura do Treino (°C) & Variação Automática</span>
               </label>
 
               {tempDelta !== null && (
@@ -1739,7 +1468,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           {/* Tactical Focus & Notes */}
           <div className="space-y-1">
             <label className="text-xs font-extrabold uppercase text-slate-300 block">
-              6. Conteúdos Táticos & Objetivos da Sessão
+              5. Conteúdos Táticos & Objetivos da Sessão
             </label>
             <textarea
               rows={3}
@@ -1761,7 +1490,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <div>
                 <label className="text-xs font-extrabold uppercase text-slate-200 flex items-center space-x-2">
                   <Users className="h-4 w-4 text-emerald-400" />
-                  <span>7. Estado do Treino Por Jogadora</span>
+                  <span>6. Estado do Treino Por Jogadora</span>
                 </label>
                 <p className="text-[11px] text-slate-400">
                   Regista se a jogadora treinou normal, condicionada, lesionada ou esteve ausente.
