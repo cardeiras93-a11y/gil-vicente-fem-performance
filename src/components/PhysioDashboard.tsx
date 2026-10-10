@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { WellnessEntry, RPEEntry, HydrationEntry, Athlete } from '@/lib/types';
-import { calculateHydrationStatus, isGoalkeeper } from '@/lib/data';
+import { calculateHydrationStatus, isGoalkeeper, BORG_SCALE } from '@/lib/data';
+import { useLanguage } from '@/context/LanguageContext';
 import {
   getWellnessLocally,
   getRPELocally,
@@ -35,6 +36,7 @@ interface PhysioDashboardProps {
 const PHYSIO_ATTENDANCE_KEY = 'femperf_physio_attendance_status';
 
 export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClose }) => {
+  const { t } = useLanguage();
   const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
 
   useEffect(() => {
@@ -84,14 +86,14 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     }
   };
 
-  const [activeTab, setActiveTabState] = useState<'triage' | 'wellness' | 'hydration'>(() => {
+  const [activeTab, setActiveTabState] = useState<'triage' | 'wellness' | 'rpe' | 'hydration'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_physio_active_tab') as any) || 'triage';
     }
     return 'triage';
   });
 
-  const setActiveTab = (tab: 'triage' | 'wellness' | 'hydration') => {
+  const setActiveTab = (tab: 'triage' | 'wellness' | 'rpe' | 'hydration') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_physio_active_tab', tab);
@@ -464,8 +466,51 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   }
 
   // Triage list: Athletes needing physio for selected date
-  const todaysWellness = wellnessList.filter((w) => w.date === selectedDate);
+  const todaysWellness = wellnessList.filter((w) => w.date === selectedDate && w.approvalStatus !== 'rejected');
   const physioAthletesToday = todaysWellness.filter((w) => w.needsPhysio);
+
+  // RPE (Perceção de Esforço) list for selected date
+  const todaysRpe = rpeList.filter((r) => r.date === selectedDate && r.approvalStatus !== 'rejected');
+  const totalRPE = todaysRpe.length;
+  const avgBorg = totalRPE
+    ? +(todaysRpe.reduce((acc, curr) => acc + curr.physicalDemand, 0) / totalRPE).toFixed(1)
+    : 0;
+  const avgPostFatigue = totalRPE
+    ? +(todaysRpe.reduce((acc, curr) => acc + curr.postFatigue, 0) / totalRPE).toFixed(1)
+    : 0;
+  const highBorgCount = todaysRpe.filter((r) => r.physicalDemand >= 7).length;
+  const rpeWithPainCount = todaysRpe.filter(
+    (r) => r.muscleFatigue && Object.keys(r.muscleFatigue).length > 0
+  ).length;
+  const rpeWithClinicalAttention = todaysRpe.filter(
+    (r) =>
+      (r.muscleFatigue && Object.keys(r.muscleFatigue).length > 0) ||
+      (r.comments && r.comments.trim().length > 0)
+  );
+
+  const renderMuscleFatigueBadges = (map?: Record<string, number>) => {
+    if (!map || Object.keys(map).length === 0) {
+      return <span className="text-slate-500 italic text-[11px]">Sem zonas ativas</span>;
+    }
+    return (
+      <div className="flex flex-wrap gap-1">
+        {Object.entries(map).map(([muscle, score]) => (
+          <span
+            key={muscle}
+            className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+              score >= 7
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40'
+                : score >= 4
+                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                : 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30'
+            }`}
+          >
+            {muscle}: {score}/10
+          </span>
+        ))}
+      </div>
+    );
+  };
 
   // Filtered hydration list
   const filteredHydration = hydrationList.filter(
@@ -570,7 +615,20 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
             }`}
           >
             <HeartPulse className="h-4 w-4 text-brand-lime" />
-            <span>🧘 Questionários & Sintomas</span>
+            <span>🧘 Wellness & Sintomas ({todaysWellness.length})</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('rpe')}
+            className={`flex items-center space-x-2 px-4 py-2.5 text-xs font-extrabold rounded-xl transition-all whitespace-nowrap ${
+              activeTab === 'rpe'
+                ? 'bg-teal-600 text-white shadow-md shadow-teal-600/30'
+                : 'text-slate-400 hover:bg-slate-800'
+            }`}
+          >
+            <Dumbbell className="h-4 w-4 text-purple-400" />
+            <span>⚡ Perceção de Esforço / PSE ({todaysRpe.length})</span>
           </button>
 
           <button
@@ -703,7 +761,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
           </div>
         )}
 
-        {/* TAB 2: CONSULTA DE QUESTIONÁRIOS */}
+        {/* TAB 2: CONSULTA DE QUESTIONÁRIOS WELLNESS */}
         {activeTab === 'wellness' && (
           <div className="rounded-2xl border border-slate-800 bg-dark-card p-4 space-y-4">
             <h3 className="text-sm font-extrabold text-slate-100 uppercase">Questionários de Wellness em {selectedDate}</h3>
@@ -741,7 +799,228 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
           </div>
         )}
 
-        {/* TAB 3: GESTÃO DE PESAGEM E HIDRATAÇÃO */}
+        {/* TAB 3: PERCEÇÃO DE ESFORÇO (PSE / RPE) */}
+        {activeTab === 'rpe' && (
+          <div className="space-y-5 animate-fade-in">
+            {/* RPE KPI Header Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-3.5 text-center">
+                <span className="text-[11px] font-bold text-purple-400 uppercase block">Total PSE Submetidos</span>
+                <span className="text-2xl font-black text-slate-100">
+                  {totalRPE} <span className="text-xs text-slate-500">/ {athletes.length}</span>
+                </span>
+              </div>
+
+              <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
+                <span className="text-[11px] font-bold text-amber-400 uppercase block">Média Exigência (Borg)</span>
+                <span className="text-2xl font-black text-amber-300">{avgBorg || '-'} / 10</span>
+              </div>
+
+              <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 text-center">
+                <span className="text-[11px] font-bold text-indigo-400 uppercase block">Média Fadiga Pós-Treino</span>
+                <span className="text-2xl font-black text-indigo-300">{avgPostFatigue || '-'} / 10</span>
+              </div>
+
+              <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-3.5 text-center">
+                <span className="text-[11px] font-bold text-rose-400 uppercase block">Carga Elevada (&ge; 7)</span>
+                <span className={`text-2xl font-black ${highBorgCount > 0 ? 'text-rose-400' : 'text-slate-100'}`}>
+                  {highBorgCount}
+                </span>
+              </div>
+            </div>
+
+            {/* Clinical Highlight Box: Athletes with Post-Training Muscle Pain or Comments */}
+            {rpeWithClinicalAttention.length > 0 && (
+              <div className="rounded-2xl border border-amber-500/40 bg-amber-950/15 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-black uppercase text-amber-300 flex items-center space-x-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-400" />
+                    <span>Atenção Clínica Pós-Treino: Queixas Musculares ou Observações ({rpeWithClinicalAttention.length})</span>
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {rpeWithClinicalAttention.map((r) => (
+                    <div key={`att-${r.id}`} className="rounded-xl bg-dark-bg/80 border border-slate-800 p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-black text-slate-100">{r.athleteName}</span>
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                            Borg: {r.physicalDemand}/10
+                          </span>
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            Fadiga: {r.postFatigue}/10
+                          </span>
+                        </div>
+                      </div>
+                      {r.muscleFatigue && Object.keys(r.muscleFatigue).length > 0 && (
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">Zonas c/ Desconforto Pós-Treino:</span>
+                          {renderMuscleFatigueBadges(r.muscleFatigue)}
+                        </div>
+                      )}
+                      {r.comments && r.comments.trim().length > 0 && (
+                        <div className="bg-slate-900/90 rounded-lg p-2 border border-slate-800">
+                          <span className="text-[10px] font-bold text-teal-400 uppercase block">Observação da Jogadora:</span>
+                          <p className="text-xs text-slate-200 italic">{translateTextToPortuguese(r.comments)}</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* RPE Detailed Table */}
+            <div className="rounded-2xl border border-slate-800 bg-dark-card p-4 space-y-4 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
+                    <Dumbbell className="h-4 w-4 text-purple-400" />
+                    <span>Relatório Detalhado de Perceção de Esforço / PSE ({selectedDate})</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Exigência física (Borg CR10), fadiga pós-treino, trabalho preventivo prévio, zonas de dor e comentários.
+                  </p>
+                </div>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Pesquisar jogadora..."
+                    value={searchFilter}
+                    onChange={(e) => setSearchFilter(e.target.value)}
+                    className="rounded-xl border border-slate-700 bg-dark-bg py-1.5 pl-8 pr-3 text-xs font-semibold text-slate-100 focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {todaysRpe.length === 0 ? (
+                <div className="rounded-xl bg-dark-bg/60 p-8 text-center border border-slate-800 space-y-2">
+                  <Dumbbell className="h-8 w-8 text-slate-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-400">Nenhum registo de PSE submetido para {selectedDate}.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
+                        <th className="py-2.5 px-3">Atleta</th>
+                        <th className="py-2.5 px-3 whitespace-nowrap">Hora Submissão</th>
+                        <th className="py-2.5 px-3">Exigência Física (Borg)</th>
+                        <th className="py-2.5 px-3">Fadiga Pós-Treino</th>
+                        <th className="py-2.5 px-3">Trabalho Prévio</th>
+                        <th className="py-2.5 px-3">Zonas c/ Dor (Body Chart)</th>
+                        <th className="py-2.5 px-3">Comentários</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60 font-medium">
+                      {todaysRpe
+                        .filter((r) => r.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
+                        .map((r) => {
+                          const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
+                          const borgLabel =
+                            t.rpe.borgDescriptors[r.physicalDemand as keyof typeof t.rpe.borgDescriptors] ||
+                            borgObj?.label ||
+                            `${r.physicalDemand}/10`;
+                          const fatigueLabel =
+                            t.rpe.fatigueDescriptors[r.postFatigue as keyof typeof t.rpe.fatigueDescriptors] ||
+                            `${r.postFatigue}/10`;
+                          const subTime = formatSubmissionTime(r.submittedAt || r.createdAt);
+
+                          return (
+                            <tr key={r.id} className="hover:bg-slate-800/40">
+                              <td className="py-3 px-3 font-bold text-slate-100">
+                                <div className="flex items-center space-x-1.5">
+                                  <span>{r.athleteName}</span>
+                                  {isGoalkeeper(r.athleteName) && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                                      🧤 GR
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td className="py-3 px-3 whitespace-nowrap">
+                                <div className="flex items-center space-x-1.5">
+                                  <Clock className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+                                  <span className="font-extrabold text-slate-200 text-xs">{subTime}</span>
+                                </div>
+                              </td>
+
+                              <td className="py-3 px-3">
+                                <span
+                                  className={`font-extrabold px-2 py-0.5 rounded-full border text-[11px] ${
+                                    r.physicalDemand >= 8
+                                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/40'
+                                      : r.physicalDemand >= 6
+                                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                                      : 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30'
+                                  }`}
+                                >
+                                  {borgLabel}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-3">
+                                <span
+                                  className={`font-extrabold px-2 py-0.5 rounded-full border text-[11px] ${
+                                    r.postFatigue >= 8
+                                      ? 'bg-rose-500/15 text-rose-300 border-rose-500/40'
+                                      : r.postFatigue >= 6
+                                      ? 'bg-amber-500/15 text-amber-300 border-amber-500/40'
+                                      : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30'
+                                  }`}
+                                >
+                                  {fatigueLabel}
+                                </span>
+                              </td>
+
+                              <td className="py-3 px-3">
+                                {r.preWorkoutPlans && r.preWorkoutPlans.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {r.preWorkoutPlans.map((tag) => (
+                                      <span
+                                        key={tag}
+                                        className="bg-slate-800 text-brand-lime px-2 py-0.5 rounded text-[10px] font-bold border border-slate-700"
+                                      >
+                                        {tag}
+                                      </span>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-600 text-[11px] italic">-</span>
+                                )}
+                              </td>
+
+                              <td className="py-3 px-3">{renderMuscleFatigueBadges(r.muscleFatigue)}</td>
+
+                              <td className="py-3 px-3 text-slate-300 max-w-xs">
+                                {r.comments ? (
+                                  <span className="text-slate-200 italic">{translateTextToPortuguese(r.comments)}</span>
+                                ) : (
+                                  <span className="text-slate-600">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Squad Muscle Heatmap Body Chart for Post-Training RPE */}
+            <SquadMuscleHeatmap
+              entries={todaysRpe}
+              date={selectedDate}
+              title="Mapa Coletivo de Queixas Musculares Pós-Treino (PSE - Gabinete Médico)"
+            />
+          </div>
+        )}
+
+        {/* TAB 4: GESTÃO DE PESAGEM E HIDRATAÇÃO */}
         {activeTab === 'hydration' && (
           <div className="rounded-2xl border border-slate-800 bg-dark-card p-4 space-y-4 shadow-lg">
             {/* Quick Weighing Action Bar */}
