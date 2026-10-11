@@ -336,6 +336,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   };
 
   const isInitialLoad = useRef(true);
+  const lastUserEditTimestamp = useRef<number>(0);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const saveStatusTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const handleDataUpdate = () => {
@@ -344,10 +347,24 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setTrainingSessions(localSessions);
       setCalendarSchedule(localSched);
 
-      // Re-populate form state for selectedDate if remote cloud data arrived
+      // Protect against overwriting user's active typing or recent edits (15s grace period)
+      const isInputFocused =
+        typeof document !== 'undefined' &&
+        document.activeElement &&
+        (document.activeElement.tagName === 'INPUT' ||
+          document.activeElement.tagName === 'TEXTAREA' ||
+          document.activeElement.tagName === 'SELECT');
+
+      const userRecentlyEdited = Date.now() - lastUserEditTimestamp.current < 15000;
+
+      if (isInputFocused || userRecentlyEdited) {
+        // User is currently interacting or recently edited: do not overwrite form state
+        return;
+      }
+
+      // Re-populate form state for selectedDate only if truly idle and new session exists
       const currentSession = localSessions[selectedDate];
       if (currentSession) {
-        isInitialLoad.current = true;
         if (currentSession.dayType) setDayType(currentSession.dayType);
         if (currentSession.matchCategory) setMatchCategory(currentSession.matchCategory);
         if (currentSession.matchDayOffset) setMatchDayOffset(currentSession.matchDayOffset);
@@ -358,9 +375,6 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         if (currentSession.locationTime) setLocationName(currentSession.locationTime);
         if (currentSession.focusNotes !== undefined) setFocusNotes(currentSession.focusNotes);
         if (currentSession.athleteStatuses) setAthleteStatuses(currentSession.athleteStatuses);
-        setTimeout(() => {
-          isInitialLoad.current = false;
-        }, 250);
       }
     };
 
@@ -381,7 +395,111 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return () => clearTimeout(timer);
   }, [selectedDate]);
 
-  // Auto-save session configuration on any field change (debounced and synced to cloud)
+  // Centralized robust save function with immediate synchronous local storage & cloud persistence
+  const performSave = async (explicitUpdates?: Partial<TrainingSessionInfo>) => {
+    if (!selectedDate) return;
+    lastUserEditTimestamp.current = Date.now();
+    setSaveStatus('saving');
+
+    const sTime = explicitUpdates?.startTime !== undefined ? explicitUpdates.startTime : startTime;
+    const eTime = explicitUpdates?.endTime !== undefined ? explicitUpdates.endTime : endTime;
+    const dType = explicitUpdates?.dayType !== undefined ? explicitUpdates.dayType : dayType;
+    const mCat = explicitUpdates?.matchCategory !== undefined ? explicitUpdates.matchCategory : (dType === 'match' ? matchCategory : undefined);
+    const mOffset = explicitUpdates?.matchDayOffset !== undefined ? explicitUpdates.matchDayOffset : matchDayOffset;
+    const tStart = explicitUpdates?.tempStart !== undefined ? explicitUpdates.tempStart : (parseFloat(tempStart) || undefined);
+    const tEnd = explicitUpdates?.tempEnd !== undefined ? explicitUpdates.tempEnd : (parseFloat(tempEnd) || undefined);
+    const loc = explicitUpdates?.locationTime !== undefined ? explicitUpdates.locationTime : locationName;
+    const notes = explicitUpdates?.focusNotes !== undefined ? explicitUpdates.focusNotes : focusNotes;
+    const statuses = explicitUpdates?.athleteStatuses !== undefined ? explicitUpdates.athleteStatuses : athleteStatuses;
+    const cWellness = explicitUpdates?.customDeadlineWellness !== undefined ? explicitUpdates.customDeadlineWellness : customDeadlineWellness;
+    const cRpe = explicitUpdates?.customDeadlineRpe !== undefined ? explicitUpdates.customDeadlineRpe : customDeadlineRpe;
+    const cDead = explicitUpdates?.customDeadline !== undefined ? explicitUpdates.customDeadline : (cWellness.trim() || customDeadline.trim() || '');
+
+    // Calculate duration
+    let dur = durationMin;
+    if (sTime && eTime && sTime.includes(':') && eTime.includes(':')) {
+      const [sH, sM] = sTime.split(':').map((n) => parseInt(n, 10));
+      const [eH, eM] = eTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(sH) && !isNaN(sM) && !isNaN(eH) && !isNaN(eM)) {
+        let sTot = sH * 60 + sM;
+        let eTot = eH * 60 + eM;
+        if (eTot < sTot) eTot += 1440;
+        dur = Math.max(0, eTot - sTot);
+      }
+    }
+
+    const info: TrainingSessionInfo = {
+      date: selectedDate,
+      dayType: dType,
+      matchCategory: mCat,
+      matchDayOffset: mOffset,
+      startTime: sTime,
+      endTime: eTime,
+      durationMin: dur,
+      tempStart: isNaN(Number(tStart)) ? undefined : Number(tStart),
+      tempEnd: isNaN(Number(tEnd)) ? undefined : Number(tEnd),
+      tempDelta: tempDelta !== null ? tempDelta : undefined,
+      locationTime: loc,
+      focusNotes: notes,
+      athleteStatuses: statuses,
+      customDeadline: cDead.trim() || '',
+      customDeadlineWellness: cWellness.trim() || '',
+      customDeadlineRpe: cRpe.trim() || '',
+      updatedAt: Date.now(),
+    };
+
+    // 1. Synchronously update component state and local storage immediately
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [selectedDate]: info,
+    }));
+    setCalendarSchedule((prev) => ({
+      ...prev,
+      [selectedDate]: dType,
+    }));
+
+    saveTrainingSessionInfo(info);
+    await saveTrainingSessionInfoAsync(info);
+
+    try {
+      const dCfg = getStoredDeadlineConfig();
+      const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
+      const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
+      const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
+
+      const defaultW = dType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
+      const defaultR = dType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
+
+      if (cWellness.trim() && cWellness.trim() !== defaultW) {
+        currentWellness[selectedDate] = cWellness.trim();
+        currentCustom[selectedDate] = cWellness.trim();
+      } else {
+        delete currentWellness[selectedDate];
+        delete currentCustom[selectedDate];
+      }
+
+      if (cRpe.trim() && cRpe.trim() !== defaultR) {
+        currentRpe[selectedDate] = cRpe.trim();
+      } else {
+        delete currentRpe[selectedDate];
+      }
+
+      saveDeadlineConfig({
+        ...dCfg,
+        customDateDeadlines: currentCustom,
+        customDateDeadlinesWellness: currentWellness,
+        customDateDeadlinesRpe: currentRpe,
+      });
+    } catch {}
+
+    setSaveStatus('saved');
+    if (saveStatusTimerRef.current) clearTimeout(saveStatusTimerRef.current);
+    saveStatusTimerRef.current = setTimeout(() => {
+      setSaveStatus('idle');
+    }, 2500);
+  };
+
+  // Auto-save session configuration on any other field change (debounced fallback)
   useEffect(() => {
     if (isInitialLoad.current || !selectedDate) return;
 
@@ -390,81 +508,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     }
 
     autoSaveTimerRef.current = setTimeout(() => {
-      const startT = parseFloat(tempStart);
-      const endT = parseFloat(tempEnd);
-
-      const info: TrainingSessionInfo = {
-        date: selectedDate,
-        dayType,
-        matchCategory: dayType === 'match' ? matchCategory : undefined,
-        matchDayOffset,
-        startTime,
-        endTime,
-        durationMin,
-        tempStart: isNaN(startT) ? undefined : startT,
-        tempEnd: isNaN(endT) ? undefined : endT,
-        tempDelta: tempDelta !== null ? tempDelta : undefined,
-        locationTime: locationName,
-        focusNotes,
-        athleteStatuses,
-        customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
-        customDeadlineWellness: customDeadlineWellness.trim(),
-        customDeadlineRpe: customDeadlineRpe.trim(),
-        updatedAt: Date.now(),
-      };
-
-      // Persist locally and to cloud async
-      saveTrainingSessionInfoAsync(info);
-      setTrainingSessions((prev) => ({
-        ...prev,
-        [selectedDate]: info,
-      }));
-      setCalendarSchedule((prev) => ({
-        ...prev,
-        [selectedDate]: dayType,
-      }));
-
-      try {
-        const dCfg = getStoredDeadlineConfig();
-        const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
-        const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
-        const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
-
-        const defaultW = dayType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
-        const defaultR = dayType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
-
-        let changed = false;
-        if (customDeadlineWellness.trim() && customDeadlineWellness.trim() !== defaultW) {
-          if (currentWellness[selectedDate] !== customDeadlineWellness.trim()) {
-            currentWellness[selectedDate] = customDeadlineWellness.trim();
-            currentCustom[selectedDate] = customDeadlineWellness.trim();
-            changed = true;
-          }
-        } else if (currentWellness[selectedDate]) {
-          delete currentWellness[selectedDate];
-          delete currentCustom[selectedDate];
-          changed = true;
-        }
-
-        if (customDeadlineRpe.trim() && customDeadlineRpe.trim() !== defaultR) {
-          if (currentRpe[selectedDate] !== customDeadlineRpe.trim()) {
-            currentRpe[selectedDate] = customDeadlineRpe.trim();
-            changed = true;
-          }
-        } else if (currentRpe[selectedDate]) {
-          delete currentRpe[selectedDate];
-          changed = true;
-        }
-
-        if (changed) {
-          saveDeadlineConfig({
-            ...dCfg,
-            customDateDeadlines: currentCustom,
-            customDateDeadlinesWellness: currentWellness,
-            customDateDeadlinesRpe: currentRpe,
-          });
-        }
-      } catch {}
+      performSave();
     }, 800);
 
     return () => {
@@ -628,73 +672,119 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   // Handle start time change and auto-adapt deadlines to this specific session
   const handleStartTimeChange = (newStartTime: string) => {
+    lastUserEditTimestamp.current = Date.now();
     setStartTime(newStartTime);
+    let calcW = customDeadlineWellness;
+    let calcR = customDeadlineRpe;
+
     if (newStartTime && newStartTime.includes(':')) {
       const [h, m] = newStartTime.split(':').map(Number);
-      const targetW = Math.max(0, (h * 60 + m) - 60);
-      const calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
-      setCustomDeadlineWellness(calcW);
-      setCustomDeadline(calcW);
+      if (!isNaN(h) && !isNaN(m)) {
+        const targetW = Math.max(0, (h * 60 + m) - 60);
+        calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+        setCustomDeadlineWellness(calcW);
+        setCustomDeadline(calcW);
 
-      const base = endTime && endTime.includes(':') ? endTime : newStartTime;
-      const [bH, bM] = base.split(':').map(Number);
-      const targetR = Math.min(1439, (bH * 60 + bM) + (endTime ? 60 : 150));
-      const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-      setCustomDeadlineRpe(calcR);
+        const base = endTime && endTime.includes(':') ? endTime : newStartTime;
+        const [bH, bM] = base.split(':').map(Number);
+        const targetR = Math.min(1439, (bH * 60 + bM) + (endTime ? 60 : 150));
+        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        setCustomDeadlineRpe(calcR);
+      }
     }
+
+    performSave({
+      startTime: newStartTime,
+      customDeadlineWellness: calcW,
+      customDeadline: calcW,
+      customDeadlineRpe: calcR,
+    });
   };
 
   // Handle end time change and auto-adapt RPE deadline to this specific session
   const handleEndTimeChange = (newEndTime: string) => {
+    lastUserEditTimestamp.current = Date.now();
     setEndTime(newEndTime);
+    let calcR = customDeadlineRpe;
+
     if (newEndTime && newEndTime.includes(':')) {
       const [h, m] = newEndTime.split(':').map(Number);
-      const targetR = Math.min(1439, (h * 60 + m) + 60);
-      const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-      setCustomDeadlineRpe(calcR);
+      if (!isNaN(h) && !isNaN(m)) {
+        const targetR = Math.min(1439, (h * 60 + m) + 60);
+        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        setCustomDeadlineRpe(calcR);
+      }
     }
+
+    performSave({
+      endTime: newEndTime,
+      customDeadlineRpe: calcR,
+    });
   };
 
   // Change day type for currently selected session and auto-update microcycle tag
   const handleSelectDayType = (newType: CalendarDayType) => {
+    lastUserEditTimestamp.current = Date.now();
     setDayType(newType);
-    setMatchDayOffset(getAutoMatchDayOffset(selectedDate, newType));
+    const newOffset = getAutoMatchDayOffset(selectedDate, newType);
+    setMatchDayOffset(newOffset);
     const existing = trainingSessions[selectedDate];
+
+    let matchStart = startTime;
+    let matchEnd = endTime;
+    let newCategory = matchCategory;
+    let calcW = customDeadlineWellness;
+    let calcR = customDeadlineRpe;
+
     if (newType === 'match') {
       if (existing?.matchCategory) {
-        setMatchCategory(existing.matchCategory);
+        newCategory = existing.matchCategory;
+        setMatchCategory(newCategory);
       }
-      const matchStart = existing?.startTime || (startTime !== '09:00' ? startTime : '10:00');
-      const matchEnd = existing?.endTime || (endTime !== '10:30' ? endTime : '11:30');
+      matchStart = existing?.startTime || (startTime !== '09:00' ? startTime : '10:00');
+      matchEnd = existing?.endTime || (endTime !== '10:30' ? endTime : '11:30');
       setStartTime(matchStart);
       setEndTime(matchEnd);
 
       if (existing?.customDeadlineWellness) {
-        setCustomDeadlineWellness(existing.customDeadlineWellness);
-        setCustomDeadline(existing.customDeadlineWellness);
+        calcW = existing.customDeadlineWellness;
+        setCustomDeadlineWellness(calcW);
+        setCustomDeadline(calcW);
       } else if (matchStart && matchStart.includes(':')) {
         const [h, m] = matchStart.split(':').map(Number);
         const targetW = Math.max(0, (h * 60 + m) - 60);
-        const calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
+        calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
         setCustomDeadlineWellness(calcW);
         setCustomDeadline(calcW);
       }
 
       if (existing?.customDeadlineRpe) {
-        setCustomDeadlineRpe(existing.customDeadlineRpe);
+        calcR = existing.customDeadlineRpe;
+        setCustomDeadlineRpe(calcR);
       } else if (matchStart && matchStart.includes(':')) {
         const base = matchEnd && matchEnd.includes(':') ? matchEnd : matchStart;
         const [bH, bM] = base.split(':').map(Number);
         const targetR = Math.min(1439, (bH * 60 + bM) + (matchEnd ? 60 : 150));
-        const calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
+        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
         setCustomDeadlineRpe(calcR);
       }
     } else if (newType === 'training') {
-      const trainStart = existing?.startTime || (startTime && startTime !== '10:00' ? startTime : '09:00');
-      const trainEnd = existing?.endTime || (endTime && endTime !== '11:30' ? endTime : '10:30');
-      setStartTime(trainStart);
-      setEndTime(trainEnd);
+      matchStart = existing?.startTime || (startTime && startTime !== '10:00' ? startTime : '09:00');
+      matchEnd = existing?.endTime || (endTime && endTime !== '11:30' ? endTime : '10:30');
+      setStartTime(matchStart);
+      setEndTime(matchEnd);
     }
+
+    performSave({
+      dayType: newType,
+      matchCategory: newType === 'match' ? newCategory : undefined,
+      matchDayOffset: newOffset,
+      startTime: matchStart,
+      endTime: matchEnd,
+      customDeadlineWellness: calcW,
+      customDeadline: calcW,
+      customDeadlineRpe: calcR,
+    });
   };
 
   // Change match category (friendly, championship, cup) and save immediately
@@ -769,73 +859,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     }
 
     setIsSaving(true);
-    const startT = parseFloat(tempStart);
-    const endT = parseFloat(tempEnd);
-
-    const info: TrainingSessionInfo = {
-      date: selectedDate,
-      dayType,
-      matchCategory: dayType === 'match' ? matchCategory : undefined,
-      matchDayOffset,
-      startTime,
-      endTime,
-      durationMin,
-      tempStart: isNaN(startT) ? undefined : startT,
-      tempEnd: isNaN(endT) ? undefined : endT,
-      tempDelta: tempDelta !== null ? tempDelta : undefined,
-      locationTime: locationName,
-      focusNotes,
-      athleteStatuses,
-      customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
-      customDeadlineWellness: customDeadlineWellness.trim() || '',
-      customDeadlineRpe: customDeadlineRpe.trim() || '',
-      updatedAt: Date.now(),
-    };
-
-    setTrainingSessions((prev) => ({
-      ...prev,
-      [selectedDate]: info,
-    }));
-    setCalendarSchedule((prev) => ({
-      ...prev,
-      [selectedDate]: dayType,
-    }));
-
-    await saveTrainingSessionInfoAsync(info);
-
-    try {
-      const dCfg = getStoredDeadlineConfig();
-      const currentWellness = { ...(dCfg.customDateDeadlinesWellness || {}) };
-      const currentRpe = { ...(dCfg.customDateDeadlinesRpe || {}) };
-      const currentCustom = { ...(dCfg.customDateDeadlines || {}) };
-
-      const defaultW = dayType === 'match' ? (dCfg.wellnessMatchTime || '12:00') : (dCfg.wellnessRegularTime || '08:15');
-      const defaultR = dayType === 'match' ? (dCfg.rpeMatchTime || '18:30') : (dCfg.rpeRegularTime || '14:00');
-
-      if (customDeadlineWellness.trim() && customDeadlineWellness.trim() !== defaultW) {
-        currentWellness[selectedDate] = customDeadlineWellness.trim();
-        currentCustom[selectedDate] = customDeadlineWellness.trim();
-      } else {
-        delete currentWellness[selectedDate];
-        delete currentCustom[selectedDate];
-      }
-
-      if (customDeadlineRpe.trim() && customDeadlineRpe.trim() !== defaultR) {
-        currentRpe[selectedDate] = customDeadlineRpe.trim();
-      } else {
-        delete currentRpe[selectedDate];
-      }
-
-      saveDeadlineConfig({
-        ...dCfg,
-        customDateDeadlines: currentCustom,
-        customDateDeadlinesWellness: currentWellness,
-        customDateDeadlinesRpe: currentRpe,
-      });
-    } catch (e) {
-      console.warn('Erro ao sincronizar deadlineConfig em handleSaveSession:', e);
-    }
-
+    await performSave();
     setIsSaving(false);
 
     setSaveSuccess(`Informação do ${dayType === 'match' ? 'jogo' : 'treino'} para ${selectedDate} guardada com sucesso!`);
@@ -1452,9 +1476,21 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <Clock className="h-4 w-4 text-cyan-400" />
                 <span>3. Horário & Cálculo Automático da Duração</span>
               </label>
-              <span className="text-xs font-black text-cyan-300 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
-                ⏱️ {formattedHoursMinutes(durationMin)}
-              </span>
+              <div className="flex items-center space-x-2">
+                {saveStatus === 'saving' && (
+                  <span className="text-[10px] font-bold text-amber-400 animate-pulse bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                    A guardar...
+                  </span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    ✓ Guardado
+                  </span>
+                )}
+                <span className="text-xs font-black text-cyan-300 bg-cyan-500/10 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
+                  ⏱️ {formattedHoursMinutes(durationMin)}
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1463,6 +1499,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <input
                   type="time"
                   value={startTime}
+                  onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
                   onChange={(e) => handleStartTimeChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
                 />
@@ -1473,10 +1510,24 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <input
                   type="time"
                   value={endTime}
+                  onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
                   onChange={(e) => handleEndTimeChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2 text-xs font-bold text-slate-100 focus:border-red-500 focus:outline-none"
                 />
               </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
+              <span className="text-[10px] text-slate-400">
+                Alterações de horário são guardadas instantaneamente na Cloud e recalculam os limites dos questionários.
+              </span>
+              <button
+                type="button"
+                onClick={() => performSave()}
+                className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer self-end sm:self-auto shrink-0 shadow-sm"
+              >
+                {saveStatus === 'saving' ? 'A guardar...' : 'Gravar Horário'}
+              </button>
             </div>
           </div>
 
@@ -1501,6 +1552,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                     setCustomDeadlineWellness('');
                     setCustomDeadlineRpe('');
                     setCustomDeadline('');
+                    performSave({ customDeadlineWellness: '', customDeadlineRpe: '', customDeadline: '' });
                   }}
                   className="text-[10px] font-bold text-slate-400 hover:text-amber-300 transition-colors cursor-pointer"
                 >
@@ -1524,20 +1576,30 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                   type="time"
                   value={customDeadlineWellness}
                   placeholder={dayType === 'match' ? '12:00' : '08:15'}
-                  onChange={(e) => setCustomDeadlineWellness(e.target.value)}
+                  onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                  onChange={(e) => {
+                    setCustomDeadlineWellness(e.target.value);
+                    performSave({ customDeadlineWellness: e.target.value, customDeadline: e.target.value });
+                  }}
                   className="w-full rounded-lg border border-amber-500/40 bg-dark-card p-2 text-xs font-bold text-amber-100 focus:border-amber-400 focus:outline-none"
                 />
                 <div className="flex flex-wrap gap-1 text-[10px] pt-1">
                   <button
                     type="button"
-                    onClick={() => setCustomDeadlineWellness('08:15')}
+                    onClick={() => {
+                      setCustomDeadlineWellness('08:15');
+                      performSave({ customDeadlineWellness: '08:15', customDeadline: '08:15' });
+                    }}
                     className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
                   >
                     08:15
                   </button>
                   <button
                     type="button"
-                    onClick={() => setCustomDeadlineWellness('12:00')}
+                    onClick={() => {
+                      setCustomDeadlineWellness('12:00');
+                      performSave({ customDeadlineWellness: '12:00', customDeadline: '12:00' });
+                    }}
                     className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
                   >
                     12:00 (Jogo)
@@ -1549,7 +1611,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                     return (
                       <button
                         type="button"
-                        onClick={() => setCustomDeadlineWellness(tStr)}
+                        onClick={() => {
+                          setCustomDeadlineWellness(tStr);
+                          performSave({ customDeadlineWellness: tStr, customDeadline: tStr });
+                        }}
                         className="px-2 py-0.5 rounded bg-amber-950/80 border border-amber-500/40 text-amber-300 font-bold hover:bg-amber-900/80 cursor-pointer"
                       >
                         -1h ({tStr})
@@ -1573,20 +1638,30 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                   type="time"
                   value={customDeadlineRpe}
                   placeholder={dayType === 'match' ? '18:30' : '14:00'}
-                  onChange={(e) => setCustomDeadlineRpe(e.target.value)}
+                  onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                  onChange={(e) => {
+                    setCustomDeadlineRpe(e.target.value);
+                    performSave({ customDeadlineRpe: e.target.value });
+                  }}
                   className="w-full rounded-lg border border-cyan-500/40 bg-dark-card p-2 text-xs font-bold text-cyan-100 focus:border-cyan-400 focus:outline-none"
                 />
                 <div className="flex flex-wrap gap-1 text-[10px] pt-1">
                   <button
                     type="button"
-                    onClick={() => setCustomDeadlineRpe('14:00')}
+                    onClick={() => {
+                      setCustomDeadlineRpe('14:00');
+                      performSave({ customDeadlineRpe: '14:00' });
+                    }}
                     className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 font-bold hover:bg-slate-700 cursor-pointer"
                   >
                     14:00
                   </button>
                   <button
                     type="button"
-                    onClick={() => setCustomDeadlineRpe('18:30')}
+                    onClick={() => {
+                      setCustomDeadlineRpe('18:30');
+                      performSave({ customDeadlineRpe: '18:30' });
+                    }}
                     className="px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 font-bold hover:bg-emerald-900/80 cursor-pointer"
                   >
                     18:30 (Jogo)
@@ -1599,7 +1674,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                     return (
                       <button
                         type="button"
-                        onClick={() => setCustomDeadlineRpe(tStr)}
+                        onClick={() => {
+                          setCustomDeadlineRpe(tStr);
+                          performSave({ customDeadlineRpe: tStr });
+                        }}
                         className="px-2 py-0.5 rounded bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 font-bold hover:bg-cyan-900/80 cursor-pointer"
                       >
                         +1h ({tStr})

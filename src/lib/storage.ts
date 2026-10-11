@@ -606,16 +606,16 @@ export async function syncAllDataFromCloud(): Promise<void> {
               ...loc,
             };
           } else {
-            // Timestamps equal or not set: remote takes priority for shared state
+            // Timestamps equal or not set: preserve local user times if set
             mergedSessions[d] = {
-              ...loc,
               ...rem,
-              dayType: rem.dayType || loc.dayType,
-              matchCategory: rem.matchCategory || loc.matchCategory || undefined,
-              startTime: rem.startTime || loc.startTime || (rem.dayType === 'match' ? '10:00' : '09:00'),
-              endTime: rem.endTime || loc.endTime || (rem.dayType === 'match' ? '11:30' : '10:30'),
-              customDeadlineWellness: rem.customDeadlineWellness || loc.customDeadlineWellness || undefined,
-              customDeadlineRpe: rem.customDeadlineRpe || loc.customDeadlineRpe || undefined,
+              ...loc,
+              dayType: loc.dayType || rem.dayType,
+              matchCategory: loc.matchCategory || rem.matchCategory || undefined,
+              startTime: loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00'),
+              endTime: loc.endTime || rem.endTime || (loc.dayType === 'match' ? '11:30' : '10:30'),
+              customDeadlineWellness: loc.customDeadlineWellness || rem.customDeadlineWellness || undefined,
+              customDeadlineRpe: loc.customDeadlineRpe || rem.customDeadlineRpe || undefined,
             };
           }
         });
