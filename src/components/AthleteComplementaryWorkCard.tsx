@@ -219,8 +219,8 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
                             key={it.id}
                             className="flex items-center space-x-1 text-[10px] font-bold text-slate-300"
                           >
-                            <span>{it.icon}</span>
-                            <span className="truncate">{it.shortLabel}</span>
+                            <span className="shrink-0">{it.icon}</span>
+                            <span className="leading-tight break-words">{it.shortLabel}</span>
                           </div>
                         ))}
                         {comp?.notes && (

@@ -307,10 +307,17 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
           ctx.roundRect(colX + 10, contentY - 12, colW - 20, 24, 6);
           ctx.fill();
 
-          ctx.font = '700 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          // Dynamically adjust font size if needed so text is never truncated
+          const maxTextW = colW - 46;
+          let pillFontSize = 10;
+          ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+          while (ctx.measureText(label).width > maxTextW && pillFontSize > 8) {
+            pillFontSize -= 0.5;
+            ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+          }
+
           ctx.fillStyle = pillText;
-          const truncated = label.length > 17 ? label.slice(0, 16) + '…' : label;
-          ctx.fillText(`${item.icon} ${truncated}`, colX + 14, contentY + 4);
+          ctx.fillText(`${item.icon} ${label}`, colX + 14, contentY + 4);
           contentY += 28;
         });
       } else {
@@ -742,10 +749,10 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                             {activeItems.map((item) => (
                               <div
                                 key={item.id}
-                                className={`flex items-center space-x-1 px-1.5 py-0.5 rounded text-[10px] font-bold ${item.badgeClass}`}
+                                className={`flex items-center space-x-1.5 px-1.5 py-1 rounded text-[10px] font-bold leading-tight ${item.badgeClass}`}
                               >
-                                <span>{item.icon}</span>
-                                <span className="truncate">
+                                <span className="shrink-0 text-[11px] leading-none">{item.icon}</span>
+                                <span className="leading-tight break-words">
                                   {isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel}
                                 </span>
                               </div>
