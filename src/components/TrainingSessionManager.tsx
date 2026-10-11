@@ -325,13 +325,15 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     } else {
       // Default fallbacks
       const typeOverride = sched[selectedDate];
-      let initialType: CalendarDayType = 'training';
+      let initialType: CalendarDayType = 'rest';
       if (typeOverride) {
         initialType = typeOverride;
       } else {
         const isMatch = rpeList.some((r) => r.date === selectedDate && r.matchDayOffset === 'MD');
         const hasData = wellnessList.some((w) => w.date === selectedDate) || rpeList.some((r) => r.date === selectedDate);
-        initialType = isMatch ? 'match' : hasData ? 'training' : 'training';
+        const [y, m, d] = selectedDate.split('-').map(Number);
+        const isSun = !isNaN(y) && !isNaN(m) && !isNaN(d) ? new Date(y, m - 1, d).getDay() === 0 : false;
+        initialType = isMatch ? 'match' : hasData ? 'training' : isSun ? 'rest' : 'training';
       }
       setDayType(initialType);
       setMatchCategory('championship');
@@ -625,14 +627,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return map;
   }, [datesInMonth, calendarSchedule, trainingSessions, wellnessList, rpeList, hydrationList]);
 
-  // Cycle day type on calendar strip button click
-  const cycleDayTypeOnCalendar = (dateStr: string) => {
-    const current = dayTypesMap[dateStr] || 'rest';
-    let next: CalendarDayType = 'training';
-    if (current === 'training') next = 'match';
-    else if (current === 'match') next = 'rest';
-    else next = 'training';
-
+  // Set day type for any date directly (Treino, Jogo ou Folga)
+  const handleSetSpecificDayType = (dateStr: string, next: CalendarDayType) => {
+    lastUserEditTimestamp.current = Date.now();
     const updatedSched = {
       ...calendarSchedule,
       [dateStr]: next,
@@ -641,49 +638,31 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     saveCalendarSchedule(updatedSched);
 
     const existing = trainingSessions[dateStr];
-    if (existing) {
-      const updatedInfo: TrainingSessionInfo = {
-        ...existing,
-        dayType: next,
-        matchCategory: next === 'match' ? (existing.matchCategory || 'championship') : undefined,
-        matchDayOffset: getAutoMatchDayOffset(dateStr, next),
-        startTime: existing.startTime || (next === 'match' ? '10:00' : '09:00'),
-        endTime: existing.endTime || (next === 'match' ? '11:30' : '10:30'),
-        updatedAt: Date.now(),
-      };
-      saveTrainingSessionInfo(updatedInfo);
-      setTrainingSessions((prev) => ({
-        ...prev,
-        [dateStr]: updatedInfo,
-      }));
-    } else if (next === 'match') {
-      const newMatchSession: TrainingSessionInfo = {
-        date: dateStr,
-        dayType: 'match',
-        matchCategory: 'championship',
-        matchDayOffset: 'MD',
-        startTime: '10:00',
-        endTime: '11:30',
-        durationMin: 90,
-        tempStart: 20.0,
-        tempEnd: 25.0,
-        tempDelta: 5.0,
-        locationTime: 'Campo de São Martinho - Barcelos',
-        focusNotes: '',
-        athleteStatuses: {},
-        updatedAt: Date.now(),
-      };
-      saveTrainingSessionInfo(newMatchSession);
-      setTrainingSessions((prev) => ({
-        ...prev,
-        [dateStr]: newMatchSession,
-      }));
-    }
+    const offset = getAutoMatchDayOffset(dateStr, next);
+
+    const updatedInfo: TrainingSessionInfo = {
+      ...(existing || {}),
+      date: dateStr,
+      durationMin: existing?.durationMin || 90,
+      startTime: existing?.startTime || (next === 'match' ? '10:00' : '09:00'),
+      endTime: existing?.endTime || (next === 'match' ? '11:30' : '10:30'),
+      dayType: next,
+      matchCategory: next === 'match' ? (existing?.matchCategory || 'championship') : undefined,
+      matchDayOffset: offset,
+      updatedAt: Date.now(),
+    };
+
+    saveTrainingSessionInfo(updatedInfo);
+    saveTrainingSessionInfoAsync(updatedInfo);
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [dateStr]: updatedInfo,
+    }));
 
     // If currently selected date, update state & recalculate MD tag
     if (dateStr === selectedDate) {
       setDayType(next);
-      setMatchDayOffset(getAutoMatchDayOffset(selectedDate, next));
+      setMatchDayOffset(offset);
       if (next === 'match') {
         setMatchCategory(existing?.matchCategory || 'championship');
         setStartTime(existing?.startTime || (startTime !== '09:00' ? startTime : '10:00'));
@@ -693,6 +672,17 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         setEndTime(existing?.endTime || (endTime !== '11:30' ? endTime : '10:30'));
       }
     }
+  };
+
+  // Cycle day type on calendar strip button click
+  const cycleDayTypeOnCalendar = (dateStr: string) => {
+    const current = trainingSessions[dateStr]?.dayType || calendarSchedule[dateStr] || dayTypesMap[dateStr] || 'rest';
+    let next: CalendarDayType = 'training';
+    if (current === 'training') next = 'match';
+    else if (current === 'match') next = 'rest';
+    else next = 'training';
+
+    handleSetSpecificDayType(dateStr, next);
   };
 
   // Handle start time change and auto-adapt deadlines to this specific session
@@ -907,13 +897,14 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   // Toggle complementary work item for a given date
   const handleToggleComplementaryItem = (key: keyof ComplementaryWorkOptions, targetDate: string = selectedDate) => {
     lastUserEditTimestamp.current = Date.now();
+    const dType = calendarSchedule[targetDate] || 'rest';
     const existing = trainingSessions[targetDate] || {
       date: targetDate,
-      dayType: 'training',
-      matchDayOffset: 'MD-3',
+      dayType: dType,
+      matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
       durationMin: 90,
-      startTime: '09:00',
-      endTime: '10:30',
+      startTime: dType === 'match' ? '10:00' : '09:00',
+      endTime: dType === 'match' ? '11:30' : '10:30',
     };
 
     const currentComp: ComplementaryWorkConfig = existing.complementaryWork || (targetDate === selectedDate ? complementaryWork : {});
@@ -943,13 +934,14 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   // Update complementary notes for a given date
   const handleUpdateComplementaryNotes = (notes: string, targetDate: string = selectedDate) => {
     lastUserEditTimestamp.current = Date.now();
+    const dType = calendarSchedule[targetDate] || 'rest';
     const existing = trainingSessions[targetDate] || {
       date: targetDate,
-      dayType: 'training',
-      matchDayOffset: 'MD-3',
+      dayType: dType,
+      matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
       durationMin: 90,
-      startTime: '09:00',
-      endTime: '10:30',
+      startTime: dType === 'match' ? '10:00' : '09:00',
+      endTime: dType === 'match' ? '11:30' : '10:30',
     };
 
     const currentComp: ComplementaryWorkConfig = existing.complementaryWork || (targetDate === selectedDate ? complementaryWork : {});
@@ -1701,7 +1693,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
               {weekDatesForComplementary.map((dateStr) => {
                 const s = trainingSessions[dateStr];
-                const dayType = s?.dayType || 'training';
+                const dayType = s?.dayType || calendarSchedule[dateStr] || dayTypesMap[dateStr] || 'rest';
                 const comp = s?.complementaryWork || {};
                 const isSelected = dateStr === selectedDate;
                 const isToday = dateStr === todayStr;
@@ -1714,12 +1706,14 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                         ? 'border-purple-400 bg-purple-950/30 ring-2 ring-purple-500/40 shadow-lg'
                         : isToday
                         ? 'border-brand-lime/60 bg-dark-surface/60 ring-1 ring-brand-lime/40'
+                        : dayType === 'rest'
+                        ? 'border-slate-800/80 bg-slate-950/50 opacity-95'
                         : 'border-slate-800 bg-dark-bg/80'
                     }`}
                   >
                     <div className="space-y-2.5">
                       {/* Day Header */}
-                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800/80 pb-2">
                         <div>
                           <div className="flex items-center space-x-1.5">
                             <span className="text-xs font-black text-slate-100">
@@ -1732,25 +1726,69 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                             )}
                           </div>
                           <span className="text-[10px] text-slate-400 font-mono">
-                            {formatDatePtShort(dateStr)} • {s?.matchDayOffset || (dayType === 'match' ? 'MD' : 'MD-?')}
+                            {formatDatePtShort(dateStr)} • {dayType === 'rest' ? 'Folga' : s?.matchDayOffset || (dayType === 'match' ? 'MD' : 'MD-3')}
                           </span>
                         </div>
 
-                        {/* Day type badge */}
-                        <div className="text-right">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            dayType === 'match'
-                              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
-                              : dayType === 'rest'
-                              ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
-                              : 'bg-blue-950/80 text-blue-300 border-blue-500/40'
-                          }`}>
-                            {dayType === 'match' ? '🏆 Jogo' : dayType === 'rest' ? '🏖️ Folga' : '⚽ Treino'}
-                          </span>
+                        {/* Day type selector buttons (1-click Treino / Jogo / Folga) */}
+                        <div className="flex flex-col items-start sm:items-end space-y-1">
+                          <div className="flex items-center space-x-0.5 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shadow-sm">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetSpecificDayType(dateStr, 'training');
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
+                                dayType === 'training'
+                                  ? 'bg-blue-600 text-white shadow-sm font-black'
+                                  : 'text-slate-400 hover:text-slate-200'
+                              }`}
+                              title="Definir como Dia de Treino"
+                            >
+                              ⚽ Treino
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetSpecificDayType(dateStr, 'match');
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
+                                dayType === 'match'
+                                  ? 'bg-emerald-600 text-white shadow-sm font-black'
+                                  : 'text-slate-400 hover:text-slate-200'
+                              }`}
+                              title="Definir como Dia de Jogo"
+                            >
+                              🏆 Jogo
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSetSpecificDayType(dateStr, 'rest');
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
+                                dayType === 'rest'
+                                  ? 'bg-amber-500 text-slate-950 shadow-sm font-black ring-1 ring-amber-300'
+                                  : 'text-slate-400 hover:text-slate-200'
+                              }`}
+                              title="Definir como Dia de Folga"
+                            >
+                              🏖️ Folga
+                            </button>
+                          </div>
+
                           {s?.startTime && dayType !== 'rest' && (
-                            <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                            <div className="text-[9px] text-slate-400 font-mono">
                               {s.startTime} - {s.endTime}
                             </div>
+                          )}
+                          {dayType === 'rest' && (
+                            <span className="text-[9px] text-amber-400/90 font-bold">
+                              Descanso / Recuperação
+                            </span>
                           )}
                         </div>
                       </div>

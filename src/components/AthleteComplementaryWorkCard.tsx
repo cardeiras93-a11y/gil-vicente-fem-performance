@@ -182,7 +182,7 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
               const comp = s?.complementaryWork;
               const hasWork = hasAnyComplementaryWork(comp);
               const items = getActiveComplementaryItems(comp);
-              const dayType = s?.dayType || 'training';
+              const dayType = s?.dayType || 'rest';
 
               return (
                 <div

@@ -247,7 +247,7 @@ export function generateWhatsAppWeeklyPlanText(params: {
     lines.push(`🗓️ *${dayName} (${dateFormatted})${offsetTag}*`);
 
     // Main Activity
-    const dayType = s?.dayType || 'training';
+    const dayType = s?.dayType || 'rest';
     if (dayType === 'match') {
       let matchCat = '';
       if (isEn) {
@@ -328,62 +328,90 @@ export function applyWeeklyPreset(
 
   // Monday to Sunday (indices 0 to 6)
   weekDates.forEach((dateStr, idx) => {
-    const existing = result[dateStr] || {
-      date: dateStr,
-      dayType: 'training',
-      matchDayOffset: 'MD-3',
-      durationMin: 90,
-      startTime: '09:00',
-      endTime: '10:30',
-    };
+    const existing = result[dateStr];
+    let dayType = existing?.dayType;
+    let offset = existing?.matchDayOffset;
 
-    let compWork: ComplementaryWorkConfig = { ...(existing.complementaryWork || {}) };
+    let compWork: ComplementaryWorkConfig = { ...(existing?.complementaryWork || {}) };
 
     if (presetKey === 'championship_saturday') {
       if (idx === 0) {
         compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação pós-jogo' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 1) {
         compWork = { upperBody: true, core: true, notes: 'Ginásio pós-treino (tronco e core)' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 2) {
         compWork = { lowerBody: true, mobility: true, notes: 'Ginásio pós-treino (força excêntrica e potência)' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 3) {
         compWork = { sauna: true, foamRoller: true, notes: 'Regeneração e libertação miofascial pós-treino' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 4) {
         compWork = { mobility: true, injuryPrevention: true, notes: 'Mobilidade dinâmica e prevenção pós-treino' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 5) {
+        // Saturday: Match Day
         compWork = { iceBath: true, notes: 'Crioterapia imediata pós-jogo' };
+        dayType = 'match';
+        offset = 'MD';
       } else if (idx === 6) {
-        compWork = { cardioSubmax: true, mobility: true, notes: 'Bicicleta suave 15-20min opcional' };
+        // Sunday: Rest Day (Folga pós-jogo)
+        compWork = { cardioSubmax: true, mobility: true, notes: 'Folga / Regeneração opcional' };
+        dayType = 'rest';
+        offset = 'MD+1';
       }
     } else if (presetKey === 'championship_sunday') {
       if (idx === 0) {
         compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação pós-jogo' };
+        dayType = 'rest';
+        offset = 'MD+1';
       } else if (idx === 1) {
         compWork = { upperBody: true, core: true, notes: 'Ginásio pós-treino (tronco e pilar central)' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 2) {
         compWork = { lowerBody: true, mobility: true, notes: 'Ginásio pós-treino (membros inferiores e anca)' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 3) {
         compWork = { sauna: true, injuryPrevention: true, notes: 'Sauna e prevenção pós-treino' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 4) {
         compWork = { foamRoller: true, notes: 'Libertação fascial pós-treino' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 5) {
         compWork = { mobility: true, notes: 'Mobilidade e ativação pós-treino' };
+        if (!dayType) dayType = 'training';
       } else if (idx === 6) {
+        // Sunday: Match Day
         compWork = { iceBath: true, notes: 'Protocolo de gelo imediato pós-jogo' };
+        dayType = 'match';
+        offset = 'MD';
       }
     } else if (presetKey === 'regenerative') {
       // Regenerativa
-      if (idx === 0 || idx === 1) {
+      if (idx === 0 || idx === 6) {
+        dayType = 'rest';
+        offset = 'MD-3';
         compWork = { iceBath: true, foamRoller: true, sauna: true, notes: 'Descanso e regeneração celular' };
       } else if (idx === 2 || idx === 3) {
+        if (!dayType) dayType = 'training';
         compWork = { mobility: true, core: true, cardioSubmax: true, notes: 'Trabalho cardiovascular suave e mobilidade' };
       } else {
+        if (!dayType) dayType = 'training';
         compWork = { foamRoller: true, injuryPrevention: true };
       }
     }
 
+    const finalDayType = dayType || (idx === 6 ? 'rest' : 'training');
+
     result[dateStr] = {
-      ...existing,
+      ...(existing || {}),
+      date: dateStr,
+      durationMin: existing?.durationMin || 90,
+      startTime: existing?.startTime || (finalDayType === 'match' ? '10:00' : '09:00'),
+      endTime: existing?.endTime || (finalDayType === 'match' ? '11:30' : '10:30'),
+      dayType: finalDayType,
+      matchDayOffset: offset || existing?.matchDayOffset || (finalDayType === 'match' ? 'MD' : 'MD-3'),
       complementaryWork: compWork,
       updatedAt: Date.now(),
     };
