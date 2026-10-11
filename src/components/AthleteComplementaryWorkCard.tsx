@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { getStoredTrainingSessions } from '@/lib/storage';
+import { getStoredTrainingSessions, getStoredWeeklyPlanMetadata } from '@/lib/storage';
 import { TrainingSessionInfo } from '@/lib/types';
 import {
   COMPLEMENTARY_WORK_ITEMS,
@@ -53,6 +53,7 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
   const activeTodayItems = useMemo(() => getActiveComplementaryItems(todayComp), [todayComp]);
 
   const weekDates = useMemo(() => getWeekDates(todayStr), [todayStr]);
+  const weekMeta = useMemo(() => getStoredWeeklyPlanMetadata(weekDates[0]), [weekDates, sessions]);
 
   // Check if any day in the week has complementary work configured
   const hasAnyWeekWork = useMemo(() => {
@@ -254,9 +255,10 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
       <WeeklyPlanExportModal
         isOpen={showPosterModal}
         onClose={() => setShowPosterModal(false)}
-        microcycleTitle="Planeamento Semanal de Extra-Treino"
+        microcycleTitle={weekMeta.title || "Planeamento Semanal de Extra-Treino"}
         weekDates={weekDates}
         sessions={sessions}
+        weeklyTeamNotes={weekMeta.notes || ""}
         initialLang="pt"
       />
     </div>

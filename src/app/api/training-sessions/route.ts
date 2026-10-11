@@ -31,6 +31,7 @@ export async function GET(request: Request) {
   try {
     let sessions: Record<string, any> = {};
     let schedule: Record<string, any> = {};
+    let weeklyPlan: Record<string, any> = {};
 
     // 1. Fetch from Supabase if configured (global cross-device persistence)
     if (isSupabaseConfigured && supabase) {
@@ -49,6 +50,9 @@ export async function GET(request: Request) {
           }
           if (fallbackData.schedule && typeof fallbackData.schedule === 'object') {
             schedule = { ...fallbackData.schedule };
+          }
+          if (fallbackData.weeklyPlan && typeof fallbackData.weeklyPlan === 'object') {
+            weeklyPlan = { ...fallbackData.weeklyPlan };
           }
         }
       } catch (e) {
@@ -127,14 +131,17 @@ export async function GET(request: Request) {
           });
         }
         schedule = { ...(localData.schedule || {}), ...schedule };
+        if (localData.weeklyPlan && typeof localData.weeklyPlan === 'object') {
+          weeklyPlan = { ...localData.weeklyPlan, ...weeklyPlan };
+        }
       }
     } catch {
       // ignore local file errors in serverless
     }
 
-    const payload = { sessions, schedule };
+    const payload = { sessions, schedule, weeklyPlan };
     return NextResponse.json(
-      { success: true, sessions, schedule, data: payload },
+      { success: true, sessions, schedule, weeklyPlan, data: payload },
       {
         status: 200,
         headers: {
@@ -156,7 +163,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    let currentData = { sessions: {} as Record<string, any>, schedule: {} as Record<string, any> };
+    let currentData = { sessions: {} as Record<string, any>, schedule: {} as Record<string, any>, weeklyPlan: {} as Record<string, any> };
 
     // Load existing state from Supabase fallback row first (authoritative cloud state)
     if (isSupabaseConfigured && supabase) {
@@ -171,6 +178,7 @@ export async function POST(request: Request) {
           const cloudData = JSON.parse(athData.name);
           currentData.sessions = cloudData.sessions || {};
           currentData.schedule = cloudData.schedule || {};
+          currentData.weeklyPlan = cloudData.weeklyPlan || {};
         }
       } catch {}
     }
@@ -184,6 +192,7 @@ export async function POST(request: Request) {
           const parsed = JSON.parse(raw);
           currentData.sessions = parsed.sessions || {};
           currentData.schedule = parsed.schedule || {};
+          currentData.weeklyPlan = parsed.weeklyPlan || {};
         }
       } catch {}
     }
@@ -200,6 +209,10 @@ export async function POST(request: Request) {
       }
     } else if (body.type === 'schedule' && body.schedule) {
       currentData.schedule = { ...currentData.schedule, ...body.schedule };
+    } else if (body.type === 'weekly_plan' && body.weekStartDate && body.metadata) {
+      if (!currentData.weeklyPlan) currentData.weeklyPlan = {};
+      currentData.weeklyPlan[body.weekStartDate] = body.metadata;
+      currentData.weeklyPlan['__current__'] = body.metadata;
     } else if (body.date && body.dayType) {
       currentData.sessions[body.date] = body;
       currentData.schedule[body.date] = body.dayType;

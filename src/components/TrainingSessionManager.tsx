@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete, ComplementaryWorkOptions, ComplementaryWorkConfig } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
-import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig } from '@/lib/storage';
+import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig, getStoredWeeklyPlanMetadata, saveWeeklyPlanMetadata } from '@/lib/storage';
 import {
   COMPLEMENTARY_WORK_ITEMS,
   ComplementaryWorkItem,
@@ -79,8 +79,22 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   const [complementaryWork, setComplementaryWork] = useState<ComplementaryWorkConfig>({});
   const [weeklyRefDate, setWeeklyRefDate] = useState<string>(selectedDate || new Date().toISOString().split('T')[0]);
-  const [microcycleTitle, setMicrocycleTitle] = useState<string>('Weekly Microcycle');
-  const [weeklyTeamNotes, setWeeklyTeamNotes] = useState<string>('');
+  const [microcycleTitle, setMicrocycleTitle] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const meta = getStoredWeeklyPlanMetadata();
+      return meta.title || 'Weekly Microcycle';
+    }
+    return 'Weekly Microcycle';
+  });
+  const [weeklyTeamNotes, setWeeklyTeamNotes] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const meta = getStoredWeeklyPlanMetadata();
+      return meta.notes || '';
+    }
+    return '';
+  });
+  const [metaSaveStatus, setMetaSaveStatus] = useState<boolean>(false);
+  const metaSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
   const [whatsAppLang, setWhatsAppLang] = useState<'en' | 'pt'>('en');
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -894,6 +908,43 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return getWeekDates(weeklyRefDate);
   }, [weeklyRefDate]);
 
+  // Sync microcycle title & notes when switching week
+  useEffect(() => {
+    const weekStart = weekDatesForComplementary[0];
+    if (!weekStart) return;
+    const meta = getStoredWeeklyPlanMetadata(weekStart);
+    if (meta.title) {
+      setMicrocycleTitle(meta.title);
+    } else {
+      const curr = getStoredWeeklyPlanMetadata('__current__');
+      if (curr.title) setMicrocycleTitle(curr.title);
+    }
+    if (meta.notes !== undefined) {
+      setWeeklyTeamNotes(meta.notes);
+    } else {
+      const curr = getStoredWeeklyPlanMetadata('__current__');
+      if (curr.notes) setWeeklyTeamNotes(curr.notes);
+    }
+  }, [weekDatesForComplementary]);
+
+  const handleTitleChange = (val: string) => {
+    setMicrocycleTitle(val);
+    const weekStart = weekDatesForComplementary[0];
+    saveWeeklyPlanMetadata(weekStart, { title: val, notes: weeklyTeamNotes });
+    setMetaSaveStatus(true);
+    if (metaSaveTimeoutRef.current) clearTimeout(metaSaveTimeoutRef.current);
+    metaSaveTimeoutRef.current = setTimeout(() => setMetaSaveStatus(false), 2000);
+  };
+
+  const handleNotesChange = (val: string) => {
+    setWeeklyTeamNotes(val);
+    const weekStart = weekDatesForComplementary[0];
+    saveWeeklyPlanMetadata(weekStart, { title: microcycleTitle, notes: val });
+    setMetaSaveStatus(true);
+    if (metaSaveTimeoutRef.current) clearTimeout(metaSaveTimeoutRef.current);
+    metaSaveTimeoutRef.current = setTimeout(() => setMetaSaveStatus(false), 2000);
+  };
+
   // Toggle complementary work item for a given date
   const handleToggleComplementaryItem = (key: keyof ComplementaryWorkOptions, targetDate: string = selectedDate) => {
     lastUserEditTimestamp.current = Date.now();
@@ -1609,14 +1660,22 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           {/* Microcycle Title & General Notes */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
-                <span>📅 Título do Microciclo / Semana:</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                  <span>📅 Título do Microciclo / Semana:</span>
+                </label>
+                {metaSaveStatus && (
+                  <span className="text-[10px] font-bold text-emerald-400 flex items-center space-x-1 animate-fade-in">
+                    <Check className="h-3 w-3" />
+                    <span>Guardado</span>
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="Ex: Microciclo 6 • Preparação Campeonato"
                 value={microcycleTitle}
-                onChange={(e) => setMicrocycleTitle(e.target.value)}
+                onChange={(e) => handleTitleChange(e.target.value)}
                 className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 text-xs font-bold text-slate-100 placeholder-slate-500 focus:border-purple-500 focus:outline-none"
               />
               <p className="text-[10px] text-slate-400">
@@ -1625,14 +1684,22 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
-                <span>💬 Nota Geral da Equipa Técnica (Aparece no WhatsApp):</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                  <span>💬 Nota Geral da Equipa Técnica (Aparece no WhatsApp):</span>
+                </label>
+                {metaSaveStatus && (
+                  <span className="text-[10px] font-bold text-emerald-400 flex items-center space-x-1 animate-fade-in">
+                    <Check className="h-3 w-3" />
+                    <span>Guardado</span>
+                  </span>
+                )}
+              </div>
               <textarea
                 rows={2}
                 placeholder="Ex: Ginásio aberto 45 min antes. Levar material de treino completo. Recuperação obrigatória sábado..."
                 value={weeklyTeamNotes}
-                onChange={(e) => setWeeklyTeamNotes(e.target.value)}
+                onChange={(e) => handleNotesChange(e.target.value)}
                 className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 text-xs font-medium text-slate-100 placeholder-slate-500 focus:border-purple-500 focus:outline-none"
               />
             </div>

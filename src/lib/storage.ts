@@ -623,6 +623,15 @@ export async function syncAllDataFromCloud(): Promise<void> {
       const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
       localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
       localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
+
+      const remoteWeeklyPlan = data?.weeklyPlan || data?.data?.weeklyPlan;
+      if (remoteWeeklyPlan && typeof remoteWeeklyPlan === 'object') {
+        const localPlanRaw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
+        const localPlan = localPlanRaw ? JSON.parse(localPlanRaw) : {};
+        const mergedPlan = { ...remoteWeeklyPlan, ...localPlan };
+        localStorage.setItem(WEEKLY_PLAN_METADATA_KEY, JSON.stringify(mergedPlan));
+      }
+
       dispatchDataUpdatedEvent();
     }
   } catch {}
@@ -1317,6 +1326,66 @@ export async function saveTrainingSessionInfoAsync(info: TrainingSessionInfo): P
     return res.ok;
   } catch {
     return false;
+  }
+}
+
+export interface WeeklyPlanMetadata {
+  title?: string;
+  notes?: string;
+  updatedAt?: number;
+}
+
+export const WEEKLY_PLAN_METADATA_KEY = 'femperf_weekly_plan_metadata_v1';
+
+export function getStoredWeeklyPlanMetadata(weekStartDate?: string): WeeklyPlanMetadata {
+  if (typeof window === 'undefined') return {};
+  try {
+    const raw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
+    const map: Record<string, WeeklyPlanMetadata> = raw ? JSON.parse(raw) : {};
+    if (weekStartDate && map[weekStartDate]) {
+      return map[weekStartDate];
+    }
+    if (map['__current__']) {
+      return map['__current__'];
+    }
+    return {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveWeeklyPlanMetadata(weekStartDate: string | undefined, data: { title?: string; notes?: string }): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
+    const map: Record<string, WeeklyPlanMetadata> = raw ? JSON.parse(raw) : {};
+    const key = weekStartDate || '__current__';
+    const existing = map[key] || {};
+    const updated: WeeklyPlanMetadata = {
+      ...existing,
+      ...data,
+      updatedAt: Date.now(),
+    };
+    if (weekStartDate) {
+      map[weekStartDate] = updated;
+    }
+    map['__current__'] = updated;
+    localStorage.setItem(WEEKLY_PLAN_METADATA_KEY, JSON.stringify(map));
+
+    // Cloud async backup
+    secureFetch('/api/training-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'weekly_plan',
+        weekStartDate: key,
+        metadata: updated,
+      }),
+    }).catch(() => {});
+
+    dispatchDataUpdatedEvent();
+  } catch (e) {
+    console.error('Erro ao guardar metadados do microciclo semanal:', e);
   }
 }
 
