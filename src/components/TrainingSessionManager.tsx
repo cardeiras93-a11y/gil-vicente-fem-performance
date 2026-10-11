@@ -1,14 +1,25 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete } from '@/lib/types';
+import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete, ComplementaryWorkOptions, ComplementaryWorkConfig } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
 import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig } from '@/lib/storage';
+import {
+  COMPLEMENTARY_WORK_ITEMS,
+  ComplementaryWorkItem,
+  hasAnyComplementaryWork,
+  getActiveComplementaryItems,
+  getWeekDates,
+  getDayNamePt,
+  formatDatePtShort,
+  generateWhatsAppWeeklyPlanText,
+  applyWeeklyPreset,
+} from '@/lib/complementaryWork';
 import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
   AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users,
-  LayoutGrid, List, Loader2
+  LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw
 } from 'lucide-react';
 
 interface TrainingSessionManagerProps {
@@ -65,14 +76,20 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   const [calendarViewMode, setCalendarViewMode] = useState<'grid' | 'strip'>('grid');
 
-  const [sessionSubTab, setSessionSubTabState] = useState<'calendar' | 'timing' | 'roster' | 'conditions' | 'submissions' | 'all'>(() => {
+  const [complementaryWork, setComplementaryWork] = useState<ComplementaryWorkConfig>({});
+  const [weeklyRefDate, setWeeklyRefDate] = useState<string>(selectedDate || new Date().toISOString().split('T')[0]);
+  const [microcycleTitle, setMicrocycleTitle] = useState<string>('Microciclo Semanal');
+  const [weeklyTeamNotes, setWeeklyTeamNotes] = useState<string>('');
+  const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
+
+  const [sessionSubTab, setSessionSubTabState] = useState<'calendar' | 'timing' | 'complementary' | 'roster' | 'conditions' | 'submissions' | 'all'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_session_sub_tab') as any) || 'calendar';
     }
     return 'calendar';
   });
 
-  const setSessionSubTab = (tab: 'calendar' | 'timing' | 'roster' | 'conditions' | 'submissions' | 'all') => {
+  const setSessionSubTab = (tab: 'calendar' | 'timing' | 'complementary' | 'roster' | 'conditions' | 'submissions' | 'all') => {
     setSessionSubTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_session_sub_tab', tab);
@@ -273,8 +290,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setTempEnd(existing.tempEnd !== undefined ? existing.tempEnd.toString() : '25.0');
       setLocationName(existing.locationTime || 'Campo de São Martinho - Barcelos');
       setFocusNotes(existing.focusNotes || '');
-      setAthleteStatuses(buildInitialStatuses(existing.athleteStatuses));
       setCustomDeadline(existing.customDeadline || '');
+      setComplementaryWork(existing.complementaryWork || {});
+      setWeeklyRefDate(selectedDate);
       const dCfg = getStoredDeadlineConfig();
       let initWellness = existing.customDeadlineWellness || existing.customDeadline || dCfg.customDateDeadlinesWellness?.[selectedDate] || dCfg.customDateDeadlines?.[selectedDate] || '';
       let initRpe = existing.customDeadlineRpe || dCfg.customDateDeadlinesRpe?.[selectedDate] || '';
@@ -326,6 +344,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setTempEnd('25.0');
       setLocationName('Campo de São Martinho - Barcelos');
       setFocusNotes('');
+      setComplementaryWork({});
+      setWeeklyRefDate(selectedDate);
       setAthleteStatuses(buildInitialStatuses());
 
       const dCfg = getStoredDeadlineConfig();
@@ -411,6 +431,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     const loc = explicitUpdates?.locationTime !== undefined ? explicitUpdates.locationTime : locationName;
     const notes = explicitUpdates?.focusNotes !== undefined ? explicitUpdates.focusNotes : focusNotes;
     const statuses = explicitUpdates?.athleteStatuses !== undefined ? explicitUpdates.athleteStatuses : athleteStatuses;
+    const compWork = explicitUpdates?.complementaryWork !== undefined ? explicitUpdates.complementaryWork : complementaryWork;
     const cWellness = explicitUpdates?.customDeadlineWellness !== undefined ? explicitUpdates.customDeadlineWellness : customDeadlineWellness;
     const cRpe = explicitUpdates?.customDeadlineRpe !== undefined ? explicitUpdates.customDeadlineRpe : customDeadlineRpe;
     const cDead = explicitUpdates?.customDeadline !== undefined ? explicitUpdates.customDeadline : (cWellness.trim() || customDeadline.trim() || '');
@@ -441,6 +462,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       tempDelta: tempDelta !== null ? tempDelta : undefined,
       locationTime: loc,
       focusNotes: notes,
+      complementaryWork: compWork,
       athleteStatuses: statuses,
       customDeadline: cDead.trim() || '',
       customDeadlineWellness: cWellness.trim() || '',
@@ -850,6 +872,184 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     setAthleteStatuses(allNormal);
   };
 
+  // Week navigation for Complementary Work tab
+  const handlePrevWeek = () => {
+    const [y, m, d] = weeklyRefDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() - 7);
+    const yStr = dt.getFullYear();
+    const mStr = String(dt.getMonth() + 1).padStart(2, '0');
+    const dStr = String(dt.getDate()).padStart(2, '0');
+    setWeeklyRefDate(`${yStr}-${mStr}-${dStr}`);
+  };
+
+  const handleNextWeek = () => {
+    const [y, m, d] = weeklyRefDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    dt.setDate(dt.getDate() + 7);
+    const yStr = dt.getFullYear();
+    const mStr = String(dt.getMonth() + 1).padStart(2, '0');
+    const dStr = String(dt.getDate()).padStart(2, '0');
+    setWeeklyRefDate(`${yStr}-${mStr}-${dStr}`);
+  };
+
+  const handleCurrentWeek = () => {
+    setWeeklyRefDate(todayStr);
+  };
+
+  const weekDatesForComplementary = useMemo(() => {
+    return getWeekDates(weeklyRefDate);
+  }, [weeklyRefDate]);
+
+  // Toggle complementary work item for a given date
+  const handleToggleComplementaryItem = (key: keyof ComplementaryWorkOptions, targetDate: string = selectedDate) => {
+    lastUserEditTimestamp.current = Date.now();
+    const existing = trainingSessions[targetDate] || {
+      date: targetDate,
+      dayType: 'training',
+      matchDayOffset: 'MD-3',
+      durationMin: 90,
+      startTime: '09:00',
+      endTime: '10:30',
+    };
+
+    const currentComp: ComplementaryWorkConfig = existing.complementaryWork || (targetDate === selectedDate ? complementaryWork : {});
+    const updatedComp: ComplementaryWorkConfig = {
+      ...currentComp,
+      [key]: !currentComp[key],
+    };
+
+    if (targetDate === selectedDate) {
+      setComplementaryWork(updatedComp);
+    }
+
+    const updatedSession: TrainingSessionInfo = {
+      ...existing,
+      complementaryWork: updatedComp,
+      updatedAt: Date.now(),
+    };
+
+    saveTrainingSessionInfo(updatedSession);
+    saveTrainingSessionInfoAsync(updatedSession);
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [targetDate]: updatedSession,
+    }));
+  };
+
+  // Update complementary notes for a given date
+  const handleUpdateComplementaryNotes = (notes: string, targetDate: string = selectedDate) => {
+    lastUserEditTimestamp.current = Date.now();
+    const existing = trainingSessions[targetDate] || {
+      date: targetDate,
+      dayType: 'training',
+      matchDayOffset: 'MD-3',
+      durationMin: 90,
+      startTime: '09:00',
+      endTime: '10:30',
+    };
+
+    const currentComp: ComplementaryWorkConfig = existing.complementaryWork || (targetDate === selectedDate ? complementaryWork : {});
+    const updatedComp: ComplementaryWorkConfig = {
+      ...currentComp,
+      notes,
+    };
+
+    if (targetDate === selectedDate) {
+      setComplementaryWork(updatedComp);
+    }
+
+    const updatedSession: TrainingSessionInfo = {
+      ...existing,
+      complementaryWork: updatedComp,
+      updatedAt: Date.now(),
+    };
+
+    saveTrainingSessionInfo(updatedSession);
+    saveTrainingSessionInfoAsync(updatedSession);
+    setTrainingSessions((prev) => ({
+      ...prev,
+      [targetDate]: updatedSession,
+    }));
+  };
+
+  // Apply weekly preset
+  const handleApplyWeeklyPreset = (presetKey: 'championship_saturday' | 'championship_sunday' | 'regenerative' | 'double_game') => {
+    lastUserEditTimestamp.current = Date.now();
+    const week = weekDatesForComplementary;
+    const updated = applyWeeklyPreset(presetKey, week, trainingSessions);
+
+    setTrainingSessions(updated);
+    week.forEach((d) => {
+      saveTrainingSessionInfo(updated[d]);
+      saveTrainingSessionInfoAsync(updated[d]);
+    });
+    if (week.includes(selectedDate)) {
+      setComplementaryWork(updated[selectedDate]?.complementaryWork || {});
+    }
+    setSaveSuccess(`Preset aplicado a toda a semana (${formatDatePtShort(week[0])} a ${formatDatePtShort(week[6])})!`);
+    setTimeout(() => setSaveSuccess(null), 3000);
+  };
+
+  // Clear complementary work for the current week
+  const handleClearWeekComplementary = () => {
+    lastUserEditTimestamp.current = Date.now();
+    const week = weekDatesForComplementary;
+    const updated = { ...trainingSessions };
+    week.forEach((d) => {
+      if (updated[d]) {
+        updated[d] = {
+          ...updated[d],
+          complementaryWork: {},
+          updatedAt: Date.now(),
+        };
+        saveTrainingSessionInfo(updated[d]);
+        saveTrainingSessionInfoAsync(updated[d]);
+      }
+    });
+    setTrainingSessions(updated);
+    if (week.includes(selectedDate)) {
+      setComplementaryWork({});
+    }
+    setSaveSuccess(`Trabalho complementar limpo para a semana!`);
+    setTimeout(() => setSaveSuccess(null), 3000);
+  };
+
+  // WhatsApp share & copy
+  const handleShareWhatsApp = () => {
+    const text = generateWhatsAppWeeklyPlanText({
+      microcycleTitle,
+      weekDates: weekDatesForComplementary,
+      sessions: trainingSessions,
+      generalNotes: weeklyTeamNotes,
+    });
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  };
+
+  const handleCopyWhatsApp = async () => {
+    const text = generateWhatsAppWeeklyPlanText({
+      microcycleTitle,
+      weekDates: weekDatesForComplementary,
+      sessions: trainingSessions,
+      generalNotes: weeklyTeamNotes,
+    });
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2500);
+    } catch {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopyFeedback(true);
+      setTimeout(() => setCopyFeedback(false), 2500);
+    }
+  };
+
   // Save current training session info
   const handleSaveSession = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -908,6 +1108,22 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           <span>Horário do Treino</span>
           <span className="ml-1 rounded-full bg-slate-900/60 px-2 py-0.5 text-[10px] text-amber-300 font-extrabold border border-amber-500/30">
             {startTime} - {endTime}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setSessionSubTab('complementary')}
+          className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+            sessionSubTab === 'complementary'
+              ? 'bg-purple-600 text-white shadow-md font-extrabold ring-1 ring-purple-400'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+          }`}
+        >
+          <Dumbbell className="h-3.5 w-3.5 text-purple-400" />
+          <span>Extra-Treino & WhatsApp</span>
+          <span className="ml-1 rounded-full bg-slate-900/60 px-2 py-0.5 text-[10px] text-purple-300 font-extrabold border border-purple-500/30">
+            Semana
           </span>
         </button>
 
@@ -1320,8 +1536,375 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         </div>
       )}
 
-      {/* 2. Main Training Session Info Form & Athlete Submissions KPI */}
-      {sessionSubTab !== 'calendar' && (
+      {/* 2. DEDICATED WEEKLY EXTRA-TREINO & WHATSAPP SHARING PANEL */}
+      {(sessionSubTab === 'complementary' || sessionSubTab === 'all') && (
+        <div className="space-y-5 rounded-2xl border border-purple-500/30 bg-dark-card p-5 shadow-xl animate-fade-in">
+          {/* Header & Week Selector */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+            <div className="flex items-center space-x-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-purple-950/80 border border-purple-500/40 text-purple-300 text-xl shadow-md">
+                🏋️‍♂️
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-sm font-black uppercase text-slate-100">
+                    Planeamento Semanal de Extra-Treino & WhatsApp
+                  </h3>
+                  <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-black text-purple-300 border border-purple-500/30">
+                    Microciclo
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Planeia o trabalho de ginásio, recuperação e mobilidade da semana e partilha no grupo do WhatsApp com 1 clique.
+                </p>
+              </div>
+            </div>
+
+            {/* Week navigation buttons */}
+            <div className="flex items-center space-x-2 self-start md:self-auto">
+              <button
+                type="button"
+                onClick={handlePrevWeek}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl border border-slate-700 bg-dark-bg text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer"
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+                <span>Semana Ant.</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleCurrentWeek}
+                className="px-3 py-1.5 rounded-xl border border-purple-500/40 bg-purple-950/40 text-purple-300 hover:bg-purple-900/50 text-xs font-extrabold transition-all cursor-pointer"
+              >
+                Semana Atual
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextWeek}
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-xl border border-slate-700 bg-dark-bg text-slate-300 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all cursor-pointer"
+              >
+                <span>Próxima</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Microcycle Title & General Notes */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                <span>📅 Título do Microciclo / Semana:</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Microciclo 6 • Preparação Campeonato"
+                value={microcycleTitle}
+                onChange={(e) => setMicrocycleTitle(e.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 text-xs font-bold text-slate-100 placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+              />
+              <p className="text-[10px] text-slate-400">
+                Semana de <strong className="text-slate-200">{formatDatePtShort(weekDatesForComplementary[0])}</strong> a <strong className="text-slate-200">{formatDatePtShort(weekDatesForComplementary[6])}</strong> (Segunda a Domingo)
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-extrabold uppercase text-slate-300 flex items-center space-x-1.5">
+                <span>💬 Nota Geral da Equipa Técnica (Aparece no WhatsApp):</span>
+              </label>
+              <textarea
+                rows={2}
+                placeholder="Ex: Ginásio aberto 45 min antes. Levar material de treino completo. Recuperação obrigatória sábado..."
+                value={weeklyTeamNotes}
+                onChange={(e) => setWeeklyTeamNotes(e.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-dark-bg p-2.5 text-xs font-medium text-slate-100 placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Quick Preset Selector Buttons */}
+          <div className="space-y-2 p-3.5 rounded-xl border border-purple-500/20 bg-purple-950/10">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black uppercase text-purple-300 flex items-center space-x-1.5">
+                <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                <span>Preenchimento Rápido por Presets:</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleClearWeekComplementary}
+                className="flex items-center space-x-1 text-[10px] font-extrabold text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Limpar Trabalho da Semana</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => handleApplyWeeklyPreset('championship_saturday')}
+                className="flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-indigo-500/40 bg-indigo-950/40 hover:bg-indigo-900/50 text-indigo-200 text-xs font-extrabold transition-all cursor-pointer shadow-sm hover:scale-101"
+              >
+                <span>🏆</span>
+                <span>Jogo ao Sábado (MD Sábado)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyWeeklyPreset('championship_sunday')}
+                className="flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-amber-500/40 bg-amber-950/40 hover:bg-amber-900/50 text-amber-200 text-xs font-extrabold transition-all cursor-pointer shadow-sm hover:scale-101"
+              >
+                <span>🥇</span>
+                <span>Jogo ao Domingo (MD Domingo)</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleApplyWeeklyPreset('regenerative')}
+                className="flex items-center justify-center space-x-2 p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-200 text-xs font-extrabold transition-all cursor-pointer shadow-sm hover:scale-101"
+              >
+                <span>🧘</span>
+                <span>Semana Regenerativa / Paragem</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 7-Day Interactive Card Grid (Segunda a Domingo) */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-black uppercase text-slate-200">
+              Distribuição Diária por Atividade & Conteúdos (7 Dias)
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+              {weekDatesForComplementary.map((dateStr) => {
+                const s = trainingSessions[dateStr];
+                const dayType = s?.dayType || 'training';
+                const comp = s?.complementaryWork || {};
+                const isSelected = dateStr === selectedDate;
+                const isToday = dateStr === todayStr;
+
+                return (
+                  <div
+                    key={dateStr}
+                    className={`rounded-xl border p-3.5 flex flex-col justify-between space-y-3 transition-all ${
+                      isSelected
+                        ? 'border-purple-400 bg-purple-950/30 ring-2 ring-purple-500/40 shadow-lg'
+                        : isToday
+                        ? 'border-brand-lime/60 bg-dark-surface/60 ring-1 ring-brand-lime/40'
+                        : 'border-slate-800 bg-dark-bg/80'
+                    }`}
+                  >
+                    <div className="space-y-2.5">
+                      {/* Day Header */}
+                      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                        <div>
+                          <div className="flex items-center space-x-1.5">
+                            <span className="text-xs font-black text-slate-100">
+                              {getDayNamePt(dateStr)}
+                            </span>
+                            {isToday && (
+                              <span className="text-[9px] font-black uppercase text-brand-lime bg-brand-lime/10 px-1.5 py-0.2 rounded border border-brand-lime/30">
+                                Hoje
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {formatDatePtShort(dateStr)} • {s?.matchDayOffset || (dayType === 'match' ? 'MD' : 'MD-?')}
+                          </span>
+                        </div>
+
+                        {/* Day type badge */}
+                        <div className="text-right">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            dayType === 'match'
+                              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
+                              : dayType === 'rest'
+                              ? 'bg-amber-950/80 text-amber-300 border-amber-500/40'
+                              : 'bg-blue-950/80 text-blue-300 border-blue-500/40'
+                          }`}>
+                            {dayType === 'match' ? '🏆 Jogo' : dayType === 'rest' ? '🏖️ Folga' : '⚽ Treino'}
+                          </span>
+                          {s?.startTime && dayType !== 'rest' && (
+                            <div className="text-[9px] text-slate-400 font-mono mt-0.5">
+                              {s.startTime} - {s.endTime}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Chips by Category */}
+                      {/* 1. Ginásio */}
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-extrabold uppercase text-indigo-400 tracking-wider">
+                          🏋️ Ginásio & Força
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'gym').map((item) => {
+                            const active = Boolean(comp[item.key]);
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleToggleComplementaryItem(item.key, dateStr)}
+                                className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer flex items-center space-x-1 ${
+                                  active
+                                    ? `${item.badgeClass} ring-1 ring-purple-400 scale-102`
+                                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <span>{item.icon}</span>
+                                <span>{item.shortLabel}</span>
+                                {active && <Check className="h-2.5 w-2.5 text-purple-300" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 2. Recuperação */}
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-extrabold uppercase text-cyan-400 tracking-wider">
+                          🧊 Recuperação
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'recovery').map((item) => {
+                            const active = Boolean(comp[item.key]);
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleToggleComplementaryItem(item.key, dateStr)}
+                                className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer flex items-center space-x-1 ${
+                                  active
+                                    ? `${item.badgeClass} ring-1 ring-cyan-400 scale-102`
+                                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <span>{item.icon}</span>
+                                <span>{item.shortLabel}</span>
+                                {active && <Check className="h-2.5 w-2.5 text-cyan-300" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* 3. Mobilidade */}
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-extrabold uppercase text-teal-400 tracking-wider">
+                          🧘 Mobilidade
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'mobility').map((item) => {
+                            const active = Boolean(comp[item.key]);
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => handleToggleComplementaryItem(item.key, dateStr)}
+                                className={`px-2 py-1 rounded-lg border text-[10px] font-extrabold transition-all cursor-pointer flex items-center space-x-1 ${
+                                  active
+                                    ? `${item.badgeClass} ring-1 ring-teal-400 scale-102`
+                                    : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <span>{item.icon}</span>
+                                <span>{item.shortLabel}</span>
+                                {active && <Check className="h-2.5 w-2.5 text-teal-300" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Day Note Input */}
+                      <div className="pt-1">
+                        <input
+                          type="text"
+                          placeholder="Nota / Instrução para este dia..."
+                          value={comp.notes || ''}
+                          onChange={(e) => handleUpdateComplementaryNotes(e.target.value, dateStr)}
+                          className="w-full rounded-lg border border-slate-700 bg-dark-bg p-1.5 text-[11px] font-medium text-slate-200 placeholder-slate-500 focus:border-purple-500 focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Day Select Footer */}
+                    <button
+                      type="button"
+                      onClick={() => onSelectDate(dateStr)}
+                      className={`w-full py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-purple-600 text-white shadow'
+                          : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                      }`}
+                    >
+                      {isSelected ? '✓ Dia Selecionado' : 'Editar Horário / Treino'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* WhatsApp Live Preview & 1-Click Sharing */}
+          <div className="rounded-2xl border border-emerald-500/40 bg-emerald-950/20 p-4 space-y-3.5 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/20 pb-3">
+              <div className="flex items-center space-x-2">
+                <span className="text-xl">💬</span>
+                <div>
+                  <h4 className="text-xs font-black uppercase text-emerald-300">
+                    Mensagem Formatada para o Grupo do WhatsApp
+                  </h4>
+                  <p className="text-[11px] text-emerald-200/80">
+                    Atualiza-se automaticamente com as opções marcadas acima nos 7 dias.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={handleCopyWhatsApp}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-emerald-500/40 bg-emerald-900/60 hover:bg-emerald-800/70 text-emerald-100 text-xs font-extrabold transition-all cursor-pointer shadow active:scale-98"
+                >
+                  {copyFeedback ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4 text-emerald-300" />}
+                  <span>{copyFeedback ? 'Copiado!' : 'Copiar Texto'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleShareWhatsApp}
+                  className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all cursor-pointer shadow-lg shadow-emerald-500/30 active:scale-98"
+                >
+                  <Share2 className="h-4 w-4" />
+                  <span>Partilhar no WhatsApp</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Preview Box */}
+            <div className="rounded-xl border border-emerald-500/30 bg-slate-950/80 p-3.5 max-h-56 overflow-y-auto font-mono text-[11px] text-slate-200 whitespace-pre-wrap leading-relaxed select-all">
+              {generateWhatsAppWeeklyPlanText({
+                microcycleTitle,
+                weekDates: weekDatesForComplementary,
+                sessions: trainingSessions,
+                generalNotes: weeklyTeamNotes,
+              })}
+            </div>
+
+            <div className="flex items-center justify-between text-[11px] text-emerald-300/80">
+              <span className="flex items-center space-x-1">
+                <span>📱</span>
+                <span>As atletas já conseguem ver este planeamento em tempo real na app delas!</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. Main Training Session Info Form & Athlete Submissions KPI */}
+      {sessionSubTab !== 'calendar' && sessionSubTab !== 'complementary' && (
         <div className={`grid grid-cols-1 ${sessionSubTab === 'all' ? 'lg:grid-cols-3' : 'lg:grid-cols-1'} gap-6 animate-fade-in`}>
           {sessionSubTab !== 'submissions' && (
             <form onSubmit={handleSaveSession} className={`${sessionSubTab === 'all' ? 'lg:col-span-2' : ''} space-y-5 rounded-2xl border border-dark-border bg-dark-card p-5 shadow-lg`}>
@@ -1932,6 +2515,115 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           </div>
           </>
         )}
+
+          {/* 7. Trabalho Complementar / Extra-Treino Deste Dia */}
+          <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-4 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-500/20 pb-2">
+              <label className="text-xs font-extrabold uppercase text-purple-200 flex items-center space-x-2">
+                <Dumbbell className="h-4 w-4 text-purple-400" />
+                <span>Trabalho Complementar / Extra-Treino Deste Dia ({selectedDate})</span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setSessionSubTab('complementary')}
+                className="text-[11px] font-extrabold text-purple-300 hover:text-white underline cursor-pointer"
+              >
+                Abrir Planeamento Semanal Completo &rarr;
+              </button>
+            </div>
+
+            {/* Toggle Chips */}
+            <div className="space-y-2.5">
+              {/* Ginásio */}
+              <div>
+                <span className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">🏋️ Ginásio & Força</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'gym').map((item) => {
+                    const active = Boolean(complementaryWork[item.key]);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleToggleComplementaryItem(item.key)}
+                        className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          active
+                            ? `${item.badgeClass} ring-1 ring-purple-400 shadow-md font-extrabold scale-102`
+                            : 'border-slate-800 bg-dark-bg/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{item.icon}</span>
+                        <span>{item.shortLabel}</span>
+                        {active && <Check className="h-3 w-3 text-purple-300 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Recuperação */}
+              <div>
+                <span className="text-[10px] font-black uppercase text-cyan-400 tracking-wider">🧊 Recuperação & Regeneração</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'recovery').map((item) => {
+                    const active = Boolean(complementaryWork[item.key]);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleToggleComplementaryItem(item.key)}
+                        className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          active
+                            ? `${item.badgeClass} ring-1 ring-cyan-400 shadow-md font-extrabold scale-102`
+                            : 'border-slate-800 bg-dark-bg/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{item.icon}</span>
+                        <span>{item.shortLabel}</span>
+                        {active && <Check className="h-3 w-3 text-cyan-300 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Mobilidade */}
+              <div>
+                <span className="text-[10px] font-black uppercase text-teal-400 tracking-wider">🧘 Mobilidade & Prevenção</span>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {COMPLEMENTARY_WORK_ITEMS.filter((i) => i.category === 'mobility').map((item) => {
+                    const active = Boolean(complementaryWork[item.key]);
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => handleToggleComplementaryItem(item.key)}
+                        className={`flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                          active
+                            ? `${item.badgeClass} ring-1 ring-teal-400 shadow-md font-extrabold scale-102`
+                            : 'border-slate-800 bg-dark-bg/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                        }`}
+                      >
+                        <span>{item.icon}</span>
+                        <span>{item.shortLabel}</span>
+                        {active && <Check className="h-3 w-3 text-teal-300 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Day Notes */}
+              <div className="pt-1.5">
+                <input
+                  type="text"
+                  placeholder="Orientação / Notas deste dia (ex: Ginásio 45 min antes, sauna opcional pós-treino)..."
+                  value={complementaryWork.notes || ''}
+                  onChange={(e) => handleUpdateComplementaryNotes(e.target.value)}
+                  className="w-full rounded-xl border border-purple-500/40 bg-dark-bg p-2 text-xs font-medium text-purple-100 placeholder-purple-300/40 focus:border-purple-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
 
           {/* Submit Button */}
           <button

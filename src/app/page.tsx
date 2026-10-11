@@ -14,6 +14,7 @@ import { PhysioDashboard } from '@/components/PhysioDashboard';
 import { AthleteProfileModal } from '@/components/AthleteProfileModal';
 import { AppAccessGate } from '@/components/AppAccessGate';
 import { ReminderBanner } from '@/components/ReminderBanner';
+import { AthleteComplementaryWorkCard } from '@/components/AthleteComplementaryWorkCard';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { isGoalkeeper } from '@/lib/data';
@@ -371,6 +372,9 @@ function MainAppContent() {
               activeAthlete={activeAthlete}
               onSelectTab={(tab) => setActiveTab(tab)}
             />
+
+            {/* Complementary Work / Extra-Treino & Recuperação */}
+            <AthleteComplementaryWorkCard />
 
             {/* Top Navigation Tabs */}
             <div className={`grid ${isAthleteGoalkeeper ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'} gap-1.5 rounded-2xl bg-dark-card p-1.5 border border-slate-800 shadow-md`}>

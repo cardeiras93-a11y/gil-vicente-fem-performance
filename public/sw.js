@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v23-fix-time-revert-20261011';
+const CACHE_NAME = 'femperf-v24-complementary-work-20261011';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

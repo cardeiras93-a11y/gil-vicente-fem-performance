@@ -147,6 +147,22 @@ export interface AthleteSessionStatus {
   notes?: string;
 }
 
+export interface ComplementaryWorkOptions {
+  upperBody?: boolean; // Membros Superiores & Tronco
+  lowerBody?: boolean; // Membros Inferiores (Força / Potência)
+  core?: boolean; // Core & Estabilidade Lombo-Pélvica
+  iceBath?: boolean; // Banho de Gelo / Crioterapia
+  sauna?: boolean; // Sauna / Banhos de Contraste
+  cardioSubmax?: boolean; // Cardio Submáximo Regenerativo (<120 bpm)
+  mobility?: boolean; // Mobilidade Ativa & Flexibilidade
+  foamRoller?: boolean; // Libertação Miofascial (Rolo de Espuma)
+  injuryPrevention?: boolean; // Prevenção Específica Individual
+}
+
+export interface ComplementaryWorkConfig extends ComplementaryWorkOptions {
+  notes?: string;
+}
+
 export interface TrainingSessionInfo {
   date: string; // YYYY-MM-DD
   dayType: 'training' | 'match' | 'rest';
@@ -160,6 +176,7 @@ export interface TrainingSessionInfo {
   tempDelta?: number; // °C calculated automatically (tempEnd - tempStart)
   locationTime?: string;
   focusNotes?: string;
+  complementaryWork?: ComplementaryWorkConfig; // Extra-training & recovery assignments
   athleteStatuses?: Record<string, AthleteSessionStatus>;
   customDeadline?: string; // General HH:mm override for this date's session
   customDeadlineWellness?: string; // Specific Wellness HH:mm override
