@@ -35,7 +35,7 @@ interface WeeklyPlanExportModalProps {
   weekDates: string[];
   sessions: Record<string, TrainingSessionInfo>;
   weeklyTeamNotes?: string;
-  initialLang?: 'en' | 'pt';
+  initialLang?: 'both' | 'en' | 'pt';
 }
 
 export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
@@ -45,21 +45,28 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
   weekDates,
   sessions,
   weeklyTeamNotes = '',
-  initialLang = 'en',
+  initialLang = 'both',
 }) => {
-  const [lang, setLang] = useState<'en' | 'pt'>(initialLang);
+  const [lang, setLang] = useState<'both' | 'en' | 'pt'>(initialLang);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [isExportingImage, setIsExportingImage] = useState(false);
-  const [copyImageSuccess, setCopyImageSuccess] = useState(false);
+  const [copyFeedbackLang, setCopyFeedbackLang] = useState<'both' | 'pt' | 'en' | null>(null);
+  const [downloadFeedback, setDownloadFeedback] = useState<string | null>(null);
   const [copyTextSuccess, setCopyTextSuccess] = useState(false);
   const posterRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen) return null;
 
+  const isBoth = lang === 'both';
   const isEn = lang === 'en';
+  const isPt = lang === 'pt';
   const isDark = theme === 'dark';
 
-  const defaultTitle = isEn ? 'Weekly Microcycle Plan' : 'Planeamento do Microciclo Semanal';
+  const defaultTitle = isBoth
+    ? 'Planeamento Semanal • Weekly Plan'
+    : isEn
+    ? 'Weekly Microcycle Plan'
+    : 'Planeamento do Microciclo Semanal';
   const effectiveTitle = (microcycleTitle && microcycleTitle.trim()) || defaultTitle;
   const startDateStr = weekDates[0] ? formatDatePtShort(weekDates[0]) : '';
   const endDateStr = weekDates[6] ? formatDatePtShort(weekDates[6]) : '';
@@ -70,7 +77,10 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
   };
 
   // Generate high-resolution PNG using HTML5 Canvas
-  const generateCanvasImage = async (): Promise<Blob | null> => {
+  const generateCanvasImage = async (overrideLang?: 'both' | 'en' | 'pt'): Promise<Blob | null> => {
+    const activeCanvasLang = overrideLang || lang;
+    const cIsBoth = activeCanvasLang === 'both';
+    const cIsEn = activeCanvasLang === 'en';
     const width = 1600;
     const height = 1120;
     const canvas = document.createElement('canvas');
@@ -123,32 +133,42 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
     // Title
     ctx.font = '900 36px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
-    ctx.fillText(effectiveTitle.toUpperCase(), 60, headerY + 45);
+    const titleText = (microcycleTitle && microcycleTitle.trim())
+      ? microcycleTitle.toUpperCase()
+      : (cIsBoth ? 'MICROCICLO SEMANAL • WEEKLY PLAN' : cIsEn ? 'WEEKLY MICROCYCLE PLAN' : 'MICROCICLO SEMANAL');
+    ctx.fillText(titleText, 60, headerY + 45);
 
     // Dates range
     ctx.font = '600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-    const datesLabel = isEn
+    const datesLabel = cIsBoth
+      ? `Semana / Week: ${startDateStr} - ${endDateStr} (Seg-Dom / Mon-Sun)`
+      : cIsEn
       ? `Week: ${startDateStr} to ${endDateStr} (Monday – Sunday)`
       : `Semana: ${startDateStr} a ${endDateStr} (Segunda a Domingo)`;
     ctx.fillText(datesLabel, 60, headerY + 75);
 
     // Post-training mandatory pill on header right
-    const pillX = width - 420;
+    const pillW = cIsBoth ? 420 : 360;
+    const pillX = width - pillW - 60;
     const pillY = headerY + 12;
     ctx.fillStyle = isDark ? 'rgba(234, 88, 12, 0.15)' : '#ffedd5';
     ctx.strokeStyle = isDark ? 'rgba(249, 115, 22, 0.6)' : '#ea580c';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(pillX, pillY, 360, 48, 12);
+    ctx.roundRect(pillX, pillY, pillW, 48, 12);
     ctx.fill();
     ctx.stroke();
 
-    ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+    ctx.font = '900 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
     ctx.fillStyle = isDark ? '#fdba74' : '#c2410c';
     ctx.fillText(
-      isEn ? '⚡ ALWAYS POST-TRAINING WORK' : '⚡ TRABALHO SEMPRE PÓS-TREINO',
-      pillX + 30,
+      cIsBoth
+        ? '⚡ PÓS-TREINO • ALWAYS POST-TRAINING'
+        : cIsEn
+        ? '⚡ ALWAYS POST-TRAINING WORK'
+        : '⚡ TRABALHO SEMPRE PÓS-TREINO',
+      pillX + 20,
       pillY + 30
     );
 
@@ -164,8 +184,9 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
       const s = sessions[dateStr];
       const dayType = s?.dayType || 'rest';
       const offset = s?.matchDayOffset || '';
-      const dayName = isEn ? getDayNameEn(dateStr, true) : getDayNamePt(dateStr, true);
-      const shortDayName = dayName.slice(0, 3);
+      const dayPt = getDayNamePt(dateStr, true).slice(0, 3);
+      const dayEn = getDayNameEn(dateStr, true).slice(0, 3);
+      const shortDayName = cIsBoth ? `${dayPt}/${dayEn}` : cIsEn ? dayEn : dayPt;
       const dateFmt = formatDatePtShort(dateStr);
 
       // Card Background
@@ -195,9 +216,9 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
       ctx.fill();
 
       // Day Title & Date
-      ctx.font = '900 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = '900 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
-      ctx.fillText(`${shortDayName} ${dateFmt}`, colX + 12, gridY + 28);
+      ctx.fillText(`${shortDayName} ${dateFmt}`, colX + 10, gridY + 28);
 
       // MatchDayOffset badge or Day Type tag
       if (offset) {
@@ -214,15 +235,19 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
       let contentY = gridY + 80;
 
       // Primary Session Box
-      ctx.font = '800 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      ctx.font = '800 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       if (dayType === 'match') {
         ctx.fillStyle = isDark ? '#34d399' : '#059669';
-        ctx.fillText(isEn ? '🏆 MATCH DAY' : '🏆 DIA DE JOGO', colX + 12, contentY);
+        ctx.fillText(cIsBoth ? '🏆 JOGO • MATCH' : cIsEn ? '🏆 MATCH DAY' : '🏆 DIA DE JOGO', colX + 12, contentY);
         contentY += 18;
 
         const cat = s?.matchCategory;
-        const catStr = cat === 'cup' ? (isEn ? 'Cup Match' : 'Taça') : cat === 'friendly' ? (isEn ? 'Friendly' : 'Treino') : (isEn ? 'Championship' : 'Campeonato');
-        ctx.font = '600 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        const catStr = cIsBoth
+          ? (cat === 'cup' ? 'Taça / Cup' : cat === 'friendly' ? 'Treino / Friendly' : 'Camp. / Championship')
+          : cIsEn
+          ? (cat === 'cup' ? 'Cup Match' : cat === 'friendly' ? 'Friendly' : 'Championship')
+          : (cat === 'cup' ? 'Taça' : cat === 'friendly' ? 'Treino' : 'Campeonato');
+        ctx.font = '600 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillStyle = isDark ? '#a7f3d0' : '#065f46';
         ctx.fillText(catStr, colX + 12, contentY);
         contentY += 18;
@@ -235,21 +260,21 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
         }
       } else if (dayType === 'rest') {
         ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-        ctx.fillText(isEn ? '🏖️ REST DAY' : '🏖️ FOLGA', colX + 12, contentY);
+        ctx.fillText(cIsBoth ? '🏖️ FOLGA • REST' : cIsEn ? '🏖️ REST DAY' : '🏖️ FOLGA', colX + 12, contentY);
         contentY += 20;
 
-        ctx.font = 'italic 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.font = 'italic 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillStyle = isDark ? '#64748b' : '#94a3b8';
-        ctx.fillText(isEn ? 'Recovery & Sleep' : 'Descanso ativo', colX + 12, contentY);
+        ctx.fillText(cIsBoth ? 'Descanso / Recovery' : cIsEn ? 'Recovery & Sleep' : 'Descanso ativo', colX + 12, contentY);
         contentY += 24;
       } else {
         // Pitch Training
         ctx.fillStyle = isDark ? '#60a5fa' : '#2563eb';
-        ctx.fillText(isEn ? '⚽ PITCH TRAINING' : '⚽ TREINO CAMPO', colX + 12, contentY);
+        ctx.fillText(cIsBoth ? '⚽ TREINO • PITCH' : cIsEn ? '⚽ PITCH TRAINING' : '⚽ TREINO CAMPO', colX + 12, contentY);
         contentY += 20;
 
         if (s?.startTime) {
-          ctx.font = '800 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.font = '800 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           ctx.fillStyle = isDark ? '#ffffff' : '#0f172a';
           const timeText = s.endTime ? `${s.startTime} - ${s.endTime}` : s.startTime;
           ctx.fillText(`🕒 ${timeText}`, colX + 12, contentY);
@@ -280,13 +305,13 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
         contentY += 16;
 
         // Complementary Work Section (Post-training / Post-match / Recovery)
-        ctx.font = '900 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.font = '900 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillStyle = isDark ? '#c084fc' : '#7e22ce';
         const sectionTitle = dayType === 'match'
-          ? (isEn ? '⚡ POST-MATCH' : '⚡ PÓS-JOGO')
+          ? (cIsBoth ? '⚡ PÓS-JOGO • POST-MATCH' : cIsEn ? '⚡ POST-MATCH' : '⚡ PÓS-JOGO')
           : dayType === 'rest'
-          ? (isEn ? '⚡ RECOVERY' : '⚡ RECUPERAÇÃO')
-          : (isEn ? '⚡ POST-TRAINING' : '⚡ PÓS-TREINO');
+          ? (cIsBoth ? '⚡ RECUPERAÇÃO • RECOVERY' : cIsEn ? '⚡ RECOVERY' : '⚡ RECUPERAÇÃO')
+          : (cIsBoth ? '⚡ PÓS-TREINO • POST-TRAIN' : cIsEn ? '⚡ POST-TRAINING' : '⚡ PÓS-TREINO');
         ctx.fillText(sectionTitle, colX + 12, contentY);
         contentY += 18;
 
@@ -294,7 +319,12 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
           activeItems.forEach((item) => {
             if (contentY > gridY + gridHeight - 70) return; // Prevent card overflow
 
-            const label = isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel;
+            const label = cIsBoth
+              ? (item.shortLabel === item.shortLabelEn ? item.shortLabel : `${item.shortLabel} (${item.shortLabelEn || item.shortLabel})`)
+              : cIsEn
+              ? item.shortLabelEn || item.shortLabel
+              : item.shortLabel;
+
             const isGym = item.category === 'gym';
             const isRec = item.category === 'recovery';
 
@@ -311,26 +341,26 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
 
             ctx.fillStyle = pillBg;
             ctx.beginPath();
-            ctx.roundRect(colX + 10, contentY - 12, colW - 20, 24, 6);
+            ctx.roundRect(colX + 8, contentY - 12, colW - 16, 24, 6);
             ctx.fill();
 
             // Dynamically adjust font size if needed so text is never truncated
-            const maxTextW = colW - 46;
+            const maxTextW = colW - 40;
             let pillFontSize = 10;
             ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-            while (ctx.measureText(label).width > maxTextW && pillFontSize > 8) {
+            while (ctx.measureText(label).width > maxTextW && pillFontSize > 7.5) {
               pillFontSize -= 0.5;
               ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
             }
 
             ctx.fillStyle = pillText;
-            ctx.fillText(`${item.icon} ${label}`, colX + 14, contentY + 4);
+            ctx.fillText(`${item.icon} ${label}`, colX + 12, contentY + 4);
             contentY += 28;
           });
         } else {
           ctx.font = 'italic 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
           ctx.fillStyle = isDark ? '#475569' : '#94a3b8';
-          ctx.fillText(isEn ? 'No extra work' : 'Sem complementar', colX + 12, contentY);
+          ctx.fillText(cIsBoth ? 'Sem extra / No extra' : cIsEn ? 'No extra work' : 'Sem complementar', colX + 12, contentY);
           contentY += 20;
         }
       }
@@ -357,7 +387,7 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
 
       ctx.font = '900 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillStyle = isDark ? '#fbbf24' : '#b45309';
-      ctx.fillText(isEn ? '📌 COACHING STAFF NOTE:' : '📌 NOTA DA EQUIPA TÉCNICA:', 76, footerY + 22);
+      ctx.fillText(cIsBoth ? '📌 NOTA / COACH NOTE:' : cIsEn ? '📌 COACHING STAFF NOTE:' : '📌 NOTA DA EQUIPA TÉCNICA:', 76, footerY + 22);
 
       ctx.font = '500 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       ctx.fillStyle = isDark ? '#e2e8f0' : '#1e293b';
@@ -380,48 +410,98 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
     });
   };
 
-  // Download High-Resolution Image (PNG)
-  const handleDownloadImage = async () => {
+  // Download High-Resolution Images (PNG) - downloads PT and EN (both)
+  const handleDownloadBothImages = async () => {
     try {
       setIsExportingImage(true);
-      const blob = await generateCanvasImage();
-      if (!blob) return;
+      setDownloadFeedback('A descarregar...');
+      // 1. Download PT
+      const blobPt = await generateCanvasImage('pt');
+      if (blobPt) {
+        const urlPt = URL.createObjectURL(blobPt);
+        const aPt = document.createElement('a');
+        aPt.href = urlPt;
+        aPt.download = `GVFC-Semana-${startDateStr.replace('/', '-')}-PT.png`;
+        document.body.appendChild(aPt);
+        aPt.click();
+        document.body.removeChild(aPt);
+        setTimeout(() => URL.revokeObjectURL(urlPt), 2000);
+      }
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `GVFC-Semana-${startDateStr.replace('/', '-')}-${isEn ? 'EN' : 'PT'}.png`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // 2. Download EN with 350ms delay
+      await new Promise((resolve) => setTimeout(resolve, 350));
+      const blobEn = await generateCanvasImage('en');
+      if (blobEn) {
+        const urlEn = URL.createObjectURL(blobEn);
+        const aEn = document.createElement('a');
+        aEn.href = urlEn;
+        aEn.download = `GVFC-Semana-${startDateStr.replace('/', '-')}-ENG.png`;
+        document.body.appendChild(aEn);
+        aEn.click();
+        document.body.removeChild(aEn);
+        setTimeout(() => URL.revokeObjectURL(urlEn), 2000);
+      }
+      setDownloadFeedback('Descarregadas (PT + ENG)!');
+      setTimeout(() => setDownloadFeedback(null), 3000);
     } catch (err) {
-      console.error('Error generating image:', err);
+      console.error('Error downloading images:', err);
+      setDownloadFeedback(null);
     } finally {
       setIsExportingImage(false);
     }
   };
 
-  // Copy Image to Clipboard
-  const handleCopyImage = async () => {
+  // Download single image
+  const handleDownloadSingleImage = async (targetLang: 'both' | 'pt' | 'en') => {
     try {
       setIsExportingImage(true);
-      const blob = await generateCanvasImage();
+      const blob = await generateCanvasImage(targetLang);
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const suffix = targetLang === 'both' ? 'BILINGUE' : targetLang.toUpperCase();
+        a.download = `GVFC-Semana-${startDateStr.replace('/', '-')}-${suffix}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        setDownloadFeedback(`${suffix} Descarregada!`);
+        setTimeout(() => setDownloadFeedback(null), 2500);
+      }
+    } catch (err) {
+      console.error('Error downloading single image:', err);
+    } finally {
+      setIsExportingImage(false);
+    }
+  };
+
+  // Copy Image to Clipboard by Language
+  const handleCopyImageByLang = async (targetLang: 'both' | 'pt' | 'en') => {
+    try {
+      setIsExportingImage(true);
+      const blob = await generateCanvasImage(targetLang);
       if (!blob) return;
 
       if (navigator.clipboard && window.ClipboardItem) {
         await navigator.clipboard.write([
           new ClipboardItem({ 'image/png': blob }),
         ]);
-        setCopyImageSuccess(true);
-        setTimeout(() => setCopyImageSuccess(false), 2500);
+        setCopyFeedbackLang(targetLang);
+        setTimeout(() => setCopyFeedbackLang(null), 2500);
       } else {
-        // Fallback to file download if clipboard.write(image) not supported
-        handleDownloadImage();
+        // Fallback to file download
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `GVFC-Semana-${startDateStr.replace('/', '-')}-${targetLang.toUpperCase()}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
       }
     } catch (err) {
       console.error('Error copying image:', err);
-      handleDownloadImage();
     } finally {
       setIsExportingImage(false);
     }
@@ -497,21 +577,33 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
             <div className="flex items-center rounded-xl bg-slate-900 border border-slate-700 p-0.5 text-xs font-bold">
               <button
                 type="button"
-                onClick={() => setLang('en')}
+                onClick={() => setLang('both')}
                 className={`px-2.5 py-1 rounded-lg transition-all ${
-                  isEn ? 'bg-purple-600 text-white shadow font-extrabold' : 'text-slate-400 hover:text-slate-200'
+                  isBoth ? 'bg-purple-600 text-white shadow font-extrabold' : 'text-slate-400 hover:text-slate-200'
                 }`}
+                title="Poster Bilingue (Português + Inglês)"
               >
-                🇬🇧 EN
+                🌐 PT + ENG
               </button>
               <button
                 type="button"
                 onClick={() => setLang('pt')}
                 className={`px-2.5 py-1 rounded-lg transition-all ${
-                  !isEn ? 'bg-purple-600 text-white shadow font-extrabold' : 'text-slate-400 hover:text-slate-200'
+                  isPt ? 'bg-purple-600 text-white shadow font-extrabold' : 'text-slate-400 hover:text-slate-200'
                 }`}
+                title="Poster em Português"
               >
                 🇵🇹 PT
+              </button>
+              <button
+                type="button"
+                onClick={() => setLang('en')}
+                className={`px-2.5 py-1 rounded-lg transition-all ${
+                  isEn ? 'bg-purple-600 text-white shadow font-extrabold' : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Poster em Inglês"
+              >
+                🇬🇧 ENG
               </button>
             </div>
 
@@ -536,27 +628,64 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
               <span>Guardar PDF / Imprimir</span>
             </button>
 
-            {/* Download PNG Button */}
+            {/* Download Both Images Button */}
             <button
               type="button"
               disabled={isExportingImage}
-              onClick={handleDownloadImage}
+              onClick={handleDownloadBothImages}
               className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-purple-500/40 bg-purple-950/60 hover:bg-purple-900/70 text-purple-200 text-xs font-extrabold transition-all shadow active:scale-98 cursor-pointer disabled:opacity-50"
+              title="Descarregar 2 ficheiros PNG de alta resolução: versão PT e versão ENG"
             >
-              <Download className="h-3.5 w-3.5 text-purple-300" />
-              <span>Descarregar PNG</span>
+              {downloadFeedback ? <Check className="h-3.5 w-3.5 text-purple-300" /> : <Download className="h-3.5 w-3.5 text-purple-300" />}
+              <span>{downloadFeedback || 'Descarregar Ambos (PT + ENG)'}</span>
             </button>
 
-            {/* Copy Image Button */}
-            <button
-              type="button"
-              disabled={isExportingImage}
-              onClick={handleCopyImage}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-xs font-extrabold transition-all shadow active:scale-98 cursor-pointer disabled:opacity-50"
-            >
-              {copyImageSuccess ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5 text-emerald-400" />}
-              <span>{copyImageSuccess ? 'Copiada!' : 'Copiar Imagem'}</span>
-            </button>
+            {/* Copy Image Button Group (PT, ENG, Bilingue) */}
+            <div className="flex items-center rounded-xl bg-slate-900 border border-slate-700 p-0.5 text-xs font-bold">
+              <span className="px-2 text-slate-400 text-[11px] font-semibold flex items-center space-x-1">
+                <Copy className="h-3 w-3 text-emerald-400" />
+                <span className="hidden sm:inline">Copiar:</span>
+              </span>
+              <button
+                type="button"
+                disabled={isExportingImage}
+                onClick={() => handleCopyImageByLang('pt')}
+                className={`px-2 py-1 rounded-lg transition-all ${
+                  copyFeedbackLang === 'pt'
+                    ? 'bg-emerald-600 text-white font-black shadow'
+                    : 'text-emerald-300 hover:bg-slate-800'
+                }`}
+                title="Copiar imagem em Português para a área de transferência"
+              >
+                {copyFeedbackLang === 'pt' ? '✓ PT Copiado!' : '🇵🇹 PT'}
+              </button>
+              <button
+                type="button"
+                disabled={isExportingImage}
+                onClick={() => handleCopyImageByLang('en')}
+                className={`px-2 py-1 rounded-lg transition-all ${
+                  copyFeedbackLang === 'en'
+                    ? 'bg-emerald-600 text-white font-black shadow'
+                    : 'text-emerald-300 hover:bg-slate-800'
+                }`}
+                title="Copiar imagem em Inglês para a área de transferência"
+              >
+                {copyFeedbackLang === 'en' ? '✓ ENG Copiado!' : '🇬🇧 ENG'}
+              </button>
+              <button
+                type="button"
+                disabled={isExportingImage}
+                onClick={() => handleCopyImageByLang('both')}
+                className={`px-2 py-1 rounded-lg transition-all ${
+                  copyFeedbackLang === 'both'
+                    ? 'bg-emerald-600 text-white font-black shadow'
+                    : 'text-emerald-300 hover:bg-slate-800'
+                }`}
+                title="Copiar imagem Bilingue (PT + ENG num só poster) para a área de transferência"
+              >
+                {copyFeedbackLang === 'both' ? '✓ Bilingue Copiado!' : '🌐 PT+ENG'}
+              </button>
+            </div>
 
             {/* Close Button */}
             <button
@@ -615,7 +744,19 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                   <p className="text-xs text-slate-400 flex items-center space-x-1.5">
                     <Calendar className="h-3.5 w-3.5 text-slate-500" />
                     <span>
-                      {isEn ? 'Week' : 'Semana'}: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{startDateStr}</strong> {isEn ? 'to' : 'a'} <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{endDateStr}</strong> ({isEn ? 'Monday to Sunday' : 'Segunda a Domingo'})
+                      {isBoth ? (
+                        <>
+                          Semana / Week: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{startDateStr}</strong> a <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{endDateStr}</strong> (Seg-Dom / Mon-Sun)
+                        </>
+                      ) : isEn ? (
+                        <>
+                          Week: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{startDateStr}</strong> to <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{endDateStr}</strong> (Monday to Sunday)
+                        </>
+                      ) : (
+                        <>
+                          Semana: <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{startDateStr}</strong> a <strong className={isDark ? 'text-slate-200' : 'text-slate-700'}>{endDateStr}</strong> (Segunda a Domingo)
+                        </>
+                      )}
                     </span>
                   </p>
                 </div>
@@ -626,10 +767,18 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                 <span className="text-lg">⚡</span>
                 <div className="text-left">
                   <div className="text-[11px] font-black uppercase tracking-wider text-amber-200">
-                    {isEn ? 'ALWAYS POST-TRAINING' : 'SEMPRE PÓS-TREINO'}
+                    {isBoth
+                      ? 'SEMPRE PÓS-TREINO • ALWAYS POST-TRAINING'
+                      : isEn
+                      ? 'ALWAYS POST-TRAINING'
+                      : 'SEMPRE PÓS-TREINO'}
                   </div>
                   <div className="text-[10px] text-amber-300/80">
-                    {isEn ? 'All complementary gym & recovery work' : 'Todo o trabalho complementar de ginásio e recuperação'}
+                    {isBoth
+                      ? 'Trabalho complementar de ginásio & recuperação • Gym & recovery work'
+                      : isEn
+                      ? 'All complementary gym & recovery work'
+                      : 'Todo o trabalho complementar de ginásio e recuperação'}
                   </div>
                 </div>
               </div>
@@ -640,8 +789,9 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
               {weekDates.map((dateStr) => {
                 const s = sessions[dateStr];
                 const dayType = s?.dayType || 'rest';
-                const dayName = isEn ? getDayNameEn(dateStr, true) : getDayNamePt(dateStr, true);
-                const shortDay = dayName.slice(0, 3);
+                const dayPt = getDayNamePt(dateStr, true).slice(0, 3);
+                const dayEn = getDayNameEn(dateStr, true).slice(0, 3);
+                const shortDay = isBoth ? `${dayPt}/${dayEn}` : isEn ? dayEn : dayPt;
                 const dateFmt = formatDatePtShort(dateStr);
                 const offset = s?.matchDayOffset;
                 const comp = s?.complementaryWork;
@@ -696,14 +846,14 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                           <div className="space-y-1">
                             <span className="inline-flex items-center space-x-1 text-[11px] font-black text-emerald-400 uppercase">
                               <span>🏆</span>
-                              <span>{isEn ? 'Match Day' : 'Jogo'}</span>
+                              <span>{isBoth ? 'Jogo • Match' : isEn ? 'Match Day' : 'Jogo'}</span>
                             </span>
                             <div className="text-[10px] font-bold text-emerald-300/90">
                               {s?.matchCategory === 'cup'
-                                ? (isEn ? 'Cup Match' : 'Taça')
+                                ? (isBoth ? 'Taça • Cup' : isEn ? 'Cup Match' : 'Taça')
                                 : s?.matchCategory === 'friendly'
-                                ? (isEn ? 'Friendly' : 'Treino')
-                                : (isEn ? 'Championship' : 'Campeonato')}
+                                ? (isBoth ? 'Treino • Friendly' : isEn ? 'Friendly' : 'Treino')
+                                : (isBoth ? 'Campeonato • League' : isEn ? 'Championship' : 'Campeonato')}
                             </div>
                             {s?.startTime && (
                               <div className="text-[11px] font-black text-slate-100 flex items-center space-x-1">
@@ -716,17 +866,17 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                           <div className="space-y-1">
                             <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-slate-400 uppercase">
                               <span>🏖️</span>
-                              <span>{isEn ? 'Rest Day' : 'Folga'}</span>
+                              <span>{isBoth ? 'Folga • Rest' : isEn ? 'Rest Day' : 'Folga'}</span>
                             </span>
                             <p className="text-[9px] text-slate-500 italic">
-                              {isEn ? 'Recovery & Sleep' : 'Recuperação & Sono'}
+                              {isBoth ? 'Recuperação & Sono • Recovery' : isEn ? 'Recovery & Sleep' : 'Recuperação & Sono'}
                             </p>
                           </div>
                         ) : (
                           <div className="space-y-1">
                             <span className="inline-flex items-center space-x-1 text-[11px] font-black text-blue-400 uppercase">
                               <span>⚽</span>
-                              <span>{isEn ? 'Pitch Training' : 'Treino Campo'}</span>
+                              <span>{isBoth ? 'Treino • Pitch' : isEn ? 'Pitch Training' : 'Treino Campo'}</span>
                             </span>
                             {s?.startTime && (
                               <div className="text-[11px] font-black text-slate-200 flex items-center space-x-1">
@@ -752,10 +902,10 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                             <span>⚡</span>
                             <span>
                               {dayType === 'match'
-                                ? (isEn ? 'Post-Match' : 'Pós-Jogo')
+                                ? (isBoth ? 'Pós-Jogo • Post-Match' : isEn ? 'Post-Match' : 'Pós-Jogo')
                                 : dayType === 'rest'
-                                ? (isEn ? 'Recovery' : 'Recuperação')
-                                : (isEn ? 'Post-Training' : 'Pós-Treino')}
+                                ? (isBoth ? 'Recuperação • Recovery' : isEn ? 'Recovery' : 'Recuperação')
+                                : (isBoth ? 'Pós-Treino • Post-Train' : isEn ? 'Post-Training' : 'Pós-Treino')}
                             </span>
                           </div>
 
@@ -768,14 +918,18 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                                 >
                                   <span className="shrink-0 text-[11px] leading-none">{item.icon}</span>
                                   <span className="leading-tight break-words">
-                                    {isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel}
+                                    {isBoth
+                                      ? (item.shortLabel === item.shortLabelEn ? item.shortLabel : `${item.shortLabel} (${item.shortLabelEn || item.shortLabel})`)
+                                      : isEn
+                                      ? item.shortLabelEn || item.shortLabel
+                                      : item.shortLabel}
                                   </span>
                                 </div>
                               ))}
                             </div>
                           ) : (
                             <div className="text-[9px] text-slate-500 italic py-1">
-                              {isEn ? 'No extra work' : 'Sem complementar'}
+                              {isBoth ? 'Sem complementar • No extra' : isEn ? 'No extra work' : 'Sem complementar'}
                             </div>
                           )}
                         </div>
@@ -805,7 +959,7 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                 <span className="text-xl shrink-0">📋</span>
                 <div className="space-y-0.5">
                   <h4 className="text-[11px] font-black uppercase text-amber-400">
-                    {isEn ? 'Coaching Staff General Note' : 'Nota Geral da Equipa Técnica'}
+                    {isBoth ? 'Nota da Equipa Técnica • Coaching Staff Note' : isEn ? 'Coaching Staff General Note' : 'Nota Geral da Equipa Técnica'}
                   </h4>
                   <p className="text-xs font-medium text-slate-200">
                     {weeklyTeamNotes.trim()}
@@ -822,7 +976,11 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
               </span>
 
               <span className="text-[10px]">
-                {isEn ? 'Generated by GVFC Female Performance System' : 'Gerado pelo Sistema de Performance Feminina GVFC'}
+                {isBoth
+                  ? 'Gerado pelo Sistema de Performance Feminina GVFC • GVFC Performance System'
+                  : isEn
+                  ? 'Generated by GVFC Female Performance System'
+                  : 'Gerado pelo Sistema de Performance Feminina GVFC'}
               </span>
             </div>
           </div>
@@ -833,9 +991,11 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
           <div className="flex items-center space-x-2 text-xs text-slate-400">
             <Sparkles className="h-4 w-4 text-purple-400" />
             <span>
-              {isEn
-                ? 'Tip: You can print as PDF or copy the image to paste directly into WhatsApp Web!'
-                : 'Dica: Podes guardar em PDF ou copiar a imagem para colar diretamente no WhatsApp Web!'}
+              {isBoth
+                ? 'Dica: Podes descarregar ambos os ficheiros (PT + ENG) ou copiar para a área de transferência para colar no WhatsApp Web!'
+                : isEn
+                ? 'Tip: You can download both files (PT + ENG) or copy to clipboard to paste into WhatsApp Web!'
+                : 'Dica: Podes descarregar ambos os ficheiros (PT + ENG) ou copiar para a área de transferência para colar no WhatsApp Web!'}
             </span>
           </div>
 
@@ -846,7 +1006,7 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
               className="flex items-center space-x-1 px-3 py-1.5 rounded-xl border border-emerald-500/40 bg-emerald-950/60 hover:bg-emerald-900/70 text-emerald-200 text-xs font-bold transition-all"
             >
               {copyTextSuccess ? <Check className="h-3.5 w-3.5 text-emerald-300" /> : <Share2 className="h-3.5 w-3.5 text-emerald-300" />}
-              <span>{copyTextSuccess ? 'Texto Copiado!' : 'Copiar Texto WhatsApp'}</span>
+              <span>{copyTextSuccess ? 'Texto Copiado!' : `Copiar Texto WhatsApp (${isBoth ? 'PT + ENG' : isEn ? 'ENG' : 'PT'})`}</span>
             </button>
 
             <button

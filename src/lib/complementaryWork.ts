@@ -202,8 +202,14 @@ export function generateWhatsAppWeeklyPlanText(params: {
   sessions: Record<string, TrainingSessionInfo>;
   teamName?: string;
   generalNotes?: string;
-  lang?: 'en' | 'pt';
+  lang?: 'en' | 'pt' | 'both';
 }): string {
+  if (params.lang === 'both') {
+    const ptPart = generateWhatsAppWeeklyPlanText({ ...params, lang: 'pt' });
+    const enPart = generateWhatsAppWeeklyPlanText({ ...params, lang: 'en' });
+    return `${ptPart}\n\n═══════════════════════════════════\n🇬🇧 *ENGLISH VERSION / VERSÃO EM INGLÊS*\n\n${enPart}`;
+  }
+
   const {
     microcycleTitle,
     weekDates,
