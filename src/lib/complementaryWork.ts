@@ -192,10 +192,11 @@ export function generateWhatsAppWeeklyPlanText(params: {
   const lines: string[] = [];
 
   lines.push(`🔴🔵 *${teamName}*`);
-  lines.push(`📅 *PLANEAMENTO SEMANAL & EXTRA-TREINO* • _${microcycleTitle.toUpperCase()}_`);
+  lines.push(`📅 *PLANEAMENTO SEMANAL • EXTRA-TREINO (SEMPRE PÓS-TREINO)* • _${microcycleTitle.toUpperCase()}_`);
   lines.push(`═══════════════════════════════════`);
   lines.push('');
-  lines.push('Olá equipa! Segue o planeamento e o trabalho complementar/recuperação recomendado para cada dia:');
+  lines.push('Olá equipa! Segue o planeamento da semana.');
+  lines.push('⚡ *ATENÇÃO:* O trabalho complementar (ginásio, mobilidade e recuperação) é para ser realizado *SEMPRE PÓS-TREINO*.');
   lines.push('');
 
   weekDates.forEach((dateStr) => {
@@ -220,10 +221,10 @@ export function generateWhatsAppWeeklyPlanText(params: {
     } else {
       const timeStr = s?.startTime && s?.endTime ? `Das ${s.startTime} às ${s.endTime}` : s?.startTime ? `Início às ${s.startTime}` : 'Horário a confirmar';
       const locStr = s?.locationTime ? ` • ${s.locationTime}` : '';
-      lines.push(`⚽ *Treino:* ${timeStr}${locStr}`);
+      lines.push(`⚽ *Treino de Campo:* ${timeStr}${locStr}`);
     }
 
-    // Complementary work
+    // Complementary work (Always post-training)
     const comp = s?.complementaryWork;
     if (comp && hasAnyComplementaryWork(comp)) {
       const activeItems = getActiveComplementaryItems(comp);
@@ -231,17 +232,18 @@ export function generateWhatsAppWeeklyPlanText(params: {
       const recItems = activeItems.filter((i) => i.category === 'recovery');
       const mobItems = activeItems.filter((i) => i.category === 'mobility');
 
+      lines.push(`⚡ *Trabalho Pós-Treino:*`);
       if (gymItems.length > 0) {
-        lines.push(`🏋️ *Ginásio:* ${gymItems.map((i) => i.shortLabel).join(', ')}`);
+        lines.push(`  🏋️ *Ginásio (Pós-Treino):* ${gymItems.map((i) => i.shortLabel).join(', ')}`);
       }
       if (recItems.length > 0) {
-        lines.push(`🧊 *Recuperação:* ${recItems.map((i) => i.shortLabel).join(', ')}`);
+        lines.push(`  🧊 *Recuperação:* ${recItems.map((i) => i.shortLabel).join(', ')}`);
       }
       if (mobItems.length > 0) {
-        lines.push(`🧘‍♀️ *Mobilidade:* ${mobItems.map((i) => i.shortLabel).join(', ')}`);
+        lines.push(`  🧘‍♀️ *Mobilidade:* ${mobItems.map((i) => i.shortLabel).join(', ')}`);
       }
       if (comp.notes && comp.notes.trim()) {
-        lines.push(`💬 _"${comp.notes.trim()}"_`);
+        lines.push(`  💬 _"${comp.notes.trim()}"_`);
       }
     } else {
       if (dayType === 'rest') {
@@ -286,44 +288,36 @@ export function applyWeeklyPreset(
     let compWork: ComplementaryWorkConfig = { ...(existing.complementaryWork || {}) };
 
     if (presetKey === 'championship_saturday') {
-      // Mon (0): Rest / Recovery
-      // Tue (1): MD-4 (Upper Body + Core)
-      // Wed (2): MD-3 (Lower Body + Mobility)
-      // Thu (3): MD-2 (Sauna + Myofascial)
-      // Fri (4): MD-1 (Reactivity / Light Mobility)
-      // Sat (5): MD (Game + Ice Bath)
-      // Sun (6): MD+1 (Folga / Active recovery)
       if (idx === 0) {
-        compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação ativa pós-jogo' };
+        compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação pós-jogo' };
       } else if (idx === 1) {
-        compWork = { upperBody: true, core: true, notes: 'Ginásio disponível 45min antes' };
+        compWork = { upperBody: true, core: true, notes: 'Ginásio pós-treino (tronco e core)' };
       } else if (idx === 2) {
-        compWork = { lowerBody: true, mobility: true, notes: 'Foco em força excêntrica e potência' };
+        compWork = { lowerBody: true, mobility: true, notes: 'Ginásio pós-treino (força excêntrica e potência)' };
       } else if (idx === 3) {
-        compWork = { sauna: true, foamRoller: true, notes: 'Regeneração e libertação miofascial' };
+        compWork = { sauna: true, foamRoller: true, notes: 'Regeneração e libertação miofascial pós-treino' };
       } else if (idx === 4) {
-        compWork = { mobility: true, injuryPrevention: true, notes: 'Ativação e mobilidade dinâmica' };
+        compWork = { mobility: true, injuryPrevention: true, notes: 'Mobilidade dinâmica e prevenção pós-treino' };
       } else if (idx === 5) {
         compWork = { iceBath: true, notes: 'Crioterapia imediata pós-jogo' };
       } else if (idx === 6) {
         compWork = { cardioSubmax: true, mobility: true, notes: 'Bicicleta suave 15-20min opcional' };
       }
     } else if (presetKey === 'championship_sunday') {
-      // Jogo ao Domingo (idx 6)
       if (idx === 0) {
-        compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação do fim de semana anterior' };
+        compWork = { iceBath: true, foamRoller: true, notes: 'Recuperação pós-jogo' };
       } else if (idx === 1) {
-        compWork = { upperBody: true, core: true, notes: 'Força de tronco e pilar central' };
+        compWork = { upperBody: true, core: true, notes: 'Ginásio pós-treino (tronco e pilar central)' };
       } else if (idx === 2) {
-        compWork = { lowerBody: true, mobility: true, notes: 'Força de membros inferiores e anca' };
+        compWork = { lowerBody: true, mobility: true, notes: 'Ginásio pós-treino (membros inferiores e anca)' };
       } else if (idx === 3) {
-        compWork = { sauna: true, injuryPrevention: true, notes: 'Sauna e prevenção individual' };
+        compWork = { sauna: true, injuryPrevention: true, notes: 'Sauna e prevenção pós-treino' };
       } else if (idx === 4) {
-        compWork = { foamRoller: true, notes: 'Libertação fascial' };
+        compWork = { foamRoller: true, notes: 'Libertação fascial pós-treino' };
       } else if (idx === 5) {
-        compWork = { mobility: true, notes: 'Ativação pré-jogo' };
+        compWork = { mobility: true, notes: 'Mobilidade e ativação pós-treino' };
       } else if (idx === 6) {
-        compWork = { iceBath: true, notes: 'Protocolo de gelo pós-jogo' };
+        compWork = { iceBath: true, notes: 'Protocolo de gelo imediato pós-jogo' };
       }
     } else if (presetKey === 'regenerative') {
       // Regenerativa

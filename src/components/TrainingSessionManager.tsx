@@ -1121,9 +1121,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           }`}
         >
           <Dumbbell className="h-3.5 w-3.5 text-purple-400" />
-          <span>Extra-Treino & WhatsApp</span>
+          <span>Extra-Treino (Pós-Treino)</span>
           <span className="ml-1 rounded-full bg-slate-900/60 px-2 py-0.5 text-[10px] text-purple-300 font-extrabold border border-purple-500/30">
-            Semana
+            Pós-Treino
           </span>
         </button>
 
@@ -1548,10 +1548,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <div>
                 <div className="flex items-center space-x-2">
                   <h3 className="text-sm font-black uppercase text-slate-100">
-                    Planeamento Semanal de Extra-Treino & WhatsApp
+                    Planeamento Semanal de Extra-Treino (Sempre Pós-Treino)
                   </h3>
-                  <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-black text-purple-300 border border-purple-500/30">
-                    Microciclo
+                  <span className="rounded-full bg-purple-500/20 px-2.5 py-0.5 text-[10px] font-black text-purple-300 border border-purple-500/30 uppercase">
+                    ⚡ Sempre Pós-Treino
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
@@ -1587,6 +1587,15 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <span>Próxima</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
+            </div>
+          </div>
+
+          {/* Post-Training Mandatory Rule Banner */}
+          <div className="flex items-center space-x-2.5 p-3 rounded-xl border border-amber-500/40 bg-amber-950/20 text-amber-300 text-xs font-bold">
+            <span className="text-base shrink-0">⚡</span>
+            <div>
+              <strong className="uppercase font-black text-amber-200">Indicação Obrigatória:</strong>
+              <span className="ml-1 text-slate-200">Todo o trabalho complementar (ginásio, mobilidade, gelo e sauna) é para ser realizado <u>SEMPRE APÓS O TREINO</u> de campo.</span>
             </div>
           </div>
 
@@ -2519,14 +2528,19 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           {/* 7. Trabalho Complementar / Extra-Treino Deste Dia */}
           <div className="rounded-xl border border-purple-500/30 bg-purple-950/20 p-4 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-500/20 pb-2">
-              <label className="text-xs font-extrabold uppercase text-purple-200 flex items-center space-x-2">
-                <Dumbbell className="h-4 w-4 text-purple-400" />
-                <span>Trabalho Complementar / Extra-Treino Deste Dia ({selectedDate})</span>
-              </label>
+              <div>
+                <label className="text-xs font-extrabold uppercase text-purple-200 flex items-center space-x-2">
+                  <Dumbbell className="h-4 w-4 text-purple-400" />
+                  <span>Trabalho Complementar (Sempre Pós-Treino) &bull; {selectedDate}</span>
+                </label>
+                <p className="text-[10px] text-amber-300 font-bold mt-0.5">
+                  ⚡ O trabalho complementar de ginásio, mobilidade e recuperação é realizado SEMPRE PÓS-TREINO.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setSessionSubTab('complementary')}
-                className="text-[11px] font-extrabold text-purple-300 hover:text-white underline cursor-pointer"
+                className="text-[11px] font-extrabold text-purple-300 hover:text-white underline cursor-pointer self-start sm:self-auto"
               >
                 Abrir Planeamento Semanal Completo &rarr;
               </button>

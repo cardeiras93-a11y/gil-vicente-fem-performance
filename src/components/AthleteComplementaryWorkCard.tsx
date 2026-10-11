@@ -76,8 +76,8 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
               <h3 className="text-xs font-black uppercase text-slate-100">
                 Trabalho Complementar & Recuperação
               </h3>
-              <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
-                Extra-Treino
+              <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase tracking-wide">
+                ⚡ Sempre Pós-Treino
               </span>
             </div>
             <p className="text-[10px] text-slate-400">
@@ -96,6 +96,12 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
           <span>{showFullWeek ? 'Fechar Semana' : 'Ver Semana'}</span>
           {showFullWeek ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
         </button>
+      </div>
+
+      {/* Mandatory Post-Training Notice */}
+      <div className="flex items-center space-x-2 p-2 px-3 rounded-xl border border-amber-500/40 bg-amber-950/20 text-amber-300 text-[11px] font-bold">
+        <span className="text-sm shrink-0">⚡</span>
+        <span>Este trabalho complementar deve ser realizado <strong>SEMPRE APÓS O TREINO</strong> de campo.</span>
       </div>
 
       {/* Today's Prescriptions */}
@@ -150,7 +156,7 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-black uppercase text-slate-300 flex items-center space-x-1.5">
               <Calendar className="h-3.5 w-3.5 text-brand-lime" />
-              <span>Microciclo Semanal (Segunda a Domingo)</span>
+              <span>Microciclo Semanal • Trabalho Pós-Treino</span>
             </span>
             <span className="text-[10px] text-slate-500 font-mono">
               {formatDatePtShort(weekDates[0])} — {formatDatePtShort(weekDates[6])}

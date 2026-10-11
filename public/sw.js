@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v24-complementary-work-20261011';
+const CACHE_NAME = 'femperf-v25-pos-treino-20261011';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
