@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v26-english-whatsapp-20261011';
+const CACHE_NAME = 'femperf-v27-weekly-poster-doc-export-20261011';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

@@ -11,7 +11,8 @@ import {
   getDayNamePt,
   formatDatePtShort,
 } from '@/lib/complementaryWork';
-import { Dumbbell, Calendar, ChevronDown, ChevronUp, Sparkles, CheckCircle2, Info } from 'lucide-react';
+import { Dumbbell, Calendar, ChevronDown, ChevronUp, Sparkles, CheckCircle2, Info, FileText } from 'lucide-react';
+import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
 
 interface AthleteComplementaryWorkCardProps {
   currentDate?: string; // YYYY-MM-DD (defaults to today)
@@ -22,6 +23,7 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
 }) => {
   const [sessions, setSessions] = useState<Record<string, TrainingSessionInfo>>({});
   const [showFullWeek, setShowFullWeek] = useState(false);
+  const [showPosterModal, setShowPosterModal] = useState(false);
 
   const todayStr = useMemo(() => {
     if (currentDate) return currentDate;
@@ -158,9 +160,19 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
               <Calendar className="h-3.5 w-3.5 text-brand-lime" />
               <span>Microciclo Semanal • Trabalho Pós-Treino</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">
-              {formatDatePtShort(weekDates[0])} — {formatDatePtShort(weekDates[6])}
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
+                {formatDatePtShort(weekDates[0])} — {formatDatePtShort(weekDates[6])}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowPosterModal(true)}
+                className="flex items-center space-x-1 px-2.5 py-1 rounded-lg border border-purple-500/40 bg-purple-950/60 hover:bg-purple-900/70 text-purple-200 text-[10px] font-bold transition-all shadow-sm active:scale-98 cursor-pointer"
+              >
+                <FileText className="h-3 w-3 text-purple-300" />
+                <span>Ver Poster</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-2">
@@ -237,6 +249,16 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
           </div>
         </div>
       )}
+
+      {/* Weekly Plan Poster Export Modal */}
+      <WeeklyPlanExportModal
+        isOpen={showPosterModal}
+        onClose={() => setShowPosterModal(false)}
+        microcycleTitle="Planeamento Semanal de Extra-Treino"
+        weekDates={weekDates}
+        sessions={sessions}
+        initialLang="pt"
+      />
     </div>
   );
 };

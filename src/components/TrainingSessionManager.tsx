@@ -21,6 +21,7 @@ import {
   AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users,
   LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw
 } from 'lucide-react';
+import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
 
 interface TrainingSessionManagerProps {
   selectedDate: string;
@@ -82,6 +83,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const [weeklyTeamNotes, setWeeklyTeamNotes] = useState<string>('');
   const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
   const [whatsAppLang, setWhatsAppLang] = useState<'en' | 'pt'>('en');
+  const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
 
   const [sessionSubTab, setSessionSubTabState] = useState<'calendar' | 'timing' | 'complementary' | 'roster' | 'conditions' | 'submissions' | 'all'>(() => {
     if (typeof window !== 'undefined') {
@@ -1590,6 +1592,16 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 <span>Próxima</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </button>
+
+              <button
+                type="button"
+                onClick={() => setIsExportModalOpen(true)}
+                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl border border-purple-500/50 bg-gradient-to-r from-purple-950/80 to-indigo-950/80 hover:from-purple-900 hover:to-indigo-900 text-purple-200 text-xs font-black transition-all shadow-md active:scale-98 cursor-pointer"
+                title="Exportar Poster / Documento da Semana (PDF, PNG ou Impressão)"
+              >
+                <FileText className="h-3.5 w-3.5 text-purple-400" />
+                <span>📄 Exportar Poster</span>
+              </button>
             </div>
           </div>
 
@@ -1917,6 +1929,16 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 >
                   <Share2 className="h-4 w-4" />
                   <span>{whatsAppLang === 'en' ? 'Share on WhatsApp' : 'Partilhar no WhatsApp'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsExportModalOpen(true)}
+                  className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-purple-500/50 bg-purple-950/70 hover:bg-purple-900/80 text-purple-200 text-xs font-black transition-all cursor-pointer shadow active:scale-98"
+                  title="Abrir Poster visual da semana para PDF, PNG ou Impressão"
+                >
+                  <FileText className="h-4 w-4 text-purple-300" />
+                  <span>{whatsAppLang === 'en' ? 'Export Poster / PDF' : 'Exportar Poster / PDF'}</span>
                 </button>
               </div>
             </div>
@@ -2788,6 +2810,17 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         )}
       </div>
       )}
+
+      {/* Weekly Plan Export Modal (PDF / PNG / Print) */}
+      <WeeklyPlanExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        microcycleTitle={microcycleTitle}
+        weekDates={weekDatesForComplementary}
+        sessions={trainingSessions}
+        weeklyTeamNotes={weeklyTeamNotes}
+        initialLang={whatsAppLang}
+      />
     </div>
   );
 };
