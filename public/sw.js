@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v28-fix-daytype-folga-selector-20261011';
+const CACHE_NAME = 'femperf-v29-remove-subbanner-notice-20261011';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

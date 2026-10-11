@@ -152,26 +152,9 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
       pillY + 30
     );
 
-    // Notice banner under header
-    const bannerY = headerY + 105;
-    ctx.fillStyle = isDark ? 'rgba(30, 41, 59, 0.7)' : '#e2e8f0';
-    ctx.strokeStyle = isDark ? 'rgba(100, 116, 139, 0.3)' : '#cbd5e1';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(60, bannerY, width - 120, 38, 8);
-    ctx.fill();
-    ctx.stroke();
-
-    ctx.font = '600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-    ctx.fillStyle = isDark ? '#cbd5e1' : '#334155';
-    const noticeText = isEn
-      ? '📌 IMPORTANT: All complementary gym, mobility and recovery protocols must be performed ALWAYS AFTER pitch training.'
-      : '📌 AVISO: Todo o trabalho complementar de ginásio, mobilidade e recuperação é realizado SEMPRE APÓS o treino de campo.';
-    ctx.fillText(noticeText, 80, bannerY + 24);
-
     // 7 Days Grid: 7 columns
-    const gridY = bannerY + 55;
-    const gridHeight = 670;
+    const gridY = headerY + 100;
+    const gridHeight = 720;
     const totalW = width - 120;
     const gap = 14;
     const colW = (totalW - gap * 6) / 7;
@@ -635,18 +618,6 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Sub-banner Notice */}
-            <div className={`flex items-center space-x-2.5 px-3.5 py-2 rounded-xl text-xs font-semibold ${
-              isDark ? 'bg-slate-900/80 border border-slate-800 text-slate-300' : 'bg-slate-100 border border-slate-200 text-slate-700'
-            }`}>
-              <Info className="h-4 w-4 text-cyan-400 shrink-0" />
-              <span>
-                {isEn
-                  ? 'Mandatory instruction: All gym, mobility and cold plunge sessions must be completed always after pitch training.'
-                  : 'Instrução obrigatória: Todas as sessões de ginásio, mobilidade e banho de gelo são realizadas sempre após o treino de campo.'}
-              </span>
             </div>
 
             {/* 7-Days Visual Schedule Grid */}
