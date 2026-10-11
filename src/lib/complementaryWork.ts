@@ -281,7 +281,12 @@ export function generateWhatsAppWeeklyPlanText(params: {
       const recItems = activeItems.filter((i) => i.category === 'recovery');
       const mobItems = activeItems.filter((i) => i.category === 'mobility');
 
-      lines.push(isEn ? `⚡ *Post-Training Work:*` : `⚡ *Trabalho Pós-Treino:*`);
+      const extraWorkHeader = dayType === 'match'
+        ? (isEn ? `⚡ *Post-Match Recovery:*` : `⚡ *Recuperação Pós-Jogo:*`)
+        : dayType === 'rest'
+        ? (isEn ? `⚡ *Recovery Work:*` : `⚡ *Trabalho de Recuperação:*`)
+        : (isEn ? `⚡ *Post-Training Work:*` : `⚡ *Trabalho Pós-Treino:*`);
+      lines.push(extraWorkHeader);
       if (gymItems.length > 0) {
         const list = gymItems.map((i) => (isEn ? i.shortLabelEn || i.shortLabel : i.shortLabel)).join(', ');
         lines.push(isEn ? `  🏋️ *Gym (Post-Training):* ${list}` : `  🏋️ *Ginásio (Pós-Treino):* ${list}`);

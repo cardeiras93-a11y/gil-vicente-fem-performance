@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v30-badge-labels-fit-20261011';
+const CACHE_NAME = 'femperf-v31-hide-empty-post-training-match-rest-20261011';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

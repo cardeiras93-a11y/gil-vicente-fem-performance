@@ -265,66 +265,74 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
         }
       }
 
-      // Divider line inside card
-      contentY += 8;
-      ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
-      ctx.beginPath();
-      ctx.moveTo(colX + 12, contentY);
-      ctx.lineTo(colX + colW - 12, contentY);
-      ctx.stroke();
-      contentY += 16;
-
-      // Complementary Work Section (Post-training)
-      ctx.font = '900 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      ctx.fillStyle = isDark ? '#c084fc' : '#7e22ce';
-      ctx.fillText(isEn ? '⚡ POST-TRAINING' : '⚡ PÓS-TREINO', colX + 12, contentY);
-      contentY += 18;
-
       const comp = s?.complementaryWork;
       const activeItems = getActiveComplementaryItems(comp);
+      const shouldShowExtraWork = dayType === 'training' || activeItems.length > 0;
 
-      if (activeItems.length > 0) {
-        activeItems.forEach((item) => {
-          if (contentY > gridY + gridHeight - 70) return; // Prevent card overflow
+      if (shouldShowExtraWork) {
+        // Divider line inside card
+        contentY += 8;
+        ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)';
+        ctx.beginPath();
+        ctx.moveTo(colX + 12, contentY);
+        ctx.lineTo(colX + colW - 12, contentY);
+        ctx.stroke();
+        contentY += 16;
 
-          const label = isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel;
-          const isGym = item.category === 'gym';
-          const isRec = item.category === 'recovery';
+        // Complementary Work Section (Post-training / Post-match / Recovery)
+        ctx.font = '900 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = isDark ? '#c084fc' : '#7e22ce';
+        const sectionTitle = dayType === 'match'
+          ? (isEn ? '⚡ POST-MATCH' : '⚡ PÓS-JOGO')
+          : dayType === 'rest'
+          ? (isEn ? '⚡ RECOVERY' : '⚡ RECUPERAÇÃO')
+          : (isEn ? '⚡ POST-TRAINING' : '⚡ PÓS-TREINO');
+        ctx.fillText(sectionTitle, colX + 12, contentY);
+        contentY += 18;
 
-          // Pill background
-          let pillBg = isDark ? 'rgba(79, 70, 229, 0.2)' : '#e0e7ff';
-          let pillText = isDark ? '#a5b4fc' : '#3730a3';
-          if (isRec) {
-            pillBg = isDark ? 'rgba(6, 182, 212, 0.2)' : '#cffafe';
-            pillText = isDark ? '#67e8f9' : '#0e7490';
-          } else if (!isGym && !isRec) {
-            pillBg = isDark ? 'rgba(20, 184, 166, 0.2)' : '#ccfbf1';
-            pillText = isDark ? '#5eead4' : '#0f766e';
-          }
+        if (activeItems.length > 0) {
+          activeItems.forEach((item) => {
+            if (contentY > gridY + gridHeight - 70) return; // Prevent card overflow
 
-          ctx.fillStyle = pillBg;
-          ctx.beginPath();
-          ctx.roundRect(colX + 10, contentY - 12, colW - 20, 24, 6);
-          ctx.fill();
+            const label = isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel;
+            const isGym = item.category === 'gym';
+            const isRec = item.category === 'recovery';
 
-          // Dynamically adjust font size if needed so text is never truncated
-          const maxTextW = colW - 46;
-          let pillFontSize = 10;
-          ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-          while (ctx.measureText(label).width > maxTextW && pillFontSize > 8) {
-            pillFontSize -= 0.5;
+            // Pill background
+            let pillBg = isDark ? 'rgba(79, 70, 229, 0.2)' : '#e0e7ff';
+            let pillText = isDark ? '#a5b4fc' : '#3730a3';
+            if (isRec) {
+              pillBg = isDark ? 'rgba(6, 182, 212, 0.2)' : '#cffafe';
+              pillText = isDark ? '#67e8f9' : '#0e7490';
+            } else if (!isGym && !isRec) {
+              pillBg = isDark ? 'rgba(20, 184, 166, 0.2)' : '#ccfbf1';
+              pillText = isDark ? '#5eead4' : '#0f766e';
+            }
+
+            ctx.fillStyle = pillBg;
+            ctx.beginPath();
+            ctx.roundRect(colX + 10, contentY - 12, colW - 20, 24, 6);
+            ctx.fill();
+
+            // Dynamically adjust font size if needed so text is never truncated
+            const maxTextW = colW - 46;
+            let pillFontSize = 10;
             ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-          }
+            while (ctx.measureText(label).width > maxTextW && pillFontSize > 8) {
+              pillFontSize -= 0.5;
+              ctx.font = `700 ${pillFontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+            }
 
-          ctx.fillStyle = pillText;
-          ctx.fillText(`${item.icon} ${label}`, colX + 14, contentY + 4);
-          contentY += 28;
-        });
-      } else {
-        ctx.font = 'italic 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillStyle = isDark ? '#475569' : '#94a3b8';
-        ctx.fillText(isEn ? 'No extra work' : 'Sem complementar', colX + 12, contentY);
-        contentY += 20;
+            ctx.fillStyle = pillText;
+            ctx.fillText(`${item.icon} ${label}`, colX + 14, contentY + 4);
+            contentY += 28;
+          });
+        } else {
+          ctx.font = 'italic 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.fillStyle = isDark ? '#475569' : '#94a3b8';
+          ctx.fillText(isEn ? 'No extra work' : 'Sem complementar', colX + 12, contentY);
+          contentY += 20;
+        }
       }
 
       // Notes inside day card if present
@@ -736,42 +744,54 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Post-Training Complementary Work Section */}
-                    <div className="border-t pt-2 border-slate-700/30 space-y-1.5 flex-1 flex flex-col justify-between">
-                      <div>
-                        <div className="flex items-center space-x-1 text-[9px] font-black uppercase tracking-wider text-purple-400 pb-0.5">
-                          <span>⚡</span>
-                          <span>{isEn ? 'Post-Training' : 'Pós-Treino'}</span>
+                    {/* Post-Training / Post-Match / Recovery Section */}
+                    {dayType === 'training' || activeItems.length > 0 ? (
+                      <div className="border-t pt-2 border-slate-700/30 space-y-1.5 flex-1 flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center space-x-1 text-[9px] font-black uppercase tracking-wider text-purple-400 pb-0.5">
+                            <span>⚡</span>
+                            <span>
+                              {dayType === 'match'
+                                ? (isEn ? 'Post-Match' : 'Pós-Jogo')
+                                : dayType === 'rest'
+                                ? (isEn ? 'Recovery' : 'Recuperação')
+                                : (isEn ? 'Post-Training' : 'Pós-Treino')}
+                            </span>
+                          </div>
+
+                          {activeItems.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {activeItems.map((item) => (
+                                <div
+                                  key={item.id}
+                                  className={`flex items-center space-x-1.5 px-1.5 py-1 rounded text-[10px] font-bold leading-tight ${item.badgeClass}`}
+                                >
+                                  <span className="shrink-0 text-[11px] leading-none">{item.icon}</span>
+                                  <span className="leading-tight break-words">
+                                    {isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <div className="text-[9px] text-slate-500 italic py-1">
+                              {isEn ? 'No extra work' : 'Sem complementar'}
+                            </div>
+                          )}
                         </div>
 
-                        {activeItems.length > 0 ? (
-                          <div className="flex flex-col gap-1">
-                            {activeItems.map((item) => (
-                              <div
-                                key={item.id}
-                                className={`flex items-center space-x-1.5 px-1.5 py-1 rounded text-[10px] font-bold leading-tight ${item.badgeClass}`}
-                              >
-                                <span className="shrink-0 text-[11px] leading-none">{item.icon}</span>
-                                <span className="leading-tight break-words">
-                                  {isEn ? item.shortLabelEn || item.shortLabel : item.shortLabel}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-[9px] text-slate-500 italic py-1">
-                            {isEn ? 'No extra work' : 'Sem complementar'}
+                        {/* Day Notes */}
+                        {comp?.notes && comp.notes.trim() && (
+                          <div className="border-t pt-1 border-purple-500/20 text-[9px] text-purple-300 italic">
+                            &quot;{comp.notes.trim()}&quot;
                           </div>
                         )}
                       </div>
-
-                      {/* Day Notes */}
-                      {comp?.notes && comp.notes.trim() && (
-                        <div className="border-t pt-1 border-purple-500/20 text-[9px] text-purple-300 italic">
-                          &quot;{comp.notes.trim()}&quot;
-                        </div>
-                      )}
-                    </div>
+                    ) : comp?.notes && comp.notes.trim() ? (
+                      <div className="border-t pt-2 border-slate-700/30 text-[9px] text-purple-300 italic">
+                        &quot;{comp.notes.trim()}&quot;
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}
