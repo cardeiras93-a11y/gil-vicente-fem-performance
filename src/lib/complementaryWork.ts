@@ -8,6 +8,8 @@ export interface ComplementaryWorkItem {
   key: keyof ComplementaryWorkOptions;
   label: string;
   shortLabel: string;
+  labelEn?: string;
+  shortLabelEn?: string;
   category: 'gym' | 'recovery' | 'mobility';
   icon: string;
   description: string;
@@ -23,6 +25,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'upperBody',
     label: 'Membros Superiores & Tronco',
     shortLabel: 'Membros Superiores',
+    shortLabelEn: 'Upper Body & Torso',
     category: 'gym',
     icon: '💪',
     description: 'Puxadas, empurres e cintura escapular',
@@ -33,6 +36,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'lowerBody',
     label: 'Membros Inferiores (Força / Potência)',
     shortLabel: 'Membros Inferiores',
+    shortLabelEn: 'Lower Body (Strength)',
     category: 'gym',
     icon: '🏋️‍♂️',
     description: 'Força, potência e prevenção isquiotibiais/quadricípites',
@@ -43,6 +47,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'core',
     label: 'Core & Estabilidade Lombo-Pélvica',
     shortLabel: 'Core & Estabilidade',
+    shortLabelEn: 'Core & Stability',
     category: 'gym',
     icon: '🧱',
     description: 'Pranchas, anti-rotação e estabilidade de anca',
@@ -55,6 +60,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'iceBath',
     label: 'Banho de Gelo / Crioterapia',
     shortLabel: 'Banho de Gelo',
+    shortLabelEn: 'Ice Bath / Cold Plunge',
     category: 'recovery',
     icon: '🧊',
     description: 'Crioterapia de imersão pós-esforço intenso',
@@ -65,6 +71,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'sauna',
     label: 'Sauna / Banhos de Contraste',
     shortLabel: 'Sauna / Contraste',
+    shortLabelEn: 'Sauna / Contrast Bath',
     category: 'recovery',
     icon: '🧖‍♀️',
     description: 'Regeneração vascular e relaxamento muscular',
@@ -75,6 +82,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'cardioSubmax',
     label: 'Cardio Regenerativo Submáximo',
     shortLabel: 'Cardio Suave (<120 bpm)',
+    shortLabelEn: 'Easy Cardio (<120 bpm)',
     category: 'recovery',
     icon: '🚴',
     description: 'Bicicleta ergométrica suave ou natação regenerativa',
@@ -87,6 +95,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'mobility',
     label: 'Mobilidade Ativa & Flexibilidade',
     shortLabel: 'Mobilidade Ativa',
+    shortLabelEn: 'Active Mobility',
     category: 'mobility',
     icon: '🧘‍♀️',
     description: 'Mobilidade de anca, tornozelo e coluna torácica',
@@ -97,6 +106,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'foamRoller',
     label: 'Libertação Miofascial (Rolo)',
     shortLabel: 'Rolo Miofascial',
+    shortLabelEn: 'Foam Rolling',
     category: 'mobility',
     icon: '🌀',
     description: 'Auto-massagem de isquiotibiais, gémeos e banda iliotibial',
@@ -107,6 +117,7 @@ export const COMPLEMENTARY_WORK_ITEMS: ComplementaryWorkItem[] = [
     key: 'injuryPrevention',
     label: 'Prevenção Específica Individual',
     shortLabel: 'Prevenção Individual',
+    shortLabelEn: 'Injury Prevention',
     category: 'mobility',
     icon: '🛡️',
     description: 'Exercícios personalizados para áreas sensíveis',
@@ -146,6 +157,17 @@ export function getDayNamePt(dateStr: string, uppercase = false): string {
   return uppercase ? WEEKDAY_NAMES_UPPER_PT[idx] : WEEKDAY_NAMES_PT[idx];
 }
 
+// Format weekday in English
+const WEEKDAY_NAMES_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const WEEKDAY_NAMES_UPPER_EN = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+
+export function getDayNameEn(dateStr: string, uppercase = false): string {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  const idx = date.getDay();
+  return uppercase ? WEEKDAY_NAMES_UPPER_EN[idx] : WEEKDAY_NAMES_EN[idx];
+}
+
 export function formatDatePtShort(dateStr: string): string {
   const [, m, d] = dateStr.split('-');
   return `${d}/${m}`;
@@ -173,35 +195,50 @@ export function getWeekDates(referenceDateStr: string): string[] {
   return dates;
 }
 
-// Generate formatted WhatsApp message text
+// Generate formatted WhatsApp message text (English by default as requested)
 export function generateWhatsAppWeeklyPlanText(params: {
   microcycleTitle?: string;
   weekDates: string[];
   sessions: Record<string, TrainingSessionInfo>;
   teamName?: string;
   generalNotes?: string;
+  lang?: 'en' | 'pt';
 }): string {
   const {
-    microcycleTitle = 'MICROCICLO SEMANAL',
+    microcycleTitle,
     weekDates,
     sessions,
-    teamName = 'GIL VICENTE FC — FUTEBOL FEMININO SUB-15',
+    teamName = 'GIL VICENTE FC — WOMEN\'S FOOTBALL U15',
     generalNotes,
+    lang = 'en',
   } = params;
+
+  const isEn = lang !== 'pt';
+  const defaultTitle = isEn ? 'WEEKLY MICROCYCLE' : 'MICROCICLO SEMANAL';
+  const title = (microcycleTitle && microcycleTitle.trim()) || defaultTitle;
 
   const lines: string[] = [];
 
   lines.push(`🔴🔵 *${teamName}*`);
-  lines.push(`📅 *PLANEAMENTO SEMANAL • EXTRA-TREINO (SEMPRE PÓS-TREINO)* • _${microcycleTitle.toUpperCase()}_`);
-  lines.push(`═══════════════════════════════════`);
-  lines.push('');
-  lines.push('Olá equipa! Segue o planeamento da semana.');
-  lines.push('⚡ *ATENÇÃO:* O trabalho complementar (ginásio, mobilidade e recuperação) é para ser realizado *SEMPRE PÓS-TREINO*.');
-  lines.push('');
+  if (isEn) {
+    lines.push(`📅 *WEEKLY SCHEDULE • EXTRA TRAINING (ALWAYS POST-TRAINING)* • _${title.toUpperCase()}_`);
+    lines.push(`═══════════════════════════════════`);
+    lines.push('');
+    lines.push('Hello team! Here is our weekly training & recovery schedule.');
+    lines.push('⚡ *IMPORTANT NOTICE:* All complementary work (gym, mobility & recovery) must be completed *ALWAYS POST-TRAINING*.');
+    lines.push('');
+  } else {
+    lines.push(`📅 *PLANEAMENTO SEMANAL • EXTRA-TREINO (SEMPRE PÓS-TREINO)* • _${title.toUpperCase()}_`);
+    lines.push(`═══════════════════════════════════`);
+    lines.push('');
+    lines.push('Olá equipa! Segue o planeamento da semana.');
+    lines.push('⚡ *ATENÇÃO:* O trabalho complementar (ginásio, mobilidade e recuperação) é para ser realizado *SEMPRE PÓS-TREINO*.');
+    lines.push('');
+  }
 
   weekDates.forEach((dateStr) => {
     const s = sessions[dateStr];
-    const dayName = getDayNamePt(dateStr, true);
+    const dayName = isEn ? getDayNameEn(dateStr, true) : getDayNamePt(dateStr, true);
     const dateFormatted = formatDatePtShort(dateStr);
     const offset = s?.matchDayOffset || '';
     const offsetTag = offset ? ` • ${offset}` : '';
@@ -212,16 +249,28 @@ export function generateWhatsAppWeeklyPlanText(params: {
     // Main Activity
     const dayType = s?.dayType || 'training';
     if (dayType === 'match') {
-      const matchCat = s?.matchCategory === 'friendly' ? 'Jogo Treino' : s?.matchCategory === 'cup' ? 'Taça de Portugal' : 'Campeonato Nacional';
-      const timeStr = s?.startTime ? ` às ${s.startTime}` : '';
+      let matchCat = '';
+      if (isEn) {
+        matchCat = s?.matchCategory === 'friendly' ? 'Friendly Match' : s?.matchCategory === 'cup' ? 'Cup Match' : 'Championship Match';
+      } else {
+        matchCat = s?.matchCategory === 'friendly' ? 'Jogo Treino' : s?.matchCategory === 'cup' ? 'Taça de Portugal' : 'Campeonato Nacional';
+      }
+      const timeStr = s?.startTime ? (isEn ? ` at ${s.startTime}` : ` às ${s.startTime}`) : '';
       const locStr = s?.locationTime ? ` (${s.locationTime})` : '';
-      lines.push(`🏆 *DIA DE JOGO* — ${matchCat}${timeStr}${locStr}`);
+      lines.push(isEn ? `🏆 *MATCH DAY* — ${matchCat}${timeStr}${locStr}` : `🏆 *DIA DE JOGO* — ${matchCat}${timeStr}${locStr}`);
     } else if (dayType === 'rest') {
-      lines.push(`🏖️ *Dia de Folga / Recuperação*`);
+      lines.push(isEn ? `🏖️ *Rest Day / Recovery*` : `🏖️ *Dia de Folga / Recuperação*`);
     } else {
-      const timeStr = s?.startTime && s?.endTime ? `Das ${s.startTime} às ${s.endTime}` : s?.startTime ? `Início às ${s.startTime}` : 'Horário a confirmar';
+      let timeStr = '';
+      if (s?.startTime && s?.endTime) {
+        timeStr = isEn ? `From ${s.startTime} to ${s.endTime}` : `Das ${s.startTime} às ${s.endTime}`;
+      } else if (s?.startTime) {
+        timeStr = isEn ? `Starts at ${s.startTime}` : `Início às ${s.startTime}`;
+      } else {
+        timeStr = isEn ? 'Schedule TBA' : 'Horário a confirmar';
+      }
       const locStr = s?.locationTime ? ` • ${s.locationTime}` : '';
-      lines.push(`⚽ *Treino de Campo:* ${timeStr}${locStr}`);
+      lines.push(isEn ? `⚽ *Pitch Training:* ${timeStr}${locStr}` : `⚽ *Treino de Campo:* ${timeStr}${locStr}`);
     }
 
     // Complementary work (Always post-training)
@@ -232,22 +281,25 @@ export function generateWhatsAppWeeklyPlanText(params: {
       const recItems = activeItems.filter((i) => i.category === 'recovery');
       const mobItems = activeItems.filter((i) => i.category === 'mobility');
 
-      lines.push(`⚡ *Trabalho Pós-Treino:*`);
+      lines.push(isEn ? `⚡ *Post-Training Work:*` : `⚡ *Trabalho Pós-Treino:*`);
       if (gymItems.length > 0) {
-        lines.push(`  🏋️ *Ginásio (Pós-Treino):* ${gymItems.map((i) => i.shortLabel).join(', ')}`);
+        const list = gymItems.map((i) => (isEn ? i.shortLabelEn || i.shortLabel : i.shortLabel)).join(', ');
+        lines.push(isEn ? `  🏋️ *Gym (Post-Training):* ${list}` : `  🏋️ *Ginásio (Pós-Treino):* ${list}`);
       }
       if (recItems.length > 0) {
-        lines.push(`  🧊 *Recuperação:* ${recItems.map((i) => i.shortLabel).join(', ')}`);
+        const list = recItems.map((i) => (isEn ? i.shortLabelEn || i.shortLabel : i.shortLabel)).join(', ');
+        lines.push(isEn ? `  🧊 *Recovery:* ${list}` : `  🧊 *Recuperação:* ${list}`);
       }
       if (mobItems.length > 0) {
-        lines.push(`  🧘‍♀️ *Mobilidade:* ${mobItems.map((i) => i.shortLabel).join(', ')}`);
+        const list = mobItems.map((i) => (isEn ? i.shortLabelEn || i.shortLabel : i.shortLabel)).join(', ');
+        lines.push(isEn ? `  🧘‍♀️ *Mobility:* ${list}` : `  🧘‍♀️ *Mobilidade:* ${list}`);
       }
       if (comp.notes && comp.notes.trim()) {
         lines.push(`  💬 _"${comp.notes.trim()}"_`);
       }
     } else {
       if (dayType === 'rest') {
-        lines.push(`💤 _Foco em repouso passivo, hidratação e boa alimentação._`);
+        lines.push(isEn ? `💤 _Focus on passive rest, hydration and good nutrition._` : `💤 _Foco em repouso passivo, hidratação e boa alimentação._`);
       }
     }
 
@@ -255,7 +307,7 @@ export function generateWhatsAppWeeklyPlanText(params: {
   });
 
   if (generalNotes && generalNotes.trim()) {
-    lines.push(`📌 *NOTA GERAL DA EQUIPA TÉCNICA:*`);
+    lines.push(isEn ? `📌 *COACHING STAFF GENERAL NOTE:*` : `📌 *NOTA GERAL DA EQUIPA TÉCNICA:*`);
     lines.push(`_${generalNotes.trim()}_`);
     lines.push('');
   }

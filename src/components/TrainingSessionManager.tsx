@@ -78,9 +78,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   const [complementaryWork, setComplementaryWork] = useState<ComplementaryWorkConfig>({});
   const [weeklyRefDate, setWeeklyRefDate] = useState<string>(selectedDate || new Date().toISOString().split('T')[0]);
-  const [microcycleTitle, setMicrocycleTitle] = useState<string>('Microciclo Semanal');
+  const [microcycleTitle, setMicrocycleTitle] = useState<string>('Weekly Microcycle');
   const [weeklyTeamNotes, setWeeklyTeamNotes] = useState<string>('');
   const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
+  const [whatsAppLang, setWhatsAppLang] = useState<'en' | 'pt'>('en');
 
   const [sessionSubTab, setSessionSubTabState] = useState<'calendar' | 'timing' | 'complementary' | 'roster' | 'conditions' | 'submissions' | 'all'>(() => {
     if (typeof window !== 'undefined') {
@@ -1022,6 +1023,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       weekDates: weekDatesForComplementary,
       sessions: trainingSessions,
       generalNotes: weeklyTeamNotes,
+      lang: whatsAppLang,
     });
     const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, '_blank');
@@ -1033,6 +1035,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       weekDates: weekDatesForComplementary,
       sessions: trainingSessions,
       generalNotes: weeklyTeamNotes,
+      lang: whatsAppLang,
     });
     try {
       await navigator.clipboard.writeText(text);
@@ -1870,15 +1873,41 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-2">
+              {/* Language Switcher & Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Language Toggle */}
+                <div className="flex items-center space-x-1 rounded-xl bg-slate-900 border border-emerald-500/30 p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setWhatsAppLang('en')}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                      whatsAppLang === 'en'
+                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    🇬🇧 English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWhatsAppLang('pt')}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer ${
+                      whatsAppLang === 'pt'
+                        ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    🇵🇹 Português
+                  </button>
+                </div>
+
                 <button
                   type="button"
                   onClick={handleCopyWhatsApp}
                   className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl border border-emerald-500/40 bg-emerald-900/60 hover:bg-emerald-800/70 text-emerald-100 text-xs font-extrabold transition-all cursor-pointer shadow active:scale-98"
                 >
                   {copyFeedback ? <Check className="h-4 w-4 text-emerald-300" /> : <Copy className="h-4 w-4 text-emerald-300" />}
-                  <span>{copyFeedback ? 'Copiado!' : 'Copiar Texto'}</span>
+                  <span>{copyFeedback ? 'Copied!' : whatsAppLang === 'en' ? 'Copy Text' : 'Copiar Texto'}</span>
                 </button>
 
                 <button
@@ -1887,7 +1916,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                   className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-black transition-all cursor-pointer shadow-lg shadow-emerald-500/30 active:scale-98"
                 >
                   <Share2 className="h-4 w-4" />
-                  <span>Partilhar no WhatsApp</span>
+                  <span>{whatsAppLang === 'en' ? 'Share on WhatsApp' : 'Partilhar no WhatsApp'}</span>
                 </button>
               </div>
             </div>
@@ -1899,6 +1928,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 weekDates: weekDatesForComplementary,
                 sessions: trainingSessions,
                 generalNotes: weeklyTeamNotes,
+                lang: whatsAppLang,
               })}
             </div>
 
