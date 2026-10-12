@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { MatchDayOffset, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, AthleteTrainingStatus, AthleteSessionStatus, Athlete, ComplementaryWorkOptions, ComplementaryWorkConfig } from '@/lib/types';
 import { isGoalkeeper } from '@/lib/data';
-import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig, getStoredWeeklyPlanMetadata, saveWeeklyPlanMetadata } from '@/lib/storage';
+import { getStoredCalendarSchedule, saveCalendarSchedule, getStoredTrainingSessions, saveTrainingSessionInfo, saveTrainingSessionInfoAsync, syncAllDataFromCloud, syncTrainingSessionsToCloud, CalendarDayType, getDynamicAthletes, getEffectiveDeadlineForDate, getStoredDeadlineConfig, saveDeadlineConfig, getStoredWeeklyPlanMetadata, saveWeeklyPlanMetadata } from '@/lib/storage';
 import {
   COMPLEMENTARY_WORK_ITEMS,
   ComplementaryWorkItem,
@@ -93,6 +93,22 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     }
     return '';
   });
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced'>('idle');
+
+  const handleManualSyncToCloud = async () => {
+    setSyncStatus('syncing');
+    const ok = await syncTrainingSessionsToCloud(trainingSessions);
+    if (ok) {
+      setSyncStatus('synced');
+      setSaveSuccess('Plano semanal publicado e sincronizado com a app das jogadoras!');
+      setTimeout(() => {
+        setSyncStatus('idle');
+        setSaveSuccess(null);
+      }, 3500);
+    } else {
+      setSyncStatus('idle');
+    }
+  };
   const [metaSaveStatus, setMetaSaveStatus] = useState<boolean>(false);
   const metaSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
@@ -501,6 +517,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
     saveTrainingSessionInfo(info);
     await saveTrainingSessionInfoAsync(info);
+    syncTrainingSessionsToCloud({ ...trainingSessions, [selectedDate]: info });
 
     try {
       const dCfg = getStoredDeadlineConfig();
@@ -974,12 +991,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       updatedAt: Date.now(),
     };
 
-    saveTrainingSessionInfo(updatedSession);
-    saveTrainingSessionInfoAsync(updatedSession);
-    setTrainingSessions((prev) => ({
-      ...prev,
+    const newSessions = {
+      ...trainingSessions,
       [targetDate]: updatedSession,
-    }));
+    };
+    setTrainingSessions(newSessions);
+    saveTrainingSessionInfo(updatedSession);
+    syncTrainingSessionsToCloud(newSessions);
   };
 
   // Update complementary notes for a given date
@@ -1011,34 +1029,35 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       updatedAt: Date.now(),
     };
 
-    saveTrainingSessionInfo(updatedSession);
-    saveTrainingSessionInfoAsync(updatedSession);
-    setTrainingSessions((prev) => ({
-      ...prev,
+    const newSessions = {
+      ...trainingSessions,
       [targetDate]: updatedSession,
-    }));
+    };
+    setTrainingSessions(newSessions);
+    saveTrainingSessionInfo(updatedSession);
+    syncTrainingSessionsToCloud(newSessions);
   };
 
   // Apply weekly preset
-  const handleApplyWeeklyPreset = (presetKey: 'championship_saturday' | 'championship_sunday' | 'regenerative' | 'double_game') => {
+  const handleApplyWeeklyPreset = async (presetKey: 'championship_saturday' | 'championship_sunday' | 'regenerative' | 'double_game') => {
     lastUserEditTimestamp.current = Date.now();
     const week = weekDatesForComplementary;
     const updated = applyWeeklyPreset(presetKey, week, trainingSessions);
 
     setTrainingSessions(updated);
-    week.forEach((d) => {
-      saveTrainingSessionInfo(updated[d]);
-      saveTrainingSessionInfoAsync(updated[d]);
-    });
     if (week.includes(selectedDate)) {
       setComplementaryWork(updated[selectedDate]?.complementaryWork || {});
     }
-    setSaveSuccess(`Preset aplicado a toda a semana (${formatDatePtShort(week[0])} a ${formatDatePtShort(week[6])})!`);
+    // Update local storage and perform a single atomic cloud sync
+    localStorage.setItem('femperf_training_sessions_info', JSON.stringify(updated));
+    await syncTrainingSessionsToCloud(updated);
+
+    setSaveSuccess(`Preset aplicado e sincronizado com as jogadoras (${formatDatePtShort(week[0])} a ${formatDatePtShort(week[6])})!`);
     setTimeout(() => setSaveSuccess(null), 3000);
   };
 
   // Clear complementary work for the current week
-  const handleClearWeekComplementary = () => {
+  const handleClearWeekComplementary = async () => {
     lastUserEditTimestamp.current = Date.now();
     const week = weekDatesForComplementary;
     const updated = { ...trainingSessions };
@@ -1049,14 +1068,14 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
           complementaryWork: {},
           updatedAt: Date.now(),
         };
-        saveTrainingSessionInfo(updated[d]);
-        saveTrainingSessionInfoAsync(updated[d]);
       }
     });
     setTrainingSessions(updated);
     if (week.includes(selectedDate)) {
       setComplementaryWork({});
     }
+    localStorage.setItem('femperf_training_sessions_info', JSON.stringify(updated));
+    await syncTrainingSessionsToCloud(updated);
     setSaveSuccess(`Trabalho complementar limpo para a semana!`);
     setTimeout(() => setSaveSuccess(null), 3000);
   };
@@ -1634,6 +1653,23 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               >
                 <span>Próxima</span>
                 <ChevronRight className="h-3.5 w-3.5" />
+              </button>
+
+              <button
+                type="button"
+                disabled={syncStatus === 'syncing'}
+                onClick={handleManualSyncToCloud}
+                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl border border-emerald-500/50 bg-emerald-950/80 hover:bg-emerald-900/80 text-emerald-200 text-xs font-black transition-all shadow-md active:scale-98 cursor-pointer disabled:opacity-50"
+                title="Publica e sincroniza imediatamente o plano semanal com a aplicação das jogadoras"
+              >
+                {syncStatus === 'syncing' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-emerald-400" />
+                ) : syncStatus === 'synced' ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-400" />
+                ) : (
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                )}
+                <span>{syncStatus === 'synced' ? '✓ Publicado p/ Jogadoras' : syncStatus === 'syncing' ? 'A publicar...' : 'Publicar p/ Jogadoras'}</span>
               </button>
 
               <button

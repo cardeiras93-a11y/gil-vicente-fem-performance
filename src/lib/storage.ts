@@ -632,6 +632,25 @@ export async function syncAllDataFromCloud(): Promise<void> {
         localStorage.setItem(WEEKLY_PLAN_METADATA_KEY, JSON.stringify(mergedPlan));
       }
 
+      let hasLocalChangesToPush = false;
+      if (localSessions) {
+        Object.keys(localSessions).forEach((d) => {
+          const loc = localSessions[d];
+          const rem = remoteSessions?.[d];
+          if (!rem && loc) {
+            hasLocalChangesToPush = true;
+          } else if (loc?.complementaryWork && Object.keys(loc.complementaryWork).length > 0 && (!rem?.complementaryWork || Object.keys(rem.complementaryWork).length === 0)) {
+            hasLocalChangesToPush = true;
+          } else if ((loc?.updatedAt || 0) > (rem?.updatedAt || 0)) {
+            hasLocalChangesToPush = true;
+          }
+        });
+      }
+
+      if (hasLocalChangesToPush) {
+        syncTrainingSessionsToCloud(mergedSessions).catch(() => {});
+      }
+
       dispatchDataUpdatedEvent();
     }
   } catch {}
@@ -1325,6 +1344,34 @@ export async function saveTrainingSessionInfoAsync(info: TrainingSessionInfo): P
     });
     return res.ok;
   } catch {
+    return false;
+  }
+}
+
+export async function syncTrainingSessionsToCloud(sessionsToPush?: Record<string, TrainingSessionInfo>): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
+  try {
+    const sessions = sessionsToPush || getStoredTrainingSessions();
+    const schedule = getStoredCalendarSchedule();
+    const weeklyPlanRaw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
+    const weeklyPlan = weeklyPlanRaw ? JSON.parse(weeklyPlanRaw) : {};
+
+    const res = await secureFetch('/api/training-sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'bulk_sessions',
+        sessions,
+        schedule,
+        weeklyPlan,
+      }),
+    });
+    if (res.ok) {
+      dispatchDataUpdatedEvent();
+    }
+    return res.ok;
+  } catch (e) {
+    console.error('Erro ao sincronizar sessões para a cloud:', e);
     return false;
   }
 }

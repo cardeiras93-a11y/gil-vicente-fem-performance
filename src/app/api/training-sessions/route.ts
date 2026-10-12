@@ -198,7 +198,19 @@ export async function POST(request: Request) {
     }
 
     // Update currentData based on request payload
-    if (body.type === 'session' && body.info) {
+    if ((body.type === 'bulk_sessions' || body.type === 'sessions') && body.sessions && typeof body.sessions === 'object') {
+      Object.entries(body.sessions).forEach(([d, sess]: [string, any]) => {
+        if (!sess) return;
+        const cleanInfo = {
+          ...sess,
+          updatedAt: sess.updatedAt || Date.now(),
+        };
+        currentData.sessions[d] = cleanInfo;
+        if (sess.dayType) {
+          currentData.schedule[d] = sess.dayType;
+        }
+      });
+    } else if (body.type === 'session' && body.info) {
       const cleanInfo = {
         ...body.info,
         updatedAt: body.info.updatedAt || Date.now(),
@@ -213,6 +225,18 @@ export async function POST(request: Request) {
       if (!currentData.weeklyPlan) currentData.weeklyPlan = {};
       currentData.weeklyPlan[body.weekStartDate] = body.metadata;
       currentData.weeklyPlan['__current__'] = body.metadata;
+    } else if (body.sessions && typeof body.sessions === 'object') {
+      Object.entries(body.sessions).forEach(([d, sess]: [string, any]) => {
+        if (!sess) return;
+        const cleanInfo = {
+          ...sess,
+          updatedAt: sess.updatedAt || Date.now(),
+        };
+        currentData.sessions[d] = cleanInfo;
+        if (sess.dayType) {
+          currentData.schedule[d] = sess.dayType;
+        }
+      });
     } else if (body.date && body.dayType) {
       currentData.sessions[body.date] = body;
       currentData.schedule[body.date] = body.dayType;
@@ -224,86 +248,35 @@ export async function POST(request: Request) {
       fs.writeFileSync(FILE_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
     } catch {}
 
-    // 2. Persist to Supabase
+    // 2. Persist to Supabase authoritative fallback row in athletes table
     if (isSupabaseConfigured && supabase) {
-      // 2a. Try upserting to primary training_sessions table
       try {
-        if (body.type === 'session' && body.info) {
-          const info = body.info;
-          const sessionRow: any = {
-            date: info.date,
-            day_type: info.dayType || 'training',
-            match_day_offset: info.matchDayOffset || 'MD-3',
-            start_time: info.startTime || (info.dayType === 'match' ? '10:00' : '09:00'),
-            end_time: info.endTime || (info.dayType === 'match' ? '11:30' : '10:30'),
-            duration_min: info.durationMin || 90,
-            temp_start: info.tempStart !== undefined ? info.tempStart : 20.0,
-            temp_end: info.tempEnd !== undefined ? info.tempEnd : 25.0,
-            location_time: info.locationTime || 'Campo de São Martinho - Barcelos',
-            focus_notes: info.focusNotes || '',
-            athlete_statuses: info.athleteStatuses || {},
-            custom_deadline: info.customDeadline || null,
-            custom_deadline_wellness: info.customDeadlineWellness || null,
-            custom_deadline_rpe: info.customDeadlineRpe || null,
-          };
-          if (info.matchCategory) {
-            sessionRow.match_category = info.matchCategory;
-          }
-          const upsertRes = await supabase.from('training_sessions').upsert([sessionRow], { onConflict: 'date' });
-          if (upsertRes?.error) {
-            delete sessionRow.match_category;
-            delete sessionRow.custom_deadline;
-            delete sessionRow.custom_deadline_wellness;
-            delete sessionRow.custom_deadline_rpe;
-            delete sessionRow.duration_min;
-            delete sessionRow.athlete_statuses;
-            await supabase.from('training_sessions').upsert([sessionRow], { onConflict: 'date' });
-          }
-        } else if (body.type === 'schedule' && body.schedule) {
-          const updates = Object.entries(body.schedule).map(([date, dayType]) => ({
-            date,
-            day_type: dayType as string,
-          }));
-          if (updates.length > 0) {
-            await supabase.from('training_sessions').upsert(updates, { onConflict: 'date' });
-          }
-        } else if (body.date && body.dayType) {
-          await supabase.from('training_sessions').upsert(
-            [
-              {
-                date: body.date,
-                day_type: body.dayType,
-                match_day_offset: body.matchDayOffset || 'MD-3',
-                start_time: body.startTime || (body.dayType === 'match' ? '10:00' : '09:00'),
-                end_time: body.endTime || (body.dayType === 'match' ? '11:30' : '10:30'),
-                location_time: body.locationTime || 'Campo de São Martinho - Barcelos',
-                focus_notes: body.focusNotes || '',
-                athlete_statuses: body.athleteStatuses || {},
-              },
-            ],
-            { onConflict: 'date' }
+        const { error: upErr } = await supabase.from('athletes').update({
+          name: JSON.stringify(currentData),
+          created_at: new Date().toISOString(),
+        }).eq('id', '__TRAINING_SESSIONS__');
+
+        if (upErr) {
+          await supabase.from('athletes').upsert(
+            {
+              id: '__TRAINING_SESSIONS__',
+              name: JSON.stringify(currentData),
+              created_at: new Date().toISOString(),
+            },
+            { onConflict: 'id' }
           );
         }
-      } catch (dbErr) {
-        console.warn('Erro ao guardar sessão na tabela training_sessions (ignorado):', dbErr);
-      }
-
-      // 2b. Always upsert fallback __TRAINING_SESSIONS__ row in athletes table for guaranteed persistence
-      try {
-        await supabase.from('athletes').upsert(
-          {
-            id: '__TRAINING_SESSIONS__',
-            name: JSON.stringify(currentData),
-            created_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        );
       } catch (e) {
         console.error('Erro ao guardar fallback de sessões em athletes:', e);
       }
     }
 
-    return NextResponse.json({ success: true, message: 'Informação de treino guardada com sucesso' }, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      sessions: currentData.sessions,
+      schedule: currentData.schedule,
+      message: 'Informação de treino guardada com sucesso'
+    }, { status: 200 });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message || 'Erro ao guardar sessão de treino' }, { status: 500 });
   }

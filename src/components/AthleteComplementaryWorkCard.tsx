@@ -13,6 +13,7 @@ import {
 } from '@/lib/complementaryWork';
 import { Dumbbell, Calendar, ChevronDown, ChevronUp, Sparkles, CheckCircle2, Info, FileText } from 'lucide-react';
 import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
+import { secureFetch } from '@/lib/authGuard';
 
 interface AthleteComplementaryWorkCardProps {
   currentDate?: string; // YYYY-MM-DD (defaults to today)
@@ -39,6 +40,21 @@ export const AthleteComplementaryWorkCard: React.FC<AthleteComplementaryWorkCard
       setSessions(getStoredTrainingSessions());
     };
     load();
+
+    // Proactively fetch latest sessions from cloud to guarantee fresh display on athletes' devices
+    secureFetch(`/api/training-sessions?t=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        const remote = data?.sessions || data?.data?.sessions;
+        if (remote && typeof remote === 'object' && Object.keys(remote).length > 0) {
+          const current = getStoredTrainingSessions();
+          const merged = { ...current, ...remote };
+          localStorage.setItem('femperf_training_sessions_info', JSON.stringify(merged));
+          setSessions(merged);
+        }
+      })
+      .catch(() => {});
+
     window.addEventListener('femperf_data_updated', load);
     window.addEventListener('storage', load);
     return () => {
