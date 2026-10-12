@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v34-sync-complementary-work-cloud-20261012';
+const CACHE_NAME = 'femperf-v35-keep-default-deadlines-intact-20261012';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

@@ -327,28 +327,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setComplementaryWork(existing.complementaryWork || {});
       setWeeklyRefDate(selectedDate);
       const dCfg = getStoredDeadlineConfig();
-      let initWellness = existing.customDeadlineWellness || existing.customDeadline || dCfg.customDateDeadlinesWellness?.[selectedDate] || dCfg.customDateDeadlines?.[selectedDate] || '';
-      let initRpe = existing.customDeadlineRpe || dCfg.customDateDeadlinesRpe?.[selectedDate] || '';
-
-      if (!initWellness && existing.startTime && existing.startTime.includes(':') && (existing.startTime !== '09:00' || existing.dayType === 'match')) {
-        if (existing.dayType === 'match' && dCfg.mode !== 'relative_to_session') {
-          initWellness = dCfg.wellnessMatchTime || '12:00';
-        } else {
-          const [h, m] = existing.startTime.split(':').map(Number);
-          const targetW = Math.max(0, (h * 60 + m) - 60);
-          initWellness = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
-        }
-      }
-      if (!initRpe && (existing.endTime || existing.startTime) && ((existing.startTime && existing.startTime !== '09:00') || existing.dayType === 'match')) {
-        if (existing.dayType === 'match' && dCfg.mode !== 'relative_to_session') {
-          initRpe = dCfg.rpeMatchTime || '18:30';
-        } else {
-          const base = existing.endTime || existing.startTime || (existing.dayType === 'match' ? '11:30' : '10:30');
-          const [h, m] = base.split(':').map(Number);
-          const targetR = Math.min(1439, (h * 60 + m) + 60);
-          initRpe = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-        }
-      }
+      const initWellness = existing.customDeadlineWellness || existing.customDeadline || dCfg.customDateDeadlinesWellness?.[selectedDate] || dCfg.customDateDeadlines?.[selectedDate] || '';
+      const initRpe = existing.customDeadlineRpe || dCfg.customDateDeadlinesRpe?.[selectedDate] || '';
 
       setCustomDeadlineWellness(initWellness);
       setCustomDeadlineRpe(initRpe);
@@ -716,55 +696,21 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     handleSetSpecificDayType(dateStr, next);
   };
 
-  // Handle start time change and auto-adapt deadlines to this specific session
+  // Handle start time change - strictly updates training start time without altering default deadlines
   const handleStartTimeChange = (newStartTime: string) => {
     lastUserEditTimestamp.current = Date.now();
     setStartTime(newStartTime);
-    let calcW = customDeadlineWellness;
-    let calcR = customDeadlineRpe;
-
-    if (newStartTime && newStartTime.includes(':')) {
-      const [h, m] = newStartTime.split(':').map(Number);
-      if (!isNaN(h) && !isNaN(m)) {
-        const targetW = Math.max(0, (h * 60 + m) - 60);
-        calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
-        setCustomDeadlineWellness(calcW);
-        setCustomDeadline(calcW);
-
-        const base = endTime && endTime.includes(':') ? endTime : newStartTime;
-        const [bH, bM] = base.split(':').map(Number);
-        const targetR = Math.min(1439, (bH * 60 + bM) + (endTime ? 60 : 150));
-        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-        setCustomDeadlineRpe(calcR);
-      }
-    }
-
     performSave({
       startTime: newStartTime,
-      customDeadlineWellness: calcW,
-      customDeadline: calcW,
-      customDeadlineRpe: calcR,
     });
   };
 
-  // Handle end time change and auto-adapt RPE deadline to this specific session
+  // Handle end time change - strictly updates training end time without altering default deadlines
   const handleEndTimeChange = (newEndTime: string) => {
     lastUserEditTimestamp.current = Date.now();
     setEndTime(newEndTime);
-    let calcR = customDeadlineRpe;
-
-    if (newEndTime && newEndTime.includes(':')) {
-      const [h, m] = newEndTime.split(':').map(Number);
-      if (!isNaN(h) && !isNaN(m)) {
-        const targetR = Math.min(1439, (h * 60 + m) + 60);
-        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-        setCustomDeadlineRpe(calcR);
-      }
-    }
-
     performSave({
       endTime: newEndTime,
-      customDeadlineRpe: calcR,
     });
   };
 
@@ -779,8 +725,6 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     let matchStart = startTime;
     let matchEnd = endTime;
     let newCategory = matchCategory;
-    let calcW = customDeadlineWellness;
-    let calcR = customDeadlineRpe;
 
     if (newType === 'match') {
       if (existing?.matchCategory) {
@@ -791,29 +735,6 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       matchEnd = existing?.endTime || (endTime !== '10:30' ? endTime : '11:30');
       setStartTime(matchStart);
       setEndTime(matchEnd);
-
-      if (existing?.customDeadlineWellness) {
-        calcW = existing.customDeadlineWellness;
-        setCustomDeadlineWellness(calcW);
-        setCustomDeadline(calcW);
-      } else if (matchStart && matchStart.includes(':')) {
-        const [h, m] = matchStart.split(':').map(Number);
-        const targetW = Math.max(0, (h * 60 + m) - 60);
-        calcW = `${String(Math.floor(targetW / 60)).padStart(2, '0')}:${String(targetW % 60).padStart(2, '0')}`;
-        setCustomDeadlineWellness(calcW);
-        setCustomDeadline(calcW);
-      }
-
-      if (existing?.customDeadlineRpe) {
-        calcR = existing.customDeadlineRpe;
-        setCustomDeadlineRpe(calcR);
-      } else if (matchStart && matchStart.includes(':')) {
-        const base = matchEnd && matchEnd.includes(':') ? matchEnd : matchStart;
-        const [bH, bM] = base.split(':').map(Number);
-        const targetR = Math.min(1439, (bH * 60 + bM) + (matchEnd ? 60 : 150));
-        calcR = `${String(Math.floor(targetR / 60)).padStart(2, '0')}:${String(targetR % 60).padStart(2, '0')}`;
-        setCustomDeadlineRpe(calcR);
-      }
     } else if (newType === 'training') {
       matchStart = existing?.startTime || (startTime && startTime !== '10:00' ? startTime : '09:00');
       matchEnd = existing?.endTime || (endTime && endTime !== '11:30' ? endTime : '10:30');
@@ -827,9 +748,6 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       matchDayOffset: newOffset,
       startTime: matchStart,
       endTime: matchEnd,
-      customDeadlineWellness: calcW,
-      customDeadline: calcW,
-      customDeadlineRpe: calcR,
     });
   };
 

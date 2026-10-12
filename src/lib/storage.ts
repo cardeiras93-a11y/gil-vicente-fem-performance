@@ -1675,14 +1675,11 @@ export function getEffectiveDeadlineForDate(
   }
 
   // 2. Specific session schedule defined
-  // Em modo fixo (padrão), jogos têm horários fixos (12:00 / 18:30) e dias de treino têm 08:15 / 14:00 (a menos que a sessão de treino tenha horário específico diferente de 09:00)
+  // Apenas se o modo configurado for explicitamente 'relative_to_session'. Em modo padrão (fixo), horários de treino NUNCA alteram os prazos padrão regulamentares (08:15 / 14:00).
   const hasSpecificSchedule = Boolean(
+    config.mode === 'relative_to_session' &&
     session?.startTime &&
-    session.startTime.includes(':') &&
-    (
-      config.mode === 'relative_to_session' ||
-      (!isMatchDay && session.startTime !== '09:00')
-    )
+    session.startTime.includes(':')
   );
 
   if (hasSpecificSchedule && session?.startTime) {
