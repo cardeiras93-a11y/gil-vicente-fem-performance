@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Athlete, MenstrualCyclePhase, MuscleFatigueMap, WellnessEntry, HydrationEntry } from '@/lib/types';
+import { Athlete, MenstrualCyclePhase, MuscleFatigueMap, WellnessEntry } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { MuscleFatigueSelector } from './MuscleFatigueSelector';
-import { calculateHydrationStatus } from '@/lib/data';
-import { saveWellnessLocally, getWellnessLocally, saveHydrationLocally, getHydrationLocally, isSubmissionPastDeadline } from '@/lib/storage';
+import { saveWellnessLocally, getWellnessLocally, isSubmissionPastDeadline } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { normalizeMenstrualCycleToPortuguese, translateTextToPortuguese } from '@/lib/translationUtils';
-import { HeartPulse, Moon, Sun, Smile, ShieldAlert, Zap, Stethoscope, Check, AlertCircle, ChevronDown, ChevronUp, Info, Lock, Clock, AlertTriangle, CheckCircle2, Scale, Sparkles, RefreshCw } from 'lucide-react';
+import { HeartPulse, Moon, Sun, Smile, ShieldAlert, Zap, Stethoscope, Check, AlertCircle, ChevronDown, ChevronUp, Info, Lock, Clock, AlertTriangle, CheckCircle2, Sparkles, RefreshCw } from 'lucide-react';
 
 interface WellnessFormProps {
   activeAthlete: Athlete;
@@ -47,43 +46,15 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id)
   );
 
-
-  // Morning Weight state
-  const [morningWeight, setMorningWeight] = useState<string>('62.5');
-  const [todayHydration, setTodayHydration] = useState<HydrationEntry | null>(null);
-  const [quickWeightFeedback, setQuickWeightFeedback] = useState<string | null>(null);
-  const [isSavingQuickWeight, setIsSavingQuickWeight] = useState<boolean>(false);
-  const hasUserEditedWeight = React.useRef<boolean>(false);
-
-  const syncHydrationWeight = (force = false) => {
-    const hydEntries = getHydrationLocally(activeAthlete.id);
-    const todayH = hydEntries.find((h) => h.date === todayStr);
-    setTodayHydration(todayH || null);
-
-    if (force || !hasUserEditedWeight.current) {
-      if (todayH && Number(todayH.preWeight) > 0) {
-        setMorningWeight(todayH.preWeight.toString());
-      } else if (existingToday?.morningWeight) {
-        setMorningWeight(existingToday.morningWeight.toString());
-      } else if (hydEntries.length > 0 && Number(hydEntries[0].preWeight) > 0) {
-        setMorningWeight(hydEntries[0].preWeight.toString());
-      } else {
-        setMorningWeight('62.5');
-      }
-    }
-  };
-
   useEffect(() => {
     const refreshData = () => {
       const localEntries = getWellnessLocally(activeAthlete.id);
       const found = localEntries.find((e) => e.date === todayStr) || null;
       setExistingToday(found);
       setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'wellness', activeAthlete.id));
-      syncHydrationWeight(false);
     };
 
     refreshData();
-    syncHydrationWeight(true);
 
     // Sincronização direta e instantânea com Supabase para garantir que submissões feitas noutro dispositivo aparecem no telemóvel
     secureFetch(`/api/wellness?athleteId=${activeAthlete.id}&t=${Date.now()}`)
@@ -93,18 +64,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         if (Array.isArray(items) && items.length > 0) {
           items.forEach((item: WellnessEntry) => {
             saveWellnessLocally(item);
-          });
-          refreshData();
-        }
-      })
-      .catch(() => {});
-
-    secureFetch(`/api/hydration?athleteId=${activeAthlete.id}&t=${Date.now()}`)
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.success && Array.isArray(resData.data) && resData.data.length > 0) {
-          resData.data.forEach((item: HydrationEntry) => {
-            saveHydrationLocally(item);
           });
           refreshData();
         }
@@ -121,84 +80,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     };
   }, [activeAthlete.id, todayStr]);
 
-  const adjustWeight = (delta: number) => {
-    hasUserEditedWeight.current = true;
-    const current = parseFloat((morningWeight || '62.0').replace(',', '.')) || 62.0;
-    const updated = Math.max(30, Number((current + delta).toFixed(2)));
-    setMorningWeight(updated.toString());
-  };
-
-  const saveMorningWeightToHydration = async (weightVal: number) => {
-    if (!weightVal || weightVal <= 0) return null;
-    const nowIso = new Date().toISOString();
-    const hydEntries = getHydrationLocally(activeAthlete.id);
-    const existingH = hydEntries.find((h) => h.date === todayStr);
-
-    const hasPost = existingH && Number(existingH.postWeight) > 0;
-    const postVal = hasPost ? Number(existingH.postWeight) : 0;
-    const fluidsVal = hasPost ? Number(existingH.fluidsIntake || 0.5) : 0;
-    const calc = hasPost ? calculateHydrationStatus(weightVal, postVal, fluidsVal, 'pt') : null;
-
-    const partialEntry: HydrationEntry = {
-      id: existingH?.id || `hyd-${todayStr}-${activeAthlete.id}`,
-      athleteId: activeAthlete.id,
-      athleteName: activeAthlete.name,
-      date: todayStr,
-      durationMin: existingH?.durationMin || 90,
-      preWeight: weightVal,
-      postWeight: postVal,
-      fluidsIntake: fluidsVal,
-      weightLoss: calc ? calc.weightLoss : 0,
-      dehydrationRate: calc ? calc.dehydrationRate : 0,
-      status: calc ? calc.status : 'Pendente',
-      refillNeededLiters: calc ? calc.refillNeededLiters : 0,
-      recommendation: calc ? calc.recommendation : 'Peso Matinal / Pré-Treino registado. Conclui no final do treino.',
-      biologicalImpact: calc ? calc.biologicalImpact : 'Aguardando pesagem pós-treino',
-      preWeightTime: existingH?.preWeightTime || existingH?.submittedAtPre || nowIso,
-      submittedAtPre: existingH?.submittedAtPre || existingH?.preWeightTime || nowIso,
-      postWeightTime: existingH?.postWeightTime,
-      submittedAtPost: existingH?.submittedAtPost,
-      createdAt: existingH?.createdAt || nowIso,
-    };
-
-    saveHydrationLocally(partialEntry);
-
-    try {
-      await secureFetch('/api/hydration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(partialEntry),
-      });
-    } catch {}
-
-    try {
-      secureFetch('/api/sync-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'hydration_pre', entry: partialEntry }),
-      }).catch(() => {});
-    } catch {}
-
-    // ALSO update existingToday in wellness if present so both are synchronized
-    if (existingToday) {
-      const updatedWellness: WellnessEntry = {
-        ...existingToday,
-        morningWeight: weightVal,
-      };
-      saveWellnessLocally(updatedWellness);
-      setExistingToday(updatedWellness);
-      secureFetch('/api/wellness', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedWellness),
-      }).catch(() => {});
-    }
-
-    setTodayHydration(partialEntry);
-    hasUserEditedWeight.current = false;
-    return partialEntry;
-  };
-
   const handleEditClick = () => {
     if (existingToday) {
       setMenstrualCycle((existingToday.menstrualCycle as MenstrualCyclePhase) || null);
@@ -212,11 +93,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       setMuscleFatigue(existingToday.muscleFatigue || {});
       setNeedsPhysio(!!existingToday.needsPhysio);
       setPhysioReason(existingToday.physioReason || '');
-      if (todayHydration?.preWeight) {
-        setMorningWeight(todayHydration.preWeight.toString());
-      } else if (existingToday.morningWeight) {
-        setMorningWeight(existingToday.morningWeight.toString());
-      }
     }
     setAllowEdit(true);
   };
@@ -265,13 +141,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     const isAuthorizedLate = Boolean(currentDeadlineCheck.isAuthorizedLate || existingToday?.isAuthorizedLate);
     const keepFine = isAuthorizedLate ? false : (existingToday?.keepFine !== undefined ? existingToday.keepFine : isLate);
 
-    const parsedWeight = parseFloat((morningWeight || '').replace(',', '.'));
-    const validWeight = !isNaN(parsedWeight) && parsedWeight > 0 ? parsedWeight : undefined;
-
-    if (validWeight) {
-      await saveMorningWeightToHydration(validWeight);
-    }
-
     const newEntry: WellnessEntry = {
       id: existingToday ? existingToday.id : `wel-${Date.now()}`,
       athleteId: activeAthlete.id,
@@ -286,7 +155,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
       soreness,
       heavyLegs,
       wellnessTotal: sleepQuality + sleepDuration + mood + stress + fatigue + soreness + heavyLegs,
-      morningWeight: validWeight,
+      morningWeight: existingToday?.morningWeight,
       muscleFatigue,
       needsPhysio,
       isLate,
@@ -481,113 +350,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
 
         </div>
 
-        {/* Card Dedicado de Registo / Atualização do Peso Matinal */}
-        <div className="rounded-xl border border-cyan-500/40 bg-gradient-to-r from-cyan-950/40 via-dark-surface to-dark-card p-4 space-y-3 shadow-md">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-                <Scale className="h-4 w-4" />
-              </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-cyan-400">
-                  Peso Matinal / Pré-Treino ({todayStr})
-                </span>
-                <div className="text-[9px] font-bold text-emerald-400">
-                  🔓 Sem restrições de horário • Registo sempre disponível
-                </div>
-                <h4 className="text-xs font-bold text-slate-200 mt-0.5">
-                  {todayHydration && Number(todayHydration.preWeight) > 0
-                    ? `Peso registado: ${todayHydration.preWeight} kg`
-                    : 'Ainda não registaste o peso matinal hoje'}
-                </h4>
-              </div>
-            </div>
-
-            {todayHydration && Number(todayHydration.preWeight) > 0 ? (
-              <span className="text-xs font-black text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-500/30">
-                ✅ {todayHydration.preWeight} kg
-              </span>
-            ) : (
-              <span className="text-xs font-black text-amber-400 bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-500/30 animate-pulse">
-                ⚠️ Pendente
-              </span>
-            )}
-          </div>
-
-          <div className="space-y-2 pt-1">
-            <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => adjustWeight(-0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.5
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustWeight(-0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                -0.1
-              </button>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={morningWeight}
-                onChange={(e) => setMorningWeight(e.target.value)}
-                placeholder="62.5"
-                className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
-              />
-              <button
-                type="button"
-                onClick={() => adjustWeight(0.1)}
-                className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.1
-              </button>
-              <button
-                type="button"
-                onClick={() => adjustWeight(0.5)}
-                className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-              >
-                +0.5
-              </button>
-            </div>
-
-            <button
-              type="button"
-              disabled={isSavingQuickWeight}
-              onClick={async () => {
-                const num = parseFloat((morningWeight || '').replace(',', '.'));
-                if (num > 0) {
-                  setIsSavingQuickWeight(true);
-                  await saveMorningWeightToHydration(num);
-                  setIsSavingQuickWeight(false);
-                  setQuickWeightFeedback(`✅ Peso matinal de ${num} kg registado com sucesso!`);
-                  setTimeout(() => setQuickWeightFeedback(null), 5000);
-                }
-              }}
-              className="w-full flex items-center justify-center space-x-2 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs transition-all shadow-md active:scale-98"
-            >
-              <Scale className="h-4 w-4" />
-              <span>
-                {isSavingQuickWeight
-                  ? 'A guardar...'
-                  : todayHydration && Number(todayHydration.preWeight) > 0
-                  ? 'Atualizar Peso Matinal'
-                  : 'Gravar Peso Matinal Agora'}
-              </span>
-            </button>
-
-            {quickWeightFeedback && (
-              <div className="flex items-center justify-center space-x-2 p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-extrabold animate-fade-in">
-                <Check className="h-4 w-4 text-emerald-400 shrink-0" />
-                <span>{quickWeightFeedback}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
         <div className="pt-2">
           <button
             type="button"
@@ -656,7 +418,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
             type="button"
             onClick={() => {
               setAllowEdit(false);
-              hasUserEditedWeight.current = false;
             }}
             className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-[11px] transition-all cursor-pointer shrink-0"
           >
@@ -700,67 +461,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         </div>
       </div>
 
-      {/* 2. Peso Matinal (kg) */}
-      <div className="space-y-3 rounded-xl border border-cyan-500/40 bg-dark-card p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-slate-200">
-            <Scale className="h-5 w-5 text-cyan-400" />
-            <div>
-              <h3 className="text-sm font-bold text-slate-100">Peso Matinal / Pré-Treino (kg)</h3>
-              <p className="text-[11px] text-slate-400">Ao acordar ou antes do treino • Sem restrição de horário</p>
-            </div>
-          </div>
-          <span className="text-xs font-black text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-full border border-cyan-500/30">
-            {morningWeight ? `${morningWeight} kg` : '- kg'}
-          </span>
-        </div>
-
-        <div className="space-y-2 pt-1">
-          <div className="flex items-center space-x-2">
-            <button
-              type="button"
-              onClick={() => adjustWeight(-0.5)}
-              className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-            >
-              -0.5
-            </button>
-            <button
-              type="button"
-              onClick={() => adjustWeight(-0.1)}
-              className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-            >
-              -0.1
-            </button>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={morningWeight}
-              onChange={(e) => {
-                hasUserEditedWeight.current = true;
-                setMorningWeight(e.target.value);
-              }}
-              placeholder="ex: 62.5"
-              className="w-full text-center rounded-xl border border-cyan-500/40 bg-dark-bg p-2.5 text-lg font-black text-cyan-300 focus:border-cyan-400 focus:outline-none tracking-wider"
-            />
-            <button
-              type="button"
-              onClick={() => adjustWeight(0.1)}
-              className="rounded-xl bg-slate-800 px-2.5 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-            >
-              +0.1
-            </button>
-            <button
-              type="button"
-              onClick={() => adjustWeight(0.5)}
-              className="rounded-xl bg-slate-800 px-3 py-2 text-xs font-black text-slate-300 hover:bg-slate-700 active:scale-95"
-            >
-              +0.5
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Escalas de Bem-Estar Geral */}
+      {/* 2. Escalas de Bem-Estar Geral */}
       <div className="space-y-3">
         {renderRatingGroup(
           t.wellness.sleepQuality,

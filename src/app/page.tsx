@@ -18,7 +18,7 @@ import { AthleteComplementaryWorkCard } from '@/components/AthleteComplementaryW
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { isGoalkeeper } from '@/lib/data';
-import { HeartPulse, Dumbbell, Droplet, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
+import { HeartPulse, Dumbbell, Droplet, Scale, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
 
 const VIEW_MODE_KEY = 'femperf_active_view_mode';
 
@@ -389,7 +389,7 @@ function MainAppContent() {
               >
                 <HeartPulse className="h-4 w-4 shrink-0" />
                 <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
-                  1. Wellness & Peso
+                  1. Wellness <span className="text-[9px] font-bold sm:text-[10px]">(Matinal)</span>
                 </span>
               </button>
 
@@ -417,7 +417,7 @@ function MainAppContent() {
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <Droplet className="h-4 w-4 shrink-0" />
+                <Scale className="h-4 w-4 shrink-0" />
                 <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
                   3. Pesagem <span className="text-[9px] font-bold sm:text-[10px]">(Pré / Pós)</span>
                 </span>
