@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v36-separate-wellness-weight-20261014';
+const CACHE_NAME = 'femperf-v37-j2-famalicao-match-data-20261018';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

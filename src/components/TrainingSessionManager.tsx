@@ -22,6 +22,7 @@ import {
   LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw
 } from 'lucide-react';
 import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
+import { getAllMatches } from '@/data/matchRegistry';
 
 interface TrainingSessionManagerProps {
   selectedDate: string;
@@ -222,9 +223,12 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const getAutoMatchDayOffset = (dateStr: string, currentType: CalendarDayType): MatchDayOffset => {
     if (currentType === 'match') return 'MD';
 
-    // Collect all match dates across schedule, training sessions, and rpe entries
+    // Collect all match dates across registered matches, schedule, training sessions, and rpe entries
     const matchDatesSet = new Set<string>();
 
+    getAllMatches().forEach((m) => {
+      if (m.matchDate) matchDatesSet.add(m.matchDate);
+    });
     Object.entries(calendarSchedule).forEach(([d, t]) => {
       if (t === 'match') matchDatesSet.add(d);
     });
@@ -339,7 +343,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       if (typeOverride) {
         initialType = typeOverride;
       } else {
-        const isMatch = rpeList.some((r) => r.date === selectedDate && r.matchDayOffset === 'MD');
+        const isMatch = getAllMatches().some((m) => m.matchDate === selectedDate) || rpeList.some((r) => r.date === selectedDate && r.matchDayOffset === 'MD');
         const hasData = wellnessList.some((w) => w.date === selectedDate) || rpeList.some((r) => r.date === selectedDate);
         const [y, m, d] = selectedDate.split('-').map(Number);
         const isSun = !isNaN(y) && !isNaN(m) && !isNaN(d) ? new Date(y, m - 1, d).getDay() === 0 : false;

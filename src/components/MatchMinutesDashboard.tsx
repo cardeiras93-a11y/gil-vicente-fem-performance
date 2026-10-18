@@ -212,7 +212,9 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
       text.includes('j1pv') ||
       text.includes('juveforce') ||
       text.includes('juve force') ||
-      text.includes('juve')
+      text.includes('juve') ||
+      text.includes('famalicão') ||
+      text.includes('famalicao')
     ) {
       return 'championship';
     }

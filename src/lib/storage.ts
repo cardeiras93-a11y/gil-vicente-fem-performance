@@ -1,6 +1,7 @@
 import { Athlete, AthletePosition, WellnessEntry, RPEEntry, HydrationEntry, TrainingSessionInfo, QuestionnaireDeadlinesConfig, LateSubmissionAuthorization, IndividualFineExemption } from './types';
 import { INITIAL_ATHLETES } from './data';
 import { secureFetch } from './authGuard';
+import { getAllMatches } from '@/data/matchRegistry';
 
 const ACTIVE_ATHLETE_KEY = 'femperf_active_athlete_id';
 const ATHLETE_PINS_KEY = 'femperf_athlete_pins';
@@ -1628,6 +1629,14 @@ export function getEffectiveDeadlineForDate(
   const session = sessions[dateStr];
   const dayType = schedule[dateStr] || session?.dayType || 'training';
   let isMatchDay = dayType === 'match' || session?.dayType === 'match' || session?.matchDayOffset === 'MD';
+
+  if (!isMatchDay) {
+    try {
+      if (getAllMatches().some((m) => m.matchDate === dateStr)) {
+        isMatchDay = true;
+      }
+    } catch {}
+  }
 
   if (!isMatchDay && typeof window !== 'undefined') {
     try {
