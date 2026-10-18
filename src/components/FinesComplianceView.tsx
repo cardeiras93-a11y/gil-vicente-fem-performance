@@ -20,6 +20,7 @@ import {
   saveTrainingSessionInfo,
   getStoredFineExemptions,
   saveFineExemption,
+  saveFineExemptions,
   removeFineExemption,
   isFineExempt,
   approveWellnessSubmission,
@@ -194,6 +195,48 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         : 'Multa';
 
     setActionFeedback(`✓ ${typeLabel} (${date}) eliminada com sucesso para ${athleteName}.`);
+    setTimeout(() => setActionFeedback(null), 4000);
+  };
+
+  // Eliminate all fines in month atomically for an athlete
+  const handleEliminateAllFinesForAthlete = (
+    athleteId: string,
+    athleteName: string,
+    failedDates: AthleteComplianceReport['failedDates']
+  ) => {
+    if (!failedDates || failedDates.length === 0) return;
+
+    // 1. Clear keepFine on any existing approved late questionnaires
+    failedDates.forEach((fd) => {
+      const wEntry = wellnessList.find(
+        (w) => w.date === fd.date && (w.athleteId === athleteId || w.athleteName === athleteName)
+      );
+      if (wEntry && wEntry.keepFine) {
+        approveWellnessSubmission(wEntry.id, 'Treinador', false);
+      }
+      const rEntry = rpeList.find(
+        (r) => r.date === fd.date && (r.athleteId === athleteId || r.athleteName === athleteName)
+      );
+      if (rEntry && rEntry.keepFine) {
+        approveRPESubmission(rEntry.id, 'Treinador', false);
+      }
+    });
+
+    // 2. Build exemptions list for all dates
+    const exemptionsToSave: IndividualFineExemption[] = failedDates.map((fd) => ({
+      id: `${athleteId}_${fd.date}_all`,
+      athleteId,
+      athleteName,
+      date: fd.date,
+      type: 'all',
+      waivedAt: new Date().toISOString(),
+      reason: 'Eliminada pelo treinador',
+    }));
+
+    saveFineExemptions(exemptionsToSave);
+    setFineExemptions(getStoredFineExemptions());
+
+    setActionFeedback(`✓ Todas as ${failedDates.length} datas de multa eliminadas com sucesso para ${athleteName}.`);
     setTimeout(() => setActionFeedback(null), 4000);
   };
 
@@ -551,11 +594,22 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         }
       });
 
-      // Collect waived fines for this athlete within the selected month
+      // Collect waived fines for this athlete within the selected month (deduplicated)
+      const seenWaivedDates = new Set<string>();
       const waivedFines = Object.values(fineExemptions).filter((ex) => {
-        const matchesAthlete = ex.athleteId === ath.id || ex.athleteName === ath.name || ex.id?.startsWith(`${ath.id}_`);
-        const matchesMonth = ex.date?.startsWith(selectedMonth);
-        return matchesAthlete && matchesMonth;
+        if (!ex || !ex.date || !ex.date.startsWith(selectedMonth)) return false;
+        const matchesAthlete =
+          ex.athleteId === ath.id ||
+          ex.athleteName === ath.name ||
+          ex.athleteId?.toLowerCase() === ath.id.toLowerCase() ||
+          ex.athleteName?.toLowerCase() === ath.name.toLowerCase() ||
+          ex.id?.startsWith(`${ath.id}_`) ||
+          ex.id?.startsWith(`${ath.name}_`);
+        if (!matchesAthlete) return false;
+        const dedupKey = `${ex.date}_${ex.type}`;
+        if (seenWaivedDates.has(dedupKey) || (ex.type !== 'all' && seenWaivedDates.has(`${ex.date}_all`))) return false;
+        seenWaivedDates.add(dedupKey);
+        return true;
       });
 
       const totalFails = missingWellnessCount + missingRpeCount + missingHydrationCount;
@@ -1231,9 +1285,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                                     <button
                                       type="button"
                                       onClick={() => {
-                                        report.failedDates.forEach((fd) => {
-                                          handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'all');
-                                        });
+                                        handleEliminateAllFinesForAthlete(report.athleteId, report.athleteName, report.failedDates);
                                       }}
                                       className="inline-flex items-center space-x-1 text-[10px] text-rose-400 hover:text-rose-300 font-bold bg-rose-500/10 hover:bg-rose-500/20 px-2 py-0.5 rounded border border-rose-500/30 transition-all cursor-pointer self-start sm:self-auto"
                                       title="Eliminar todas as multas deste mês para esta atleta"

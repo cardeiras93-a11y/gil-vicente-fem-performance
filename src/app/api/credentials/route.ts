@@ -216,11 +216,13 @@ export async function POST(request: Request) {
           if (fromCloud.athletePins) current.athletePins = { ...fromCloud.athletePins, ...current.athletePins };
           if (fromCloud.athleteAvatars) current.athleteAvatars = { ...fromCloud.athleteAvatars, ...current.athleteAvatars };
           if (fromCloud.finesEnabledDays) current.finesEnabledDays = { ...fromCloud.finesEnabledDays, ...current.finesEnabledDays };
+          if (fromCloud.individualFineExemptions) current.individualFineExemptions = { ...fromCloud.individualFineExemptions, ...(current.individualFineExemptions || {}) };
           if (fromCloud.editedProfiles) current.editedProfiles = { ...fromCloud.editedProfiles, ...current.editedProfiles };
           if (fromCloud.customAthletes) current.customAthletes = fromCloud.customAthletes;
           if (fromCloud.deletedAthletes) current.deletedAthletes = fromCloud.deletedAthletes;
           if (fromCloud.inactiveAthletes) current.inactiveAthletes = fromCloud.inactiveAthletes;
           if (fromCloud.reminderConfig) current.reminderConfig = fromCloud.reminderConfig;
+          if (fromCloud.deadlineConfig) current.deadlineConfig = { ...fromCloud.deadlineConfig, ...(current.deadlineConfig || {}) };
           if (fromCloud.physioAttendance) current.physioAttendance = { ...fromCloud.physioAttendance, ...current.physioAttendance };
         }
       } catch {}
@@ -247,8 +249,10 @@ export async function POST(request: Request) {
     if (body.finesEnabledDays !== undefined) {
       current.finesEnabledDays = { ...current.finesEnabledDays, ...body.finesEnabledDays };
     }
-    if (body.individualFineExemptions !== undefined) {
-      current.individualFineExemptions = body.individualFineExemptions;
+    if (body.replaceIndividualFineExemptions !== undefined) {
+      current.individualFineExemptions = body.replaceIndividualFineExemptions;
+    } else if (body.individualFineExemptions !== undefined) {
+      current.individualFineExemptions = { ...(current.individualFineExemptions || {}), ...body.individualFineExemptions };
     }
     if (body.editedProfiles !== undefined) {
       current.editedProfiles = { ...(current.editedProfiles || {}), ...body.editedProfiles };
@@ -320,7 +324,7 @@ export async function POST(request: Request) {
         if (body.finesEnabledDays !== undefined) {
           updates.push({ key: 'fines_enabled_days', value: current.finesEnabledDays, updated_at: new Date().toISOString() });
         }
-        if (body.individualFineExemptions !== undefined) {
+        if (body.individualFineExemptions !== undefined || body.replaceIndividualFineExemptions !== undefined) {
           updates.push({ key: 'individual_fine_exemptions', value: current.individualFineExemptions, updated_at: new Date().toISOString() });
         }
         if (body.editedProfiles !== undefined) {

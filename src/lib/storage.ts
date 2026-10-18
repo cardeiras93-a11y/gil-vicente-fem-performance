@@ -443,9 +443,11 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
       }
 
-      // 4b. Individual Fine Exemptions: Cloud takes priority
+      // 4b. Individual Fine Exemptions: Merge cloud and local so neither are wiped
       if (cloudIndividualFineExemptions && typeof cloudIndividualFineExemptions === 'object') {
-        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(cloudIndividualFineExemptions));
+        const local = getStoredFineExemptions();
+        const merged = { ...cloudIndividualFineExemptions, ...local };
+        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(merged));
       }
 
       // 5. Edited Profiles: Cloud is authoritative
@@ -905,12 +907,41 @@ export function getStoredFineExemptions(): Record<string, IndividualFineExemptio
   }
 }
 
-export function saveFineExemption(exemption: IndividualFineExemption): void {
-  if (typeof window === 'undefined') return;
+export function saveFineExemptions(exemptions: IndividualFineExemption[]): void {
+  if (typeof window === 'undefined' || !exemptions || !exemptions.length) return;
   try {
     const current = getStoredFineExemptions();
-    const key = `${exemption.athleteId}_${exemption.date}_${exemption.type}`;
-    current[key] = exemption;
+    exemptions.forEach((ex) => {
+      const cleanAthId = (ex.athleteId || '').trim();
+      const cleanAthName = (ex.athleteName || '').trim();
+      const slug = cleanAthName.toLowerCase().replace(/\s+/g, '-');
+
+      const key = `${cleanAthId}_${ex.date}_${ex.type}`;
+      current[key] = ex;
+
+      // Also register by athlete name and specific types for complete safety
+      if (cleanAthName) {
+        current[`${cleanAthName}_${ex.date}_${ex.type}`] = ex;
+        if (slug) current[`${slug}_${ex.date}_${ex.type}`] = ex;
+      }
+
+      if (ex.type === 'all') {
+        current[`${cleanAthId}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
+        current[`${cleanAthId}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+        current[`${cleanAthId}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
+        if (cleanAthName) {
+          current[`${cleanAthName}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
+          current[`${cleanAthName}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+          current[`${cleanAthName}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
+          if (slug) {
+            current[`${slug}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
+            current[`${slug}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+            current[`${slug}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
+          }
+        }
+      }
+    });
+
     localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
     secureFetch('/api/credentials', {
       method: 'POST',
@@ -920,26 +951,47 @@ export function saveFineExemption(exemption: IndividualFineExemption): void {
     window.dispatchEvent(new Event('femperf_fines_updated'));
     window.dispatchEvent(new Event('femperf_credentials_updated'));
   } catch (e) {
-    console.error('Erro ao guardar isenção individual de multa:', e);
+    console.error('Erro ao guardar isenções de multas:', e);
   }
+}
+
+export function saveFineExemption(exemption: IndividualFineExemption): void {
+  saveFineExemptions([exemption]);
 }
 
 export function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'hydration' | 'all'): void {
   if (typeof window === 'undefined') return;
   try {
     const current = getStoredFineExemptions();
-    const key = `${athleteId}_${date}_${type}`;
-    delete current[key];
-    if (type === 'all') {
-      delete current[`${athleteId}_${date}_wellness`];
-      delete current[`${athleteId}_${date}_rpe`];
-      delete current[`${athleteId}_${date}_hydration`];
-    }
+    const cleanId = (athleteId || '').trim();
+    const idLower = cleanId.toLowerCase();
+
+    // Remove matching keys
+    Object.keys(current).forEach((k) => {
+      const ex = current[k];
+      if (!ex) return;
+      const isDateMatch = ex.date === date || k.includes(`_${date}_`);
+      if (!isDateMatch) return;
+
+      const isAthMatch =
+        ex.athleteId === cleanId ||
+        ex.athleteId?.toLowerCase() === idLower ||
+        ex.athleteName?.toLowerCase() === idLower ||
+        k.startsWith(`${cleanId}_`) ||
+        k.startsWith(`${idLower}_`);
+
+      if (isAthMatch) {
+        if (type === 'all' || ex.type === type || ex.type === 'all' || k.endsWith(`_${type}`)) {
+          delete current[k];
+        }
+      }
+    });
+
     localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
     secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ individualFineExemptions: current }),
+      body: JSON.stringify({ replaceIndividualFineExemptions: current }),
     }).catch(() => {});
     window.dispatchEvent(new Event('femperf_fines_updated'));
     window.dispatchEvent(new Event('femperf_credentials_updated'));
@@ -955,18 +1007,55 @@ export function isFineExempt(
   date: string,
   type: 'wellness' | 'rpe' | 'hydration'
 ): boolean {
-  if (!exemptions) return false;
-  // Check exact id match
-  if (exemptions[`${athleteId}_${date}_${type}`]) return true;
-  if (exemptions[`${athleteId}_${date}_all`]) return true;
+  if (!exemptions || typeof exemptions !== 'object') return false;
 
-  // Check slugified athleteName match for robustness
-  if (athleteName) {
-    const nameSlug = athleteName.trim().toLowerCase().replace(/\s+/g, '-');
-    if (exemptions[`${nameSlug}_${date}_${type}`]) return true;
-    if (exemptions[`${nameSlug}_${date}_all`]) return true;
+  const cleanAthId = (athleteId || '').trim();
+  const cleanAthName = (athleteName || '').trim();
+  const nameSlug = cleanAthName.toLowerCase().replace(/\s+/g, '-');
+  const idLower = cleanAthId.toLowerCase();
+
+  // 1. Direct key lookups
+  const possibleKeys = [
+    `${cleanAthId}_${date}_${type}`,
+    `${cleanAthId}_${date}_all`,
+    `${idLower}_${date}_${type}`,
+    `${idLower}_${date}_all`,
+    `${cleanAthName}_${date}_${type}`,
+    `${cleanAthName}_${date}_all`,
+    `${cleanAthName.toUpperCase()}_${date}_${type}`,
+    `${cleanAthName.toUpperCase()}_${date}_all`,
+    `${nameSlug}_${date}_${type}`,
+    `${nameSlug}_${date}_all`,
+  ];
+
+  for (const k of possibleKeys) {
+    if (exemptions[k]) return true;
   }
-  return false;
+
+  // 2. Comprehensive fallback across all exemption entries
+  const allValues = Object.values(exemptions);
+  return allValues.some((ex) => {
+    if (!ex || ex.date !== date) return false;
+    const matchesType = ex.type === type || ex.type === 'all';
+    if (!matchesType) return false;
+
+    const matchesId =
+      (ex.athleteId && (ex.athleteId === cleanAthId || ex.athleteId.toLowerCase() === idLower)) ||
+      (ex.athleteId && (ex.athleteId === cleanAthName || ex.athleteId.toLowerCase() === cleanAthName.toLowerCase()));
+
+    const matchesName =
+      (ex.athleteName && (
+        ex.athleteName === cleanAthName ||
+        ex.athleteName.toLowerCase() === cleanAthName.toLowerCase() ||
+        ex.athleteName === cleanAthId ||
+        ex.athleteName.toLowerCase() === idLower
+      ));
+
+    const matchesSlug =
+      (ex.id && (ex.id.startsWith(`${cleanAthId}_${date}`) || ex.id.startsWith(`${nameSlug}_${date}`)));
+
+    return Boolean(matchesId || matchesName || matchesSlug);
+  });
 }
 
 const CLEAN_SLATE_KEY = 'femperf_clean_slate_v3';
