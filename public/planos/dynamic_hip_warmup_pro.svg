@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="135" x2="320" y2="135" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="30,125 285,125 305,160 10,160" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="148" rx="80" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Perna Traseira Ajoelhada em Extensão (Alongando Psoas e Anca) -->
+  <line x1="120" y1="112" x2="80" y2="138" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+  <ellipse cx="76" cy="139" rx="5" ry="3" fill="#cbd5e1" />
+
+  <!-- Bacia / Calções -->
+  <path d="M115,108 C116,98 136,98 142,108 L138,120 C130,122 118,122 115,108 Z" fill="#0f172a" />
+
+  <!-- Tronco Inclinado à Frente com Extensão Torácica Suave -->
+  <path d="M136,104 L180,84 L186,96 L140,118 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="196" cy="76" r="8" fill="#d97706" />
+  <path d="M190,72 C190,66 202,66 202,72 Z" fill="#78350f" />
+
+  <!-- Braço de Apoio da Frente no Solo -->
+  <path d="M182,90 L188,138" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <ellipse cx="188" cy="139" rx="4" ry="2" fill="#d97706" />
+
+  <!-- Perna Dianteira Fletida a 90° (Avanço Amplo de Aquecimento) -->
+  <path d="M140,112 L205,112" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <path d="M205,112 L206,140" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <rect x="200" y="138" width="18" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Destaque Cadeia Posterior e Articulação da Anca -->
+  <ellipse cx="132" cy="110" rx="6" ry="6" fill="#38bdf8" opacity="0.5" />
+
+  <!-- Setas Duplas de Oscilação Dinâmica (Avanço e Recuo Suave) -->
+  <g filter="url(#dropShadow)">
+    <path d="M135,88 L155,84" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="152,80 160,83 154,88" fill="#2563eb" />
+    <path d="M150,94 L132,98" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2" />
+    <text x="146" y="74" font-size="8" font-weight="900" fill="#2563eb" text-anchor="middle">DINÂMICO</text>
+  </g>
+</svg>

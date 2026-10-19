@@ -29,6 +29,7 @@ import {
   Filter,
   Layers,
   ChevronDown,
+  ExternalLink,
 } from 'lucide-react';
 
 export const AdminMobilityManager: React.FC = () => {
@@ -192,11 +193,21 @@ export const AdminMobilityManager: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <a
+              href="/planos/index.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-black transition-all shadow-md active:scale-95"
+              title="Abrir a biblioteca completa em formato A4 bilingue com impressão e edição"
+            >
+              <ExternalLink className="h-4 w-4 text-brand-lime" />
+              <span>Biblioteca A4 Completa</span>
+            </a>
             <button
               type="button"
               onClick={() => setSelectedPlanForPreview(activePlan)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/30 active:scale-95"
+              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/30 active:scale-95 cursor-pointer"
             >
               <Eye className="h-4 w-4" />
               <span>Ver Plano Completo (Como a Jogadora Vê)</span>

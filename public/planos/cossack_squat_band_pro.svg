@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes cossackSink {
+      0%, 100% {
+        transform: translate(0px, 0px);
+      }
+      50% {
+        transform: translate(-3px, 7px);
+      }
+    }
+    @keyframes arrowSink {
+      0%, 100% {
+        transform: translateY(0px);
+        opacity: 0.6;
+      }
+      50% {
+        transform: translateY(6px);
+        opacity: 1;
+      }
+    }
+    .anim-sink {
+      animation: cossackSink 2.8s ease-in-out infinite;
+    }
+    .anim-arrow-down {
+      animation: arrowSink 2.8s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-sink, .anim-arrow-down {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="138" x2="320" y2="138" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="170" cy="154" rx="75" ry="9" fill="#0f172a" opacity="0.22" />
+
+  <!-- Suporte / Poste da Banda à Esquerda -->
+  <rect x="22" y="55" width="8" height="95" rx="2" fill="#475569" />
+  <circle cx="26" cy="100" r="4" fill="#0284c7" />
+
+  <!-- Perna Direita Fixa no Solo com Dedos para Cima (Abertura de Adutor) -->
+  <path d="M152,126 L238,144 L234,150 L148,132 Z" fill="#d97706" />
+  <path d="M238,144 L244,133 L250,136 L243,148 Z" fill="#ffffff" />
+  <path d="M242,138 L247,140" stroke="#0284c7" stroke-width="1.5" />
+
+  <!-- Calcanhar Esquerdo Fixo no Solo -->
+  <ellipse cx="104" cy="153" rx="8" ry="3.5" fill="#ffffff" />
+
+  <!-- SEGMENTO DINÂMICO QUE AFUNDA NA ANCA (COSSACK SINK) -->
+  <g class="anim-sink">
+    <!-- Perna Esquerda Fletida -->
+    <path d="M135,126 L98,135 L94,144 L131,136 Z" fill="#d97706" />
+    <path d="M98,135 L98,152 L110,152 L106,139 Z" fill="#d97706" />
+
+    <!-- Calções / Bacia Descida -->
+    <path d="M120,121 C120,117 152,117 152,121 L148,136 C138,139 125,139 120,136 Z" fill="#0f172a" />
+
+    <!-- Tronco Alinhado / Camisola Gil Vicente FC -->
+    <path d="M126,104 C126,99 148,99 148,104 L145,125 C138,127 129,127 127,125 Z" fill="url(#kitGrad)" />
+
+    <!-- Mãos e Braços Segurando a Banda à Frente -->
+    <path d="M132,106 L124,110" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+    <circle cx="124" cy="110" r="3.5" fill="#d97706" />
+
+    <!-- Cabeça e Cabelo Neutro -->
+    <circle cx="137" cy="90" r="8" fill="#d97706" />
+    <path d="M132,86 C132,80 142,80 142,86 L140,92 L134,92 Z" fill="#78350f" />
+
+    <!-- Banda Elástica Segurada na Mão -->
+    <path d="M26,100 L124,110" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Vetores Dinâmicos: Linha Adutora + Seta Pélvica c/ Pulso -->
+  <g filter="url(#dropShadow)">
+    <path d="M148,128 L230,142" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3" fill="none" />
+    <!-- Seta para Baixo na Bacia -->
+    <g class="anim-arrow-down">
+      <path d="M136,94 L136,108" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+      <polygon points="132,106 136,113 140,106" fill="#2563eb" />
+    </g>
+  </g>
+
+  <!-- Tag Guarda-Redes -->
+  <g opacity="0.85">
+    <rect x="225" y="14" width="85" height="18" rx="4" fill="#1e293b" />
+    <text x="267" y="26" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#38bdf8" text-anchor="middle">ADUTOR &amp; ANCA</text>
+  </g>
+</svg>

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="35,122 285,122 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="155" cy="148" rx="90" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Atleta Deitada de Barriga para Baixo (Decúbito Ventral) -->
+  <circle cx="72" cy="128" r="8" fill="#d97706" />
+  <path d="M64,124 C64,118 78,118 78,124 Z" fill="#78350f" />
+  <!-- Apoio de Antebraços -->
+  <path d="M84,132 L62,142" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+
+  <!-- Tronco e Bacia Colados ao Tapete -->
+  <path d="M82,126 L146,128 L146,142 L82,140 Z" fill="url(#kitGrad)" />
+  <path d="M144,126 L172,128 L172,142 L144,142 Z" fill="#0f172a" />
+
+  <!-- Coxas no Tapete e Canelas Fletindo a 90° -->
+  <path d="M170,136 L224,136 L214,76" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- Destaque de Contração dos Isquiotibiais -->
+  <line x1="176" y1="130" x2="218" y2="130" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Minibanda nos Tornozelos e Pés Segurando o Haltere -->
+  <line x1="208" y1="84" x2="220" y2="84" stroke="#dc2626" stroke-width="5" stroke-linecap="round" />
+  <rect x="206" y="70" width="18" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Haltere Preso Entre os Pés -->
+  <g filter="url(#dropShadow)">
+    <rect x="206" y="54" width="16" height="6" rx="2" fill="#0f172a" />
+    <rect x="206" y="76" width="16" height="6" rx="2" fill="#0f172a" />
+    <line x1="214" y1="60" x2="214" y2="76" stroke="#94a3b8" stroke-width="4" />
+  </g>
+
+  <!-- Arco de Flexão e Descida Excêntrica Controlada -->
+  <g filter="url(#dropShadow)">
+    <path d="M236,96 C244,78 232,60 218,52" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="222,49 213,50 218,56" fill="#2563eb" />
+  </g>
+</svg>

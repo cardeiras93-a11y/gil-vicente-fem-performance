@@ -1,0 +1,113 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes abductionLift {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(-22deg);
+      }
+    }
+    @keyframes abductionArrowPulse {
+      0%, 100% {
+        transform: translateY(3px);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translateY(-5px);
+        opacity: 1;
+      }
+    }
+    .anim-top-leg {
+      transform-origin: 150px 98px;
+      animation: abductionLift 2.6s ease-in-out infinite;
+    }
+    .anim-abduct-arrow {
+      animation: abductionArrowPulse 2.6s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-top-leg, .anim-abduct-arrow {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="140" x2="320" y2="140" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco de Musculação Firme -->
+  <rect x="200" y="105" width="100" height="42" rx="4" fill="url(#benchGrad)" filter="url(#dropShadow)" />
+  <rect x="196" y="103" width="108" height="7" rx="2" fill="#0f172a" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="140" cy="154" rx="70" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Antebraço de Apoio no Chão (Estável) -->
+  <path d="M70,146 L92,146" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <path d="M82,146 L82,122" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="72" cy="110" r="7.5" fill="#d97706" />
+  <path d="M68,106 C68,101 76,101 76,106 L74,112 L70,112 Z" fill="#78350f" />
+
+  <!-- Tronco em Prancha Lateral (Alinhado) -->
+  <path d="M80,116 L134,106 L136,122 L82,130 Z" fill="url(#kitGrad)" />
+
+  <!-- Calções / Bacia Estável -->
+  <path d="M128,104 L154,101 L151,120 L130,122 Z" fill="#0f172a" />
+
+  <!-- Perna Inferior (Apoiada no Banco no Tornozelo/Canela - Estável) -->
+  <path d="M150,108 L218,108 L218,115 L150,113 Z" fill="#b45309" />
+  <path d="M218,108 L265,110 L265,115 L218,115 Z" fill="#b45309" />
+  <ellipse cx="270" cy="112" rx="5" ry="3" fill="#ffffff" />
+  <ellipse cx="270" cy="112" rx="3" ry="1.5" fill="#ef4444" />
+
+  <!-- Destaque Muscular Estabilizador na Perna de Apoio -->
+  <circle cx="166" cy="110" r="4.5" fill="#0284c7" opacity="0.75" />
+
+  <!-- Posição de Saída Tracejada da Perna Superior (Ghosting) -->
+  <path d="M150,98 L255,98" stroke="#94a3b8" stroke-width="5" stroke-dasharray="4,3" stroke-linecap="round" opacity="0.35" />
+
+  <!-- PERNA SUPERIOR DINÂMICA (ELEVAÇÃO NO AR EM ABDUÇÃO DINÂMICA) -->
+  <g class="anim-top-leg">
+    <path d="M150,98 L218,94 L260,88" stroke="#d97706" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+    <ellipse cx="265" cy="87" rx="5" ry="3" fill="#ffffff" transform="rotate(-10 265 87)" />
+    <ellipse cx="265" cy="87" rx="3" ry="1.5" fill="#ef4444" transform="rotate(-10 265 87)" />
+
+    <!-- Destaque Muscular no Glúteo Médio & Abdutores -->
+    <circle cx="162" cy="96" r="5" fill="#ef4444" opacity="0.9" />
+  </g>
+
+  <!-- Vetores Dinâmicos de Abdução Ativa -->
+  <g filter="url(#dropShadow)" class="anim-abduct-arrow">
+    <!-- Arco de Abdução Dinâmica (Perna de Cima a Afastar-se) -->
+    <path d="M224,96 Q234,82 228,70" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="222,74 227,66 231,73" fill="#2563eb" />
+    <!-- Seta Vertical de Força dos Abdutores -->
+    <line x1="162" y1="90" x2="162" y2="76" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="159,79 162,72 165,79" fill="#2563eb" />
+  </g>
+
+  <g filter="url(#dropShadow)">
+    <text x="175" y="146" fill="#1e3a8a" font-size="8" font-weight="900" letter-spacing="0.5">ABDUÇÃO ATIVA</text>
+  </g>
+</svg>

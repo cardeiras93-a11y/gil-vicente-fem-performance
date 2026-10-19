@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes armReach {
+      0%, 100% {
+        transform: translateX(0px);
+      }
+      50% {
+        transform: translateX(8px);
+      }
+    }
+    @keyframes legExtend {
+      0%, 100% {
+        transform: translateX(0px);
+      }
+      50% {
+        transform: translateX(-10px);
+      }
+    }
+    @keyframes bandCrossStretch {
+      0%, 100% {
+        transform: scaleX(1);
+      }
+      50% {
+        transform: scaleX(1.08);
+      }
+    }
+    .anim-reach-arm {
+      animation: armReach 2.8s ease-in-out infinite;
+    }
+    .anim-extend-leg {
+      animation: legExtend 2.8s ease-in-out infinite;
+    }
+    .anim-band-cross {
+      transform-origin: 160px 105px;
+      animation: bandCrossStretch 2.8s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-reach-arm, .anim-extend-leg, .anim-band-cross {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="135" x2="320" y2="135" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Tapete Azul -->
+  <polygon points="25,120 295,120 315,165 5,165" fill="url(#matGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="154" rx="90" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Joelho de Apoio Esquerdo e Pé no Tapete (Estável) -->
+  <path d="M135,115 L135,148 L122,148" stroke="#d97706" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <ellipse cx="120" cy="148" rx="6" ry="3" fill="#ffffff" />
+
+  <!-- Braço de Apoio Direito no Solo (Estável) -->
+  <path d="M195,102 L195,148" stroke="#d97706" stroke-width="6" stroke-linecap="round" fill="none" />
+  <circle cx="195" cy="148" r="4.5" fill="#d97706" />
+
+  <!-- Bacia / Calções em Neutro -->
+  <path d="M118,100 L145,100 L142,120 L115,120 Z" fill="#0f172a" />
+
+  <!-- Tronco Horizontal / Camisola Gil Vicente FC -->
+  <path d="M140,95 L200,95 L196,116 L136,116 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça Neutra -->
+  <circle cx="215" cy="98" r="8" fill="#d97706" />
+  <path d="M211,92 C211,86 221,86 221,92 L220,98 L212,98 Z" fill="#78350f" />
+
+  <!-- Banda Elástica Laranja em Tensão Diagonal Cruzada -->
+  <g class="anim-band-cross">
+    <path d="M52,106 Q150,118 262,94" stroke="#f97316" stroke-width="3.5" fill="none" stroke-linecap="round" />
+  </g>
+
+  <!-- PERNA OPOSTA DINÂMICA (EXTENSÃO DE GLÚTEO HORIZONTAL) -->
+  <g class="anim-extend-leg">
+    <path d="M125,112 L52,106" stroke="#d97706" stroke-width="7" stroke-linecap="round" fill="none" />
+    <ellipse cx="50" cy="106" rx="6" ry="3.5" fill="#ffffff" transform="rotate(-15 50 106)" />
+    <!-- Seta para Trás -->
+    <path d="M62,98 L38,98" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="40,94 33,98 40,102" fill="#2563eb" />
+  </g>
+
+  <!-- BRAÇO OPOSTO DINÂMICO (ALCANCE HORIZONTAL À FRENTE) -->
+  <g class="anim-reach-arm">
+    <path d="M195,98 L265,94" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" fill="none" />
+    <circle cx="267" cy="94" r="4" fill="#d97706" />
+    <!-- Seta para a Frente -->
+    <path d="M255,86 L278,86" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="276,82 283,86 276,90" fill="#2563eb" />
+  </g>
+
+  <!-- Linha de Nível da Coluna (Estabilidade Anti-Rotação) -->
+  <line x1="128" y1="90" x2="198" y2="90" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,3" />
+
+  <!-- Tag Articular -->
+  <g opacity="0.85">
+    <rect x="205" y="14" width="105" height="18" rx="4" fill="#1e293b" />
+    <text x="257" y="26" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#38bdf8" text-anchor="middle">CADEIA CRUZADA</text>
+  </g>
+</svg>

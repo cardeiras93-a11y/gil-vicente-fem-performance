@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  
+  <!-- Tapete Azul Centrado -->
+  <polygon points="35,120 285,120 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="150" rx="75" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta sentada com joelho fletido e toalha/gap -->
+  <!-- Coxa e Fémur -->
+  <path d="M130,123 L195,119 L200,129 L130,135 Z" fill="#d97706" />
+  <!-- Canela Fletida -->
+  <path d="M195,119 L150,143 L143,138 L190,114 Z" fill="#d97706" />
+
+  <!-- Elemento de Tração (Toalha/Gap) -->
+  <circle cx="188" cy="123" r="10" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" filter="url(#dropShadow)" />
+  <text x="181" y="126" fill="#78350f" font-family="system-ui, sans-serif" font-size="6.5" font-weight="900">GAP</text>
+
+  <!-- Calções / Bacia -->
+  <path d="M116,110 C116,106 138,106 138,110 L135,132 C129,135 120,135 116,132 Z" fill="#0f172a" />
+
+  <!-- Tronco / Camisola Gil Vicente FC -->
+  <path d="M118,86 C118,81 138,81 138,86 L134,113 C129,115 120,115 118,113 Z" fill="url(#kitGrad)" />
+
+  <!-- Mãos a Puxar a Canela Suavemente -->
+  <path d="M126,95 L156,128" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <circle cx="157" cy="130" r="4" fill="#d97706" />
+
+  <!-- Cabeça e Cabelo (Com 25px de margem superior) -->
+  <circle cx="127" cy="74" r="8" fill="#d97706" />
+  <path d="M122,70 C122,64 132,64 132,70 L130,76 L124,76 Z" fill="#78350f" />
+
+  <!-- Vetores de Descompressão -->
+  <g filter="url(#dropShadow)">
+    <path d="M205,108 L213,100" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+    <polygon points="213,105 218,98 210,99" fill="#38bdf8" />
+    <path d="M205,133 L213,141" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+    <polygon points="210,142 218,143 213,136" fill="#38bdf8" />
+    <circle cx="205" cy="118" r="4.5" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" />
+  </g>
+</svg>

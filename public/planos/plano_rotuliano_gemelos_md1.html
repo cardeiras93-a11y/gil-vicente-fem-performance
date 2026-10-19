@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan MD-1: Tendón Rotuliano & Gemelos | Gil Vicente Futebol Clube</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+    
+    * {
+      box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    @page {
+      size: A4 portrait;
+      margin: 5mm 7mm;
+    }
+
+    @media print {
+      html, body {
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        color: #0f172a !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .document-sheet {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+      }
+      .main-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+      }
+      .block-container {
+        padding: 6px !important;
+        margin-bottom: 5px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+      }
+      .card-item {
+        padding: 4px 6px !important;
+        gap: 6px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+      }
+      .card-img-box {
+        width: 76px !important;
+        height: 48px !important;
+        flex-shrink: 0 !important;
+        border-radius: 4px !important;
+      }
+      .card-img-box img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+      }
+      .card-title {
+        font-size: 9.5px !important;
+      }
+      .card-badge {
+        font-size: 8.5px !important;
+      }
+      .card-desc {
+        font-size: 8.5px !important;
+        line-height: 1.15 !important;
+      }
+      .card-benefit {
+        font-size: 8px !important;
+      }
+      .header-box {
+        padding: 8px 12px !important;
+        border-radius: 8px !important;
+      }
+      .header-title {
+        font-size: 15px !important;
+      }
+      .alert-box {
+        padding: 4px 8px !important;
+        font-size: 9px !important;
+        border-radius: 6px !important;
+      }
+      .checklist-box {
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
+        font-size: 9px !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-950 min-h-screen py-3 px-2 sm:px-4 text-slate-900 antialiased">
+
+  <!-- Action Bar (Screen Only) -->
+  <div class="no-print max-w-4xl mx-auto mb-2.5 flex items-center justify-between bg-slate-900/90 backdrop-blur-md p-2.5 px-4 rounded-xl border border-slate-800 shadow-xl text-white">
+    <div class="flex items-center gap-2 text-xs font-semibold">
+      <span class="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
+      Protocolo Específico: Tendón Rotuliano & Gemelos • Gil Vicente FC
+    </div>
+    <button onclick="window.print()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 shadow transition active:scale-95">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+      Guardar PDF / Imprimir (A4 Perfecto)
+    </button>
+  </div>
+
+  <!-- Document Container -->
+  <div class="document-sheet max-w-4xl mx-auto bg-white rounded-2xl p-3 sm:p-5 shadow-2xl space-y-2.5">
+    
+    <!-- HEADER GIL VICENTE FC -->
+    <div class="header-box bg-gradient-to-r from-blue-900 via-blue-800 to-slate-950 text-white rounded-xl p-3 px-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 shadow-sm border border-blue-700/40">
+      <div>
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span class="px-2 py-0.5 rounded bg-blue-500/25 border border-blue-400/30 text-blue-200 text-[9.5px] font-black uppercase tracking-wider">
+            MD-1 • Víspera de Partido
+          </span>
+          <span class="text-blue-200 text-xs font-bold tracking-wide">Gil Vicente Futebol Clube</span>
+          <span class="px-2 py-0.5 rounded bg-red-600/30 border border-red-500/40 text-red-200 text-[9.5px] font-black tracking-wider">
+            #NinguemParaEstaCorrente
+          </span>
+        </div>
+        <h1 class="header-title text-base sm:text-lg font-black tracking-tight mt-0.5 text-white">
+          Movilidad de Tendón Rotuliano & Gemelos
+        </h1>
+      </div>
+      
+      <div class="flex items-center gap-2 self-start sm:self-auto">
+        <div class="bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-400/20 text-center">
+          <span class="text-sky-300 font-black text-sm block leading-none">30 MIN</span>
+          <span class="text-[8.5px] uppercase tracking-wider text-blue-200 font-bold">Duración Total</span>
+        </div>
+        <div class="bg-blue-950/60 px-2.5 py-1 rounded-lg border border-blue-400/20 text-center">
+          <span class="text-amber-300 font-black text-[11px] block leading-none">Analgesia & Reactividad</span>
+          <span class="text-[8.5px] uppercase tracking-wider text-blue-200">Rótula + Gemelos</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVISO MD-1 -->
+    <div class="alert-box p-1.5 px-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-between text-[11px] text-blue-950">
+      <div class="flex items-center gap-1.5">
+        <span class="text-sm leading-none">🛡️</span>
+        <span><strong>Foco Científico MD-1:</strong> Isometría analgésica para el tendón rotuliano, ganancia de dorsiflexión en el tobillo y descarga de gemelos/sóleo para máxima potencia de sprint el sábado.</span>
+      </div>
+      <span class="font-bold text-blue-800 uppercase text-[9.5px] shrink-0 ml-2 hidden sm:inline">Partido Sábado ⚽</span>
+    </div>
+
+    <!-- CORPO PRINCIPAL: 2 COLUNAS EQUILIBRADAS (100% AJUSTADAS) -->
+    <div class="main-grid grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
+      
+      <!-- ==================== COLUMNA 1 ==================== -->
+      <div class="space-y-2.5">
+        
+        <!-- 1. BICICLETA -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs">
+          <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">1</span>
+              <span class="text-xs font-bold text-slate-900">Bicicleta (Vascularización Rotuliana & Tobillo)</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">5 Minutos</span>
+          </div>
+          
+          <div class="card-item flex items-center gap-2.5 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+              <img src="./bike_warmup_1789675031292.jpg" alt="Bicicleta" class="w-full h-full object-cover object-center" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <p class="card-desc">• <strong>0 a 2m:</strong> Pedaleo suave (80–85 RPM), sin carga. Estimula el líquido sinovial.</p>
+              <p class="card-desc">• <strong>2 a 4m:</strong> Alternar 30s de pedaleo con énfasis en flexión plantar con 30s suave.</p>
+              <p class="card-desc">• <strong>4 a 5m:</strong> Pedaleo muy ligero de recuperación.</p>
+              <p class="card-benefit text-blue-700 font-semibold text-[9px]">✔ Activa la bomba vascular de los gemelos sin impacto articular.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. FOAM ROLLER (GEMELOS & TENDÓN ROTULIANO) -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">2</span>
+              <span class="text-xs font-bold text-slate-900">Foam Roller: Gemelos & Tendón Rotuliano</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">4 Minutos</span>
+          </div>
+
+          <!-- 2.1 Gemelos & Sóleo -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./foam_roller_calf_pro.svg" alt="Rollo Gemelos" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">2.1 Gemelos & Sóleo (Tríceps Sural)</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">1 min/pierna</span>
+              </div>
+              <p class="card-desc">Rodillo en la pantorrilla. Rodar del tendón de Aquiles a la rodilla. Gira el pie adentro/afuera.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Despega la fascia y libera puntos de tensión en el gastrocnemio.</span>
+            </div>
+          </div>
+
+          <!-- 2.2 Transición Rotuliana & Vasto Medial -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+              <img src="./foam_roller_quad_1789675223204.jpg" alt="Rollo Cuádriceps Rotuliano" class="w-full h-full object-cover object-center" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">2.2 Transición Rotuliana & Vasto Medial</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">1 min/pierna</span>
+              </div>
+              <p class="card-desc">Rodillo 2 dedos sobre la rótula. Realiza 4 flexiones lentas de rodilla (*Pin & Stretch*).</p>
+              <span class="card-benefit text-amber-800 font-semibold text-[9px] block">⚠️ Alivia la sobrecarga de tracción sobre el polo superior de la rótula.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. MOVILIDAD ESPECÍFICA: TOBILLO & GEMELOS -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">3</span>
+              <span class="text-xs font-bold text-slate-900">Movilidad de Tobillo & Gemelos</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">6 Minutos</span>
+          </div>
+
+          <!-- 3.1 Movilidad con Banda -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./ankle_dorsiflexion_band_pro.svg" alt="Movilidad Tobillo" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">3.1 Movilidad c/ Banda (Tracción Astrágalo)</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">8 reps/lado</span>
+              </div>
+              <p class="card-desc">Posición de caballero, banda tira del astrágalo atrás. Avanza la rodilla sin despegar el talón.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Aumenta la dorsiflexión: previene el impacto rotuliano al frenar.</span>
+            </div>
+          </div>
+
+          <!-- 3.2 Estiramiento Dinámico de Sóleo -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./soleus_wall_stretch_pro.svg" alt="Estiramiento Sóleo" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">3.2 Estiramiento de Sóleo (Rodilla Doblada)</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">6 reps (4s)/lado</span>
+              </div>
+              <p class="card-desc">Apoyo en pared, pierna trasera con rodilla ligeramente doblada y talón pegado al suelo.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Aísla el sóleo y alivia el estrés en el tendón de Aquiles.</span>
+            </div>
+          </div>
+
+          <!-- 3.3 Estiramiento de Gastrocnemio -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./gastrocnemius_stretch_pro.svg" alt="Estiramiento Gastrocnemio" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">3.3 Estiramiento Gastrocnemio (Pierna Recta)</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">6 reps (4s)/lado</span>
+              </div>
+              <p class="card-desc">Pierna trasera 100% estirada en línea con la pelvis. Avanza el cuerpo hasta notar el gemelo alto.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Alarga el gemelo superior manteniendo la reactividad en el sprint.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ==================== COLUMNA 2 ==================== -->
+      <div class="space-y-2.5">
+        
+        <!-- 4. DESCOMPRESIÓN, MOVILIZACIÓN & ANALGESIA ROTULIANA -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">4</span>
+              <span class="text-xs font-bold text-slate-900">Cuidados & Analgesia del Tendón Rotuliano</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">6 Minutos</span>
+          </div>
+
+          <!-- 4.1 Movilización de la Rótula -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./patellar_mobilization_pro.svg" alt="Movilización Rótula" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">4.1 Movilización Pasiva de la Rótula</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">6 ciclos/lado</span>
+              </div>
+              <p class="card-desc">Sentada, pierna relajada. Con los pulgares, desliza la rótula suavemente hacia abajo, arriba y adentro.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Libera adherencias retinaculares y mejora la mecánica rotuliana.</span>
+            </div>
+          </div>
+
+          <!-- 4.2 Spanish Squat Isométrico -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./spanish_squat_isometric_pro.svg" alt="Spanish Squat" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">4.2 Spanish Squat Isométrico c/ Banda</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">2×30s (60°)</span>
+              </div>
+              <p class="card-desc">Banda fuerte tras las rodillas anclada al poste. Tronco erguido, tibias verticales. Baja a 60° y mantén firme.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">🛡️ Protocolo de oro: analgesia inmediata en el tendón rotuliano.</span>
+            </div>
+          </div>
+
+          <!-- 4.3 Active Couch en Banco -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+              <img src="./active_couch_stretch_1789675245392.jpg" alt="Couch en Banco" class="w-full h-full object-cover object-center" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">4.3 Active Couch en Banco</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">6 respir./lado</span>
+              </div>
+              <p class="card-desc">Pie trasero en banco, rodilla acolchada. Aprieta el glúteo y mantén tronco erguido sin arquear lumbar.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">✔ Descarga el recto femoral sin compresión femororrotuliana.</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 5. ESTABILIDAD & FUERZA ISOMÉTRICA (GEMELOS & CORE) -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs space-y-1.5">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">5</span>
+              <span class="text-xs font-bold text-slate-900">Estabilidad & Isometría (Gemelos & Core)</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">5 Minutos</span>
+          </div>
+
+          <!-- 5.1 Elevación Isométrica de Talones -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+              <img src="./calf_isometric_pro.svg" alt="Isometría Gemelos" class="w-full h-full object-contain" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">5.1 Elevación Isométrica de Talones</span>
+                <span class="card-badge text-blue-700 font-bold shrink-0 ml-1">2×20s / lado</span>
+              </div>
+              <p class="card-desc">De puntillas con talones muy altos arriba. Apoyo ligero en pared. Sostén firme sin oscilaciones.</p>
+              <span class="card-benefit text-blue-800 font-semibold text-[9px] block">🛡️ Rigidez elástica en tendón de Aquiles y estabilidad de tobillo.</span>
+            </div>
+          </div>
+
+          <!-- 5.2 Dead Bug con Tobillo Activo -->
+          <div class="card-item flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 overflow-hidden">
+            <div class="card-img-box w-20 sm:w-24 h-14 sm:h-16 shrink-0 rounded overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
+              <img src="./dead_bug_exercise_1789675902653.jpg" alt="Dead Bug" class="w-full h-full object-cover object-center" />
+            </div>
+            <div class="flex-1 min-w-0 text-[10.5px] text-slate-700 leading-tight space-y-0.5">
+              <div class="font-bold text-slate-900 flex justify-between items-center card-title">
+                <span class="truncate">5.2 Dead Bug c/ Tobillo Activo</span>
+                <span class="card-badge text-teal-700 font-bold shrink-0 ml-1">2×6 reps/lado</span>
+              </div>
+              <p class="card-desc">Espalda pegada al suelo, pies en flexión dorsal activa. Extiende 1 pierna despacio con abdomen firme.</p>
+              <span class="card-benefit text-teal-800 font-semibold text-[9px] block">🛡️ Activación del tibial anterior y estabilización lumbopélvica.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. ACTIVACIÓN NEUROMUSCULAR & REACTIVIDAD DEL TENDÓN -->
+        <div class="block-container border border-slate-200 rounded-xl p-2 bg-slate-50/80 shadow-2xs">
+          <div class="flex items-center justify-between pb-1 mb-1.5 border-b border-slate-200">
+            <div class="flex items-center gap-1.5">
+              <span class="w-4.5 h-4.5 rounded-full bg-blue-700 text-white text-[9.5px] font-bold flex items-center justify-center">6</span>
+              <span class="text-xs font-bold text-slate-900">Activación & Reactividad del Tendón</span>
+            </div>
+            <span class="text-[9.5px] font-bold text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded">4 Minutos</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1.5">
+            <!-- 6.1 TKE con Banda -->
+            <div class="bg-white p-1 rounded-lg border border-slate-200 overflow-hidden">
+              <div class="h-12 rounded overflow-hidden mb-1 border border-slate-200 bg-slate-100 flex items-center justify-center">
+                <img src="./terminal_knee_extension_1789675053079.jpg" alt="TKE" class="w-full h-full object-cover object-center" />
+              </div>
+              <div class="font-bold text-slate-900 flex justify-between items-center text-[9px]">
+                <span class="truncate">6.1 TKE c/ Banda</span>
+                <span class="text-blue-700 font-bold shrink-0">2×10r</span>
+              </div>
+              <p class="text-[8px] text-slate-600 leading-tight">Banda tras la rodilla. Extiende y aprieta el vasto medial 1s.</p>
+              <span class="text-blue-800 font-semibold text-[7.5px] block">✔ Centra y estabiliza la rótula.</span>
+            </div>
+
+            <!-- 6.2 Pogo Hops Elásticos -->
+            <div class="bg-white p-1 rounded-lg border border-slate-200 overflow-hidden">
+              <div class="h-12 rounded overflow-hidden mb-1 border border-slate-200 bg-slate-50 flex items-center justify-center p-0.5">
+                <img src="./pogo_hops_pro.svg" alt="Pogo Hops" class="w-full h-full object-contain" />
+              </div>
+              <div class="font-bold text-slate-900 flex justify-between items-center text-[9px]">
+                <span class="truncate">6.2 Pogo Hops Ligeros</span>
+                <span class="text-blue-700 font-bold shrink-0">2×10r</span>
+              </div>
+              <p class="text-[8px] text-slate-600 leading-tight">Saltitos de tobillo. Rodillas casi rectas.</p>
+              <span class="text-blue-800 font-semibold text-[7.5px] block">⚡ Reactividad elástica de muelle.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- CHECKLIST FINAL GIL VICENTE FC -->
+    <div class="checklist-box border border-blue-300 bg-blue-50/90 rounded-xl p-2 px-3 flex flex-col sm:flex-row items-center justify-between gap-1.5 text-blue-950">
+      <div class="flex items-center gap-1.5">
+        <span class="text-sm leading-none">✅</span>
+        <span class="text-[10.5px] font-black uppercase tracking-wider">Checklist para el Sábado:</span>
+      </div>
+      
+      <div class="flex flex-wrap items-center justify-center gap-1.5 text-[10px] font-semibold text-blue-900">
+        <span class="bg-white px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs">✔ Tendón Rotuliano sin Dolor (Analgésico)</span>
+        <span class="bg-white px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs">✔ Gemelos & Aquiles Rápidos y Elásticos</span>
+        <span class="bg-white px-2 py-0.5 rounded-md border border-blue-200 shadow-2xs">✔ Lista para el Partido</span>
+      </div>
+
+      <div class="flex items-center gap-1 text-[10px]">
+        <span class="text-red-700 font-black">#NinguemParaEstaCorrente</span>
+        <span class="text-slate-600 font-bold">• ⚽</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

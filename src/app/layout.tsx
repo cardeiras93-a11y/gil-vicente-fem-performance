@@ -39,7 +39,7 @@ export default function RootLayout({
     <html lang="pt" className="dark scroll-smooth">
       <head>
         <link rel="icon" href="/icon-192.png" sizes="192x192" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -50,7 +50,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              var CURRENT_BUILD = '20261019_v43';
+              var CURRENT_BUILD = '20261019_v44_dumbbell';
               try {
                 if (localStorage.getItem('femperf_build') !== CURRENT_BUILD) {
                   localStorage.setItem('femperf_build', CURRENT_BUILD);

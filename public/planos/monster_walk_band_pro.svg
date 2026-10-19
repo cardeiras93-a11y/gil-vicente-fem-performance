@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Casa/Estúdio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="35,122 285,122 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="152" rx="70" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Atleta em Semi-Agachamento Atlético (Vista Frontal) -->
+  <!-- Pernas afastadas sem valgo -->
+  <path d="M142,98 L124,122 L120,148" stroke="#d97706" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <path d="M178,98 L196,122 L200,148" stroke="#d97706" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- Sapatilhas -->
+  <rect x="111" y="146" width="16" height="6" rx="3" fill="#ffffff" />
+  <rect x="193" y="146" width="16" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Minibanda Vermelha acima dos Joelhos -->
+  <rect x="119" y="113" width="82" height="6" rx="2" fill="#dc2626" />
+  <line x1="122" y1="116" x2="198" y2="116" stroke="#fca5a5" stroke-width="1" stroke-dasharray="3,2" />
+
+  <!-- Calções e Glúteo Ativo -->
+  <path d="M138,86 L182,86 L186,104 L134,104 Z" fill="#0f172a" />
+  <!-- Destaque de Ativação Glútea Lateral -->
+  <circle cx="135" cy="94" r="5" fill="#ef4444" opacity="0.75" />
+  <circle cx="185" cy="94" r="5" fill="#ef4444" opacity="0.75" />
+
+  <!-- Tronco Atlético Gil Vicente FC -->
+  <path d="M142,52 L178,52 L180,88 L140,88 Z" fill="url(#kitGrad)" />
+  <!-- Braços em posição atlética à frente -->
+  <path d="M142,56 L132,74 L152,76" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <path d="M178,56 L188,74 L168,76" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- Cabeça -->
+  <circle cx="160" cy="39" r="8.5" fill="#d97706" />
+  <path d="M152,36 C152,29 168,29 168,36 Z" fill="#78350f" />
+
+  <!-- Vetores de Passada Lateral e Anti-Valgo -->
+  <g filter="url(#dropShadow)">
+    <path d="M106,120 L90,120" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="92,116 84,120 92,124" fill="#dc2626" />
+    <path d="M214,120 L230,120" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="228,116 236,120 228,124" fill="#dc2626" />
+  </g>
+</svg>

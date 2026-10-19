@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="30,122 285,122 305,162 10,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="148" rx="80" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Posição Quadrúpede: Joelhos e Pés a 90° -->
+  <line x1="102" y1="108" x2="102" y2="142" stroke="#b45309" stroke-width="7" stroke-linecap="round" />
+  <line x1="114" y1="110" x2="114" y2="142" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <rect x="94" y="140" width="24" height="5" rx="2.5" fill="#ffffff" />
+
+  <!-- Bacia / Calções -->
+  <path d="M100,105 C100,95 120,95 125,108 L115,114 Z" fill="#0f172a" />
+
+  <!-- Coluna em Arco Flexão Lombar Superior (Gato) -->
+  <path d="M116,98 C135,76 175,76 195,100 L188,110 C172,90 140,90 122,108 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços Verticais Firmes sob os Ombros -->
+  <line x1="190" y1="104" x2="190" y2="142" stroke="#b45309" stroke-width="6.5" stroke-linecap="round" />
+  <line x1="202" y1="106" x2="202" y2="142" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+  <ellipse cx="190" cy="143" rx="4" ry="2" fill="#d97706" />
+  <ellipse cx="202" cy="143" rx="4" ry="2" fill="#d97706" />
+
+  <!-- Cabeça suavemente fletida a olhar o chão -->
+  <circle cx="212" cy="114" r="8" fill="#d97706" />
+  <path d="M208,110 C214,106 218,110 216,116 Z" fill="#78350f" />
+
+  <!-- Linha Fantasma Tracejada da Posição Vaca (Extensão) -->
+  <path d="M118,102 Q155,116 192,104" stroke="#94a3b8" stroke-width="2" stroke-dasharray="3,3" fill="none" />
+
+  <!-- Seta de Mobilização Segmentar para Cima e Baixo -->
+  <g filter="url(#dropShadow)">
+    <path d="M155,68 L155,56" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="151,58 155,50 159,58" fill="#2563eb" />
+    <path d="M155,98 L155,108" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2" />
+  </g>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Poste / Rack de Ginásio (à esquerda para apoio firme da mão) -->
+  <rect x="55" y="15" width="12" height="135" rx="2" fill="#334155" filter="url(#dropShadow)" />
+  <circle cx="61" cy="75" r="2.5" fill="#cbd5e1" />
+  <circle cx="61" cy="90" r="2.5" fill="#cbd5e1" />
+  <circle cx="61" cy="105" r="2.5" fill="#cbd5e1" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="165" cy="150" rx="55" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Mão esquerda apoiada no rack (Estabilidade Total = Zero Tensão Lombar) -->
+  <ellipse cx="68" cy="78" rx="4" ry="4" fill="#d97706" />
+  <path d="M68,78 L110,82" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Cabeça e Cabelo (Olhar alinhado a 45°) -->
+  <circle cx="102" cy="76" r="8" fill="#d97706" />
+  <path d="M96,72 C96,66 108,66 108,72 Z" fill="#78350f" />
+
+  <!-- Tronco em Dobradiça da Anca (Hinge horizontal alinhado) -->
+  <path d="M108,82 L158,88 L152,102 L104,96 Z" fill="url(#kitGrad)" />
+
+  <!-- Bacia / Calções com Foco Isquios e Glúteo -->
+  <path d="M152,86 L174,86 L168,104 L148,102 Z" fill="#0f172a" />
+  <circle cx="158" cy="98" r="6" fill="#ef4444" opacity="0.75" />
+
+  <!-- Perna Livre Estendida para Trás em Alinhamento com Tronco -->
+  <path d="M172,88 L238,82" stroke="#b45309" stroke-width="7.5" stroke-linecap="round" />
+  <ellipse cx="242" cy="81" rx="4" ry="3" fill="#ffffff" />
+
+  <!-- Perna de Apoio no Solo (Joelho semi-fletido a 20°, tíbia vertical) -->
+  <path d="M158,102 L164,122" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <path d="M164,122 L166,145" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <rect x="160" y="142" width="18" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Braço direito livre a segurar Haltere vertical -->
+  <path d="M120,86 L124,120" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <!-- Haltere Sextavado Preto -->
+  <rect x="118" y="120" width="12" height="16" rx="2" fill="#0f172a" stroke="#475569" stroke-width="1" />
+  <line x1="124" y1="116" x2="124" y2="140" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Destaque Linha de Tensão Isquiotibial da Perna Apoiada -->
+  <path d="M160,104 L165,124" stroke="#ef4444" stroke-width="3" stroke-dasharray="2,2" />
+
+  <!-- Seta de Recuo da Bacia em Hinge Controlado -->
+  <g filter="url(#dropShadow)">
+    <path d="M148,80 L166,76" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="163,72 172,75 166,80" fill="#2563eb" />
+  </g>
+</svg>

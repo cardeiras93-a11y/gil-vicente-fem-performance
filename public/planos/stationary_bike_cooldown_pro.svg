@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="bikeFrame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Sombra da Bicicleta e da Atleta -->
+  <ellipse cx="160" cy="150" rx="75" ry="7" fill="#0f172a" opacity="0.25" />
+
+  <!-- Base Estabilizadora da Bicicleta -->
+  <line x1="105" y1="145" x2="215" y2="145" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <rect x="98" y="142" width="16" height="6" rx="2" fill="#0f172a" />
+  <rect x="206" y="142" width="16" height="6" rx="2" fill="#0f172a" />
+
+  <!-- Carenagem / Volante de Inércia da Bicicleta Estática -->
+  <circle cx="178" cy="120" r="22" fill="#334155" stroke="#0284c7" stroke-width="3" filter="url(#dropShadow)" />
+  <circle cx="178" cy="120" r="8" fill="#0f172a" />
+
+  <!-- Quadro Metálico da Bicicleta -->
+  <path d="M125,145 L145,95 L180,120 L195,65" stroke="url(#bikeFrame)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- Eixo do Selim -->
+  <line x1="145" y1="95" x2="140" y2="82" stroke="#64748b" stroke-width="6" stroke-linecap="round" />
+  <!-- Selim Anatómico -->
+  <path d="M128,82 L152,82 Q144,88 136,88 Z" fill="#0284c7" filter="url(#dropShadow)" />
+
+  <!-- Guiador da Bicicleta com Ecrã / Consola -->
+  <line x1="195" y1="65" x2="190" y2="52" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
+  <path d="M180,50 L202,50 L198,44" stroke="#0284c7" stroke-width="4.5" stroke-linecap="round" fill="none" />
+  <!-- Ecrã digital -->
+  <rect x="194" y="44" width="8" height="6" rx="1.5" fill="#38bdf8" />
+
+  <!-- Atleta Sentada no Selim em Postura Direita e Descontraída (Baixa Intensidade) -->
+  <!-- Calções / Bacia no Selim -->
+  <path d="M134,80 L152,80 L148,96 L130,94 Z" fill="#0f172a" />
+
+  <!-- Tronco Alinhado e Descontraído -->
+  <path d="M136,80 L168,54 L174,62 L144,90 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="172" cy="40" r="8" fill="#d97706" />
+  <path d="M166,36 C166,30 178,30 178,36 Z" fill="#78350f" />
+
+  <!-- Braços Estendidos de Forma Relaxada até ao Guiador -->
+  <path d="M165,58 L192,50" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Perna Esquerda (Em pedalada descendente) -->
+  <path d="M146,88 L168,114" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+  <path d="M168,114 L170,138" stroke="#b45309" stroke-width="7" stroke-linecap="round" />
+  <ellipse cx="170" cy="139" rx="5" ry="3" fill="#cbd5e1" />
+
+  <!-- Perna Direita (Mais próxima, no topo da pedalada) -->
+  <path d="M148,86 L175,98" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <path d="M175,98 L185,116" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <ellipse cx="186" cy="116" rx="5" ry="3" fill="#ffffff" />
+
+  <!-- Pedais e Manivela -->
+  <line x1="178" y1="120" x2="185" y2="116" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+  <line x1="178" y1="120" x2="170" y2="138" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Seta Circular de Rotação Suave (70-80 RPM • Baixa Intensidade) -->
+  <g filter="url(#dropShadow)">
+    <path d="M160,110 A16,16 0 1,1 195,130" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="196,125 201,133 192,133" fill="#2563eb" />
+    <text x="178" y="102" font-size="7.5" font-weight="900" fill="#2563eb" text-anchor="middle">70-80 RPM</text>
+  </g>
+</svg>

@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="postGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes leadStepCycle {
+      0%, 100% {
+        /* No agachamento inicial */
+        transform: translate(0px, 0px);
+      }
+      45%, 60% {
+        /* Passo em frente firme */
+        transform: translate(24px, -2px);
+      }
+    }
+    @keyframes torsoAdvance {
+      0%, 100% {
+        /* No agachamento: ligeiramente mais baixo, rotação neutra */
+        transform: translate(0px, 5px) rotate(-4deg);
+      }
+      45%, 60% {
+        /* No passo em frente: avanço do tronco e rotação ativa */
+        transform: translate(14px, -3px) rotate(10deg);
+      }
+    }
+    @keyframes bandFollow {
+      0%, 100% {
+        transform: scaleX(0.95);
+      }
+      45%, 60% {
+        transform: scaleX(1.15);
+      }
+    }
+    @keyframes forwardStepArrow {
+      0%, 100% {
+        transform: translateX(0px);
+        opacity: 0.4;
+      }
+      45%, 60% {
+        transform: translateX(14px);
+        opacity: 1;
+      }
+    }
+    .anim-lead-leg {
+      animation: leadStepCycle 2.8s ease-in-out infinite;
+    }
+    .anim-torso-advance {
+      transform-origin: 155px 105px;
+      animation: torsoAdvance 2.8s ease-in-out infinite;
+    }
+    .anim-band-follow {
+      transform-origin: 32px 75px;
+      animation: bandFollow 2.8s ease-in-out infinite;
+    }
+    .anim-step-arrow {
+      animation: forwardStepArrow 2.8s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-lead-leg, .anim-torso-advance, .anim-band-follow, .anim-step-arrow {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Poste / Rack de Ancoragem Lateral (Esquerda) -->
+  <rect x="24" y="25" width="16" height="123" rx="2" fill="url(#postGrad)" filter="url(#dropShadow)" />
+  <circle cx="32" cy="75" r="5" fill="#0284c7" />
+  <circle cx="32" cy="75" r="2.5" fill="#ffffff" />
+
+  <!-- Sombra Projetada dos Pés no Solo -->
+  <ellipse cx="175" cy="152" rx="55" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Perna Esquerda de Apoio (Base estável fixa no solo) -->
+  <path d="M146,112 L134,130 L138,148" stroke="#b45309" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="132" y="146" width="16" height="5" rx="2.5" fill="#ffffff" />
+  <rect x="134" y="147" width="12" height="2" fill="#ef4444" />
+
+  <!-- Posição de Saída Tracejada (Ghosting do Agachamento) -->
+  <g opacity="0.25">
+    <path d="M166,114 L180,132 L182,148" stroke="#94a3b8" stroke-width="6" stroke-dasharray="3,3" fill="none" />
+    <rect x="178" y="146" width="15" height="5" rx="2" fill="#94a3b8" />
+  </g>
+
+  <!-- Banda Elástica Tracionada Dinâmica -->
+  <g class="anim-band-follow">
+    <path d="M32,75 Q105,79 178,82" stroke="#0284c7" stroke-width="3.5" fill="none" stroke-linecap="round" />
+    <path d="M32,75 Q105,82 178,86" stroke="#38bdf8" stroke-width="2.5" fill="none" opacity="0.9" />
+  </g>
+
+  <!-- PERNA DIREITA DINÂMICA (PASSO EM FRENTE & RETORNO AO AGACHAMENTO) -->
+  <g class="anim-lead-leg">
+    <path d="M166,112 L185,130 L190,148" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round" />
+    <rect x="184" y="146" width="18" height="5" rx="2.5" fill="#ffffff" />
+    <rect x="186" y="147" width="14" height="2" fill="#ef4444" />
+  </g>
+
+  <!-- SEGMENTO DINÂMICO DE TRONCO, CABEÇA & BRAÇOS QUE AVANÇAM E RODAM -->
+  <g class="anim-torso-advance">
+    <!-- Bacia / Calções -->
+    <path d="M140,98 L174,98 L170,116 L142,116 Z" fill="#0f172a" />
+
+    <!-- Tronco Rotacionado (Camisola Gil Vicente) -->
+    <path d="M144,66 L170,62 L176,100 L140,100 Z" fill="url(#kitGrad)" />
+
+    <!-- Cabeça e Cabelo -->
+    <circle cx="160" cy="50" r="8.5" fill="#d97706" />
+    <path d="M154,46 C154,38 168,38 168,46 L166,54 L158,54 Z" fill="#78350f" />
+
+    <!-- Braços Estendidos a Segurar a Pega da Banda com Rotação -->
+    <path d="M150,70 L172,81" stroke="#b45309" stroke-width="5.5" stroke-linecap="round" />
+    <path d="M166,68 L182,83" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+    <ellipse cx="178" cy="83" rx="5" ry="4" fill="#0f172a" />
+  </g>
+
+  <!-- Vetores Dinâmicos: Seta de Avanço do Passo em Frente -->
+  <g filter="url(#dropShadow)" class="anim-step-arrow">
+    <!-- Seta no Solo de Passo em Frente -->
+    <line x1="185" y1="158" x2="212" y2="158" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="210,154 218,158 210,162" fill="#2563eb" />
+    <text x="165" y="172" fill="#1e3a8a" font-size="8" font-weight="900" letter-spacing="0.5">PASSO EM FRENTE</text>
+  </g>
+
+  <!-- Vetor de Tensão Lateral da Banda -->
+  <g filter="url(#dropShadow)">
+    <path d="M95,68 L60,68" stroke="#0284c7" stroke-width="2" stroke-dasharray="3,2" fill="none" />
+    <polygon points="63,65 55,68 63,71" fill="#0284c7" />
+  </g>
+</svg>

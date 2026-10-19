@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="35,122 285,122 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="148" rx="85" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Cabeça e Omoplatas no Tapete -->
+  <circle cx="82" cy="134" r="8" fill="#d97706" />
+  <path d="M74,132 C74,126 88,126 88,132 Z" fill="#78350f" />
+
+  <!-- Tronco em Ponte Alinhada -->
+  <path d="M92,132 L156,98 L162,112 L96,142 Z" fill="url(#kitGrad)" />
+
+  <!-- Calções e Glúteo Contraído no Topo -->
+  <path d="M152,96 L176,92 L180,108 L156,112 Z" fill="#0f172a" />
+  <circle cx="164" cy="105" r="6" fill="#ef4444" opacity="0.7" />
+
+  <!-- Coxas e Joelhos a 90° com Abdução -->
+  <path d="M172,96 L210,76" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <path d="M174,102 L216,84" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Minibanda nos Joelhos -->
+  <line x1="202" y1="72" x2="210" y2="90" stroke="#dc2626" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Canelas Verticais e Pés Firmes -->
+  <path d="M210,76 L216,142" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <path d="M216,84 L224,144" stroke="#b45309" stroke-width="7" stroke-linecap="round" />
+  <rect x="212" y="140" width="18" height="6" rx="3" fill="#ffffff" />
+  <rect x="220" y="142" width="18" height="6" rx="3" fill="#e2e8f0" />
+
+  <!-- Seta de Elevação Pélvica e Abdução -->
+  <g filter="url(#dropShadow)">
+    <path d="M162,86 L162,66" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="158,68 162,60 166,68" fill="#2563eb" />
+    <path d="M222,68 L234,62" stroke="#dc2626" stroke-width="2" stroke-linecap="round" />
+    <polygon points="231,59 239,60 235,66" fill="#dc2626" />
+  </g>
+</svg>

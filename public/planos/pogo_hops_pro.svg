@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Sombra no Chão (Mais difusa / Atleta no ar) -->
+  <ellipse cx="160" cy="155" rx="45" ry="6" fill="#0f172a" opacity="0.15" />
+
+  <!-- Atleta Suspensa Ligeiramente no Ar (Fase de Voo de Salto Elástico Curto) -->
+  <!-- Cabeça e Cabelo (Cabelo a oscilar com o salto) -->
+  <circle cx="160" cy="40" r="8" fill="#d97706" />
+  <path d="M155,36 C155,30 165,30 165,36 L164,42 L157,42 Z" fill="#78350f" />
+  <path d="M165,34 Q174,30 172,40" stroke="#78350f" stroke-width="3" fill="none" /> <!-- Rabo de cavalo em movimento -->
+
+  <!-- Tronco Totalmente Alinhado e Firme / Camisola Gil Vicente FC -->
+  <path d="M148,54 C148,50 172,50 172,54 L170,95 C164,98 156,98 150,95 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços Fletidos a 90° e Coordenados -->
+  <path d="M148,58 L138,70 L145,76" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" fill="none" />
+  <path d="M172,58 L182,70 L175,76" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" fill="none" />
+
+  <!-- Calções / Bacia Neutra -->
+  <path d="M146,92 L174,92 L170,110 L150,110 Z" fill="#0f172a" />
+
+  <!-- Coxas Quase Retas (Joelhos com flexão mínima de 10-15° - Mola Elástica) -->
+  <path d="M152,108 L154,124" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <path d="M168,108 L166,124" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+
+  <!-- Canelas e Tornozelos em Tensão Rígida -->
+  <path d="M154,124 L154,138" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+  <path d="M166,124 L166,138" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+
+  <!-- Pés Apontados Ligeiramente para Baixo / Reatividade no Solo -->
+  <ellipse cx="154" cy="142" rx="4.5" ry="3" fill="#ffffff" filter="url(#dropShadow)" />
+  <ellipse cx="166" cy="142" rx="4.5" ry="3" fill="#ffffff" filter="url(#dropShadow)" />
+
+  <!-- Vetores de Reatividade Elástica (Molas de Tornozelo) -->
+  <g filter="url(#dropShadow)">
+    <!-- Setas de Impulso Rápido para Cima -->
+    <path d="M136,145 L136,132" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="133,134 136,128 139,134" fill="#2563eb" />
+    <path d="M184,145 L184,132" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="181,134 184,128 187,134" fill="#2563eb" />
+    <!-- Mola Indicativa de Stiffnes -->
+    <path d="M160,128 Q156,131 160,134 Q164,137 160,140" stroke="#38bdf8" stroke-width="2" fill="none" />
+  </g>
+</svg>
