@@ -154,12 +154,30 @@ export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
   ],
 };
 
+import { ALL_NINE_PLANS } from './generatedGymPlans';
+
 export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = [
-  DEFAULT_GK_MOBILITY_PLAN,
+  ...ALL_NINE_PLANS,
+  // Alias for backward compatibility
+  {
+    ...(ALL_NINE_PLANS.find((p) => p.id === 'mobilidade_pre_treino_gr') || DEFAULT_GK_MOBILITY_PLAN),
+    id: 'mobility-gk-pre-training',
+  },
 ];
 
 // Default assignments: automatic link for all Goalkeepers
 export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
+  'pos_GR_mobilidade_pre_treino_gr': {
+    id: 'pos_GR_mobilidade_pre_treino_gr',
+    targetType: 'position',
+    targetId: 'GR',
+    targetName: 'Todas as Guarda-Redes (GR)',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: new Date().toISOString(),
+    assignedBy: 'Treinador',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
   'pos_GR_mobility-gk-pre-training': {
     id: 'pos_GR_mobility-gk-pre-training',
     targetType: 'position',
@@ -180,12 +198,12 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
     if (!raw) return INITIAL_MOBILITY_PLANS;
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure DEFAULT_GK_MOBILITY_PLAN is present if not already
-      const hasGk = parsed.some((p: MobilityPlan) => p.id === DEFAULT_GK_MOBILITY_PLAN.id);
-      if (!hasGk) {
-        return [DEFAULT_GK_MOBILITY_PLAN, ...parsed];
-      }
-      return parsed;
+      const planMap = new Map<string, MobilityPlan>();
+      INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, p));
+      parsed.forEach((p: MobilityPlan) => {
+        if (p && p.id) planMap.set(p.id, p);
+      });
+      return Array.from(planMap.values());
     }
     return INITIAL_MOBILITY_PLANS;
   } catch {
@@ -359,7 +377,12 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
 
   // Default fallback: If athlete is GK, ensure the default GK plan is included
   if (isGk) {
-    assignedPlanIds.add(DEFAULT_GK_MOBILITY_PLAN.id);
+    assignedPlanIds.add('mobilidade_pre_treino_gr');
+  }
+
+  // Deduplicate between mobility-gk-pre-training and mobilidade_pre_treino_gr
+  if (assignedPlanIds.has('mobilidade_pre_treino_gr') && assignedPlanIds.has('mobility-gk-pre-training')) {
+    assignedPlanIds.delete('mobility-gk-pre-training');
   }
 
   return allPlans.filter((p) => assignedPlanIds.has(p.id));

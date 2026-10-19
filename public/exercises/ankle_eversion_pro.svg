@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Limpo e Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  
+  <!-- Tapete Azul -->
+  <polygon points="35,118 285,118 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="150" rx="80" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta Sentada com Pernas Estendidas (Vista de Eversão) -->
+  <circle cx="95" cy="70" r="8" fill="#d97706" />
+  <path d="M90,66 C90,60 100,60 100,66 L98,72 L92,72 Z" fill="#78350f" />
+
+  <!-- Tronco / Camisola Gil Vicente FC -->
+  <path d="M88,78 C88,74 115,74 115,78 L110,120 C104,122 94,122 88,120 Z" fill="url(#kitGrad)" />
+
+  <!-- Calções / Bacia -->
+  <path d="M98,116 L128,114 L122,132 L98,132 Z" fill="#0f172a" />
+
+  <!-- Perna Esquerda (Perna de Ancoragem Estendida) -->
+  <path d="M120,116 L185,118 L185,126 L120,126 Z" fill="#d97706" />
+  <!-- Pé Esquerdo no Chão (Âncora medial) -->
+  <path d="M185,118 L195,110 L200,114 L188,126 Z" fill="#94a3b8" />
+
+  <!-- Perna Direita (Perna de Trabalho) -->
+  <path d="M122,122 L205,124 L205,132 L122,130 Z" fill="#d97706" />
+  
+  <!-- Pé Direito em Eversão (Bordo externo rodado para fora / lateral) -->
+  <path d="M205,124 L225,118 L228,124 L208,130 Z" fill="#ffffff" filter="url(#dropShadow)" />
+  <ellipse cx="206" cy="128" rx="3.5" ry="2" fill="#0f172a" />
+
+  <!-- Banda Elástica Laranja entre os Dois Pés com Tensão Lateral -->
+  <path d="M198,112 L225,118" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Mãos apoiadas atrás/ao lado -->
+  <path d="M92,86 L78,122" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="78" cy="123" r="3.5" fill="#d97706" />
+
+  <!-- Vetores de Eversão (Seta a puxar para fora) -->
+  <g filter="url(#dropShadow)">
+    <path d="M215,110 L232,112" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" />
+    <polygon points="230,108 238,113 229,116" fill="#2563eb" />
+    <!-- Destaque nos Peroneais (Face externa da canela) -->
+    <path d="M175,126 L198,127" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2,2" />
+  </g>
+</svg>

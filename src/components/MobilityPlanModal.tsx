@@ -151,12 +151,19 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                 </div>
                 <div>
                   <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-slate-300">
-                    GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • {isEn ? 'NATIONAL II DIVISION' : 'CAMPEONATO NACIONAL II DIVISÃO FEMININA'}
+                    {isEn
+                      ? (plan.seasonLineEn || "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • WOMEN'S NATIONAL II DIVISION")
+                      : (plan.seasonLinePt || 'GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • CAMPEONATO NACIONAL II DIVISÃO FEMININA')}
                   </p>
                   <h2 className="text-sm sm:text-lg md:text-xl font-black text-slate-100 uppercase tracking-tight mt-0.5">
                     {isEn ? plan.titleEn : plan.titlePt}
                   </h2>
                   <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    {plan.groupBadgePt && (
+                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-blue-500/20 text-blue-300 border border-blue-500/40 uppercase">
+                        <span>{isEn ? (plan.groupBadgeEn || plan.groupBadgePt) : plan.groupBadgePt}</span>
+                      </span>
+                    )}
                     <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-teal-500/20 text-teal-300 border border-teal-500/40 uppercase">
                       <ShieldCheck className="h-3 w-3" />
                       <span>{isEn ? plan.categoryEn : plan.categoryPt}</span>
@@ -173,7 +180,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
               {/* Duration Badge */}
               <div className="flex sm:flex-col items-center justify-center bg-dark-bg/90 border border-slate-700/80 px-4 py-2 sm:py-2.5 rounded-2xl shadow-inner shrink-0 self-start sm:self-auto space-x-2 sm:space-x-0">
                 <span className="text-xl sm:text-2xl font-black text-brand-lime leading-none">
-                  {plan.durationMinutes} MIN
+                  {isEn ? (plan.durationTextEn || `${plan.durationMinutes} MIN`) : (plan.durationTextPt || `${plan.durationMinutes} MIN`)}
                 </span>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
                   {isEn ? 'DURATION' : 'DURAÇÃO'}
@@ -226,7 +233,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                   </div>
                   <span className="text-[10px] font-extrabold text-cyan-400 flex items-center space-x-1 shrink-0 bg-cyan-950/50 px-2 py-0.5 rounded-md border border-cyan-800/50">
                     <Clock className="h-3 w-3" />
-                    <span>{block.durationMinutes} MIN</span>
+                    <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
                   </span>
                 </div>
 
@@ -239,8 +246,8 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                     >
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
                         {/* Dynamic SVG Vector Drawing */}
-                        <div className="sm:col-span-5 rounded-lg bg-slate-950/70 border border-slate-800/60 p-1 flex items-center justify-center overflow-hidden">
-                          <ExerciseIllustration drawingKey={ex.drawingKey} />
+                        <div className="sm:col-span-5 rounded-lg bg-white border border-slate-300/80 p-1 flex items-center justify-center overflow-hidden h-28 sm:h-32 shadow-sm">
+                          <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
                         </div>
 
                         {/* Exercise Details */}

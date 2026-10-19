@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="140" x2="320" y2="140" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco de Musculação -->
+  <rect x="200" y="110" width="100" height="40" rx="4" fill="url(#benchGrad)" filter="url(#dropShadow)" />
+  <rect x="196" y="108" width="108" height="7" rx="2" fill="#0f172a" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="140" cy="154" rx="70" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta em Prancha de Copenhaga -->
+  <!-- Antebraço no Chão -->
+  <path d="M70,146 L92,146" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <path d="M82,146 L82,122" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="72" cy="110" r="7.5" fill="#d97706" />
+  <path d="M68,106 C68,101 76,101 76,106 L74,112 L70,112 Z" fill="#78350f" />
+
+  <!-- Tronco em Linha Reta -->
+  <path d="M80,116 L134,106 L136,122 L82,130 Z" fill="url(#kitGrad)" />
+
+  <!-- Calções / Bacia Elevada -->
+  <path d="M128,104 L154,101 L151,120 L130,122 Z" fill="#0f172a" />
+
+  <!-- Perna Superior (Joelho no Banco) -->
+  <path d="M150,102 L218,104 L218,112 L150,110 Z" fill="#d97706" />
+  <path d="M218,104 L265,107 L265,112 L218,112 Z" fill="#d97706" />
+  <ellipse cx="270" cy="109" rx="5" ry="3" fill="#ffffff" />
+
+  <!-- Perna Inferior Suspensa -->
+  <path d="M148,112 L200,124" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Vetores de Ativação -->
+  <g filter="url(#dropShadow)">
+    <path d="M140,126 L140,110" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="137,113 140,106 143,113" fill="#2563eb" />
+    <path d="M160,98 L198,100" stroke="#38bdf8" stroke-width="2" stroke-dasharray="3,3" fill="none" />
+  </g>
+</svg>

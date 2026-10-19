@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="140" x2="320" y2="140" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Poste / Rig de Musculação à Esquerda onde a banda está ancorada -->
+  <rect x="35" y="20" width="16" height="135" fill="url(#poleGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="180" cy="154" rx="75" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Banda Elástica Laranja Forte esticada do Poste até atrás dos Joelhos -->
+  <path d="M51,118 L168,118" stroke="#f97316" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Atleta em Spanish Squat Isométrico (Tronco Ereto, Canela Vertical, Joelho a 60°) -->
+  <!-- Canelas Praticamente Verticais (Seguras pela banda) -->
+  <path d="M168,118 L168,150" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <!-- Pés no Chão com Sapatilhas -->
+  <ellipse cx="168" cy="152" rx="10" ry="4" fill="#ffffff" />
+  <path d="M162,151 L174,151" stroke="#0284c7" stroke-width="2" />
+
+  <!-- Coxas Inclinadas a 60° -->
+  <path d="M168,118 L215,115 L212,125 L168,126 Z" fill="#d97706" />
+
+  <!-- Calções / Bacia Recuada -->
+  <path d="M205,108 L232,108 L228,128 L202,126 Z" fill="#0f172a" />
+
+  <!-- Tronco Totalmente Ereto / Camisola Gil Vicente FC -->
+  <path d="M210,72 C210,68 234,68 234,72 L230,112 C222,114 214,114 210,112 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços Estendidos à Frente para Contrapeso -->
+  <path d="M215,82 L165,85" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <circle cx="164" cy="85" r="3.5" fill="#d97706" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="222" cy="58" r="8" fill="#d97706" />
+  <path d="M217,54 C217,48 227,48 227,54 L225,60 L219,60 Z" fill="#78350f" />
+
+  <!-- Vetores de Isometria e Alívio Patelar -->
+  <g filter="url(#dropShadow)">
+    <circle cx="168" cy="116" r="4.5" fill="#ffffff" stroke="#2563eb" stroke-width="1.8" />
+    <!-- Tensão Isométrica Sem Compressão -->
+    <path d="M185,108 L195,108" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+    <path d="M110,110 L130,110" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+    <polygon points="112,107 105,110 112,113" fill="#f97316" />
+  </g>
+</svg>

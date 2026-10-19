@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes lateralStep {
+      0%, 100% {
+        transform: translateX(0px);
+      }
+      50% {
+        transform: translateX(14px);
+      }
+    }
+    @keyframes bandStretch {
+      0%, 100% {
+        transform: scaleX(1);
+      }
+      50% {
+        transform: scaleX(1.15);
+      }
+    }
+    @keyframes arrowStep {
+      0%, 100% {
+        transform: translateX(0px);
+        opacity: 0.6;
+      }
+      50% {
+        transform: translateX(10px);
+        opacity: 1;
+      }
+    }
+    .anim-leg-right {
+      animation: lateralStep 2.4s ease-in-out infinite;
+    }
+    .anim-band {
+      transform-origin: 125px 124px;
+      animation: bandStretch 2.4s ease-in-out infinite;
+    }
+    .anim-arrow-step {
+      animation: arrowStep 2.4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-leg-right, .anim-band, .anim-arrow-step {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="154" rx="65" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Perna Esquerda de Apoio (Fletida em Base de Prontidão - Fixa) -->
+  <path d="M142,108 L122,126 L124,150 L115,150" stroke="#d97706" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <ellipse cx="120" cy="151" rx="7" ry="3.5" fill="#ffffff" />
+
+  <!-- Calções / Bacia Descida em Posição de Prontidão (Ready Stance) -->
+  <path d="M136,92 L180,92 L175,114 L140,114 Z" fill="#0f172a" />
+
+  <!-- Tronco / Camisola Gil Vicente FC -->
+  <path d="M140,62 C140,58 176,58 176,62 L172,96 C164,98 152,98 144,96 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços e Mãos em Posição de Guarda-Redes (Prontos a Reagir / Mãos Abertas) -->
+  <path d="M142,68 L122,86 L118,84" stroke="#d97706" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <circle cx="116" cy="84" r="5" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5" /> <!-- Luva Direita -->
+
+  <path d="M174,68 L194,86 L198,84" stroke="#d97706" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <circle cx="200" cy="84" r="5" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5" /> <!-- Luva Esquerda -->
+
+  <!-- Cabeça e Cabelo Neutro -->
+  <circle cx="158" cy="48" r="8.5" fill="#d97706" />
+  <path d="M152,43 C152,37 164,37 164,43 L162,50 L154,50 Z" fill="#78350f" />
+
+  <!-- Mini-Banda Verde com Estiramento Dinâmico -->
+  <g class="anim-band">
+    <path d="M123,124 Q158,127 195,124" stroke="#10b981" stroke-width="6" stroke-linecap="round" fill="none" />
+    <path d="M123,124 Q158,122 195,124" stroke="#059669" stroke-width="3" fill="none" />
+  </g>
+
+  <!-- PERNA DIREITA DINÂMICA (PASSO LATERAL EM PRONTIDÃO) -->
+  <g class="anim-leg-right">
+    <path d="M174,108 L196,126 L198,150 L208,150" stroke="#d97706" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <ellipse cx="204" cy="151" rx="7" ry="3.5" fill="#ffffff" />
+  </g>
+
+  <!-- Vetores Dinâmicos: Seta de Passo Lateral + Tensão da Mini-Banda -->
+  <g filter="url(#dropShadow)" class="anim-arrow-step">
+    <path d="M192,142 L225,142" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="223,138 230,142 223,146" fill="#2563eb" />
+  </g>
+
+  <!-- Tag Guarda-Redes -->
+  <g opacity="0.85">
+    <rect x="225" y="14" width="85" height="18" rx="4" fill="#1e293b" />
+    <text x="267" y="26" font-family="system-ui, sans-serif" font-size="9" font-weight="700" fill="#38bdf8" text-anchor="middle">BASE DE QUEDA</text>
+  </g>
+</svg>

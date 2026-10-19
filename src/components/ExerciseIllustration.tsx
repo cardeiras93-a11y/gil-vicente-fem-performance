@@ -1,14 +1,29 @@
 import React from 'react';
 
 interface ExerciseIllustrationProps {
-  drawingKey: string;
+  drawingKey?: string;
+  imageSrc?: string;
   className?: string;
 }
 
 export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
   drawingKey,
+  imageSrc,
   className = 'w-full h-24 sm:h-28',
 }) => {
+  if (imageSrc) {
+    return (
+      <div className={`relative flex items-center justify-center p-1.5 rounded-lg bg-white overflow-hidden shadow-inner ${className}`}>
+        <img
+          src={imageSrc}
+          alt={drawingKey || 'Exercício'}
+          className="max-h-full max-w-full object-contain select-none pointer-events-none"
+          loading="lazy"
+        />
+      </div>
+    );
+  }
+
   // Colors used for Gil Vicente aesthetic & clarity
   const athleteShirt = '#0284c7'; // Vibrant athletic blue
   const athleteShorts = '#0f172a'; // Navy/dark slate

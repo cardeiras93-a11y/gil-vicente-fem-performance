@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="135" x2="320" y2="135" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco Plano de Ginásio (à direita) -->
+  <rect x="220" y="105" width="80" height="12" rx="3" fill="url(#benchGrad)" filter="url(#dropShadow)" />
+  <!-- Pés do banco -->
+  <line x1="235" y1="117" x2="235" y2="148" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+  <line x1="285" y1="117" x2="285" y2="148" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+  <line x1="225" y1="148" x2="245" y2="148" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+  <line x1="275" y1="148" x2="295" y2="148" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="145" cy="148" rx="75" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Cabeça e Omoplatas no Tapete no Chão -->
+  <circle cx="65" cy="138" r="8" fill="#d97706" />
+  <path d="M58,136 C58,130 70,130 70,136 Z" fill="#78350f" />
+
+  <!-- Tronco em Ponte Elevada (Alinhado, sem hiperextensão lombar) -->
+  <path d="M72,136 L128,110 L132,122 L76,144 Z" fill="url(#kitGrad)" />
+
+  <!-- Bacia / Calções -->
+  <path d="M124,108 L148,102 L152,118 L128,122 Z" fill="#0f172a" />
+  <circle cx="138" cy="112" r="5" fill="#ef4444" opacity="0.7" />
+
+  <!-- Coxas a 45° -->
+  <path d="M146,104 L190,88" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <!-- Joelhos a 45-50° de flexão (braço de alavanca longo) -->
+  <!-- Canelas a descer para os calcanhares no banco -->
+  <path d="M190,88 L238,103" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Calcanhares cravados no banco -->
+  <ellipse cx="240" cy="103" rx="6" ry="4" fill="#ffffff" />
+  <ellipse cx="246" cy="101" rx="5" ry="3" fill="#cbd5e1" />
+
+  <!-- Braços apoiados no chão dando estabilidade -->
+  <line x1="78" y1="140" x2="115" y2="142" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Destaque Isquiotibiais em Tensão Isométrica -->
+  <path d="M185,92 L225,102" stroke="#ef4444" stroke-width="3" stroke-dasharray="3,2" />
+
+  <!-- Seta de Isometria (Puxar calcanhar para a bacia sem mexer) -->
+  <g filter="url(#dropShadow)">
+    <path d="M228,96 L210,92" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="214,88 206,91 212,96" fill="#2563eb" />
+    <circle cx="138" cy="94" r="3" fill="#2563eb" />
+    <text x="138" y="90" font-size="8" font-weight="900" fill="#2563eb" text-anchor="middle">HOLD</text>
+  </g>
+</svg>

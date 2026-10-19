@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Casa/Estúdio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="35,122 285,122 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="165" cy="150" rx="50" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Suporte Vertical / Parede de Apoio Estável em Casa -->
+  <rect x="218" y="28" width="10" height="122" rx="3" fill="#64748b" filter="url(#dropShadow)" />
+
+  <!-- Perna de Apoio Firme e Vertical -->
+  <path d="M168,88 L170,118 L170,146" stroke="#b45309" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <rect x="166" y="144" width="18" height="6" rx="3" fill="#e2e8f0" />
+
+  <!-- Perna de Trabalho em Flexão do Joelho a 90° (Curl de Isquios) -->
+  <!-- Coxa alinhada com a perna de apoio (sem avançar o joelho) -->
+  <path d="M162,88 L162,120 L122,116" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <!-- Destaque Vermelho de Contração dos Isquiotibiais -->
+  <line x1="157" y1="92" x2="157" y2="117" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Pé da Perna de Trabalho em Dorsiflexão -->
+  <rect x="115" y="110" width="8" height="15" rx="3" fill="#ffffff" />
+
+  <!-- Minibanda Vermelha Presa no Tornozelo de Apoio e no Tornozelo Ativo -->
+  <line x1="170" y1="140" x2="124" y2="116" stroke="#dc2626" stroke-width="5" stroke-linecap="round" />
+  <line x1="170" y1="143" x2="124" y2="120" stroke="#ef4444" stroke-width="2" stroke-dasharray="3,2" />
+
+  <!-- Calções e Glúteo Estável -->
+  <path d="M154,74 L176,74 L176,92 L154,92 Z" fill="#0f172a" />
+
+  <!-- Tronco Vertical Alinhado Gil Vicente FC -->
+  <path d="M155,44 L175,44 L176,76 L154,76 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços Apoiados na Parede à Frente -->
+  <path d="M172,52 L216,62" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+  <circle cx="217" cy="62" r="4" fill="#d97706" />
+
+  <!-- Cabeça -->
+  <circle cx="166" cy="31" r="8" fill="#d97706" />
+  <path d="M159,28 C159,22 173,22 173,28 Z" fill="#78350f" />
+
+  <!-- Seta Curva de Flexão do Joelho (Calcanhar ao Glúteo) -->
+  <g filter="url(#dropShadow)">
+    <path d="M110,132 C102,114 112,96 128,88" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="125,84 134,86 128,92" fill="#2563eb" />
+  </g>
+</svg>

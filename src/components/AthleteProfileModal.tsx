@@ -222,29 +222,35 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
           </div>
         </div>
 
-        {/* Mobility Plan Section (if assigned) */}
+        {/* Mobility & Training Plan Section (if assigned) */}
         {assignedPlans.length > 0 && (
-          <div className="rounded-2xl border border-teal-500/30 bg-teal-950/20 p-4 space-y-2.5">
-            <div className="flex items-center justify-between border-b border-teal-500/20 pb-2">
-              <span className="text-xs font-black uppercase text-teal-300 flex items-center space-x-1.5">
-                <Dumbbell className="h-4 w-4 text-teal-400" />
-                <span>Plano de Mobilidade Atribuído</span>
-              </span>
-              <span className="text-[10px] font-black text-teal-300 bg-teal-500/20 border border-teal-500/30 px-2 py-0.5 rounded-full">
-                {assignedPlans[0].durationMinutes} Min
+          <div className="rounded-2xl border border-blue-500/30 bg-blue-950/20 p-4 space-y-2.5">
+            <div className="flex items-center justify-between border-b border-blue-500/20 pb-2">
+              <span className="text-xs font-black uppercase text-blue-300 flex items-center space-x-1.5">
+                <Dumbbell className="h-4 w-4 text-blue-400" />
+                <span>Planos de Treino & Mobilidade ({assignedPlans.length})</span>
               </span>
             </div>
-            <p className="text-xs font-bold text-slate-200 leading-snug">
-              {assignedPlans[0].titlePt}
-            </p>
-            <button
-              type="button"
-              onClick={() => setSelectedMobilityPlan(assignedPlans[0])}
-              className="w-full flex items-center justify-center space-x-1.5 rounded-xl bg-teal-600/30 hover:bg-teal-600/50 border border-teal-500/50 py-2 px-3 text-xs font-black text-teal-200 hover:text-white transition-all shadow-sm active:scale-98 cursor-pointer"
-            >
-              <span>Abrir Plano c/ Desenhos (PT / EN)</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
+            <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700">
+              {assignedPlans.map((p) => (
+                <div key={p.id} className="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-200 line-clamp-1">{p.titlePt}</span>
+                    <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-full shrink-0">
+                      {p.durationTextPt || `${p.durationMinutes} Min`}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedMobilityPlan(p)}
+                    className="w-full flex items-center justify-center space-x-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600 border border-blue-500/40 py-1.5 px-3 text-[11px] font-black text-blue-200 hover:text-white transition-all cursor-pointer"
+                  >
+                    <span>Ver Plano & Desenhos (PT / EN)</span>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

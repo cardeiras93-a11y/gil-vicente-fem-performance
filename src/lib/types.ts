@@ -236,7 +236,8 @@ export interface MobilityExercise {
   restEn: string; // e.g. "Rest: 20s"
   descriptionPt: string;
   descriptionEn: string;
-  drawingKey: string; // e.g. "rotation-band-reach"
+  drawingKey?: string; // e.g. "rotation-band-reach"
+  imageSrc?: string; // e.g. "/exercises/squat_band_trunk_rotation_pro.svg"
 }
 
 export interface MobilityBlock {
@@ -245,6 +246,8 @@ export interface MobilityBlock {
   titlePt: string;
   titleEn: string;
   durationMinutes: number; // e.g. 5
+  durationTextPt?: string; // e.g. "10 MIN"
+  durationTextEn?: string;
   exercises: MobilityExercise[];
 }
 
@@ -254,8 +257,15 @@ export interface MobilityPlan {
   titleEn: string;
   categoryPt: string;
   categoryEn: string;
-  targetPosition?: 'GR' | 'Campo' | 'all';
+  group?: 'superiores' | 'inferiores' | 'all' | string;
+  groupBadgePt?: string;
+  groupBadgeEn?: string;
+  seasonLinePt?: string;
+  seasonLineEn?: string;
+  targetPosition?: 'GR' | 'Campo' | 'all' | string;
   durationMinutes: number;
+  durationTextPt?: string;
+  durationTextEn?: string;
   warmupPt: string;
   warmupEn: string;
   finisherPt: string;
