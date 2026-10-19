@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco Romano a 45° -->
+  <line x1="195" y1="145" x2="135" y2="85" stroke="#334155" stroke-width="8" stroke-linecap="round" filter="url(#dropShadow)" />
+  <!-- Almofada da Bacia a 45° -->
+  <rect x="125" y="78" width="22" height="14" rx="3" transform="rotate(-45 136 85)" fill="#0284c7" />
+  <!-- Rolo dos Calcanhares no fundo -->
+  <circle cx="205" cy="138" r="8" fill="#0f172a" />
+  <!-- Pés do banco -->
+  <line x1="195" y1="145" x2="225" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+  <line x1="145" y1="95" x2="115" y2="145" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="145" cy="150" rx="55" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Pés presos nos rolos -->
+  <ellipse cx="205" cy="136" rx="5" ry="3" fill="#ffffff" />
+  <!-- Pernas Estendidas ao longo da calha de 45° -->
+  <path d="M205,134 L145,86" stroke="#b45309" stroke-width="8.5" stroke-linecap="round" />
+
+  <!-- Bacia / Calções apoiados logo abaixo da crista ilíaca -->
+  <path d="M142,84 L128,88 L134,104 L148,98 Z" fill="#0f172a" />
+  <circle cx="140" cy="92" r="6" fill="#ef4444" opacity="0.75" />
+
+  <!-- Tronco em Extensão Alinhada com a Anca (Coluna neutra/relaxada, sem hiperextensão) -->
+  <path d="M132,84 L88,68 L94,56 L138,72 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Braços cruzados no peito -->
+  <circle cx="80" cy="58" r="8" fill="#d97706" />
+  <path d="M74,54 C74,48 86,48 86,54 Z" fill="#78350f" />
+  <!-- Braços cruzados no peito -->
+  <path d="M96,62 L112,68" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Foco Glúteo e Isquiotibiais Superiores -->
+  <path d="M152,94 L175,112" stroke="#ef4444" stroke-width="3" stroke-dasharray="2,2" />
+
+  <!-- Seta de Extensão da Anca até 180° sem passar da linha -->
+  <g filter="url(#dropShadow)">
+    <path d="M98,82 Q105,68 114,64" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="110,60 120,64 114,70" fill="#2563eb" />
+  </g>
+</svg>

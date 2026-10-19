@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="wallGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="140" x2="320" y2="140" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Parede à Direita -->
+  <rect x="260" y="30" width="60" height="130" fill="url(#wallGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="155" rx="80" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta em Pé apoiada na Parede com Joelhos Ligeiramente Fletidos (Foco no Sóleo) -->
+  <!-- Mãos apoiadas na parede -->
+  <ellipse cx="260" cy="85" rx="4" ry="5" fill="#d97706" />
+  <path d="M190,82 L260,85" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Tronco / Camisola Gil Vicente FC -->
+  <path d="M165,72 C165,68 195,68 195,72 L185,115 C178,118 168,118 165,115 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="180" cy="58" r="8" fill="#d97706" />
+  <path d="M175,54 C175,48 185,48 185,54 L183,60 L177,60 Z" fill="#78350f" />
+
+  <!-- Calções / Bacia -->
+  <path d="M162,112 L190,112 L186,128 L160,126 Z" fill="#0f172a" />
+
+  <!-- Perna Traseira (Joelho ligeiramente dobrado, calcanhar no chão - SÓLEO) -->
+  <path d="M165,125 L145,138 L135,152" stroke="#d97706" stroke-width="7" stroke-linecap="round" fill="none" />
+  <!-- Calcanhar traseiro bem assente no chão -->
+  <path d="M125,154 L142,154 L140,150 L125,150 Z" fill="#ffffff" />
+  <ellipse cx="127" cy="153" rx="3" ry="1.5" fill="#0f172a" />
+
+  <!-- Perna Dianteira (Joelho fletido mais à frente) -->
+  <path d="M185,125 L205,138 L200,154" stroke="#d97706" stroke-width="7" stroke-linecap="round" fill="none" />
+  <path d="M190,155 L210,155 L208,151 L190,151 Z" fill="#ffffff" />
+
+  <!-- Vetores de Ativação do Sóleo (Barriga da perna inferior) -->
+  <g filter="url(#dropShadow)">
+    <path d="M138,138 L146,145" stroke="#38bdf8" stroke-width="2.5" stroke-dasharray="2,2" />
+    <path d="M142,132 L150,135" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="149,132 155,137 148,138" fill="#2563eb" />
+  </g>
+</svg>

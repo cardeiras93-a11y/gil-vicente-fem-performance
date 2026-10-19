@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="400" height="225" fill="url(#bgGrad)" />
+  
+  <!-- Banco / Caixa de Apoio à Direita -->
+  <rect x="230" y="110" width="140" height="65" rx="6" fill="url(#benchGrad)" stroke="#475569" stroke-width="1.5" />
+  <rect x="225" y="105" width="150" height="12" rx="3" fill="#0f172a" stroke="#64748b" stroke-width="1" />
+  
+  <!-- Atleta em Prancha Lateral -->
+  <!-- Antebraço Esquerdo no chão à esquerda -->
+  <path d="M90,175 L120,175" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+  <!-- Braço vertical de apoio -->
+  <path d="M105,175 L105,130" stroke="#cbd5e1" stroke-width="7" stroke-linecap="round" />
+  <!-- Cabeça -->
+  <circle cx="85" cy="115" r="13" fill="#cbd5e1" />
+  
+  <!-- Tronco elevado em prancha lateral reta -->
+  <path d="M100,125 L165,115 L165,135 L100,140 Z" fill="#1e40af" />
+  
+  <!-- Perna Superior (Adutores em Ativação Isométrica - Apoiada no Banco) -->
+  <!-- Coxa e Joelho no Banco -->
+  <path d="M165,120 L270,103" stroke="#ef4444" stroke-width="14" stroke-linecap="round" />
+  <!-- Canela no banco -->
+  <path d="M270,103 L330,95" stroke="#cbd5e1" stroke-width="9" stroke-linecap="round" />
+  
+  <!-- Perna Inferior Livre (suspensa ou no chão) -->
+  <path d="M165,130 L220,150" stroke="#3b82f6" stroke-width="9" stroke-linecap="round" />
+  
+  <!-- Linhas de ativação dos adutores (virilha superior) -->
+  <path d="M185,108 L220,102" stroke="#fca5a5" stroke-dasharray="3,3" stroke-width="2.5" />
+  
+  <!-- Badges -->
+  <rect x="20" y="16" width="165" height="24" rx="6" fill="#1e3a8a" opacity="0.9" />
+  <text x="28" y="32" fill="#93c5fd" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">COPENHAGEN PLANK</text>
+  
+  <rect x="235" y="16" width="145" height="24" rx="6" fill="#7f1d1d" opacity="0.9" />
+  <text x="243" y="32" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">BLINDAGEM ADUTOR</text>
+</svg>

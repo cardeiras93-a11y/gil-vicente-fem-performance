@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Limpo e Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="156" rx="60" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta em Pé em Apoio Unipodal (Equilíbrio e Propriocepção) -->
+  <!-- Cabeça e Cabelo -->
+  <circle cx="160" cy="42" r="8" fill="#d97706" />
+  <path d="M155,38 C155,32 165,32 165,38 L163,44 L157,44 Z" fill="#78350f" />
+
+  <!-- Tronco Totalmente Alinhado / Camisola Gil Vicente FC -->
+  <path d="M148,56 C148,52 172,52 172,56 L168,102 C162,105 154,105 148,102 Z" fill="url(#kitGrad)" />
+
+  <!-- Braços Abertos em "V" para Controlo de Equilíbrio -->
+  <path d="M148,60 L122,78" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="120" cy="79" r="3.5" fill="#d97706" />
+  <path d="M172,60 L198,78" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="200" cy="79" r="3.5" fill="#d97706" />
+
+  <!-- Calções / Bacia Estável sem Queda Pélvica -->
+  <path d="M146,98 L174,98 L170,116 L150,116 Z" fill="#0f172a" />
+
+  <!-- Perna Esquerda Suspensa (Joelho Dobrado a 90°) -->
+  <path d="M152,114 L142,126 L140,140" stroke="#d97706" stroke-width="6" stroke-linecap="round" fill="none" />
+  <ellipse cx="140" cy="142" rx="4" ry="2" fill="#ffffff" />
+
+  <!-- Perna Direita de Apoio Unipodal (Totalmente Firme) -->
+  <path d="M165,114 L165,134" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <path d="M165,134 L165,150" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+
+  <!-- Pé Direito Ativo no Chão (Tripé Plantar / Arco Elevado) -->
+  <path d="M158,152 L174,152 L172,156 L156,156 Z" fill="#ffffff" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="154" rx="3.5" ry="1.5" fill="#0f172a" />
+
+  <!-- Mini-Banda Elástica Laranja nos Tornozelos a Criar Resistência Anti-Valgo -->
+  <ellipse cx="153" cy="136" rx="14" ry="4" fill="none" stroke="#f97316" stroke-width="3" />
+
+  <!-- Vetores de Estabilização Proprioceptiva (Micro-ajustes do Tornozelo) -->
+  <g filter="url(#dropShadow)">
+    <path d="M158,146 C164,142 168,142 172,146" stroke="#38bdf8" stroke-width="2" fill="none" />
+    <path d="M165,120 L165,108" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="162,112 165,105 168,112" fill="#2563eb" />
+  </g>
+</svg>

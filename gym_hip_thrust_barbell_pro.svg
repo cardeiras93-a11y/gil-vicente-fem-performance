@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes hipThrustHinge {
+      0%, 100% {
+        transform: rotate(18deg);
+      }
+      50% {
+        transform: rotate(0deg);
+      }
+    }
+    @keyframes thrustArrow {
+      0%, 100% {
+        transform: translateY(6px);
+        opacity: 0.5;
+      }
+      50% {
+        transform: translateY(-4px);
+        opacity: 1;
+      }
+    }
+    .anim-hip-hinge {
+      transform-origin: 92px 98px;
+      animation: hipThrustHinge 2.6s ease-in-out infinite;
+    }
+    .anim-thrust-arrow {
+      animation: thrustArrow 2.6s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .anim-hip-hinge, .anim-thrust-arrow {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="140" x2="320" y2="140" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco Acolchoado Atrás das Costas -->
+  <rect x="50" y="100" width="55" height="42" rx="4" fill="url(#benchGrad)" filter="url(#dropShadow)" />
+  <rect x="52" y="96" width="51" height="8" rx="3" fill="#0284c7" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="165" cy="148" rx="75" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Canelas Verticais a 90° e Pés Firmes no Solo -->
+  <path d="M216,108 L216,142" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <rect x="210" y="140" width="18" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Cabeça e Omoplatas Apoiadas no Banco (Ponto de Rotação Estável) -->
+  <circle cx="85" cy="94" r="8" fill="#d97706" />
+  <path d="M78,92 C78,86 90,86 90,92 Z" fill="#78350f" />
+
+  <!-- SEGMENTO DINÂMICO DE ELEVAÇÃO PÉLVICA / HIP THRUST -->
+  <g class="anim-hip-hinge">
+    <!-- Tronco (Camisola Gil Vicente FC) -->
+    <path d="M92,98 L152,98 L152,112 L92,112 Z" fill="url(#kitGrad)" />
+
+    <!-- Calções / Glúteo Contraído no Topo -->
+    <path d="M148,96 L174,96 L174,114 L148,114 Z" fill="#0f172a" />
+    <circle cx="160" cy="108" r="6" fill="#ef4444" opacity="0.8" />
+
+    <!-- Barra com Protetor Almofadado sobre a Bacia -->
+    <rect x="156" y="86" width="14" height="22" rx="4" fill="#0284c7" stroke="#0369a1" stroke-width="1" filter="url(#dropShadow)" />
+    <!-- Discos de Barra -->
+    <line x1="148" y1="97" x2="178" y2="97" stroke="#64748b" stroke-width="4" stroke-linecap="round" />
+    <circle cx="163" cy="97" r="14" fill="none" stroke="#dc2626" stroke-width="4" />
+
+    <!-- Mãos a segurar a barra -->
+    <ellipse cx="163" cy="90" rx="4" ry="4" fill="#d97706" />
+
+    <!-- Coxas em Extensão Pélvica -->
+    <path d="M172,98 L216,98" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  </g>
+
+  <!-- Seta Dinâmica de Elevação Pélvica -->
+  <g filter="url(#dropShadow)" class="anim-thrust-arrow">
+    <path d="M162,130 L162,118" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="158,120 162,112 166,120" fill="#2563eb" />
+  </g>
+</svg>

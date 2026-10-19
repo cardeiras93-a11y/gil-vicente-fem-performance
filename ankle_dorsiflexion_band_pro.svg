@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes ankleRock {
+      0%, 100% {
+        transform: rotate(0deg);
+      }
+      50% {
+        transform: rotate(8deg);
+      }
+    }
+    @keyframes arrowSlide {
+      0%, 100% {
+        transform: translateX(0px);
+        opacity: 0.6;
+      }
+      50% {
+        transform: translateX(8px);
+        opacity: 1;
+      }
+    }
+    .rocking-tibia {
+      transform-origin: 165px 148px;
+      animation: ankleRock 2.4s ease-in-out infinite;
+    }
+    .pulse-arrow {
+      animation: arrowSlide 2.4s ease-in-out infinite;
+    }
+    @media (prefers-reduced-motion: reduce), print {
+      *, .rocking-tibia, .pulse-arrow {
+        animation: none !important;
+      }
+    }
+  </style>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  
+  <!-- Tapete Azul -->
+  <polygon points="35,118 285,118 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="152" rx="80" ry="10" fill="#0f172a" opacity="0.22" />
+
+  <!-- Pé Dianteiro Firme no Tapete (Calcanhar 100% no chão) -->
+  <path d="M155,148 L185,148 L182,154 L152,154 Z" fill="#ffffff" />
+  <path d="M158,150 L178,150" stroke="#0284c7" stroke-width="2" />
+
+  <!-- Perna Traseira (Joelho no chão - Estável) -->
+  <path d="M100,118 L95,142 L80,142" stroke="#d97706" stroke-width="7" stroke-linecap="round" fill="none" />
+  <ellipse cx="80" cy="142" rx="6" ry="3" fill="#ffffff" />
+
+  <!-- Banda Elástica Laranja ancorada atrás no Tálus -->
+  <path d="M60,135 L165,145" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" />
+  <path d="M165,145 C170,146 172,148 165,150" stroke="#f97316" stroke-width="3" fill="none" />
+
+  <!-- SEGMENTO DINÂMICO DE DORSIFLEXÃO (PIVÔ NO TORNOZELO 165, 148) -->
+  <g class="rocking-tibia">
+    <!-- Canela Inclinada para a Frente (Knee Over Toes) -->
+    <path d="M185,114 L165,145" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Coxa Dianteira -->
+    <path d="M130,108 L185,114 L180,122 L125,116 Z" fill="#d97706" />
+
+    <!-- Calções / Bacia -->
+    <path d="M105,105 L135,105 L130,126 L102,124 Z" fill="#0f172a" />
+
+    <!-- Tronco / Camisola Gil Vicente FC -->
+    <path d="M110,75 C110,70 135,70 135,75 L132,112 C126,114 115,114 110,112 Z" fill="url(#kitGrad)" />
+
+    <!-- Cabeça e Cabelo -->
+    <circle cx="125" cy="62" r="8" fill="#d97706" />
+    <path d="M120,58 C120,52 130,52 130,58 L128,64 L122,64 Z" fill="#78350f" />
+
+    <!-- Mãos no Joelho para guiar o avanço -->
+    <path d="M125,85 L175,114" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+    <circle cx="176" cy="115" r="4" fill="#d97706" />
+  </g>
+
+  <!-- Vetores Dinâmicos: Seta de Avanço com Pulso -->
+  <g filter="url(#dropShadow)" class="pulse-arrow">
+    <path d="M175,105 L195,105" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="193,101 200,105 193,109" fill="#2563eb" />
+    <!-- Tração no Tálus -->
+    <path d="M150,138 L135,135" stroke="#f97316" stroke-width="2" stroke-linecap="round" />
+    <polygon points="137,132 130,134 136,138" fill="#f97316" />
+  </g>
+</svg>

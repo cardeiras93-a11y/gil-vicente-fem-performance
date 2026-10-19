@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Barra de Rack Alta (Ponto de Ancoragem da Banda Elástica) -->
+  <line x1="120" y1="10" x2="260" y2="10" stroke="#334155" stroke-width="6" />
+
+  <!-- Almofada Acolchoada sob os Joelhos no Solo -->
+  <rect x="75" y="140" width="45" height="7" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <!-- Fixador / Suporte dos Tornozelos no Solo -->
+  <circle cx="65" cy="140" r="7" fill="#0f172a" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="140" cy="150" rx="65" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Tornozelos travados -->
+  <ellipse cx="65" cy="138" rx="5" ry="3" fill="#ffffff" />
+  <!-- Canelas no solo -->
+  <path d="M65,138 L95,140" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Joelho dobrado no tapete, Tronco e Coxas em linha reta a inclinar para a frente (35°) -->
+  <!-- Coxas -->
+  <path d="M95,140 L135,116" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+
+  <!-- Bacia / Calções Alinhados (Sem dobrar a anca) -->
+  <path d="M130,120 L152,106 L158,118 L136,128 Z" fill="#0f172a" />
+
+  <!-- Tronco Rígido em Bloco -->
+  <path d="M150,108 L188,86 L194,98 L156,120 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="204" cy="78" r="8" fill="#d97706" />
+  <path d="M198,74 C198,68 210,68 210,74 Z" fill="#78350f" />
+
+  <!-- Banda Elástica Forte Suspensa do Teto a Sustentar o Peito da Atleta (Redução de 50% de Sobrecarga) -->
+  <path d="M190,10 L180,92" stroke="#dc2626" stroke-width="4.5" stroke-dasharray="6,2" />
+  <!-- Mãos a segurar a banda com segurança -->
+  <ellipse cx="180" cy="94" rx="4" ry="4" fill="#d97706" />
+
+  <!-- Destaque Excêntrico nos Isquiotibiais -->
+  <path d="M98,136 L130,116" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Seta de Descida Excêntrica Lenta (4s) -->
+  <g filter="url(#dropShadow)">
+    <path d="M175,70 Q192,80 198,96" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="196,100 203,96 195,90" fill="#2563eb" />
+    <text x="210" y="98" font-size="9" font-weight="900" fill="#2563eb">4s EXC</text>
+  </g>
+</svg>

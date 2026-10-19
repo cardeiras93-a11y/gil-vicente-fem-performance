@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Torre de Cargas (à esquerda) -->
+  <rect x="25" y="30" width="30" height="115" rx="3" fill="url(#machGrad)" filter="url(#dropShadow)" />
+  <!-- Encosto e Assento da Máquina (Total Suporte Lombar) -->
+  <rect x="90" y="55" width="12" height="52" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="95" y="105" width="55" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <!-- Estrutura metálica do banco -->
+  <line x1="90" y1="117" x2="90" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+  <line x1="145" y1="117" x2="145" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="150" cy="150" rx="65" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Cabeça e Tronco 100% Apoiados no Encosto (Zero Esforço Lombar) -->
+  <circle cx="108" cy="46" r="8" fill="#d97706" />
+  <path d="M102,42 C102,36 114,36 114,42 Z" fill="#78350f" />
+  <path d="M104,56 L124,56 L122,96 L104,96 Z" fill="url(#kitGrad)" />
+
+  <!-- Bacia / Calções no Assento -->
+  <path d="M104,96 L130,96 L128,110 L104,110 Z" fill="#0f172a" />
+
+  <!-- Rolo Superior a Fixar as Coxas (Thigh Pad) -->
+  <circle cx="148" cy="98" r="8" fill="#0f172a" stroke="#64748b" stroke-width="2" />
+
+  <!-- Coxas Apoiadas no Assento a 90° de Flexão da Anca (Isquios em Longo Comprimento) -->
+  <path d="M125,104 L170,104" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+
+  <!-- Braço de Alavanca da Máquina e Rolo Inferior atrás dos Tornozelos -->
+  <path d="M170,104 L165,138" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <!-- Rolo da Máquina atrás do Tendão de Aquiles -->
+  <circle cx="170" cy="136" r="7" fill="#0f172a" stroke="#0284c7" stroke-width="2" />
+  <rect x="156" y="136" width="16" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Mãos a segurar os manípulos laterais -->
+  <line x1="112" y1="88" x2="118" y2="108" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="118" cy="110" r="3" fill="#334155" />
+
+  <!-- Ponto de Foco Isquiotibiais -->
+  <path d="M135,108 L165,114" stroke="#ef4444" stroke-width="3.5" />
+
+  <!-- Seta Curva de Flexão do Joelho (Puxada para trás) -->
+  <g filter="url(#dropShadow)">
+    <path d="M185,120 Q180,138 165,142" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
+    <polygon points="168,146 158,142 165,137" fill="#2563eb" />
+  </g>
+</svg>
