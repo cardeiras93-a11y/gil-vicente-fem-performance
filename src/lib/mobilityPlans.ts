@@ -156,14 +156,7 @@ export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
 
 import { ALL_NINE_PLANS } from './generatedGymPlans';
 
-export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = [
-  ...ALL_NINE_PLANS,
-  // Alias for backward compatibility
-  {
-    ...(ALL_NINE_PLANS.find((p) => p.id === 'mobilidade_pre_treino_gr') || DEFAULT_GK_MOBILITY_PLAN),
-    id: 'mobility-gk-pre-training',
-  },
-];
+export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = ALL_NINE_PLANS;
 
 // Default assignments: automatic link for all Goalkeepers
 export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
@@ -190,7 +183,9 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
       const planMap = new Map<string, MobilityPlan>();
       INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, p));
       parsed.forEach((p: MobilityPlan) => {
-        if (p && p.id) planMap.set(p.id, p);
+        if (p && p.id && p.id !== 'mobility-gk-pre-training') {
+          planMap.set(p.id, p);
+        }
       });
       return Array.from(planMap.values());
     }
@@ -217,7 +212,6 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
 
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(updatedList));
 
-    // Push to cloud via credentials endpoint for guaranteed multi-device sync
     secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -232,17 +226,17 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
 }
 
 export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAssignment> {
-  if (typeof window === 'undefined') return DEFAULT_PLAN_ASSIGNMENTS;
+  if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
     const raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
-    if (!raw) return DEFAULT_PLAN_ASSIGNMENTS;
+    if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
       return parsed;
     }
-    return DEFAULT_PLAN_ASSIGNMENTS;
+    return { ...DEFAULT_PLAN_ASSIGNMENTS };
   } catch {
-    return DEFAULT_PLAN_ASSIGNMENTS;
+    return { ...DEFAULT_PLAN_ASSIGNMENTS };
   }
 }
 
@@ -271,7 +265,7 @@ export function assignPlanToTarget(
   targetName?: string,
   notes?: string
 ): void {
-  const current = getStoredAthletePlanAssignments();
+  const current = { ...getStoredAthletePlanAssignments() };
   const id = `${targetType}_${targetId}_${planId}`;
   current[id] = {
     id,
@@ -288,7 +282,7 @@ export function assignPlanToTarget(
 }
 
 export function unassignPlan(assignmentId: string): void {
-  const current = getStoredAthletePlanAssignments();
+  const current = { ...getStoredAthletePlanAssignments() };
   if (current[assignmentId]) {
     current[assignmentId].active = false;
   }
@@ -300,15 +294,14 @@ export function toggleAthletePlanAssignment(
   athleteName: string,
   planId: string,
   forceState?: boolean
-): boolean {
-  const current = getStoredAthletePlanAssignments();
+): Record<string, AthletePlanAssignment> {
+  const current = { ...getStoredAthletePlanAssignments() };
   const id = `athlete_${athleteId}_${planId}`;
 
   let isCurrentlyActive = false;
   if (current[id] !== undefined) {
     isCurrentlyActive = Boolean(current[id].active);
   } else {
-    // If not set directly, check position or all
     const posActive = Boolean(current[`pos_GR_${planId}`]?.active) || Boolean(current[`pos_Campo_${planId}`]?.active);
     const allActive = Boolean(current[`all_all_${planId}`]?.active);
     isCurrentlyActive = posActive || allActive;
@@ -328,7 +321,7 @@ export function toggleAthletePlanAssignment(
   };
 
   saveAthletePlanAssignments(current);
-  return nextActive;
+  return current;
 }
 
 export function togglePositionPlanAssignment(
@@ -336,8 +329,8 @@ export function togglePositionPlanAssignment(
   planId: string,
   athletesList: Athlete[],
   forceState?: boolean
-): boolean {
-  const current = getStoredAthletePlanAssignments();
+): Record<string, AthletePlanAssignment> {
+  const current = { ...getStoredAthletePlanAssignments() };
   const posKey = `pos_${position}_${planId}`;
   const isCurrentlyActive = Boolean(current[posKey]?.active);
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
@@ -353,7 +346,6 @@ export function togglePositionPlanAssignment(
     active: nextActive,
   };
 
-  // Sync every athlete in that position so their individual checkboxes update consistently
   athletesList.forEach((ath) => {
     const isThisPos = position === 'GR'
       ? (ath.position === 'GR' || isGoalkeeper(ath.name))
@@ -375,15 +367,15 @@ export function togglePositionPlanAssignment(
   });
 
   saveAthletePlanAssignments(current);
-  return nextActive;
+  return current;
 }
 
 export function toggleAllSquadPlanAssignment(
   planId: string,
   athletesList: Athlete[],
   forceState?: boolean
-): boolean {
-  const current = getStoredAthletePlanAssignments();
+): Record<string, AthletePlanAssignment> {
+  const current = { ...getStoredAthletePlanAssignments() };
   const allKey = `all_all_${planId}`;
   const isCurrentlyActive = Boolean(current[allKey]?.active);
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
@@ -414,7 +406,7 @@ export function toggleAllSquadPlanAssignment(
   });
 
   saveAthletePlanAssignments(current);
-  return nextActive;
+  return current;
 }
 
 /**

@@ -32,34 +32,47 @@ import {
 } from 'lucide-react';
 
 export const AdminMobilityManager: React.FC = () => {
-  const [plans, setPlans] = useState<MobilityPlan[]>([]);
-  const [assignments, setAssignments] = useState<Record<string, AthletePlanAssignment>>({});
-  const [athletes, setAthletes] = useState<Athlete[]>([]);
-  const [selectedPlanId, setSelectedPlanId] = useState<string>('');
+  const [plans, setPlans] = useState<MobilityPlan[]>(() => getStoredMobilityPlans());
+  const [assignments, setAssignments] = useState<Record<string, AthletePlanAssignment>>(() => getStoredAthletePlanAssignments());
+  const [athletes, setAthletes] = useState<Athlete[]>(() => getDynamicAthletes());
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(() => {
+    const loaded = getStoredMobilityPlans();
+    return loaded[0]?.id || '';
+  });
   const [groupFilter, setGroupFilter] = useState<'all' | 'superiores' | 'inferiores'>('all');
   const [selectedPlanForPreview, setSelectedPlanForPreview] = useState<MobilityPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const loadData = () => {
-    const loadedPlans = getStoredMobilityPlans();
-    setPlans(loadedPlans);
-    setAssignments(getStoredAthletePlanAssignments());
-    setAthletes(getDynamicAthletes());
-    if (loadedPlans.length > 0 && !selectedPlanId) {
-      setSelectedPlanId(loadedPlans[0].id);
-    }
-  };
-
   useEffect(() => {
-    loadData();
-    window.addEventListener('femperf_mobility_plans_updated', loadData);
-    window.addEventListener('femperf_credentials_updated', loadData);
+    const refreshData = () => {
+      setPlans(getStoredMobilityPlans());
+      setAssignments(getStoredAthletePlanAssignments());
+      setAthletes(getDynamicAthletes());
+    };
+
+    window.addEventListener('femperf_mobility_plans_updated', refreshData);
+    window.addEventListener('femperf_credentials_updated', refreshData);
     return () => {
-      window.removeEventListener('femperf_mobility_plans_updated', loadData);
-      window.removeEventListener('femperf_credentials_updated', loadData);
+      window.removeEventListener('femperf_mobility_plans_updated', refreshData);
+      window.removeEventListener('femperf_credentials_updated', refreshData);
     };
   }, []);
+
+  // Ensure selectedPlanId is valid if plans list updates
+  useEffect(() => {
+    if (plans.length > 0 && (!selectedPlanId || !plans.some((p) => p.id === selectedPlanId))) {
+      setSelectedPlanId(plans[0].id);
+    }
+  }, [plans, selectedPlanId]);
+
+  const handleGroupFilterChange = (newGroup: 'all' | 'superiores' | 'inferiores') => {
+    setGroupFilter(newGroup);
+    const subset = newGroup === 'all' ? plans : plans.filter((p) => p.group === newGroup);
+    if (subset.length > 0 && !subset.some((p) => p.id === selectedPlanId)) {
+      setSelectedPlanId(subset[0].id);
+    }
+  };
 
   const filteredPlans = useMemo(() => {
     if (groupFilter === 'all') return plans;
@@ -69,13 +82,6 @@ export const AdminMobilityManager: React.FC = () => {
   const activePlan = useMemo(() => {
     return plans.find((p) => p.id === selectedPlanId) || filteredPlans[0] || plans[0] || null;
   }, [plans, selectedPlanId, filteredPlans]);
-
-  // Ensure selectedPlanId matches filter
-  useEffect(() => {
-    if (filteredPlans.length > 0 && !filteredPlans.some((p) => p.id === selectedPlanId)) {
-      setSelectedPlanId(filteredPlans[0].id);
-    }
-  }, [groupFilter, filteredPlans, selectedPlanId]);
 
   if (!activePlan) {
     return <div className="p-4 text-center text-slate-400">Nenhum plano disponível na biblioteca.</div>;
@@ -108,40 +114,40 @@ export const AdminMobilityManager: React.FC = () => {
 
   const handleToggleAllSquad = () => {
     const nextActive = !isAllSquadAssigned;
-    toggleAllSquadPlanAssignment(activePlan.id, athletes, nextActive);
-    setAssignments(getStoredAthletePlanAssignments());
+    const updated = toggleAllSquadPlanAssignment(activePlan.id, athletes, nextActive);
+    setAssignments({ ...updated });
     setFeedback(
       nextActive
         ? '✓ Plano associado a TODO o plantel!'
         : 'Plano removido de todo o plantel.'
     );
-    setTimeout(() => setFeedback(null), 3500);
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   const handleTogglePosition = (pos: 'GR' | 'Campo') => {
     const isCurrentlyActive = pos === 'GR' ? isGkPositionAssigned : isFieldPositionAssigned;
     const nextActive = !isCurrentlyActive;
-    togglePositionPlanAssignment(pos, activePlan.id, athletes, nextActive);
-    setAssignments(getStoredAthletePlanAssignments());
+    const updated = togglePositionPlanAssignment(pos, activePlan.id, athletes, nextActive);
+    setAssignments({ ...updated });
     setFeedback(
       nextActive
         ? `✓ Plano associado a todas as ${pos === 'GR' ? 'Guarda-Redes (GR)' : 'Jogadoras de Campo'}!`
         : `Plano desassociado de todas as ${pos === 'GR' ? 'Guarda-Redes' : 'Jogadoras de Campo'}.`
     );
-    setTimeout(() => setFeedback(null), 3500);
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   const handleToggleAthlete = (ath: Athlete) => {
     const currentlyAssigned = isAthleteAssigned(ath);
     const nextState = !currentlyAssigned;
-    toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id, nextState);
-    setAssignments(getStoredAthletePlanAssignments());
+    const updated = toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id, nextState);
+    setAssignments({ ...updated });
     setFeedback(
       nextState
         ? `✓ Plano associado à jogadora ${ath.name}!`
         : `Plano removido da jogadora ${ath.name}.`
     );
-    setTimeout(() => setFeedback(null), 3500);
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   const filteredAthletes = athletes.filter((a) =>
@@ -206,7 +212,7 @@ export const AdminMobilityManager: React.FC = () => {
           <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-800 text-xs font-bold shadow-inner shrink-0">
             <button
               type="button"
-              onClick={() => setGroupFilter('all')}
+              onClick={() => handleGroupFilterChange('all')}
               className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer ${
                 groupFilter === 'all'
                   ? 'bg-blue-600 text-white shadow-sm'
@@ -217,7 +223,7 @@ export const AdminMobilityManager: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setGroupFilter('superiores')}
+              onClick={() => handleGroupFilterChange('superiores')}
               className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1 ${
                 groupFilter === 'superiores'
                   ? 'bg-blue-600 text-white shadow-sm'
@@ -229,7 +235,7 @@ export const AdminMobilityManager: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => setGroupFilter('inferiores')}
+              onClick={() => handleGroupFilterChange('inferiores')}
               className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1 ${
                 groupFilter === 'inferiores'
                   ? 'bg-blue-600 text-white shadow-sm'
@@ -450,13 +456,14 @@ export const AdminMobilityManager: React.FC = () => {
               const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
 
               return (
-                <div
+                <button
                   key={ath.id}
+                  type="button"
                   onClick={() => handleToggleAthlete(ath)}
-                  className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between select-none ${
+                  className={`w-full text-left p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between select-none active:scale-[0.98] ${
                     assigned
-                      ? 'border-blue-500/50 bg-blue-950/20 hover:bg-blue-950/30 shadow-sm'
-                      : 'border-slate-800 bg-slate-900/40 hover:bg-slate-900/80 text-slate-400'
+                      ? 'border-blue-500/60 bg-blue-950/30 hover:bg-blue-900/40 text-white shadow-md'
+                      : 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/60 text-slate-400'
                   }`}
                 >
                   <div className="flex items-center space-x-2.5 min-w-0">
@@ -484,13 +491,13 @@ export const AdminMobilityManager: React.FC = () => {
                   <div
                     className={`h-5 w-5 rounded-lg flex items-center justify-center shrink-0 border transition-all ${
                       assigned
-                        ? 'bg-blue-600 border-blue-500 text-white shadow-sm'
+                        ? 'bg-blue-600 border-blue-400 text-white shadow-sm'
                         : 'border-slate-700 bg-slate-800 text-transparent'
                     }`}
                   >
                     <Check className="h-3.5 w-3.5" />
                   </div>
-                </div>
+                </button>
               );
             })}
           </div>
