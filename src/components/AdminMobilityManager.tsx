@@ -7,6 +7,7 @@ import {
   getStoredAthletePlanAssignments,
   toggleAthletePlanAssignment,
   togglePositionPlanAssignment,
+  toggleAllSquadPlanAssignment,
   assignPlanToTarget,
   unassignPlan,
 } from '@/lib/mobilityPlans';
@@ -90,49 +91,57 @@ export const AdminMobilityManager: React.FC = () => {
   const isGkPositionAssigned = Boolean(assignments[`pos_GR_${activePlan.id}`]?.active);
   const isFieldPositionAssigned = Boolean(assignments[`pos_Campo_${activePlan.id}`]?.active);
 
-  const handleToggleAllSquad = () => {
-    const asgnKey = `all_all_${activePlan.id}`;
-    if (isAllSquadAssigned) {
-      unassignPlan(asgnKey);
-      setFeedback('Plano removido de todo o plantel.');
-    } else {
-      assignPlanToTarget('all', 'all', activePlan.id, 'Todo o Plantel');
-      setFeedback('✓ Plano associado a TODO o plantel!');
+  const isAthleteAssigned = (ath: Athlete): boolean => {
+    // 1. Direct athlete override takes absolute precedence!
+    const directAsgn = assignments[`athlete_${ath.id}_${activePlan.id}`];
+    if (directAsgn !== undefined) {
+      return Boolean(directAsgn.active);
     }
+    // 2. Position assignment
+    const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
+    if (isGk && isGkPositionAssigned) return true;
+    if (!isGk && isFieldPositionAssigned) return true;
+    // 3. All squad assignment
+    if (isAllSquadAssigned) return true;
+    return false;
+  };
+
+  const handleToggleAllSquad = () => {
+    const nextActive = !isAllSquadAssigned;
+    toggleAllSquadPlanAssignment(activePlan.id, athletes, nextActive);
     setAssignments(getStoredAthletePlanAssignments());
+    setFeedback(
+      nextActive
+        ? '✓ Plano associado a TODO o plantel!'
+        : 'Plano removido de todo o plantel.'
+    );
     setTimeout(() => setFeedback(null), 3500);
   };
 
   const handleTogglePosition = (pos: 'GR' | 'Campo') => {
-    const newState = togglePositionPlanAssignment(pos, activePlan.id);
+    const isCurrentlyActive = pos === 'GR' ? isGkPositionAssigned : isFieldPositionAssigned;
+    const nextActive = !isCurrentlyActive;
+    togglePositionPlanAssignment(pos, activePlan.id, athletes, nextActive);
     setAssignments(getStoredAthletePlanAssignments());
     setFeedback(
-      newState
+      nextActive
         ? `✓ Plano associado a todas as ${pos === 'GR' ? 'Guarda-Redes (GR)' : 'Jogadoras de Campo'}!`
-        : `Plano desassociado de ${pos === 'GR' ? 'Guarda-Redes' : 'Jogadoras de Campo'}.`
+        : `Plano desassociado de todas as ${pos === 'GR' ? 'Guarda-Redes' : 'Jogadoras de Campo'}.`
     );
     setTimeout(() => setFeedback(null), 3500);
   };
 
   const handleToggleAthlete = (ath: Athlete) => {
-    const newState = toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id);
+    const currentlyAssigned = isAthleteAssigned(ath);
+    const nextState = !currentlyAssigned;
+    toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id, nextState);
     setAssignments(getStoredAthletePlanAssignments());
     setFeedback(
-      newState
+      nextState
         ? `✓ Plano associado à jogadora ${ath.name}!`
-        : `Plano desassociado da jogadora ${ath.name}.`
+        : `Plano removido da jogadora ${ath.name}.`
     );
     setTimeout(() => setFeedback(null), 3500);
-  };
-
-  const isAthleteAssigned = (ath: Athlete): boolean => {
-    if (isAllSquadAssigned) return true;
-    const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
-    if (isGk && (isGkPositionAssigned || activePlan.id === 'mobilidade_pre_treino_gr' || activePlan.id === 'mobility-gk-pre-training')) {
-      return true;
-    }
-    if (!isGk && isFieldPositionAssigned) return true;
-    return Boolean(assignments[`athlete_${ath.id}_${activePlan.id}`]?.active);
   };
 
   const filteredAthletes = athletes.filter((a) =>

@@ -493,9 +493,7 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       // 13. Athlete Plan Assignments: Cloud sync
       if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
-        const local = JSON.parse(localStorage.getItem('femperf_athlete_plan_assignments_v1') || '{}');
-        const merged = { ...data.data.athletePlanAssignments, ...local };
-        localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(merged));
+        localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(data.data.athletePlanAssignments));
       }
 
       window.dispatchEvent(new Event('femperf_mobility_plans_updated'));

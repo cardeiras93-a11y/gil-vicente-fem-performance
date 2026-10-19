@@ -173,19 +173,8 @@ export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
     targetId: 'GR',
     targetName: 'Todas as Guarda-Redes (GR)',
     planId: 'mobilidade_pre_treino_gr',
-    assignedAt: new Date().toISOString(),
-    assignedBy: 'Treinador',
-    active: true,
-    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
-  },
-  'pos_GR_mobility-gk-pre-training': {
-    id: 'pos_GR_mobility-gk-pre-training',
-    targetType: 'position',
-    targetId: 'GR',
-    targetName: 'Todas as Guarda-Redes (GR)',
-    planId: 'mobility-gk-pre-training',
-    assignedAt: new Date().toISOString(),
-    assignedBy: 'Treinador',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
     active: true,
     notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
   },
@@ -248,7 +237,10 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
     const raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
     if (!raw) return DEFAULT_PLAN_ASSIGNMENTS;
     const parsed = JSON.parse(raw);
-    return typeof parsed === 'object' && parsed ? { ...DEFAULT_PLAN_ASSIGNMENTS, ...parsed } : DEFAULT_PLAN_ASSIGNMENTS;
+    if (typeof parsed === 'object' && parsed !== null) {
+      return parsed;
+    }
+    return DEFAULT_PLAN_ASSIGNMENTS;
   } catch {
     return DEFAULT_PLAN_ASSIGNMENTS;
   }
@@ -263,7 +255,7 @@ export function saveAthletePlanAssignments(assignments: Record<string, AthletePl
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ athletePlanAssignments: assignments }),
-    }).catch(() => {});
+    }).catch((err) => console.error('Erro ao sincronizar atribuições com nuvem:', err));
 
     window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
     window.dispatchEvent(new Event('femperf_credentials_updated'));
@@ -297,58 +289,132 @@ export function assignPlanToTarget(
 
 export function unassignPlan(assignmentId: string): void {
   const current = getStoredAthletePlanAssignments();
-  delete current[assignmentId];
+  if (current[assignmentId]) {
+    current[assignmentId].active = false;
+  }
   saveAthletePlanAssignments(current);
 }
 
-export function toggleAthletePlanAssignment(athleteId: string, athleteName: string, planId: string): boolean {
+export function toggleAthletePlanAssignment(
+  athleteId: string,
+  athleteName: string,
+  planId: string,
+  forceState?: boolean
+): boolean {
   const current = getStoredAthletePlanAssignments();
   const id = `athlete_${athleteId}_${planId}`;
-  const isCurrentlyAssigned = Boolean(current[id]?.active);
 
-  if (isCurrentlyAssigned) {
-    delete current[id];
-    saveAthletePlanAssignments(current);
-    return false;
+  let isCurrentlyActive = false;
+  if (current[id] !== undefined) {
+    isCurrentlyActive = Boolean(current[id].active);
   } else {
-    current[id] = {
-      id,
-      targetType: 'athlete',
-      targetId: athleteId,
-      targetName: athleteName,
-      planId,
-      assignedAt: new Date().toISOString(),
-      assignedBy: 'Treinador',
-      active: true,
-    };
-    saveAthletePlanAssignments(current);
-    return true;
+    // If not set directly, check position or all
+    const posActive = Boolean(current[`pos_GR_${planId}`]?.active) || Boolean(current[`pos_Campo_${planId}`]?.active);
+    const allActive = Boolean(current[`all_all_${planId}`]?.active);
+    isCurrentlyActive = posActive || allActive;
   }
+
+  const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
+
+  current[id] = {
+    id,
+    targetType: 'athlete',
+    targetId: athleteId,
+    targetName: athleteName,
+    planId,
+    assignedAt: new Date().toISOString(),
+    assignedBy: 'Treinador',
+    active: nextActive,
+  };
+
+  saveAthletePlanAssignments(current);
+  return nextActive;
 }
 
-export function togglePositionPlanAssignment(position: 'GR' | 'Campo', planId: string): boolean {
+export function togglePositionPlanAssignment(
+  position: 'GR' | 'Campo',
+  planId: string,
+  athletesList: Athlete[],
+  forceState?: boolean
+): boolean {
   const current = getStoredAthletePlanAssignments();
-  const id = `pos_${position}_${planId}`;
-  const isCurrentlyAssigned = Boolean(current[id]?.active);
+  const posKey = `pos_${position}_${planId}`;
+  const isCurrentlyActive = Boolean(current[posKey]?.active);
+  const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
 
-  if (isCurrentlyAssigned) {
-    delete current[id];
-    saveAthletePlanAssignments(current);
-    return false;
-  } else {
-    current[id] = {
-      id,
-      targetType: 'position',
-      targetId: position,
-      targetName: position === 'GR' ? 'Todas as Guarda-Redes (GR)' : 'Todas as Jogadoras de Campo',
+  current[posKey] = {
+    id: posKey,
+    targetType: 'position',
+    targetId: position,
+    targetName: position === 'GR' ? 'Todas as Guarda-Redes (GR)' : 'Todas as Jogadoras de Campo',
+    planId,
+    assignedAt: new Date().toISOString(),
+    assignedBy: 'Treinador',
+    active: nextActive,
+  };
+
+  // Sync every athlete in that position so their individual checkboxes update consistently
+  athletesList.forEach((ath) => {
+    const isThisPos = position === 'GR'
+      ? (ath.position === 'GR' || isGoalkeeper(ath.name))
+      : (ath.position !== 'GR' && !isGoalkeeper(ath.name));
+
+    if (isThisPos) {
+      const athKey = `athlete_${ath.id}_${planId}`;
+      current[athKey] = {
+        id: athKey,
+        targetType: 'athlete',
+        targetId: ath.id,
+        targetName: ath.name,
+        planId,
+        assignedAt: new Date().toISOString(),
+        assignedBy: 'Treinador',
+        active: nextActive,
+      };
+    }
+  });
+
+  saveAthletePlanAssignments(current);
+  return nextActive;
+}
+
+export function toggleAllSquadPlanAssignment(
+  planId: string,
+  athletesList: Athlete[],
+  forceState?: boolean
+): boolean {
+  const current = getStoredAthletePlanAssignments();
+  const allKey = `all_all_${planId}`;
+  const isCurrentlyActive = Boolean(current[allKey]?.active);
+  const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
+
+  current[allKey] = {
+    id: allKey,
+    targetType: 'all',
+    targetId: 'all',
+    targetName: 'Todo o Plantel',
+    planId,
+    assignedAt: new Date().toISOString(),
+    assignedBy: 'Treinador',
+    active: nextActive,
+  };
+
+  athletesList.forEach((ath) => {
+    const athKey = `athlete_${ath.id}_${planId}`;
+    current[athKey] = {
+      id: athKey,
+      targetType: 'athlete',
+      targetId: ath.id,
+      targetName: ath.name,
       planId,
       assignedAt: new Date().toISOString(),
       assignedBy: 'Treinador',
-      active: true,
+      active: nextActive,
     };
-    saveAthletePlanAssignments(current);
-    return true;
-  }
+  });
+
+  saveAthletePlanAssignments(current);
+  return nextActive;
 }
 
 /**
@@ -362,30 +428,43 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   const isGk = athlete.position === 'GR' || (athlete.name ? isGoalkeeper(athlete.name) : false);
   const position = isGk ? 'GR' : 'Campo';
 
-  const assignedPlanIds = new Set<string>();
+  const seenIds = new Set<string>();
 
-  Object.values(assignments).forEach((asgn) => {
-    if (!asgn || !asgn.active) return;
-    if (asgn.targetType === 'all') {
-      assignedPlanIds.add(asgn.planId);
-    } else if (asgn.targetType === 'position' && asgn.targetId === position) {
-      assignedPlanIds.add(asgn.planId);
-    } else if (asgn.targetType === 'athlete' && (asgn.targetId === athlete.id || asgn.targetName?.toLowerCase() === athlete.name.toLowerCase())) {
-      assignedPlanIds.add(asgn.planId);
+  return allPlans.filter((plan) => {
+    if (plan.id === 'mobility-gk-pre-training') return false;
+
+    // 1. Direct explicit athlete assignment takes priority
+    const direct = assignments[`athlete_${athlete.id}_${plan.id}`];
+    if (direct !== undefined) {
+      if (direct.active && !seenIds.has(plan.id)) {
+        seenIds.add(plan.id);
+        return true;
+      }
+      return false; // Explicitly removed / unassigned by coach
     }
+
+    // 2. Position assignment
+    const posAsgn = assignments[`pos_${position}_${plan.id}`];
+    if (posAsgn !== undefined && posAsgn.active) {
+      if (!seenIds.has(plan.id)) {
+        seenIds.add(plan.id);
+        return true;
+      }
+      return false;
+    }
+
+    // 3. All-squad assignment
+    const allAsgn = assignments[`all_all_${plan.id}`];
+    if (allAsgn !== undefined && allAsgn.active) {
+      if (!seenIds.has(plan.id)) {
+        seenIds.add(plan.id);
+        return true;
+      }
+      return false;
+    }
+
+    return false;
   });
-
-  // Default fallback: If athlete is GK, ensure the default GK plan is included
-  if (isGk) {
-    assignedPlanIds.add('mobilidade_pre_treino_gr');
-  }
-
-  // Deduplicate between mobility-gk-pre-training and mobilidade_pre_treino_gr
-  if (assignedPlanIds.has('mobilidade_pre_treino_gr') && assignedPlanIds.has('mobility-gk-pre-training')) {
-    assignedPlanIds.delete('mobility-gk-pre-training');
-  }
-
-  return allPlans.filter((p) => assignedPlanIds.has(p.id));
 }
 
 /**

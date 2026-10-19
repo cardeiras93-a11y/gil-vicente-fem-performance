@@ -92,7 +92,7 @@ export async function GET(request: Request) {
             } else if (item.key === 'mobility_plans' && item.value) {
               result.mobilityPlans = item.value;
             } else if (item.key === 'athlete_plan_assignments' && item.value) {
-              result.athletePlanAssignments = { ...result.athletePlanAssignments, ...item.value };
+              result.athletePlanAssignments = item.value;
             }
           });
         }
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
           if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
           if (fallbackCreds.physioAttendance) result.physioAttendance = fallbackCreds.physioAttendance;
           if (fallbackCreds.mobilityPlans) result.mobilityPlans = fallbackCreds.mobilityPlans;
-          if (fallbackCreds.athletePlanAssignments) result.athletePlanAssignments = { ...result.athletePlanAssignments, ...fallbackCreds.athletePlanAssignments };
+          if (fallbackCreds.athletePlanAssignments) result.athletePlanAssignments = fallbackCreds.athletePlanAssignments;
         }
       } catch (e) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
@@ -269,7 +269,7 @@ export async function POST(request: Request) {
       current.mobilityPlans = body.mobilityPlans;
     }
     if (body.athletePlanAssignments !== undefined) {
-      current.athletePlanAssignments = { ...(current.athletePlanAssignments || {}), ...body.athletePlanAssignments };
+      current.athletePlanAssignments = body.athletePlanAssignments;
     }
     if (body.deletedAthletes !== undefined) {
       const mergedDeleted = Array.from(new Set([...(current.deletedAthletes || []), ...body.deletedAthletes]));
