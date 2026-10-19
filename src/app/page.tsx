@@ -15,6 +15,7 @@ import { AthleteProfileModal } from '@/components/AthleteProfileModal';
 import { AppAccessGate } from '@/components/AppAccessGate';
 import { ReminderBanner } from '@/components/ReminderBanner';
 import { AthleteComplementaryWorkCard } from '@/components/AthleteComplementaryWorkCard';
+import { AthleteMobilityPlanCard } from '@/components/AthleteMobilityPlanCard';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { isGoalkeeper } from '@/lib/data';
@@ -372,6 +373,9 @@ function MainAppContent() {
               activeAthlete={activeAthlete}
               onSelectTab={(tab) => setActiveTab(tab)}
             />
+
+            {/* Pre-Training Mobility Plan (Bilingual PT/EN with Dynamic Drawings) */}
+            <AthleteMobilityPlanCard athlete={activeAthlete} />
 
             {/* Complementary Work / Extra-Treino & Recuperação */}
             <AthleteComplementaryWorkCard />

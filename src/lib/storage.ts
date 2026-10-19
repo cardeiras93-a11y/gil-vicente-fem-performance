@@ -486,6 +486,19 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem('femperf_physio_attendance_status', JSON.stringify(data.data.physioAttendance));
       }
 
+      // 12. Mobility Plans: Cloud sync
+      if (data.data.mobilityPlans && Array.isArray(data.data.mobilityPlans) && data.data.mobilityPlans.length > 0) {
+        localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(data.data.mobilityPlans));
+      }
+
+      // 13. Athlete Plan Assignments: Cloud sync
+      if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
+        const local = JSON.parse(localStorage.getItem('femperf_athlete_plan_assignments_v1') || '{}');
+        const merged = { ...data.data.athletePlanAssignments, ...local };
+        localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(merged));
+      }
+
+      window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
       window.dispatchEvent(new Event('femperf_credentials_updated'));
       dispatchDataUpdatedEvent();
       return true;

@@ -89,6 +89,10 @@ export async function GET(request: Request) {
               result.reminderConfig = item.value;
             } else if (item.key === 'deadline_config' && item.value) {
               result.deadlineConfig = item.value;
+            } else if (item.key === 'mobility_plans' && item.value) {
+              result.mobilityPlans = item.value;
+            } else if (item.key === 'athlete_plan_assignments' && item.value) {
+              result.athletePlanAssignments = { ...result.athletePlanAssignments, ...item.value };
             }
           });
         }
@@ -120,6 +124,8 @@ export async function GET(request: Request) {
           if (fallbackCreds.reminderConfig) result.reminderConfig = fallbackCreds.reminderConfig;
           if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
           if (fallbackCreds.physioAttendance) result.physioAttendance = fallbackCreds.physioAttendance;
+          if (fallbackCreds.mobilityPlans) result.mobilityPlans = fallbackCreds.mobilityPlans;
+          if (fallbackCreds.athletePlanAssignments) result.athletePlanAssignments = { ...result.athletePlanAssignments, ...fallbackCreds.athletePlanAssignments };
         }
       } catch (e) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
@@ -224,6 +230,8 @@ export async function POST(request: Request) {
           if (fromCloud.reminderConfig) current.reminderConfig = fromCloud.reminderConfig;
           if (fromCloud.deadlineConfig) current.deadlineConfig = { ...fromCloud.deadlineConfig, ...(current.deadlineConfig || {}) };
           if (fromCloud.physioAttendance) current.physioAttendance = { ...fromCloud.physioAttendance, ...current.physioAttendance };
+          if (fromCloud.mobilityPlans) current.mobilityPlans = fromCloud.mobilityPlans;
+          if (fromCloud.athletePlanAssignments) current.athletePlanAssignments = { ...fromCloud.athletePlanAssignments, ...(current.athletePlanAssignments || {}) };
         }
       } catch {}
     }
@@ -256,6 +264,12 @@ export async function POST(request: Request) {
     }
     if (body.editedProfiles !== undefined) {
       current.editedProfiles = { ...(current.editedProfiles || {}), ...body.editedProfiles };
+    }
+    if (body.mobilityPlans !== undefined) {
+      current.mobilityPlans = body.mobilityPlans;
+    }
+    if (body.athletePlanAssignments !== undefined) {
+      current.athletePlanAssignments = { ...(current.athletePlanAssignments || {}), ...body.athletePlanAssignments };
     }
     if (body.deletedAthletes !== undefined) {
       const mergedDeleted = Array.from(new Set([...(current.deletedAthletes || []), ...body.deletedAthletes]));
@@ -338,6 +352,12 @@ export async function POST(request: Request) {
         }
         if (body.deadlineConfig !== undefined) {
           updates.push({ key: 'deadline_config', value: current.deadlineConfig, updated_at: new Date().toISOString() });
+        }
+        if (body.mobilityPlans !== undefined) {
+          updates.push({ key: 'mobility_plans', value: current.mobilityPlans, updated_at: new Date().toISOString() });
+        }
+        if (body.athletePlanAssignments !== undefined) {
+          updates.push({ key: 'athlete_plan_assignments', value: current.athletePlanAssignments, updated_at: new Date().toISOString() });
         }
 
         if (updates.length > 0) {

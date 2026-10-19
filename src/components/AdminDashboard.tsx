@@ -17,6 +17,7 @@ import { SquadMuscleHeatmap } from './SquadMuscleHeatmap';
 import { MatchDashboard } from './MatchDashboard';
 import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import { KioskModeView } from './KioskModeView';
+import { AdminMobilityManager } from './AdminMobilityManager';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
@@ -113,14 +114,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const [searchFilter, setSearchFilter] = useState<string>('');
 
-  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes'>(() => {
+  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_admin_active_tab') as any) || 'schedule';
     }
     return 'schedule';
   });
 
-  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes') => {
+  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_active_tab', tab);
@@ -1448,6 +1449,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
           <button
             type="button"
+            onClick={() => setActiveTab('mobility')}
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
+              activeTab === 'mobility'
+                ? 'bg-red-600 text-white shadow-md shadow-red-600/30 border border-red-500'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
+            }`}
+          >
+            <Dumbbell className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400 shrink-0" />
+            <span>Mobilidade & Planos</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('pins')}
             className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
               activeTab === 'pins'
@@ -2766,6 +2780,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           <MatchDashboard userRole="admin" />
         ) : activeTab === 'matchMinutes' ? (
           <MatchMinutesDashboard />
+        ) : activeTab === 'mobility' ? (
+          <AdminMobilityManager />
         ) : (
           /* PIN Management Section */
           <div className="space-y-6 animate-fade-in">

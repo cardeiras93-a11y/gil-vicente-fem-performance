@@ -1,11 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Athlete } from '@/lib/types';
+import { Athlete, MobilityPlan } from '@/lib/types';
 import { getAthletePin, setAthletePin, getAthleteAvatar, setAthleteAvatar } from '@/lib/storage';
+import { getPlansForAthlete } from '@/lib/mobilityPlans';
+import { MobilityPlanModal } from './MobilityPlanModal';
 import { secureFetch } from '@/lib/authGuard';
 import { useLanguage } from '@/context/LanguageContext';
-import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert } from 'lucide-react';
+import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert, Dumbbell, ChevronRight } from 'lucide-react';
 
 interface AthleteProfileModalProps {
   athlete: Athlete | null;
@@ -28,6 +30,8 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
   const [confirmPin, setConfirmPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [assignedPlans, setAssignedPlans] = useState<MobilityPlan[]>([]);
+  const [selectedMobilityPlan, setSelectedMobilityPlan] = useState<MobilityPlan | null>(null);
 
   useEffect(() => {
     if (athlete) {
@@ -37,6 +41,7 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
       setConfirmPin('');
       setPinError('');
       setSuccessMessage(null);
+      setAssignedPlans(getPlansForAthlete(athlete));
     }
   }, [athlete, isOpen]);
 
@@ -217,6 +222,32 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
           </div>
         </div>
 
+        {/* Mobility Plan Section (if assigned) */}
+        {assignedPlans.length > 0 && (
+          <div className="rounded-2xl border border-teal-500/30 bg-teal-950/20 p-4 space-y-2.5">
+            <div className="flex items-center justify-between border-b border-teal-500/20 pb-2">
+              <span className="text-xs font-black uppercase text-teal-300 flex items-center space-x-1.5">
+                <Dumbbell className="h-4 w-4 text-teal-400" />
+                <span>Plano de Mobilidade Atribuído</span>
+              </span>
+              <span className="text-[10px] font-black text-teal-300 bg-teal-500/20 border border-teal-500/30 px-2 py-0.5 rounded-full">
+                {assignedPlans[0].durationMinutes} Min
+              </span>
+            </div>
+            <p className="text-xs font-bold text-slate-200 leading-snug">
+              {assignedPlans[0].titlePt}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedMobilityPlan(assignedPlans[0])}
+              className="w-full flex items-center justify-center space-x-1.5 rounded-xl bg-teal-600/30 hover:bg-teal-600/50 border border-teal-500/50 py-2 px-3 text-xs font-black text-teal-200 hover:text-white transition-all shadow-sm active:scale-98 cursor-pointer"
+            >
+              <span>Abrir Plano c/ Desenhos (PT / EN)</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* 2. Redefine PIN Section */}
         <div className="rounded-2xl border border-slate-800 bg-dark-surface p-4 space-y-3">
           <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
@@ -288,6 +319,15 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
           </button>
         </div>
       </div>
+
+      {selectedMobilityPlan && (
+        <MobilityPlanModal
+          plan={selectedMobilityPlan}
+          athlete={athlete}
+          isOpen={Boolean(selectedMobilityPlan)}
+          onClose={() => setSelectedMobilityPlan(null)}
+        />
+      )}
     </div>
   );
 };

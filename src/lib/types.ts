@@ -225,3 +225,53 @@ export interface LateSubmissionAuthorization {
   grantedBy?: string; // e.g. "Admin"
   notes?: string;
 }
+
+export interface MobilityExercise {
+  id: string;
+  namePt: string;
+  nameEn: string;
+  seriesRepsPt: string; // e.g. "2x 8 reps / lado"
+  seriesRepsEn: string; // e.g. "2x 8 reps / side"
+  restPt: string; // e.g. "Repouso: 20s"
+  restEn: string; // e.g. "Rest: 20s"
+  descriptionPt: string;
+  descriptionEn: string;
+  drawingKey: string; // e.g. "rotation-band-reach"
+}
+
+export interface MobilityBlock {
+  id: string;
+  number: string; // e.g. "01", "02", "03", "04"
+  titlePt: string;
+  titleEn: string;
+  durationMinutes: number; // e.g. 5
+  exercises: MobilityExercise[];
+}
+
+export interface MobilityPlan {
+  id: string;
+  titlePt: string;
+  titleEn: string;
+  categoryPt: string;
+  categoryEn: string;
+  targetPosition?: 'GR' | 'Campo' | 'all';
+  durationMinutes: number;
+  warmupPt: string;
+  warmupEn: string;
+  finisherPt: string;
+  finisherEn: string;
+  blocks: MobilityBlock[];
+  updatedAt?: string;
+}
+
+export interface AthletePlanAssignment {
+  id: string;
+  targetType: 'athlete' | 'position' | 'all';
+  targetId: string; // athleteId (e.g. 'ath-14') or position ('GR') or 'all'
+  targetName?: string;
+  planId: string;
+  assignedAt: string;
+  assignedBy?: string;
+  active: boolean;
+  notes?: string;
+}
