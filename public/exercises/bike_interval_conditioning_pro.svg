@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloorBike" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="bikeFrameGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="kitGradBike" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+    <filter id="glowLime" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="bikeShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.2" />
+    </filter>
+  </defs>
+
+  <style>
+    @keyframes pedalSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulsePulse {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.96); }
+    }
+    .pedal-rotating {
+      transform-origin: 178px 120px;
+      animation: pedalSpin 1.1s linear infinite;
+    }
+    .hud-pulse {
+      animation: pulsePulse 2s ease-in-out infinite;
+    }
+  </style>
+
+  <!-- Fundo do Ginásio -->
+  <rect width="320" height="180" fill="url(#gymFloorBike)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Sombra no Solo -->
+  <ellipse cx="165" cy="152" rx="70" ry="7" fill="#0f172a" opacity="0.25" />
+
+  <!-- Base Estabilizadora da Bicicleta -->
+  <line x1="105" y1="148" x2="218" y2="148" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <rect x="98" y="145" width="16" height="6" rx="2" fill="#0f172a" />
+  <rect x="208" y="145" width="16" height="6" rx="2" fill="#0f172a" />
+
+  <!-- Volante de Inércia Central com Anel de Velocidade -->
+  <circle cx="178" cy="120" r="23" fill="#1e293b" stroke="#0284c7" stroke-width="3" filter="url(#bikeShadow)" />
+  <circle cx="178" cy="120" r="15" fill="none" stroke="#38bdf8" stroke-dasharray="4 3" stroke-width="2" />
+  <circle cx="178" cy="120" r="6" fill="#0f172a" />
+
+  <!-- Rotação Pedaleira Dinâmica -->
+  <g class="pedal-rotating">
+    <line x1="178" y1="120" x2="190" y2="134" stroke="#e2e8f0" stroke-width="3.5" stroke-linecap="round" />
+    <rect x="187" y="132" width="7" height="4" rx="1" fill="#f59e0b" />
+    <line x1="178" y1="120" x2="166" y2="106" stroke="#94a3b8" stroke-width="3.5" stroke-linecap="round" />
+    <rect x="163" y="104" width="7" height="4" rx="1" fill="#64748b" />
+  </g>
+
+  <!-- Quadro Metálico Aerodinâmico -->
+  <path d="M125,148 L145,95 L178,120 L195,65" stroke="url(#bikeFrameGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  <line x1="145" y1="95" x2="140" y2="82" stroke="#64748b" stroke-width="6" stroke-linecap="round" />
+  <path d="M128,82 L154,82 Q144,88 136,88 Z" fill="#0284c7" filter="url(#bikeShadow)" />
+
+  <!-- Guiador de Ciclismo / Consola Digital -->
+  <line x1="195" y1="65" x2="190" y2="52" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
+  <path d="M178,50 L204,50 L200,42" stroke="#0284c7" stroke-width="4.5" stroke-linecap="round" fill="none" />
+  <!-- Ecrã Digital c/ Luz Ativa -->
+  <rect x="192" y="42" width="12" height="8" rx="2" fill="#0284c7" />
+  <rect x="194" y="44" width="8" height="4" rx="1" fill="#38bdf8" />
+
+  <!-- Atleta em Posição de Ciclismo Desportiva (Tronco Inclinado 45°, Cadência Fluida) -->
+  <path d="M132,80 L152,80 L148,96 L128,94 Z" fill="#0f172a" />
+  <path d="M136,80 L174,56 L180,64 L144,90 Z" fill="url(#kitGradBike)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="182" cy="42" r="8" fill="#d97706" />
+  <path d="M176,38 C176,32 188,32 188,38 Z" fill="#78350f" />
+
+  <!-- Braços Firmes no Guiador -->
+  <path d="M172,62 L194,52" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+
+  <!-- Perna Ativa em Ciclismo (Perna Direita) -->
+  <path d="M142,88 L168,108" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <path d="M168,108 L188,134" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <ellipse cx="191" cy="135" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.2" />
+
+  <!-- HUD Badge de Treino de Intervalos RPM -->
+  <g class="hud-pulse" transform="translate(18, 22)">
+    <rect width="108" height="42" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#0284c7" stroke-width="1.5" filter="url(#bikeShadow)" />
+    <text x="8" y="16" font-family="Inter, sans-serif" font-size="9" font-weight="900" fill="#38bdf8">TREINO DE BIKE</text>
+    <text x="8" y="27" font-family="Inter, sans-serif" font-size="8.5" font-weight="800" fill="#a3e635">90-100 RPM • ON</text>
+    <text x="8" y="37" font-family="Inter, sans-serif" font-size="8" font-weight="700" fill="#94a3b8">70 RPM • OFF (45"/45")</text>
+  </g>
+</svg>
