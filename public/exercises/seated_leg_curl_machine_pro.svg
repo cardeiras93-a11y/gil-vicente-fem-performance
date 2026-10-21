@@ -14,55 +14,76 @@
       <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
   </defs>
 
+  <!-- Fundo do Ginásio -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
-
-  <!-- Torre de Cargas (à esquerda) -->
-  <rect x="25" y="30" width="30" height="115" rx="3" fill="url(#machGrad)" filter="url(#dropShadow)" />
-  <!-- Encosto e Assento da Máquina (Total Suporte Lombar) -->
-  <rect x="90" y="55" width="12" height="52" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
-  <rect x="95" y="105" width="55" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
-  <!-- Estrutura metálica do banco -->
-  <line x1="90" y1="117" x2="90" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
-  <line x1="145" y1="117" x2="145" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
   <!-- Sombra no solo -->
-  <ellipse cx="150" cy="150" rx="65" ry="7" fill="#0f172a" opacity="0.2" />
+  <ellipse cx="150" cy="152" rx="70" ry="7" fill="#0f172a" opacity="0.2" />
 
-  <!-- Cabeça e Tronco 100% Apoiados no Encosto (Zero Esforço Lombar) -->
-  <circle cx="108" cy="46" r="8" fill="#d97706" />
-  <path d="M102,42 C102,36 114,36 114,42 Z" fill="#78350f" />
-  <path d="M104,56 L124,56 L122,96 L104,96 Z" fill="url(#kitGrad)" />
+  <!-- Torre de Cargas (à esquerda) -->
+  <rect x="25" y="28" width="30" height="120" rx="3" fill="url(#machGrad)" filter="url(#dropShadow)" />
+  <line x1="32" y1="40" x2="48" y2="40" stroke="#94a3b8" stroke-width="2" />
+  <line x1="32" y1="50" x2="48" y2="50" stroke="#94a3b8" stroke-width="2" />
+  <line x1="32" y1="60" x2="48" y2="60" stroke="#ef4444" stroke-width="2.5" />
+  <line x1="32" y1="70" x2="48" y2="70" stroke="#94a3b8" stroke-width="2" />
+
+  <!-- Encosto e Assento da Máquina (Total Suporte Lombar) -->
+  <rect x="88" y="52" width="12" height="54" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="94" y="104" width="56" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <!-- Estrutura metálica do banco -->
+  <line x1="88" y1="116" x2="88" y2="148" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+  <line x1="144" y1="116" x2="144" y2="148" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Cabeça e Tronco Apoiados no Encosto -->
+  <circle cx="106" cy="44" r="8.5" fill="#d97706" />
+  <path d="M100,40 C100,34 112,34 112,40 Z" fill="#78350f" />
+  <path d="M102,54 L122,54 L120,95 L102,95 Z" fill="url(#kitGrad)" />
 
   <!-- Bacia / Calções no Assento -->
-  <path d="M104,96 L130,96 L128,110 L104,110 Z" fill="#0f172a" />
+  <path d="M102,95 L128,95 L126,108 L102,108 Z" fill="#0f172a" />
 
-  <!-- Rolo Superior a Fixar as Coxas (Thigh Pad) -->
-  <circle cx="148" cy="98" r="8" fill="#0f172a" stroke="#64748b" stroke-width="2" />
-
-  <!-- Coxas Apoiadas no Assento a 90° de Flexão da Anca (Isquios em Longo Comprimento) -->
-  <path d="M125,104 L170,104" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
-
-  <!-- Braço de Alavanca da Máquina e Rolo Inferior atrás dos Tornozelos -->
-  <path d="M170,104 L165,138" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
-  <!-- Rolo da Máquina atrás do Tendão de Aquiles -->
-  <circle cx="170" cy="136" r="7" fill="#0f172a" stroke="#0284c7" stroke-width="2" />
-  <rect x="156" y="136" width="16" height="6" rx="3" fill="#ffffff" />
+  <!-- Rolo Superior a Travar as Coxas (Thigh Pad) -->
+  <circle cx="148" cy="98" r="8" fill="#1e293b" stroke="#0284c7" stroke-width="2" filter="url(#dropShadow)" />
 
   <!-- Mãos a segurar os manípulos laterais -->
-  <line x1="112" y1="88" x2="118" y2="108" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-  <circle cx="118" cy="110" r="3" fill="#334155" />
+  <line x1="110" y1="88" x2="116" y2="108" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <circle cx="116" cy="110" r="3" fill="#334155" />
 
-  <!-- Ponto de Foco Isquiotibiais -->
-  <path d="M135,108 L165,114" stroke="#ef4444" stroke-width="3.5" />
+  <!-- Coxas Apoiadas no Assento -->
+  <path d="M124,103 L168,103" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
 
-  <!-- Seta Curva de Flexão do Joelho (Puxada para trás) -->
-  <g filter="url(#dropShadow)">
-    <path d="M185,120 Q180,138 165,142" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
-    <polygon points="168,146 158,142 165,137" fill="#2563eb" />
+  <!-- ==================== POSIÇÃO GHOST INICIAL (Perna Estendida no Topo) ==================== -->
+  <g opacity="0.38">
+    <!-- Perna quase horizontal antes de fletir -->
+    <path d="M168,103 L216,108" stroke="#d97706" stroke-width="7.5" stroke-dasharray="3,3" stroke-linecap="round" />
+    <!-- Rolo da máquina na posição alta atrás do tornozelo -->
+    <circle cx="212" cy="118" r="7" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="2,2" />
+    <rect x="214" y="104" width="12" height="6" rx="2" fill="#94a3b8" />
   </g>
+
+  <!-- ==================== POSIÇÃO FINAL ATIVA (Flexão Máxima sob o Assento) ==================== -->
+  <!-- Alavanca da Máquina Fletida para Trás -->
+  <path d="M168,103 L164,138" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <!-- Rolo da Máquina atrás do Tendão de Aquiles -->
+  <circle cx="170" cy="136" r="7.5" fill="#1e293b" stroke="#0284c7" stroke-width="2" />
+  <rect x="156" y="136" width="16" height="6" rx="3" fill="#ffffff" />
+
+  <!-- Ponto de Foco Muscular nos Isquiotibiais (Face Posterior da Coxa) -->
+  <path d="M132,108 L165,114" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
+
+  <!-- ==================== VETOR DE MOVIMENTO / ARCO DE FLEXÃO ==================== -->
+  <g filter="url(#dropShadow)">
+    <!-- Linha curva de arco mostrando a puxada dos calcanhares para trás -->
+    <path d="M210,122 Q198,142 176,144" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+    <polygon points="168,143 178,138 178,148" fill="#2563eb" />
+  </g>
+
+  <!-- Tag Identificadora -->
+  <rect x="210" y="15" width="98" height="18" rx="4" fill="#0f172a" opacity="0.85" />
+  <text x="259" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">CADEIRA FLEXORA</text>
 </svg>

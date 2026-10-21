@@ -14,50 +14,67 @@
       <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
   </defs>
 
+  <!-- Fundo do Ginásio -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
-
-  <!-- Banco Romano a 45° -->
-  <line x1="195" y1="145" x2="135" y2="85" stroke="#334155" stroke-width="8" stroke-linecap="round" filter="url(#dropShadow)" />
-  <!-- Almofada da Bacia a 45° -->
-  <rect x="125" y="78" width="22" height="14" rx="3" transform="rotate(-45 136 85)" fill="#0284c7" />
-  <!-- Rolo dos Calcanhares no fundo -->
-  <circle cx="205" cy="138" r="8" fill="#0f172a" />
-  <!-- Pés do banco -->
-  <line x1="195" y1="145" x2="225" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
-  <line x1="145" y1="95" x2="115" y2="145" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
   <!-- Sombra no solo -->
-  <ellipse cx="145" cy="150" rx="55" ry="7" fill="#0f172a" opacity="0.2" />
+  <ellipse cx="150" cy="152" rx="65" ry="7" fill="#0f172a" opacity="0.2" />
 
-  <!-- Pés presos nos rolos -->
-  <ellipse cx="205" cy="136" rx="5" ry="3" fill="#ffffff" />
-  <!-- Pernas Estendidas ao longo da calha de 45° -->
-  <path d="M205,134 L145,86" stroke="#b45309" stroke-width="8.5" stroke-linecap="round" />
+  <!-- Estrutura do Banco Romano 45° -->
+  <line x1="205" y1="146" x2="142" y2="84" stroke="#334155" stroke-width="8" stroke-linecap="round" filter="url(#dropShadow)" />
+  <!-- Almofadas da Coxa / Bacia a 45° (Azul Cyan) -->
+  <rect x="130" y="76" width="24" height="15" rx="3" transform="rotate(-45 142 84)" fill="#0284c7" filter="url(#dropShadow)" />
+  <!-- Rolo de Bloqueio dos Tornozelos -->
+  <circle cx="214" cy="138" r="8" fill="#1e293b" stroke="#0284c7" stroke-width="1.5" />
+  <!-- Pés e Suporte do Banco -->
+  <line x1="200" y1="146" x2="235" y2="146" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+  <line x1="150" y1="92" x2="118" y2="146" stroke="#475569" stroke-width="6" stroke-linecap="round" />
 
-  <!-- Bacia / Calções apoiados logo abaixo da crista ilíaca -->
-  <path d="M142,84 L128,88 L134,104 L148,98 Z" fill="#0f172a" />
-  <circle cx="140" cy="92" r="6" fill="#ef4444" opacity="0.75" />
+  <!-- Pés Presos nos Rolos da Máquina -->
+  <ellipse cx="216" cy="136" rx="6" ry="4" fill="#1e3a8a" />
+  <!-- Pernas Estendidas ao Longo do Suporte de 45° -->
+  <path d="M214,134 L152,86" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
 
-  <!-- Tronco em Extensão Alinhada com a Anca (Coluna neutra/relaxada, sem hiperextensão) -->
-  <path d="M132,84 L88,68 L94,56 L138,72 Z" fill="url(#kitGrad)" />
+  <!-- Bacia / Calções Apoiados na Almofada -->
+  <path d="M148,84 L132,88 L138,104 L154,98 Z" fill="#0f172a" />
+  <circle cx="145" cy="92" r="6" fill="#ef4444" opacity="0.8" />
 
-  <!-- Cabeça e Braços cruzados no peito -->
-  <circle cx="80" cy="58" r="8" fill="#d97706" />
-  <path d="M74,54 C74,48 86,48 86,54 Z" fill="#78350f" />
-  <!-- Braços cruzados no peito -->
-  <path d="M96,62 L112,68" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
-
-  <!-- Foco Glúteo e Isquiotibiais Superiores -->
-  <path d="M152,94 L175,112" stroke="#ef4444" stroke-width="3" stroke-dasharray="2,2" />
-
-  <!-- Seta de Extensão da Anca até 180° sem passar da linha -->
-  <g filter="url(#dropShadow)">
-    <path d="M98,82 Q105,68 114,64" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
-    <polygon points="110,60 120,64 114,70" fill="#2563eb" />
+  <!-- ==================== POSIÇÃO INICIAL GHOST (Flexão da Anca / Tronco em Baixo) ==================== -->
+  <g opacity="0.38">
+    <!-- Tronco Fletido para Baixo a 90° -->
+    <path d="M136,92 L112,126" stroke="#1e3a8a" stroke-width="12" stroke-dasharray="3,3" stroke-linecap="round" />
+    <!-- Cabeça em baixo -->
+    <circle cx="106" cy="138" r="8" fill="#d97706" />
+    <path d="M100,135 C100,128 112,128 112,135 Z" fill="#78350f" />
+    <!-- Braços cruzados no peito em baixo -->
+    <line x1="118" y1="116" x2="128" y2="126" stroke="#d97706" stroke-width="4" stroke-dasharray="2,2" />
   </g>
+
+  <!-- ==================== POSIÇÃO FINAL ATIVA (Extensão a 180° Alinhada com as Coxas) ==================== -->
+  <!-- Tronco em Extensão Potente (Glute-Focused, Sem Hiperextensão Lombar) -->
+  <path d="M136,86 L90,68 L96,56 L142,74 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Braços Cruzados no Peito -->
+  <circle cx="82" cy="58" r="8.5" fill="#d97706" />
+  <path d="M75,54 C75,47 88,47 88,54 Z" fill="#78350f" />
+  <path d="M96,63 L114,70" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+
+  <!-- Destaque Muscular Glúteos & Isquiotibiais Superiores -->
+  <path d="M156,92 L180,110" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- ==================== VETOR DE MOVIMENTO / ARCO DE EXTENSÃO ==================== -->
+  <g filter="url(#dropShadow)">
+    <!-- Trajetória circular da cabeça e tronco subindo -->
+    <path d="M102,120 Q86,96 88,72" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+    <polygon points="90,64 82,74 94,74" fill="#2563eb" />
+  </g>
+
+  <!-- Tag Identificadora -->
+  <rect x="200" y="15" width="108" height="18" rx="4" fill="#0f172a" opacity="0.85" />
+  <text x="254" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">BANCO EXTENSÃO 45°</text>
 </svg>

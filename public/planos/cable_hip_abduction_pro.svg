@@ -14,59 +14,75 @@
       <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
   </defs>
 
+  <!-- Fundo do Ginásio -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
   <!-- Torre de Cabos (à esquerda) -->
-  <rect x="25" y="20" width="35" height="130" rx="3" fill="url(#towerGrad)" filter="url(#dropShadow)" />
-  <line x1="42" y1="30" x2="42" y2="145" stroke="#64748b" stroke-width="2" />
+  <rect x="25" y="24" width="34" height="125" rx="3" fill="url(#towerGrad)" filter="url(#dropShadow)" />
+  <line x1="42" y1="32" x2="42" y2="144" stroke="#64748b" stroke-width="2" />
   <!-- Roldana / Polia Baixa -->
-  <circle cx="55" cy="138" r="6" fill="#0284c7" />
-  <circle cx="55" cy="138" r="3" fill="#ffffff" />
+  <circle cx="56" cy="138" r="6.5" fill="#0284c7" />
+  <circle cx="56" cy="138" r="3" fill="#ffffff" />
 
   <!-- Sombra no solo -->
-  <ellipse cx="165" cy="150" rx="50" ry="7" fill="#0f172a" opacity="0.2" />
+  <ellipse cx="165" cy="152" rx="55" ry="7" fill="#0f172a" opacity="0.2" />
 
-  <!-- Barra de Apoio da Máquina segura pela Atleta -->
-  <line x1="60" y1="75" x2="120" y2="75" stroke="#475569" stroke-width="4" stroke-linecap="round" />
+  <!-- Barra de Apoio da Torre segura pela mão -->
+  <line x1="59" y1="78" x2="118" y2="78" stroke="#475569" stroke-width="4.5" stroke-linecap="round" />
 
-  <!-- Atleta em Pé com Tronco Ligeiramente Inclinado (Apoiada na Barra) -->
-  <!-- Mão esquerda a segurar a barra -->
-  <ellipse cx="118" cy="75" rx="4" ry="4" fill="#d97706" />
-  <path d="M118,75 L145,72" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <!-- Braço de Apoio e Mão Segurando a Barra -->
+  <ellipse cx="116" cy="78" rx="4" ry="4" fill="#d97706" />
+  <path d="M116,78 L142,74" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
 
   <!-- Cabeça e Cabelo -->
-  <circle cx="152" cy="46" r="8" fill="#d97706" />
-  <path d="M146,42 C146,36 158,36 158,42 Z" fill="#78350f" />
+  <circle cx="150" cy="46" r="8.5" fill="#d97706" />
+  <path d="M143,42 C143,35 156,35 156,42 Z" fill="#78350f" />
 
-  <!-- Tronco (Camisola Gil Vicente) -->
-  <path d="M142,56 L160,56 L154,92 L138,92 Z" fill="url(#kitGrad)" />
+  <!-- Tronco (Camisola Gil Vicente FC) -->
+  <path d="M140,56 L158,56 L152,92 L136,92 Z" fill="url(#kitGrad)" />
 
   <!-- Bacia / Calções -->
-  <path d="M136,90 L156,90 L152,106 L134,106 Z" fill="#0f172a" />
-  <circle cx="152" cy="98" r="5" fill="#ef4444" opacity="0.75" />
+  <path d="M134,90 L156,90 L152,106 L132,106 Z" fill="#0f172a" />
+  <!-- Ponto de Foco Glúteo Médio (Abdutor) -->
+  <circle cx="152" cy="98" r="5" fill="#ef4444" opacity="0.85" />
 
-  <!-- Perna de Apoio (Vertical, ligeiramente fletida) -->
-  <path d="M142,106 L144,146" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
-  <rect x="138" y="144" width="16" height="5" rx="2.5" fill="#ffffff" />
+  <!-- Perna de Apoio (Vertical e Estável) -->
+  <path d="M140,106 L142,146" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+  <rect x="135" y="144" width="16" height="5" rx="2.5" fill="#1e3a8a" />
 
-  <!-- Perna Ativa em Abdução Lateral para Fora (45°) -->
-  <path d="M148,106 L192,132" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
-  <rect x="188" y="128" width="16" height="5" rx="2.5" transform="rotate(30 196 130)" fill="#ffffff" />
-
-  <!-- Tornozeleira na perna ativa -->
-  <rect x="178" y="122" width="7" height="10" rx="2" fill="#0284c7" />
-
-  <!-- Cabo de Aço da Polia até à Tornozeleira -->
-  <path d="M55,138 L180,126" stroke="#0284c7" stroke-width="2" stroke-linecap="round" />
-
-  <!-- Seta Curva de Abdução Lateral -->
-  <g filter="url(#dropShadow)">
-    <path d="M165,138 Q182,142 198,128" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
-    <polygon points="196,124 204,126 198,133" fill="#2563eb" />
+  <!-- ==================== POSIÇÃO INICIAL GHOST (Perna Ativa em Posição Neutra) ==================== -->
+  <g opacity="0.38">
+    <!-- Perna Ativa Vertical junto à de apoio -->
+    <path d="M148,106 L150,146" stroke="#d97706" stroke-width="7" stroke-dasharray="3,3" stroke-linecap="round" />
+    <rect x="146" y="144" width="14" height="4" rx="2" fill="#64748b" />
+    <!-- Cabo até à posição neutra -->
+    <path d="M56,138 L148,138" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="2,2" />
   </g>
+
+  <!-- ==================== POSIÇÃO FINAL ATIVA (Abdução Lateral a ~40-45°) ==================== -->
+  <!-- Perna Ativa Aberta para Fora -->
+  <path d="M148,106 L194,130" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <rect x="190" y="126" width="16" height="5" rx="2.5" transform="rotate(30 198 128)" fill="#1e3a8a" />
+
+  <!-- Tornozeleira com Argola de Aço -->
+  <rect x="180" y="120" width="8" height="11" rx="2" fill="#0284c7" stroke="#0369a1" stroke-width="1" />
+
+  <!-- Cabo de Aço Esticado Sob Tensão da Polia -->
+  <path d="M56,138 L182,125" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" />
+
+  <!-- ==================== VETOR DE MOVIMENTO / SWEEP DE ABDUÇÃO ==================== -->
+  <g filter="url(#dropShadow)">
+    <!-- Trajetória em arco da perna abrindo para fora -->
+    <path d="M156,144 Q178,146 195,136" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+    <polygon points="202,132 192,134 195,142" fill="#2563eb" />
+  </g>
+
+  <!-- Tag Identificadora -->
+  <rect x="210" y="15" width="98" height="18" rx="4" fill="#0f172a" opacity="0.85" />
+  <text x="259" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">POLIA / ABDUÇÃO</text>
 </svg>
