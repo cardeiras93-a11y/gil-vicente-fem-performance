@@ -2,6 +2,168 @@ import { MobilityPlan } from "./types";
 
 export const ALL_NINE_PLANS: MobilityPlan[] = [
   {
+    id: "competitivo_maquinas_pesos_livres",
+    titlePt: "Plano de Treino \u2014 Competitivo (M\u00e1quinas & Pesos Livres)",
+    titleEn: "Competitive Training Plan \u2014 Gym Machines & Free Weights",
+    categoryPt: "Gin\u00e1sio \u2022 Competitivo (M\u00e1quinas & Pesos Livres)",
+    categoryEn: "Gym \u2022 Competitive (Machines & Free Weights)",
+    group: "inferiores",
+    groupBadgePt: "\u26a1 Competitivo \u2022 M\u00e1quinas & Pesos Livres",
+    groupBadgeEn: "\u26a1 Competitive \u2022 Gym Machines & Free Weights",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 CAMPEONATO NACIONAL II DIVIS\u00c3O FEMININA",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 WOMEN'S NATIONAL II DIVISION",
+    targetPosition: "all",
+    durationMinutes: 40,
+    durationTextPt: "40 MIN",
+    durationTextEn: "40 MIN",
+    warmupPt: "2 S\u00e9ries: 20\" Jumping Jacks + 20\" Lunge Alternado + 20\" Squat Livre",
+    warmupEn: "2 Sets: 20\" Jumping Jacks + 20\" Alternating Lunges + 20\" Bodyweight Squats",
+    finisherPt: "10 Flex\u00f5es de Bra\u00e7os no t\u00e9rmino do treino (Push-Ups)",
+    finisherEn: "10 Push-Ups upon completing workout",
+    blocks: [
+      {
+        id: "competitivo_maquinas_pesos_livres_block_01",
+        number: "01",
+        titlePt: "Agachamento & Carga Guiada",
+        titleEn: "Squat & Guided Overload",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_maquinas_pesos_livres_b01_ex1",
+            namePt: "1.1 Prensa Inclinada 45\u00b0 (Leg Press 45\u00b0)",
+            nameEn: "1.1 45\u00b0 Incline Leg Press",
+            seriesRepsPt: "3x 8-10 reps (Descida 3s)",
+            seriesRepsEn: "3x 8-10 reps (3s Eccentric)",
+            restPt: "75s entre s\u00e9ries",
+            restEn: "75s between sets",
+            descriptionPt: "Costas e cabe\u00e7a apoiadas no encosto. P\u00e9s \u00e0 largura dos ombros a meio da plataforma. Destrava a m\u00e1quina, flete os joelhos at\u00e9 90\u00b0 em 3s mantendo a bacia firme no banco e empurra pelos calcanhares sem bloquear joelhos no topo.",
+            descriptionEn: "Back and head supported on pad. Feet shoulder-width apart at mid-platform. Lower sled to 90\u00b0 knee flexion in 3s keeping hips firmly planted, then press through heels without locking knees at lockout.",
+            imageSrc: "/exercises/leg_press_45_pro.svg"
+          },
+          {
+            id: "competitivo_maquinas_pesos_livres_b01_ex2",
+            namePt: "1.2 Landmine Squat c/ Press de Ombros",
+            nameEn: "1.2 Landmine Squat to Overhead Press",
+            seriesRepsPt: "3x 6-8 reps",
+            seriesRepsEn: "3x 6-8 reps",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "P\u00e9s \u00e0 largura dos ombros segurando a ponta da barra ao peito com ambas as m\u00e3os. Agacha com controlo e sobe de forma explosiva transferindo a for\u00e7a das pernas para um press diagonal de ombros no topo.",
+            descriptionEn: "Shoulder-width stance holding barbell sleeve at chest with both hands. Squat under control and drive up explosively, transferring leg drive into a diagonal overhead press at lockout.",
+            imageSrc: "/exercises/landmine_squat_to_press_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_maquinas_pesos_livres_block_02",
+        number: "02",
+        titlePt: "Domin\u00e2ncia de Anca & Gl\u00fateos",
+        titleEn: "Hip Dominance & Glutes",
+        durationMinutes: 11,
+        durationTextPt: "11 MIN",
+        durationTextEn: "11 MIN",
+        exercises: [
+          {
+            id: "competitivo_maquinas_pesos_livres_b02_ex1",
+            namePt: "2.1 Eleva\u00e7\u00e3o P\u00e9lvica com Barra (Hip Thrust)",
+            nameEn: "2.1 Barbell Hip Thrust",
+            seriesRepsPt: "3x 8-10 reps",
+            seriesRepsEn: "3x 8-10 reps",
+            restPt: "75s entre s\u00e9ries",
+            restEn: "75s between sets",
+            descriptionPt: "Omoplatas no banco, barra na anca com prote\u00e7\u00e3o. Eleva a bacia pelos calcanhares at\u00e9 \u00e0 linha neutra, pausa 2s no topo e descida lenta.",
+            descriptionEn: "Upper back on bench, padded barbell on hips. Drive through heels to full hip extension, hold 2s at the top, controlled eccentric lower.",
+            imageSrc: "/exercises/gym_hip_thrust_barbell_pro.svg"
+          },
+          {
+            id: "competitivo_maquinas_pesos_livres_b02_ex2",
+            namePt: "2.2 Extens\u00e3o de Anca & Gl\u00fateos no Banco 45\u00b0",
+            nameEn: "2.2 45\u00b0 Hyperextension (Glute-Focused Hip Extension)",
+            seriesRepsPt: "3x 10-12 reps",
+            seriesRepsEn: "3x 10-12 reps",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "No banco 45\u00b0, apoia as almofadas abaixo da crista il\u00edaca. P\u00e9s rodados 30\u00b0 para fora e coluna dorsal ligeiramente arredondada. Desce fletindo a anca e sobe apertando ativamente os gl\u00fateos no topo.",
+            descriptionEn: "On 45\u00b0 bench, set pads below iliac crest. Feet turned out 30\u00b0 and upper back slightly rounded. Hinge at hips and drive up by squeezing glutes hard at the top without hyperextending lumbar spine.",
+            imageSrc: "/exercises/back_extension_45_glute_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_maquinas_pesos_livres_block_03",
+        number: "03",
+        titlePt: "For\u00e7a Adutora & Estabilidade P\u00e9lvica",
+        titleEn: "Adductor Strength & Hip Stability",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_maquinas_pesos_livres_b03_ex1",
+            namePt: "3.1 M\u00e1quina Adutora Sentada (Seated Adductor)",
+            nameEn: "3.1 Seated Hip Adductor Machine",
+            seriesRepsPt: "3x 10-12 reps (Pausa 2s)",
+            seriesRepsEn: "3x 10-12 reps (2s Iso Hold)",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Sentada com as costas retas no encosto e m\u00e3os nos apoios laterais. Fecha as pernas comprimindo os rolos almofadados, aperta 2s no centro em contra\u00e7\u00e3o de pico e abre de forma resistida e lenta (3s).",
+            descriptionEn: "Sit upright with back supported and hands holding side handles. Squeeze pads inward toward centerline with control, hold 2s at peak contraction, and return eccentrically in 3s.",
+            imageSrc: "/exercises/seated_adductor_machine_pro.svg"
+          },
+          {
+            id: "competitivo_maquinas_pesos_livres_b03_ex2",
+            namePt: "3.2 Abdu\u00e7\u00e3o de Anca na Polia Baixa (Cable Hip Abduction)",
+            nameEn: "3.2 Low-Cable Standing Hip Abduction",
+            seriesRepsPt: "3x 10-12 reps / perna",
+            seriesRepsEn: "3x 10-12 reps / leg",
+            restPt: "45s cada perna",
+            restEn: "45s each leg",
+            descriptionPt: "Tornozeleira na polia baixa, posiciona-te lateralmente \u00e0 torre segurando o apoio. Tronco est\u00e1vel e vertical; abduz a perna externa lateralmente sem rodar a bacia. Pausa 1s no topo e regressa devagar.",
+            descriptionEn: "Strap ankle cuff to low pulley, stand sideways holding tower. Torso upright; abduct outer leg outward against cable resistance without rotating pelvis. Pause 1s, return slowly.",
+            imageSrc: "/exercises/cable_hip_abduction_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_maquinas_pesos_livres_block_04",
+        number: "04",
+        titlePt: "Cadeia Posterior & Controlo Exc\u00eantrico",
+        titleEn: "Posterior Chain & Machine Control",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_maquinas_pesos_livres_b04_ex1",
+            namePt: "4.1 Peso Morto Romeno c/ Halteres (RDL)",
+            nameEn: "4.1 Dumbbell Romanian Deadlift (RDL)",
+            seriesRepsPt: "3x 8-10 reps (3s descida)",
+            seriesRepsEn: "3x 8-10 reps (3s ecc.)",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "P\u00e9s \u00e0 largura das ancas com halteres junto \u00e0s coxas. Recua a anca mantendo a coluna 100% neutra e joelhos macios, descendo os halteres abaixo dos joelhos em 3s.",
+            descriptionEn: "Hip-width stance with dumbbells at thighs. Hinge hips back with neutral spine and soft knees, lowering weights below knees in 3s.",
+            imageSrc: "/exercises/dumbbell_rdl_bilateral_pro.svg"
+          },
+          {
+            id: "competitivo_maquinas_pesos_livres_b04_ex2",
+            namePt: "4.2 Flexora Sentada na M\u00e1quina (Seated Leg Curl)",
+            nameEn: "4.2 Seated Hamstring Leg Curl Machine",
+            seriesRepsPt: "3x 8-10 reps (3s descida)",
+            seriesRepsEn: "3x 8-10 reps (3s ecc.)",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Sentada com costas apoiadas e almofada superior a travar as coxas. Rolo atr\u00e1s do tend\u00e3o de Aquiles. Puxa os calcanhares para tr\u00e1s com pot\u00eancia, segura 1s e controla a subida exc\u00eantrica em 3s.",
+            descriptionEn: "Seated with back supported and thighs locked under top pad. Lower roller behind Achilles tendon. Curl heels back under seat, pause 1s, control eccentric return over 3s.",
+            imageSrc: "/exercises/seated_leg_curl_machine_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
+  {
     id: "competitivo_ginasio_potencia",
     titlePt: "Plano de Treino \u2014 Competitivo",
     titleEn: "Competitive Training Plan \u2014 Gym & Functional Power",
@@ -1308,7 +1470,7 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
     groupBadgeEn: "\ud83e\udde4 Goalkeeper \u2022 Pre-Training Mobility",
     seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 CAMPEONATO NACIONAL II DIVIS\u00c3O FEMININA",
     seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 WOMEN'S NATIONAL II DIVISION",
-    targetPosition: "GR",
+    targetPosition: "all",
     durationMinutes: 20,
     durationTextPt: "20 MIN",
     durationTextEn: "20 MIN",
