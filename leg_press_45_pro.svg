@@ -26,7 +26,7 @@
   <rect width="320" height="180" fill="url(#gymFloor)" />
   <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Sombra da Máquina no Solo -->
+  <!-- Sombra no Solo -->
   <ellipse cx="170" cy="154" rx="100" ry="8" fill="#0f172a" opacity="0.22" />
 
   <!-- Base e Estrutura Principal Leg Press 45° -->
@@ -34,75 +34,76 @@
   <line x1="65" y1="150" x2="95" y2="90" stroke="#1e293b" stroke-width="7" stroke-linecap="round" />
   <line x1="250" y1="150" x2="250" y2="55" stroke="#1e293b" stroke-width="7" stroke-linecap="round" />
 
-  <!-- Trilho / Tubos Guia Inclinados a 45 Graus -->
+  <!-- Trilho / Tubos Guia a 45 Graus -->
   <line x1="90" y1="125" x2="255" y2="40" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
   <line x1="98" y1="133" x2="263" y2="48" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
 
-  <!-- Batente e Plataforma de Pés (Footplate fixa a 45°) -->
+  <!-- Plataforma Fixa de Pés (Footplate a 45°) -->
   <g transform="translate(242, 38) rotate(45)">
     <rect x="-18" y="-6" width="36" height="12" rx="3" fill="#0f172a" stroke="#475569" stroke-width="1.5" filter="url(#dropShadow)" />
-    <!-- Treads / ranhuras antiderrapantes -->
     <line x1="-12" y1="-3" x2="-12" y2="3" stroke="#94a3b8" stroke-width="1.5" />
     <line x1="-4" y1="-3" x2="-4" y2="3" stroke="#94a3b8" stroke-width="1.5" />
     <line x1="4" y1="-3" x2="4" y2="3" stroke="#94a3b8" stroke-width="1.5" />
     <line x1="12" y1="-3" x2="12" y2="3" stroke="#94a3b8" stroke-width="1.5" />
   </g>
 
-  <!-- Carrinho Móvel Deslizante (Sled) & Discos de Peso -->
+  <!-- Encosto e Assento do Banco (Azul Cyan #0284c7) -->
+  <rect x="75" y="70" width="12" height="60" rx="3" transform="rotate(-40 75 70)" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="100" y="118" width="32" height="10" rx="2" transform="rotate(10 100 118)" fill="#0284c7" filter="url(#dropShadow)" />
+
+  <!-- Cabeça e Tronco 100% Apoiados -->
+  <circle cx="70" cy="62" r="8.5" fill="#d97706" />
+  <path d="M62,58 C62,50 75,50 76,58 Z" fill="#78350f" />
+  <circle cx="61" cy="60" r="3" fill="#78350f" />
+  <path d="M72,70 L108,102 L98,114 L64,80 Z" fill="url(#kitGrad)" />
+  <path d="M98,114 L126,118 L122,130 L95,124 Z" fill="#0f172a" />
+
+  <!-- Braço e Mão Segurando Manípulo Lateral -->
+  <line x1="86" y1="88" x2="108" y2="114" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+  <line x1="106" y1="112" x2="114" y2="120" stroke="#334155" stroke-width="4" stroke-linecap="round" />
+
+  <!-- ==================== POSIÇÃO GHOST INICIAL (Flexão de Joelho a 90° / Fundo) ==================== -->
+  <g opacity="0.38">
+    <!-- Coxa dobrada perto do peito -->
+    <path d="M115,116 L148,82" stroke="#d97706" stroke-width="8" stroke-dasharray="3,3" stroke-linecap="round" />
+    <!-- Tíbia em direção à plataforma -->
+    <path d="M148,82 L210,50" stroke="#d97706" stroke-width="7" stroke-dasharray="3,3" stroke-linecap="round" />
+    <circle cx="148" cy="82" r="4.5" fill="#94a3b8" />
+    <!-- Sled em posição recolhida -->
+    <circle cx="152" cy="74" r="12" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="2,2" />
+  </g>
+
+  <!-- ==================== POSIÇÃO FINAL ATIVA (Empurrada a 45° / Press Concluído) ==================== -->
+  <!-- Carrinho Móvel e Discos de Peso no topo -->
   <g transform="translate(195, 75) rotate(45)">
-    <!-- Base do Sled -->
     <rect x="-16" y="-12" width="32" height="24" rx="2" fill="url(#machGrad)" />
-    <!-- Eixo porta-discos -->
     <line x1="0" y1="-12" x2="0" y2="-28" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
-    <!-- Discos de 20kg (Vermelho Oficial) -->
     <circle cx="0" cy="-22" r="16" fill="url(#plateGrad)" stroke="#7f1d1d" stroke-width="1.5" />
     <circle cx="0" cy="-22" r="6" fill="#1e293b" />
     <circle cx="0" cy="-22" r="2" fill="#ffffff" />
   </g>
 
-  <!-- Banco do Atleta: Assento e Encosto Inclinados (Almofadados Azul Cyan #0284c7) -->
-  <!-- Encosto reclinado ~45 graus -->
-  <rect x="75" y="70" width="12" height="60" rx="3" transform="rotate(-40 75 70)" fill="#0284c7" filter="url(#dropShadow)" />
-  <!-- Assento suavemente inclinado para prender a bacia -->
-  <rect x="100" y="118" width="32" height="10" rx="2" transform="rotate(10 100 118)" fill="#0284c7" filter="url(#dropShadow)" />
-
-  <!-- Atleta (Corpo / Posição Biomecânica Perfeita) -->
-  <!-- Cabeça apoiada com segurança no encosto -->
-  <circle cx="70" cy="62" r="8.5" fill="#d97706" />
-  <path d="M62,58 C62,50 75,50 76,58 Z" fill="#78350f" />
-  <circle cx="61" cy="60" r="3" fill="#78350f" /> <!-- Coque / cabelo -->
-
-  <!-- Tronco apoiado 100% no encosto (Proteção Lombar) -->
-  <path d="M72,70 L108,102 L98,114 L64,80 Z" fill="url(#kitGrad)" />
-
-  <!-- Bacia e Calções no assento -->
-  <path d="M98,114 L126,118 L122,130 L95,124 Z" fill="#0f172a" />
-
-  <!-- Braço e Mão segurando no manípulo de segurança lateral -->
-  <line x1="86" y1="88" x2="108" y2="114" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-  <line x1="106" y1="112" x2="114" y2="120" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-
-  <!-- Membro Inferior em Posição de Trabalho (Press 45°) -->
-  <!-- Coxa / Fémur (Quadríceps e Glúteos) empurrando a 45° -->
+  <!-- Perna em Extensão Potente (Sem Bloquear o Joelho) -->
   <path d="M115,116 L175,90" stroke="#d97706" stroke-width="9.5" stroke-linecap="round" />
-  <!-- Destaque muscular no Quadríceps -->
+  <!-- Destaque Muscular no Quadricípete -->
   <path d="M124,111 L168,88" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
 
-  <!-- Joelho a ~90-100° em extensão controlada até à plataforma -->
-  <!-- Perna / Tíbia em direção aos pedais -->
   <path d="M175,90 L234,58" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
   <circle cx="175" cy="90" r="4.5" fill="#d97706" />
 
-  <!-- Sapatilha firme contra a plataforma -->
+  <!-- Sapatilha contra a plataforma -->
   <path d="M230,52 L242,58 L238,68 L226,62 Z" fill="#1e3a8a" stroke="#ffffff" stroke-width="1.2" />
 
-  <!-- Vetores / Setas de Força e Movimento -->
+  <!-- ==================== VETORES DE MOVIMENTO / EMPURRÃO 45° ==================== -->
   <g filter="url(#dropShadow)">
-    <line x1="175" y1="72" x2="205" y2="56" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
-    <polygon points="212,52 201,52 205,62" fill="#2563eb" />
+    <!-- Trajetória dupla de empurrão e descida controlada -->
+    <line x1="150" y1="62" x2="198" y2="38" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
+    <polygon points="206,34 194,36 199,46" fill="#2563eb" />
+    <!-- Seta retorno excêntrico -->
+    <path d="M190,48 L170,58" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2" />
   </g>
 
-  <!-- Tag identificadora da máquina -->
+  <!-- Tag Identificadora -->
   <rect x="238" y="15" width="70" height="18" rx="4" fill="#0f172a" opacity="0.85" />
   <text x="273" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">LEG PRESS 45°</text>
 </svg>
