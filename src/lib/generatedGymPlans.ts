@@ -44,15 +44,15 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
           },
           {
             id: "competitivo_maquinas_pesos_livres_b01_ex2",
-            namePt: "1.2 Landmine Squat c/ Press de Ombros",
-            nameEn: "1.2 Landmine Squat to Overhead Press",
-            seriesRepsPt: "3x 6-8 reps",
-            seriesRepsEn: "3x 6-8 reps",
+            namePt: "1.2 Extens\u00e3o de Pernas na Cadeira Extensora (Leg Extension)",
+            nameEn: "1.2 Seated Leg Extension Machine",
+            seriesRepsPt: "3x 10-12 reps (Descida 3s)",
+            seriesRepsEn: "3x 10-12 reps (3s ecc.)",
             restPt: "60s entre s\u00e9ries",
             restEn: "60s between sets",
-            descriptionPt: "P\u00e9s \u00e0 largura dos ombros segurando a ponta da barra ao peito com ambas as m\u00e3os. Agacha com controlo e sobe de forma explosiva transferindo a for\u00e7a das pernas para um press diagonal de ombros no topo.",
-            descriptionEn: "Shoulder-width stance holding barbell sleeve at chest with both hands. Squat under control and drive up explosively, transferring leg drive into a diagonal overhead press at lockout.",
-            imageSrc: "/exercises/landmine_squat_to_press_pro.svg"
+            descriptionPt: "Sentada na m\u00e1quina com costas no encosto e m\u00e3os nos man\u00edpulos. Almofada na t\u00edbia inferior (acima dos p\u00e9s). Estende os joelhos com controlo, aperta 1s no topo em contra\u00e7\u00e3o dos quadric\u00edpites e regressa devagar em 3s.",
+            descriptionEn: "Seated with back supported against pad and hands gripping handles. Lower roller on lower tibia (above feet). Extend knees under control, hold 1s at peak quadriceps contraction, and lower slowly over 3s.",
+            imageSrc: "/exercises/leg_extension_machine_pro.svg"
           },
         ]
       },
