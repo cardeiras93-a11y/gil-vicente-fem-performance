@@ -41,7 +41,7 @@ export const AdminMobilityManager: React.FC = () => {
     const loaded = getStoredMobilityPlans();
     return loaded[0]?.id || '';
   });
-  const [groupFilter, setGroupFilter] = useState<'all' | 'superiores' | 'inferiores'>('all');
+  const [groupFilter, setGroupFilter] = useState<'all' | 'anamnese' | 'ginasio' | 'superiores' | 'inferiores'>('anamnese');
   const [selectedPlanForPreview, setSelectedPlanForPreview] = useState<MobilityPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -64,13 +64,18 @@ export const AdminMobilityManager: React.FC = () => {
   // Ensure selectedPlanId is valid if plans list updates
   useEffect(() => {
     if (plans.length > 0 && (!selectedPlanId || !plans.some((p) => p.id === selectedPlanId))) {
-      setSelectedPlanId(plans[0].id);
+      const initialSubset = plans.filter((p) => p.id.startsWith('prev_'));
+      setSelectedPlanId(initialSubset.length > 0 ? initialSubset[0].id : plans[0].id);
     }
   }, [plans, selectedPlanId]);
 
-  const handleGroupFilterChange = (newGroup: 'all' | 'superiores' | 'inferiores') => {
+  const handleGroupFilterChange = (newGroup: 'all' | 'anamnese' | 'ginasio' | 'superiores' | 'inferiores') => {
     setGroupFilter(newGroup);
-    const subset = newGroup === 'all' ? plans : plans.filter((p) => p.group === newGroup);
+    let subset: MobilityPlan[] = plans;
+    if (newGroup === 'anamnese') subset = plans.filter((p) => p.id.startsWith('prev_'));
+    else if (newGroup === 'ginasio') subset = plans.filter((p) => !p.id.startsWith('prev_'));
+    else if (newGroup !== 'all') subset = plans.filter((p) => p.group === newGroup);
+
     if (subset.length > 0 && !subset.some((p) => p.id === selectedPlanId)) {
       setSelectedPlanId(subset[0].id);
     }
@@ -78,6 +83,8 @@ export const AdminMobilityManager: React.FC = () => {
 
   const filteredPlans = useMemo(() => {
     if (groupFilter === 'all') return plans;
+    if (groupFilter === 'anamnese') return plans.filter((p) => p.id.startsWith('prev_'));
+    if (groupFilter === 'ginasio') return plans.filter((p) => !p.id.startsWith('prev_'));
     return plans.filter((p) => p.group === groupFilter);
   }, [plans, groupFilter]);
 
@@ -91,6 +98,8 @@ export const AdminMobilityManager: React.FC = () => {
 
   // Counts for filter pills
   const allCount = plans.length;
+  const anamneseCount = plans.filter((p) => p.id.startsWith('prev_')).length;
+  const ginasioCount = plans.filter((p) => !p.id.startsWith('prev_')).length;
   const supCount = plans.filter((p) => p.group === 'superiores').length;
   const infCount = plans.filter((p) => p.group === 'inferiores').length;
 
@@ -200,14 +209,24 @@ export const AdminMobilityManager: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2 shrink-0">
             <a
+              href="/planos/plano_anamnese_preventivo_plantel.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/50 text-xs font-black transition-all shadow-lg shadow-emerald-900/40 active:scale-95"
+              title="Abrir o Dossiê Clínico com Planos Gerais e Planos Individuais de cada jogadora"
+            >
+              <Sparkles className="h-4 w-4 text-emerald-200" />
+              <span>Dossiê Clínico Anamnese (Plantel & Atletas)</span>
+            </a>
+            <a
               href="/planos/index.html"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-black transition-all shadow-md active:scale-95"
-              title="Abrir a biblioteca completa em formato A4 bilingue com impressão e edição"
+              title="Abrir os 9 planos de máquinas de ginásio"
             >
               <ExternalLink className="h-4 w-4 text-brand-lime" />
-              <span>Biblioteca A4 Completa</span>
+              <span>Máquinas de Ginásio A4</span>
             </a>
             <button
               type="button"
@@ -225,7 +244,31 @@ export const AdminMobilityManager: React.FC = () => {
       <div className="rounded-2xl border border-slate-800 bg-dark-card p-4 shadow-md space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Segmented Group Filter */}
-          <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-800 text-xs font-bold shadow-inner shrink-0">
+          <div className="inline-flex rounded-xl bg-slate-900/90 p-1 border border-slate-800 text-xs font-bold shadow-inner shrink-0 overflow-x-auto max-w-full">
+            <button
+              type="button"
+              onClick={() => handleGroupFilterChange('anamnese')}
+              className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1.5 ${
+                groupFilter === 'anamnese'
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'text-emerald-400 hover:text-emerald-200 hover:bg-emerald-950/40'
+              }`}
+            >
+              <span>🩺 Novos da Anamnese</span>
+              <span className="text-[10px] bg-emerald-950 px-1.5 py-0.5 rounded-full border border-emerald-500/40">({anamneseCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGroupFilterChange('ginasio')}
+              className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1.5 ${
+                groupFilter === 'ginasio'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>🏋️ Máquinas Ginásio</span>
+              <span>({ginasioCount})</span>
+            </button>
             <button
               type="button"
               onClick={() => handleGroupFilterChange('all')}
@@ -239,18 +282,6 @@ export const AdminMobilityManager: React.FC = () => {
             </button>
             <button
               type="button"
-              onClick={() => handleGroupFilterChange('superiores')}
-              className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1 ${
-                groupFilter === 'superiores'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <span>🏋️ Superiores</span>
-              <span>({supCount})</span>
-            </button>
-            <button
-              type="button"
               onClick={() => handleGroupFilterChange('inferiores')}
               className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1 ${
                 groupFilter === 'inferiores'
@@ -260,6 +291,18 @@ export const AdminMobilityManager: React.FC = () => {
             >
               <span>🦵 Inferiores</span>
               <span>({infCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGroupFilterChange('superiores')}
+              className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1 ${
+                groupFilter === 'superiores'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>💪 Superiores</span>
+              <span>({supCount})</span>
             </button>
           </div>
 
