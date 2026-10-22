@@ -14,12 +14,18 @@ export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
   if (imageSrc) {
     return (
       <div className={`relative flex items-center justify-center p-1.5 rounded-lg bg-white overflow-hidden shadow-inner ${className}`}>
-        <img
-          src={imageSrc}
-          alt={drawingKey || 'Exercício'}
+        <object
+          data={imageSrc}
+          type="image/svg+xml"
           className="max-h-full max-w-full object-contain select-none pointer-events-none"
-          loading="lazy"
-        />
+        >
+          <img
+            src={imageSrc}
+            alt={drawingKey || 'Exercício'}
+            className="max-h-full max-w-full object-contain select-none pointer-events-none"
+            loading="lazy"
+          />
+        </object>
         <span className="absolute bottom-1 right-1 bg-slate-900/85 text-[8px] font-black tracking-wider text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30 flex items-center space-x-1 pointer-events-none shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>ANIMADO</span>

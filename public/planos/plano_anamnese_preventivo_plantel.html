@@ -5052,13 +5052,7 @@ Nomeadamente fiz um tratamento com agulhas no joelho em 2019, mas não existe si
       </div>
 
       <!-- Imagem Animada SVG -->
-      <div class="bg-white p-2 flex items-center justify-center min-h-[200px] border-b border-slate-800 relative">
-        <span class="absolute top-2 right-2 bg-slate-900/90 text-[10px] text-cyan-400 font-extrabold px-2.5 py-1 rounded-full border border-cyan-500/30 flex items-center space-x-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span>LIVE LOOP</span>
-        </span>
-        <img id="modalExerciseImg" src="" alt="Exercício Animado" class="max-h-56 max-w-full object-contain">
-      </div>
+      <div id="modalExerciseContainer" class="bg-white p-2 flex items-center justify-center min-h-[220px] border-b border-slate-800 relative overflow-hidden shadow-inner"></div>
 
       <!-- Detalhes do Exercício -->
       <div class="p-4 space-y-2">
@@ -5076,11 +5070,1836 @@ Nomeadamente fiz um tratamento com agulhas no joelho em 2019, mas não existe si
   </div>
 
   <script>
+    const EXERCISE_ANIMATIONS = {
+  "spanish_squat_isometric_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">SPANISH SQUAT</text>
+  </g>
+
+
+  <!-- Rig / Ancoragem -->
+  <rect x="30" y="20" width="16" height="135" fill="url(#poleGrad)" filter="url(#dropShadow)" />
+  <circle cx="38" cy="116" r="4.5" fill="#0284c7" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="178" cy="154" rx="65" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Pés Fixos no Solo -->
+  <ellipse cx="168" cy="152" rx="10" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <path d="M168,118 L168,150" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+
+  <!-- Grupo em Movimento: Senta-se profundamente até 70° e sobe -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 -22; 0 0; 0 0; 0 -22" keyTimes="0; 0.38; 0.72; 1" dur="2.8s" repeatCount="indefinite" />
+    
+    <!-- Coxas / Fémur -->
+    <path d="M168,118 L224,115 L220,128 L168,126 Z" fill="#d97706" />
+
+    <!-- Calções e Bacia Recuada -->
+    <path d="M212,106 L242,106 L238,130 L208,128 Z" fill="#0f172a" />
+
+    <!-- Tronco Totalmente Vertical (Ereto) -->
+    <path d="M218,66 C218,62 242,62 242,66 L238,110 C230,112 222,112 218,110 Z" fill="url(#kitGrad)" />
+
+    <!-- Braços à Frente em Contrapeso -->
+    <path d="M224,76 L165,80" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+    <circle cx="163" cy="80" r="4" fill="#d97706" />
+
+    <!-- Cabeça e Cabelo -->
+    <circle cx="230" cy="52" r="8.5" fill="#d97706" />
+    <path d="M225,48 C225,42 235,42 235,48 L233,54 L227,54 Z" fill="#78350f" />
+
+    <!-- Pulso Isométrico de Alívio no Tendão Patelar -->
+    <circle cx="168" cy="116" r="6" fill="#38bdf8" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.2; 1; 1; 0.2" keyTimes="0; 0.38; 0.72; 1" dur="2.8s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4; 8; 8; 4" keyTimes="0; 0.38; 0.72; 1" dur="2.8s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+  <!-- Banda Elástica Laranja Esticada sob Tensão -->
+  <path d="M46,116 L168,116" stroke="#ea580c" stroke-width="5.5" stroke-linecap="round">
+    <animate attributeName="stroke-width" values="4; 7; 7; 4" keyTimes="0; 0.38; 0.72; 1" dur="2.8s" repeatCount="indefinite" />
+  </path>
+
+</svg>`,
+  "terminal_knee_extension_band_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">TKE EXTENSÃO</text>
+  </g>
+
+
+  <rect x="30" y="20" width="16" height="135" fill="url(#poleGrad)" filter="url(#dropShadow)" />
+  <circle cx="38" cy="112" r="4.5" fill="#0284c7" />
+  <ellipse cx="175" cy="154" rx="45" ry="7" fill="#0f172a" opacity="0.25" />
+
+  <!-- Perna Posterior de Apoio (Estável) -->
+  <line x1="190" y1="88" x2="198" y2="120" stroke="#b45309" stroke-width="7" stroke-linecap="round" />
+  <line x1="198" y1="120" x2="202" y2="150" stroke="#b45309" stroke-width="6.5" stroke-linecap="round" />
+  <ellipse cx="204" cy="151" rx="8" ry="3.5" fill="#64748b" />
+
+  <!-- Banda Elástica Esticando com o Bloqueio -->
+  <line x1="46" y1="112" x2="165" y2="112" stroke="#ea580c" stroke-width="5" stroke-linecap="round">
+    <animate attributeName="x2" values="148; 168; 168; 148" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+  </line>
+
+  <!-- Perna em Ação de Bloqueio Terminal do Joelho -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="18 165 150; 0 165 150; 0 165 150; 18 165 150" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <path d="M165,112 L165,150" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="168" cy="151" rx="9" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M172,82 L165,112" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <ellipse cx="168" cy="104" rx="5" ry="10" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.2; 1; 1; 0.2" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+      <animate attributeName="rx" values="3; 6; 6; 3" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    </ellipse>
+    <circle cx="165" cy="112" r="4.5" fill="#f97316" />
+  </g>
+
+  <!-- Bacia e Tronco -->
+  <path d="M162,75 L188,75 L182,92 L164,90 Z" fill="#0f172a" />
+  <path d="M166,42 C166,38 184,38 184,42 L182,78 C176,80 170,80 166,78 Z" fill="url(#kitGrad)" />
+  <path d="M172,48 L160,65 L170,72" stroke="#d97706" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <circle cx="175" cy="28" r="7.5" fill="#d97706" />
+  <path d="M171,24 C171,19 180,19 180,24 L179,30 L173,30 Z" fill="#78350f" />
+
+</svg>`,
+  "split_squat_hip_dominant_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">SPLIT SQUAT</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="75" ry="7" fill="#0f172a" opacity="0.22" />
+
+  <!-- Pés Fixos no Solo -->
+  <ellipse cx="192" cy="150" rx="9" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <ellipse cx="106" cy="148" rx="6" ry="4" fill="#64748b" />
+
+  <!-- Perna e Tronco em Movimento Real de Agachamento Búlgaro / Split Squat -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 -24; 0 0; 0 0; 0 -24" keyTimes="0; 0.4; 0.7; 1" dur="2.6s" repeatCount="indefinite" />
+    
+    <!-- Tronco Ereto -->
+    <path d="M150,55 L168,55 L164,95 L152,95 Z" fill="url(#kitGrad)" />
+    <circle cx="159" cy="42" r="7.5" fill="#d97706" />
+    <ellipse cx="158" cy="95" rx="11" ry="8" fill="#0f172a" />
+
+    <!-- Coxa Avançada fletindo a 90° -->
+    <line x1="160" y1="95" x2="192" y2="116" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <circle cx="192" cy="116" r="5" fill="#0f172a" />
+    <line x1="192" y1="116" x2="192" y2="150" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+
+    <!-- Coxa Posterior descendo até perto do chão -->
+    <line x1="154" y1="95" x2="130" y2="124" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <circle cx="130" cy="124" r="5" fill="#0f172a" />
+    <line x1="130" y1="124" x2="108" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+
+    <!-- Haltere nas Mãos em Contrapeso -->
+    <line x1="160" y1="75" x2="160" y2="112" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+    <rect x="154" y="108" width="12" height="15" rx="2" fill="#1e293b" />
+    <rect x="157" y="105" width="6" height="21" rx="1.5" fill="#475569" />
+
+    <!-- Mini-Banda nos Joelhos sob Tensão Máxima -->
+    <line x1="130" y1="124" x2="192" y2="116" stroke="#ea580c" stroke-width="5" stroke-linecap="round">
+      <animate attributeName="stroke-width" values="4; 7; 7; 4" keyTimes="0; 0.4; 0.7; 1" dur="2.6s" repeatCount="indefinite" />
+    </line>
+  </g>
+
+</svg>`,
+  "copenhagen_plank_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">COPENHAGEN PLANK</text>
+  </g>
+
+
+  <!-- Banco de Suporte -->
+  <rect x="180" y="96" width="105" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <line x1="200" y1="108" x2="200" y2="148" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <line x1="265" y1="108" x2="265" y2="148" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="150" cy="154" rx="85" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Apoio no Solo -->
+  <line x1="68" y1="148" x2="90" y2="148" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <line x1="72" y1="148" x2="88" y2="114" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  <path d="M88,114 L145,102" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+  <ellipse cx="148" cy="101" rx="10" ry="7" fill="#0f172a" />
+  <circle cx="68" cy="106" r="7.5" fill="#d97706" />
+
+  <!-- Perna Superior Apoiada -->
+  <line x1="152" y1="100" x2="210" y2="94" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <circle cx="210" cy="94" r="5" fill="#0f172a" />
+  <line x1="210" y1="94" x2="255" y2="94" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="258" cy="93" rx="8" ry="3.5" fill="#ffffff" />
+
+  <!-- Perna Inferior Subindo e Descendo em Adução Potente -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="24 152 105; 0 152 105; 0 152 105; 24 152 105" keyTimes="0; 0.45; 0.6; 1" dur="2.3s" repeatCount="indefinite" />
+    <line x1="152" y1="105" x2="202" y2="108" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+    <circle cx="202" cy="108" r="4.5" fill="#0f172a" />
+    <line x1="202" y1="108" x2="246" y2="110" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+    <ellipse cx="249" cy="110" rx="7" ry="3" fill="#64748b" />
+    <circle cx="180" cy="106" r="5" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.2; 1; 1; 0.2" dur="2.3s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+</svg>`,
+  "copenhagen_adduction_dynamic_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">COPENHAGEN PLANK</text>
+  </g>
+
+
+  <!-- Banco de Suporte -->
+  <rect x="180" y="96" width="105" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <line x1="200" y1="108" x2="200" y2="148" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <line x1="265" y1="108" x2="265" y2="148" stroke="#334155" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="150" cy="154" rx="85" ry="7" fill="#0f172a" opacity="0.2" />
+
+  <!-- Apoio no Solo -->
+  <line x1="68" y1="148" x2="90" y2="148" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <line x1="72" y1="148" x2="88" y2="114" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  <path d="M88,114 L145,102" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+  <ellipse cx="148" cy="101" rx="10" ry="7" fill="#0f172a" />
+  <circle cx="68" cy="106" r="7.5" fill="#d97706" />
+
+  <!-- Perna Superior Apoiada -->
+  <line x1="152" y1="100" x2="210" y2="94" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <circle cx="210" cy="94" r="5" fill="#0f172a" />
+  <line x1="210" y1="94" x2="255" y2="94" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="258" cy="93" rx="8" ry="3.5" fill="#ffffff" />
+
+  <!-- Perna Inferior Subindo e Descendo em Adução Potente -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="24 152 105; 0 152 105; 0 152 105; 24 152 105" keyTimes="0; 0.45; 0.6; 1" dur="2.3s" repeatCount="indefinite" />
+    <line x1="152" y1="105" x2="202" y2="108" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+    <circle cx="202" cy="108" r="4.5" fill="#0f172a" />
+    <line x1="202" y1="108" x2="246" y2="110" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+    <ellipse cx="249" cy="110" rx="7" ry="3" fill="#64748b" />
+    <circle cx="180" cy="106" r="5" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.2; 1; 1; 0.2" dur="2.3s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+</svg>`,
+  "bench_hamstring_bridge_iso_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">HAMSTRING BRIDGE</text>
+  </g>
+
+
+  <ellipse cx="140" cy="154" rx="90" ry="7" fill="#0f172a" opacity="0.22" />
+  <circle cx="58" cy="138" r="7.5" fill="#d97706" />
+  <path d="M54,134 C54,129 64,129 64,134 Z" fill="#78350f" />
+  <line x1="58" y1="145" x2="95" y2="145" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <rect x="235" y="132" width="45" height="15" rx="3" fill="#0284c7" />
+  <ellipse cx="245" cy="130" rx="8" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+
+  <!-- Elevação da Bacia em Ponte Alta e Descida Controlada -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="24 68 144; 0 68 144; 0 68 144; 24 68 144" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <path d="M68,144 L130,102" stroke="url(#kitGrad)" stroke-width="14" stroke-linecap="round" />
+    <ellipse cx="134" cy="100" rx="10" ry="8" fill="#0f172a" />
+    <line x1="136" y1="100" x2="195" y2="108" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <circle cx="195" cy="108" r="5" fill="#0f172a" />
+    <line x1="195" y1="108" x2="245" y2="128" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <line x1="145" y1="98" x2="185" y2="104" stroke="#ef4444" stroke-width="4" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    </line>
+  </g>
+
+</svg>`,
+  "long_lever_bridge_dumbbell_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">HAMSTRING BRIDGE</text>
+  </g>
+
+
+  <ellipse cx="140" cy="154" rx="90" ry="7" fill="#0f172a" opacity="0.22" />
+  <circle cx="58" cy="138" r="7.5" fill="#d97706" />
+  <path d="M54,134 C54,129 64,129 64,134 Z" fill="#78350f" />
+  <line x1="58" y1="145" x2="95" y2="145" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <rect x="235" y="132" width="45" height="15" rx="3" fill="#0284c7" />
+  <ellipse cx="245" cy="130" rx="8" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+
+  <!-- Elevação da Bacia em Ponte Alta e Descida Controlada -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="24 68 144; 0 68 144; 0 68 144; 24 68 144" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <path d="M68,144 L130,102" stroke="url(#kitGrad)" stroke-width="14" stroke-linecap="round" />
+    <ellipse cx="134" cy="100" rx="10" ry="8" fill="#0f172a" />
+    <line x1="136" y1="100" x2="195" y2="108" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <circle cx="195" cy="108" r="5" fill="#0f172a" />
+    <line x1="195" y1="108" x2="245" y2="128" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <line x1="145" y1="98" x2="185" y2="104" stroke="#ef4444" stroke-width="4" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    </line>
+  </g>
+
+</svg>`,
+  "assisted_nordic_curl_band_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">NORDIC CURL</text>
+  </g>
+
+
+  <rect x="70" y="146" width="180" height="4" rx="2" fill="#0284c7" />
+  <rect x="65" y="125" width="22" height="24" rx="4" fill="#1e293b" />
+  <circle cx="76" cy="138" r="5" fill="#94a3b8" />
+  <path d="M45,85 L140,88" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="d" values="M45,85 L150,55; M45,85 L185,105; M45,85 L185,105; M45,85 L150,55" keyTimes="0; 0.5; 0.65; 1" dur="3.4s" repeatCount="indefinite" />
+  </path>
+  <line x1="75" y1="140" x2="98" y2="140" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <circle cx="98" cy="140" r="5" fill="#0f172a" />
+
+  <!-- Descida Excêntrica Ampla de Nordic Curl -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 98 140; 45 98 140; 45 98 140; 0 98 140" keyTimes="0; 0.5; 0.65; 1" dur="3.4s" repeatCount="indefinite" />
+    <path d="M98,140 L126,98" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <line x1="99" y1="135" x2="124" y2="100" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.5; 0.65; 1" dur="3.4s" repeatCount="indefinite" />
+    </line>
+    <ellipse cx="128" cy="95" rx="8" ry="7" fill="#0f172a" />
+    <path d="M125,92 L152,50 L166,54 L134,95 Z" fill="url(#kitGrad)" />
+    <path d="M148,58 L175,76" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
+    <circle cx="162" cy="40" r="8" fill="#d97706" />
+    <path d="M158,35 C158,30 168,30 168,35 L166,42 L160,42 Z" fill="#78350f" />
+  </g>
+
+</svg>`,
+  "knee_gapping_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">REVERSE NORDIC</text>
+  </g>
+
+
+  <rect x="70" y="146" width="180" height="4" rx="2" fill="#0284c7" />
+  <ellipse cx="150" cy="154" rx="60" ry="7" fill="#0f172a" opacity="0.2" />
+  <line x1="120" y1="140" x2="145" y2="140" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <circle cx="145" cy="140" r="5" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 145 140; -40 145 140; -40 145 140; 0 145 140" keyTimes="0; 0.45; 0.65; 1" dur="3.2s" repeatCount="indefinite" />
+    <line x1="145" y1="140" x2="145" y2="92" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <ellipse cx="145" cy="92" rx="9" ry="8" fill="#0f172a" />
+    <path d="M138,52 L152,52 L149,92 L141,92 Z" fill="url(#kitGrad)" />
+    <circle cx="145" cy="40" r="7.5" fill="#d97706" />
+    <line x1="141" y1="135" x2="141" y2="98" stroke="#ef4444" stroke-width="4" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.45; 0.65; 1" dur="3.2s" repeatCount="indefinite" />
+    </line>
+  </g>
+
+</svg>`,
+  "ankle_eversion_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">EVERSÃO BANDA</text>
+  </g>
+
+
+  <path d="M40,118 L210,118" stroke="#d97706" stroke-width="14" stroke-linecap="round" />
+  <path d="M40,115 L120,115" stroke="url(#kitGrad)" stroke-width="16" stroke-linecap="round" />
+  <circle cx="210" cy="118" r="8" fill="#d97706" />
+  <rect x="290" y="50" width="12" height="100" fill="url(#poleGrad)" rx="2" />
+  <circle cx="296" cy="110" r="4" fill="#0284c7" />
+  <line x1="296" y1="110" x2="225" y2="100" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="x2" values="225; 238; 238; 225" keyTimes="0; 0.4; 0.6; 1" dur="2.2s" repeatCount="indefinite" />
+    <animate attributeName="y2" values="100; 92; 92; 100" keyTimes="0; 0.4; 0.6; 1" dur="2.2s" repeatCount="indefinite" />
+  </line>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 210 118; -28 210 118; -28 210 118; 0 210 118" keyTimes="0; 0.4; 0.6; 1" dur="2.2s" repeatCount="indefinite" />
+    <path d="M208,118 L232,96 L242,102 L216,122 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.8" />
+    <circle cx="230" cy="98" r="4" fill="#ea580c" />
+    <path d="M160,113 L205,113" stroke="#06b6d4" stroke-width="3.5" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.4; 0.6; 1" dur="2.2s" repeatCount="indefinite" />
+    </path>
+  </g>
+
+</svg>`,
+  "ankle_dorsiflexion_band_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DORSIFLEXÃO</text>
+  </g>
+
+
+  <ellipse cx="145" cy="148" rx="20" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <rect x="25" y="60" width="12" height="90" fill="url(#poleGrad)" rx="2" />
+  <circle cx="31" cy="138" r="4" fill="#0284c7" />
+  <line x1="31" y1="138" x2="140" y2="138" stroke="#ea580c" stroke-width="5" stroke-linecap="round">
+    <animate attributeName="x2" values="140; 160; 160; 140" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+  </line>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 145 146; 22 145 146; 22 145 146; 0 145 146" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <line x1="145" y1="146" x2="145" y2="92" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <circle cx="145" cy="92" r="6" fill="#0f172a" />
+    <line x1="145" y1="92" x2="95" y2="78" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <circle cx="95" cy="78" r="7" fill="#0f172a" />
+  </g>
+  <path d="M125,72 Q158,74 175,90 M170,82 L175,90 L166,92" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+</svg>`,
+  "ankle_traction_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DORSIFLEXÃO</text>
+  </g>
+
+
+  <ellipse cx="145" cy="148" rx="20" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <rect x="25" y="60" width="12" height="90" fill="url(#poleGrad)" rx="2" />
+  <circle cx="31" cy="138" r="4" fill="#0284c7" />
+  <line x1="31" y1="138" x2="140" y2="138" stroke="#ea580c" stroke-width="5" stroke-linecap="round">
+    <animate attributeName="x2" values="140; 160; 160; 140" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+  </line>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 145 146; 22 145 146; 22 145 146; 0 145 146" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <line x1="145" y1="146" x2="145" y2="92" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <circle cx="145" cy="92" r="6" fill="#0f172a" />
+    <line x1="145" y1="92" x2="95" y2="78" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <circle cx="95" cy="78" r="7" fill="#0f172a" />
+  </g>
+  <path d="M125,72 Q158,74 175,90 M170,82 L175,90 L166,92" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+
+</svg>`,
+  "calf_isometric_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">HEEL SQUEEZE</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="55" ry="6" fill="#0f172a" opacity="0.22" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -22; 0 -22; 0 0" keyTimes="0; 0.4; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <circle cx="160" cy="132" r="10" fill="#eab308" stroke="#ca8a04" stroke-width="2">
+      <animate attributeName="r" values="10; 8; 8; 10" keyTimes="0; 0.4; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    </circle>
+    <path d="M136,134 L146,134 L144,146 L130,146 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M140,70 L140,132" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <path d="M184,134 L174,134 L176,146 L190,146 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M180,70 L180,132" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <path d="M125,133 L142,133 M137,130 L142,133 L137,136" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M195,133 L178,133 M183,130 L178,133 L183,136" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+</svg>`,
+  "monster_walk_band_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">MONSTER WALK</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="75" ry="8" fill="#0f172a" opacity="0.2" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 24 -6; 0 0; -24 -6; 0 0" keyTimes="0; 0.25; 0.5; 0.75; 1" dur="2.8s" repeatCount="indefinite" />
+    <path d="M148,56 C148,50 172,50 172,56 L168,96 C160,98 154,98 148,96 Z" fill="url(#kitGrad)" />
+    <circle cx="160" cy="42" r="7.5" fill="#d97706" />
+    <ellipse cx="158" cy="96" rx="14" ry="8" fill="#0f172a" />
+    <line x1="150" y1="96" x2="135" y2="124" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <line x1="166" y1="96" x2="185" y2="124" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <line x1="135" y1="124" x2="132" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <line x1="185" y1="124" x2="190" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <ellipse cx="130" cy="150" rx="9" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <ellipse cx="192" cy="150" rx="9" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <line x1="133" y1="140" x2="189" y2="140" stroke="#ea580c" stroke-width="5" stroke-linecap="round">
+      <animate attributeName="stroke-width" values="4; 7; 4; 7; 4" dur="2.8s" repeatCount="indefinite" />
+    </line>
+  </g>
+
+</svg>`,
+  "pallof_press_band_rotation_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">PALLOF PRESS</text>
+  </g>
+
+
+  <rect x="25" y="25" width="14" height="130" fill="url(#poleGrad)" rx="2" />
+  <circle cx="32" cy="95" r="4" fill="#0284c7" />
+  <ellipse cx="180" cy="154" rx="45" ry="7" fill="#0f172a" opacity="0.22" />
+  <line x1="168" y1="95" x2="162" y2="148" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <line x1="185" y1="95" x2="195" y2="148" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <ellipse cx="159" cy="150" rx="8" ry="3.5" fill="#ffffff" />
+  <ellipse cx="198" cy="150" rx="8" ry="3.5" fill="#ffffff" />
+  <ellipse cx="178" cy="95" rx="14" ry="8" fill="#0f172a" />
+  <path d="M168,58 L188,58 L185,95 L170,95 Z" fill="url(#kitGrad)" />
+  <circle cx="178" cy="45" r="7.5" fill="#d97706" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 32 0; 32 0; 0 0" keyTimes="0; 0.45; 0.7; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="175" y1="68" x2="204" y2="72" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+    <circle cx="206" cy="72" r="5" fill="#ea580c" />
+  </g>
+  <line x1="32" y1="95" x2="206" y2="72" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="x2" values="206; 238; 238; 206" keyTimes="0; 0.45; 0.7; 1" dur="2.7s" repeatCount="indefinite" />
+  </line>
+
+</svg>`,
+  "pogo_hops_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">POGO HOPS</text>
+  </g>
+
+
+  <ellipse cx="160" cy="152" rx="35" ry="6" fill="#0f172a">
+    <animate attributeName="opacity" values="0.3; 0.08; 0.3" dur="0.8s" repeatCount="indefinite" />
+    <animate attributeName="rx" values="35; 16; 35" dur="0.8s" repeatCount="indefinite" />
+  </ellipse>
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -30; 0 0" keyTimes="0; 0.5; 1" dur="0.8s" repeatCount="indefinite" />
+    <path d="M152,48 C152,44 168,44 168,48 L166,82 C160,84 156,84 152,82 Z" fill="url(#kitGrad)" />
+    <circle cx="160" cy="35" r="7.5" fill="#d97706" />
+    <ellipse cx="160" cy="84" rx="10" ry="7" fill="#0f172a" />
+    <line x1="155" y1="84" x2="155" y2="138" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <line x1="165" y1="84" x2="165" y2="138" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <ellipse cx="155" cy="142" rx="4" ry="7" fill="#ffffff" stroke="#0284c7" stroke-width="1.2" />
+    <ellipse cx="165" cy="142" rx="4" ry="7" fill="#ffffff" stroke="#0284c7" stroke-width="1.2" />
+  </g>
+
+</svg>`,
+  "soleus_wall_stretch_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">SÓLEO WALL SIT</text>
+  </g>
+
+
+  <line x1="110" y1="20" x2="110" y2="148" stroke="#1e293b" stroke-width="8" />
+  <ellipse cx="150" cy="154" rx="55" ry="7" fill="#0f172a" opacity="0.22" />
+  <path d="M114,65 L114,105" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+  <circle cx="114" cy="52" r="7.5" fill="#d97706" />
+  <ellipse cx="120" cy="106" rx="9" ry="7" fill="#0f172a" />
+  <line x1="120" y1="106" x2="168" y2="106" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <circle cx="168" cy="106" r="5" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -18; 0 -18; 0 0" keyTimes="0; 0.4; 0.7; 1" dur="2.6s" repeatCount="indefinite" />
+    <line x1="168" y1="106" x2="168" y2="146" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="168" cy="146" rx="5" ry="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <ellipse cx="168" cy="128" rx="6" ry="11" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.6s" repeatCount="indefinite" />
+    </ellipse>
+  </g>
+
+</svg>`,
+  "half_kneeling_band_thoracic_reach_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">MANGUITO OMBRO</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="45" ry="7" fill="#0f172a" opacity="0.22" />
+  <rect x="35" y="30" width="14" height="120" fill="url(#poleGrad)" rx="2" />
+  <circle cx="42" cy="98" r="4" fill="#0284c7" />
+  <line x1="155" y1="95" x2="155" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <line x1="168" y1="95" x2="168" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <path d="M152,58 L170,58 L168,95 L154,95 Z" fill="url(#kitGrad)" />
+  <circle cx="161" cy="46" r="7.5" fill="#d97706" />
+  <rect x="148" y="78" width="6" height="14" rx="2" fill="#ffffff" stroke="#94a3b8" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 155 86; -50 155 86; -50 155 86; 0 155 86" keyTimes="0; 0.45; 0.65; 1" dur="2.5s" repeatCount="indefinite" />
+    <line x1="155" y1="86" x2="188" y2="86" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+    <circle cx="188" cy="86" r="4.5" fill="#ea580c" />
+  </g>
+  <line x1="42" y1="98" x2="188" y2="86" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="x2" values="188; 175; 175; 188" keyTimes="0; 0.45; 0.65; 1" dur="2.5s" repeatCount="indefinite" />
+  </line>
+
+</svg>`,
+  "wall_slide_w_to_y_miniband_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">PUSH-UP PLUS</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.22" />
+  <ellipse cx="85" cy="148" rx="6" ry="3.5" fill="#ffffff" stroke="#0284c7" />
+  <ellipse cx="235" cy="148" rx="6" ry="3.5" fill="#64748b" />
+  <line x1="235" y1="148" x2="175" y2="118" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 12; 0 -12; 0 -12; 0 12" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <line x1="85" y1="148" x2="110" y2="105" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+    <path d="M110,105 L175,118" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+    <circle cx="100" cy="100" r="7.5" fill="#d97706" />
+    <circle cx="120" cy="112" r="6" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.4s" repeatCount="indefinite" />
+    </circle>
+  </g>
+
+</svg>`,
+  "shoulder_dislocates_band_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">FACE PULL W</text>
+  </g>
+
+
+  <rect x="35" y="25" width="14" height="130" fill="url(#poleGrad)" rx="2" />
+  <circle cx="42" cy="70" r="4.5" fill="#0284c7" />
+  <ellipse cx="180" cy="154" rx="45" ry="7" fill="#0f172a" opacity="0.22" />
+  <line x1="172" y1="95" x2="168" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <line x1="185" y1="95" x2="195" y2="148" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <path d="M172,55 L188,55 L185,95 L170,95 Z" fill="url(#kitGrad)" />
+  <circle cx="180" cy="42" r="7.5" fill="#d97706" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 22 0; 22 0; 0 0" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <path d="M178,60 L200,68 L195,50" stroke="#d97706" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="195" cy="50" r="4.5" fill="#ea580c" />
+  </g>
+  <line x1="42" y1="70" x2="195" y2="50" stroke="#ea580c" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="x2" values="195; 217; 217; 195" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+  </line>
+
+</svg>`,
+  "banded_bird_dog_core_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DEADBUG CORE</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.2" />
+  <rect x="110" y="132" width="65" height="12" rx="4" fill="url(#kitGrad)" />
+  <circle cx="100" cy="138" r="7.5" fill="#d97706" />
+  <ellipse cx="178" cy="138" rx="8" ry="7" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 178 138; 40 178 138; 40 178 138; 0 178 138" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="178" y1="138" x2="234" y2="118" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="237" cy="118" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" />
+  </g>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 115 132; -48 115 132; -48 115 132; 0 115 132" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="115" y1="132" x2="75" y2="92" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+  </g>
+
+</svg>`,
+  "cat_cow_stretch_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DEADBUG CORE</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.2" />
+  <rect x="110" y="132" width="65" height="12" rx="4" fill="url(#kitGrad)" />
+  <circle cx="100" cy="138" r="7.5" fill="#d97706" />
+  <ellipse cx="178" cy="138" rx="8" ry="7" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 178 138; 40 178 138; 40 178 138; 0 178 138" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="178" y1="138" x2="234" y2="118" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="237" cy="118" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" />
+  </g>
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 115 132; -48 115 132; -48 115 132; 0 115 132" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="115" y1="132" x2="75" y2="92" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
+  </g>
+
+</svg>`,
+  "side_lying_hip_adduction_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">CLAMSHELL</text>
+  </g>
+
+
+  <ellipse cx="150" cy="154" rx="70" ry="7" fill="#0f172a" opacity="0.2" />
+  <circle cx="68" cy="138" r="7.5" fill="#d97706" />
+  <path d="M75,140 L135,135" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+  <ellipse cx="138" cy="135" rx="10" ry="8" fill="#0f172a" />
+  <line x1="138" y1="135" x2="185" y2="144" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <line x1="185" y1="144" x2="165" y2="148" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 138 135; -35 138 135; -35 138 135; 0 138 135" keyTimes="0; 0.45; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <line x1="138" y1="135" x2="188" y2="124" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <line x1="188" y1="124" x2="165" y2="148" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+    <circle cx="188" cy="124" r="5" fill="#ea580c" />
+  </g>
+  <ellipse cx="178" cy="135" rx="6" ry="10" fill="none" stroke="#ea580c" stroke-width="3.5" />
+
+</svg>`,
+  "standing_calf_raise_smith_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">CALF RAISE</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="35" ry="6" fill="#0f172a" opacity="0.22" />
+  <line x1="130" y1="148" x2="190" y2="148" stroke="#1e293b" stroke-width="6" stroke-linecap="round" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -24; 0 -24; 0 0" keyTimes="0; 0.42; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <line x1="160" y1="75" x2="160" y2="140" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <ellipse cx="160" cy="75" rx="9" ry="8" fill="#0f172a" />
+    <path d="M152,38 L168,38 L165,75 L155,75 Z" fill="url(#kitGrad)" />
+    <circle cx="160" cy="26" r="7.5" fill="#d97706" />
+    <ellipse cx="160" cy="142" rx="5" ry="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <ellipse cx="160" cy="105" rx="7" ry="14" fill="#ef4444">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.4s" repeatCount="indefinite" />
+    </ellipse>
+  </g>
+
+</svg>`,
+  "leg_extension_machine_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">EXTENSÃO PERNA</text>
+  </g>
+
+
+  <ellipse cx="155" cy="152" rx="75" ry="8" fill="#0f172a" opacity="0.2" />
+  <rect x="25" y="30" width="30" height="118" rx="3" fill="url(#machGrad)" filter="url(#dropShadow)" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -16; 0 -16; 0 0" keyTimes="0; 0.42; 0.6; 1" dur="2.7s" repeatCount="indefinite" />
+    <rect x="30" y="60" width="20" height="6" fill="#ef4444" rx="1.5" />
+    <line x1="32" y1="63" x2="48" y2="63" stroke="#ffffff" stroke-width="1.5" />
+  </g>
+  <line x1="40" y1="30" x2="40" y2="18" stroke="#64748b" stroke-width="2" />
+  <line x1="40" y1="18" x2="162" y2="18" stroke="#64748b" stroke-width="2" />
+  <line x1="162" y1="18" x2="162" y2="105" stroke="#64748b" stroke-width="2" />
+  <rect x="86" y="52" width="12" height="54" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="92" y="104" width="56" height="12" rx="3" fill="#0284c7" filter="url(#dropShadow)" />
+  <circle cx="106" cy="44" r="8.5" fill="#d97706" />
+  <path d="M102,54 L122,54 L120,95 L102,95 Z" fill="url(#kitGrad)" />
+  <path d="M102,95 L128,95 L126,108 L102,108 Z" fill="#0f172a" />
+  <path d="M124,103 L166,103" stroke="#d97706" stroke-width="9.5" stroke-linecap="round" />
+  <path d="M128,98 L160,98" stroke="#ef4444" stroke-width="4.5" stroke-linecap="round">
+    <animate attributeName="opacity" values="0.3; 1; 1; 0.3" keyTimes="0; 0.42; 0.6; 1" dur="2.7s" repeatCount="indefinite" />
+  </path>
+  <circle cx="166" cy="103" r="6" fill="#334155" stroke="#0284c7" stroke-width="2" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="68 166 103; 0 166 103; 0 166 103; 68 166 103" keyTimes="0; 0.42; 0.6; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="166" y1="103" x2="216" y2="92" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
+    <path d="M166,103 L218,92" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <circle cx="212" cy="86" r="7.5" fill="#0284c7" stroke="#0369a1" stroke-width="2" filter="url(#dropShadow)" />
+    <path d="M214,84 L228,81 L230,90 L216,92 Z" fill="#1e3a8a" stroke="#ffffff" stroke-width="1.2" />
+  </g>
+
+</svg>`,
+  "leg_press_45_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">LEG PRESS 45°</text>
+  </g>
+
+
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.22" />
+  <line x1="90" y1="140" x2="250" y2="35" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+  <rect x="70" y="90" width="45" height="14" rx="4" transform="rotate(-35 70 90)" fill="#0284c7" filter="url(#dropShadow)" />
+  <circle cx="68" cy="84" r="8" fill="#d97706" />
+  <path d="M82,92 L118,114" stroke="url(#kitGrad)" stroke-width="14" stroke-linecap="round" />
+  <ellipse cx="122" cy="116" rx="9" ry="8" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-28 20; 0 0; 0 0; -28 20" keyTimes="0; 0.45; 0.65; 1" dur="2.9s" repeatCount="indefinite" />
+    <rect x="195" y="48" width="10" height="36" rx="2" transform="rotate(-45 195 48)" fill="#1e293b" />
+    <circle cx="218" cy="46" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="3" />
+    <line x1="124" y1="114" x2="162" y2="88" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <line x1="162" y1="88" x2="198" y2="60" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <ellipse cx="198" cy="58" rx="8" ry="4" transform="rotate(-45 198 58)" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  </g>
+
+</svg>`,
+  "gym_hip_thrust_barbell_pro.svg": `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Fundo do Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">HIP THRUST</text>
+  </g>
+
+
+  <rect x="70" y="98" width="35" height="48" rx="4" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="65" y="142" width="45" height="6" fill="#1e293b" />
+  <ellipse cx="165" cy="154" rx="75" ry="7" fill="#0f172a" opacity="0.22" />
+  <ellipse cx="205" cy="150" rx="9" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <line x1="205" y1="148" x2="202" y2="108" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="22 95 106; 0 95 106; 0 95 106; 22 95 106" keyTimes="0; 0.42; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <path d="M95,106 L154,106" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+    <circle cx="85" cy="100" r="7.5" fill="#d97706" />
+    <ellipse cx="156" cy="106" rx="9" ry="8" fill="#0f172a" />
+    <circle cx="156" cy="98" r="8.5" fill="#0f172a" stroke="#ef4444" stroke-width="2.5" />
+    <line x1="156" y1="106" x2="202" y2="108" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  </g>
+
+</svg>`,
+};
+
     function openExerciseModal(title, dose, desc, svgName) {
       document.getElementById('modalExerciseTitle').innerText = title;
       document.getElementById('modalExerciseDose').innerText = dose || '3 Séries';
-      document.getElementById('modalExerciseDesc').innerText = desc || 'Execução técnica com controlo motor e ativação articular.';
-      document.getElementById('modalExerciseImg').src = svgName;
+      document.getElementById('modalExerciseDesc').innerText = desc || 'Execução técnica controlada.';
+      
+      const container = document.getElementById('modalExerciseContainer');
+      const svgData = EXERCISE_ANIMATIONS[svgName] || EXERCISE_ANIMATIONS['spanish_squat_isometric_pro.svg'];
+      
+      // Direct DOM Injection guarantees immediate, 100% active SMIL animation!
+      container.innerHTML = svgData;
+      const svgEl = container.querySelector('svg');
+      if (svgEl) {
+        svgEl.setAttribute('class', 'w-full h-56 max-h-60 object-contain');
+      }
+
       const modal = document.getElementById('exerciseModal');
       modal.classList.remove('hidden');
       modal.classList.add('flex');
@@ -5092,7 +6911,6 @@ Nomeadamente fiz um tratamento com agulhas no joelho em 2019, mas não existe si
       modal.classList.remove('flex');
     }
 
-    // Fechar ao clicar fora
     document.getElementById('exerciseModal')?.addEventListener('click', function(e) {
       if (e.target === this) closeExerciseModal();
     });

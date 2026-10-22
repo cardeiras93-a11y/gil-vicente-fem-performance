@@ -29,37 +29,35 @@
     </filter>
   </defs>
 
-  <!-- Fundo Ginásio & Linha de Solo -->
+  <!-- Fundo do Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
   <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Parede de Apoio à Esquerda -->
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">SÓLEO WALL SIT</text>
+  </g>
+
+
   <line x1="110" y1="20" x2="110" y2="148" stroke="#1e293b" stroke-width="8" />
   <ellipse cx="150" cy="154" rx="55" ry="7" fill="#0f172a" opacity="0.22" />
-  <!-- Costas na Parede, Joelhos a 90° -->
   <path d="M114,65 L114,105" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
   <circle cx="114" cy="52" r="7.5" fill="#d97706" />
   <ellipse cx="120" cy="106" rx="9" ry="7" fill="#0f172a" />
-  <!-- Coxa Horizontal -->
   <line x1="120" y1="106" x2="168" y2="106" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
   <circle cx="168" cy="106" r="5" fill="#0f172a" />
-  <!-- Canelas e Calcanhares Elevando-se Isométricamente (Sóleo) -->
   <g>
-    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -14; 0 -14; 0 0" keyTimes="0; 0.4; 0.7; 1" dur="2.8s" repeatCount="indefinite" />
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -18; 0 -18; 0 0" keyTimes="0; 0.4; 0.7; 1" dur="2.6s" repeatCount="indefinite" />
     <line x1="168" y1="106" x2="168" y2="146" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
     <ellipse cx="168" cy="146" rx="5" ry="8" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
-    <!-- Músculo Sóleo Brilhando -->
-    <ellipse cx="168" cy="128" rx="5" ry="10" fill="#06b6d4" filter="url(#glowCyan)">
-      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.8s" repeatCount="indefinite" />
+    <ellipse cx="168" cy="128" rx="6" ry="11" fill="#06b6d4" filter="url(#glowCyan)">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.6s" repeatCount="indefinite" />
     </ellipse>
   </g>
 
-  <!-- Badge Live Animado -->
-  <g transform="translate(215, 12)">
-    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
-    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
-      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
-    </circle>
-    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">SÓLEO WALL SIT</text>
-  </g>
 </svg>
