@@ -5,7 +5,11 @@
       <stop offset="70%" stop-color="#e2e8f0" />
       <stop offset="100%" stop-color="#cbd5e1" />
     </linearGradient>
-    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#1e293b" />
       <stop offset="100%" stop-color="#334155" />
     </linearGradient>
@@ -16,65 +20,40 @@
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Fundo do Ginásio -->
+  <!-- Fundo Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
   <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Sombra no solo -->
-  <ellipse cx="150" cy="152" rx="65" ry="7" fill="#0f172a" opacity="0.2" />
-
-  <!-- Estrutura do Banco Romano 45° -->
-  <line x1="205" y1="146" x2="142" y2="84" stroke="#334155" stroke-width="8" stroke-linecap="round" filter="url(#dropShadow)" />
-  <!-- Almofadas da Coxa / Bacia a 45° (Azul Cyan) -->
-  <rect x="130" y="76" width="24" height="15" rx="3" transform="rotate(-45 142 84)" fill="#0284c7" filter="url(#dropShadow)" />
-  <!-- Rolo de Bloqueio dos Tornozelos -->
-  <circle cx="214" cy="138" r="8" fill="#1e293b" stroke="#0284c7" stroke-width="1.5" />
-  <!-- Pés e Suporte do Banco -->
-  <line x1="200" y1="146" x2="235" y2="146" stroke="#475569" stroke-width="6" stroke-linecap="round" />
-  <line x1="150" y1="92" x2="118" y2="146" stroke="#475569" stroke-width="6" stroke-linecap="round" />
-
-  <!-- Pés Presos nos Rolos da Máquina -->
-  <ellipse cx="216" cy="136" rx="6" ry="4" fill="#1e3a8a" />
-  <!-- Pernas Estendidas ao Longo do Suporte de 45° -->
-  <path d="M214,134 L152,86" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
-
-  <!-- Bacia / Calções Apoiados na Almofada -->
-  <path d="M148,84 L132,88 L138,104 L154,98 Z" fill="#0f172a" />
-  <circle cx="145" cy="92" r="6" fill="#ef4444" opacity="0.8" />
-
-  <!-- ==================== POSIÇÃO INICIAL GHOST (Flexão da Anca / Tronco em Baixo) ==================== -->
-  <g opacity="0.38">
-    <!-- Tronco Fletido para Baixo a 90° -->
-    <path d="M136,92 L112,126" stroke="#1e3a8a" stroke-width="12" stroke-dasharray="3,3" stroke-linecap="round" />
-    <!-- Cabeça em baixo -->
-    <circle cx="106" cy="138" r="8" fill="#d97706" />
-    <path d="M100,135 C100,128 112,128 112,135 Z" fill="#78350f" />
-    <!-- Braços cruzados no peito em baixo -->
-    <line x1="118" y1="116" x2="128" y2="126" stroke="#d97706" stroke-width="4" stroke-dasharray="2,2" />
+  <ellipse cx="160" cy="154" rx="75" ry="7" fill="#0f172a" opacity="0.22" />
+  <line x1="110" y1="148" x2="160" y2="95" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+  <rect x="150" y="85" width="22" height="14" rx="3" fill="#0284c7" />
+  <line x1="110" y1="140" x2="160" y2="95" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <!-- Tronco Dobrando a 45° e Subindo com Glúteos -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="45 160 95; 0 160 95; 0 160 95; 45 160 95" keyTimes="0; 0.42; 0.65; 1" dur="2.8s" repeatCount="indefinite" />
+    <path d="M160,95 L208,68" stroke="url(#kitGrad)" stroke-width="13" stroke-linecap="round" />
+    <circle cx="215" cy="62" r="7.5" fill="#d97706" />
+    <!-- Glúteo Máximo Apertando no Topo -->
+    <ellipse cx="160" cy="95" rx="8" ry="7" fill="#ef4444">
+      <animate attributeName="opacity" values="0.3; 1; 1; 0.3" dur="2.8s" repeatCount="indefinite" />
+    </ellipse>
   </g>
 
-  <!-- ==================== POSIÇÃO FINAL ATIVA (Extensão a 180° Alinhada com as Coxas) ==================== -->
-  <!-- Tronco em Extensão Potente (Glute-Focused, Sem Hiperextensão Lombar) -->
-  <path d="M136,86 L90,68 L96,56 L142,74 Z" fill="url(#kitGrad)" />
-
-  <!-- Cabeça e Braços Cruzados no Peito -->
-  <circle cx="82" cy="58" r="8.5" fill="#d97706" />
-  <path d="M75,54 C75,47 88,47 88,54 Z" fill="#78350f" />
-  <path d="M96,63 L114,70" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
-
-  <!-- Destaque Muscular Glúteos & Isquiotibiais Superiores -->
-  <path d="M156,92 L180,110" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" />
-
-  <!-- ==================== VETOR DE MOVIMENTO / ARCO DE EXTENSÃO ==================== -->
-  <g filter="url(#dropShadow)">
-    <!-- Trajetória circular da cabeça e tronco subindo -->
-    <path d="M102,120 Q86,96 88,72" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
-    <polygon points="90,64 82,74 94,74" fill="#2563eb" />
+  <!-- Badge Live Animado -->
+  <g transform="translate(215, 12)">
+    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
+    </circle>
+    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">EXTENSÃO 45°</text>
   </g>
-
-  <!-- Tag Identificadora -->
-  <rect x="200" y="15" width="108" height="18" rx="4" fill="#0f172a" opacity="0.85" />
-  <text x="254" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">BANCO EXTENSÃO 45°</text>
 </svg>

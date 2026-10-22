@@ -5,58 +5,54 @@
       <stop offset="70%" stop-color="#e2e8f0" />
       <stop offset="100%" stop-color="#cbd5e1" />
     </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
     <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#1e3a8a" />
       <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Fundo Limpo e Luminoso -->
+  <!-- Fundo Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Sombra Projetada -->
-  <ellipse cx="160" cy="156" rx="60" ry="8" fill="#0f172a" opacity="0.22" />
+  <!-- Pé de Apoio Central e Linhas de Estrela em 8 Direções -->
+  <circle cx="160" cy="140" r="32" fill="none" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="3,3" />
+  <ellipse cx="160" cy="140" rx="9" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <line x1="160" y1="140" x2="160" y2="82" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+  <ellipse cx="160" cy="82" rx="10" ry="7" fill="#0f172a" />
+  <path d="M152,42 L168,42 L165,82 L155,82 Z" fill="url(#kitGrad)" />
+  <circle cx="160" cy="32" r="7.5" fill="#d97706" />
+  <!-- Perna Flutuante Tocando nos Pontos Cardeais da Estrela -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 160 82; 25 160 82; -25 160 82; 0 160 82" keyTimes="0; 0.35; 0.7; 1" dur="3s" repeatCount="indefinite" />
+    <line x1="160" y1="82" x2="190" y2="135" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+    <circle cx="190" cy="135" r="4.5" fill="#06b6d4" />
+  </g>
 
-  <!-- Atleta em Pé em Apoio Unipodal (Equilíbrio e Propriocepção) -->
-  <!-- Cabeça e Cabelo -->
-  <circle cx="160" cy="42" r="8" fill="#d97706" />
-  <path d="M155,38 C155,32 165,32 165,38 L163,44 L157,44 Z" fill="#78350f" />
-
-  <!-- Tronco Totalmente Alinhado / Camisola Gil Vicente FC -->
-  <path d="M148,56 C148,52 172,52 172,56 L168,102 C162,105 154,105 148,102 Z" fill="url(#kitGrad)" />
-
-  <!-- Braços Abertos em "V" para Controlo de Equilíbrio -->
-  <path d="M148,60 L122,78" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-  <circle cx="120" cy="79" r="3.5" fill="#d97706" />
-  <path d="M172,60 L198,78" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-  <circle cx="200" cy="79" r="3.5" fill="#d97706" />
-
-  <!-- Calções / Bacia Estável sem Queda Pélvica -->
-  <path d="M146,98 L174,98 L170,116 L150,116 Z" fill="#0f172a" />
-
-  <!-- Perna Esquerda Suspensa (Joelho Dobrado a 90°) -->
-  <path d="M152,114 L142,126 L140,140" stroke="#d97706" stroke-width="6" stroke-linecap="round" fill="none" />
-  <ellipse cx="140" cy="142" rx="4" ry="2" fill="#ffffff" />
-
-  <!-- Perna Direita de Apoio Unipodal (Totalmente Firme) -->
-  <path d="M165,114 L165,134" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
-  <path d="M165,134 L165,150" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
-
-  <!-- Pé Direito Ativo no Chão (Tripé Plantar / Arco Elevado) -->
-  <path d="M158,152 L174,152 L172,156 L156,156 Z" fill="#ffffff" filter="url(#dropShadow)" />
-  <ellipse cx="160" cy="154" rx="3.5" ry="1.5" fill="#0f172a" />
-
-  <!-- Mini-Banda Elástica Laranja nos Tornozelos a Criar Resistência Anti-Valgo -->
-  <ellipse cx="153" cy="136" rx="14" ry="4" fill="none" stroke="#f97316" stroke-width="3" />
-
-  <!-- Vetores de Estabilização Proprioceptiva (Micro-ajustes do Tornozelo) -->
-  <g filter="url(#dropShadow)">
-    <path d="M158,146 C164,142 168,142 172,146" stroke="#38bdf8" stroke-width="2" fill="none" />
-    <path d="M165,120 L165,108" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
-    <polygon points="162,112 165,105 168,112" fill="#2563eb" />
+  <!-- Badge Live Animado -->
+  <g transform="translate(215, 12)">
+    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
+    </circle>
+    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">STAR EXCURSION</text>
   </g>
 </svg>

@@ -20,6 +20,10 @@ export const ExerciseIllustration: React.FC<ExerciseIllustrationProps> = ({
           className="max-h-full max-w-full object-contain select-none pointer-events-none"
           loading="lazy"
         />
+        <span className="absolute bottom-1 right-1 bg-slate-900/85 text-[8px] font-black tracking-wider text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/30 flex items-center space-x-1 pointer-events-none shadow-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span>ANIMADO</span>
+        </span>
       </div>
     );
   }
