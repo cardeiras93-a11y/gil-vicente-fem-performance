@@ -5,60 +5,54 @@
       <stop offset="70%" stop-color="#e2e8f0" />
       <stop offset="100%" stop-color="#cbd5e1" />
     </linearGradient>
-    <linearGradient id="wallGrad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#334155" />
-      <stop offset="100%" stop-color="#1e293b" />
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
     </linearGradient>
     <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#1e3a8a" />
       <stop offset="100%" stop-color="#0f172a" />
     </linearGradient>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
     </filter>
   </defs>
 
-  <!-- Fundo Ginásio Luminoso -->
+  <!-- Fundo Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Parede para apoio suave dos dedos -->
-  <rect x="250" y="25" width="70" height="135" fill="url(#wallGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="154" rx="55" ry="6" fill="#0f172a" opacity="0.22" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -18; 0 -18; 0 0" keyTimes="0; 0.4; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    <circle cx="160" cy="132" r="10" fill="#eab308" stroke="#ca8a04" stroke-width="2">
+      <animate attributeName="r" values="10; 8.5; 8.5; 10" keyTimes="0; 0.4; 0.65; 1" dur="2.4s" repeatCount="indefinite" />
+    </circle>
+    <path d="M136,134 L146,134 L144,146 L130,146 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M140,70 L140,132" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <path d="M184,134 L174,134 L176,146 L190,146 Z" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    <path d="M180,70 L180,132" stroke="#d97706" stroke-width="9" stroke-linecap="round" />
+    <path d="M125,133 L142,133 M137,130 L142,133 L137,136" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M195,133 L178,133 M183,130 L178,133 L183,136" stroke="#ef4444" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
 
-  <!-- Sombra Projetada -->
-  <ellipse cx="160" cy="158" rx="60" ry="8" fill="#0f172a" opacity="0.22" />
-
-  <!-- Atleta em Elevação de Calcanhares Isométrica (Ponta dos pés) -->
-  <!-- Mão no apoio da parede -->
-  <circle cx="250" cy="75" r="3.5" fill="#d97706" />
-  <path d="M185,73 L250,75" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-
-  <!-- Tronco Totalmente Vertical / Camisola Gil Vicente FC -->
-  <path d="M165,58 C165,54 190,54 190,58 L188,105 C180,107 172,107 168,105 Z" fill="url(#kitGrad)" />
-
-  <!-- Cabeça e Cabelo -->
-  <circle cx="178" cy="42" r="8" fill="#d97706" />
-  <path d="M173,38 C173,32 183,32 183,38 L181,44 L175,44 Z" fill="#78350f" />
-
-  <!-- Calções / Bacia -->
-  <path d="M164,102 L190,102 L186,118 L162,116 Z" fill="#0f172a" />
-
-  <!-- Coxas Retas -->
-  <path d="M168,116 L182,116 L180,132 L170,132 Z" fill="#d97706" />
-
-  <!-- Canelas e Gémeos Fortemente Contraídos (Pico da Flexão Plantar) -->
-  <path d="M175,130 L175,148" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
-
-  <!-- Pés Apoiados na Almofada Plantar (Calcanhares Altos no Ar) -->
-  <path d="M170,148 L184,142 L188,145 L174,152 Z" fill="#ffffff" filter="url(#dropShadow)" />
-  <ellipse cx="172" cy="151" rx="4" ry="2" fill="#0f172a" />
-
-  <!-- Vetores de Elevação do Calcanhar e Isometria do Gémeo -->
-  <g filter="url(#dropShadow)">
-    <!-- Destaque no Ventre do Gémeo -->
-    <path d="M182,132 C186,134 186,138 182,140" stroke="#38bdf8" stroke-width="2.5" fill="none" />
-    <!-- Seta de Elevação para Cima -->
-    <path d="M160,148 L160,138" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
-    <polygon points="157,140 160,134 163,140" fill="#2563eb" />
+  <!-- Badge Live Animado -->
+  <g transform="translate(215, 12)">
+    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
+    </circle>
+    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">HEEL SQUEEZE</text>
   </g>
 </svg>

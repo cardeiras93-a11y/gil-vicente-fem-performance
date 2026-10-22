@@ -5,13 +5,13 @@
       <stop offset="70%" stop-color="#e2e8f0" />
       <stop offset="100%" stop-color="#cbd5e1" />
     </linearGradient>
-    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
       <stop offset="0%" stop-color="#1e293b" />
       <stop offset="100%" stop-color="#334155" />
-    </linearGradient>
-    <linearGradient id="plateGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#ef4444" />
-      <stop offset="100%" stop-color="#991b1b" />
     </linearGradient>
     <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#1e3a8a" />
@@ -20,90 +20,40 @@
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
     </filter>
+    <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
   </defs>
 
-  <!-- Fundo do Ginásio -->
+  <!-- Fundo Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
-  <!-- Sombra no Solo -->
-  <ellipse cx="170" cy="154" rx="100" ry="8" fill="#0f172a" opacity="0.22" />
-
-  <!-- Base e Estrutura Principal Leg Press 45° -->
-  <path d="M45,150 L275,150" stroke="#334155" stroke-width="8" stroke-linecap="round" />
-  <line x1="65" y1="150" x2="95" y2="90" stroke="#1e293b" stroke-width="7" stroke-linecap="round" />
-  <line x1="250" y1="150" x2="250" y2="55" stroke="#1e293b" stroke-width="7" stroke-linecap="round" />
-
-  <!-- Trilho / Tubos Guia a 45 Graus -->
-  <line x1="90" y1="125" x2="255" y2="40" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
-  <line x1="98" y1="133" x2="263" y2="48" stroke="#64748b" stroke-width="5" stroke-linecap="round" />
-
-  <!-- Plataforma Fixa de Pés (Footplate a 45°) -->
-  <g transform="translate(242, 38) rotate(45)">
-    <rect x="-18" y="-6" width="36" height="12" rx="3" fill="#0f172a" stroke="#475569" stroke-width="1.5" filter="url(#dropShadow)" />
-    <line x1="-12" y1="-3" x2="-12" y2="3" stroke="#94a3b8" stroke-width="1.5" />
-    <line x1="-4" y1="-3" x2="-4" y2="3" stroke="#94a3b8" stroke-width="1.5" />
-    <line x1="4" y1="-3" x2="4" y2="3" stroke="#94a3b8" stroke-width="1.5" />
-    <line x1="12" y1="-3" x2="12" y2="3" stroke="#94a3b8" stroke-width="1.5" />
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.22" />
+  <line x1="90" y1="140" x2="250" y2="35" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+  <rect x="70" y="90" width="45" height="14" rx="4" transform="rotate(-35 70 90)" fill="#0284c7" filter="url(#dropShadow)" />
+  <circle cx="68" cy="84" r="8" fill="#d97706" />
+  <path d="M82,92 L118,114" stroke="url(#kitGrad)" stroke-width="14" stroke-linecap="round" />
+  <ellipse cx="122" cy="116" rx="9" ry="8" fill="#0f172a" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-24 16; 0 0; 0 0; -24 16" keyTimes="0; 0.45; 0.65; 1" dur="3s" repeatCount="indefinite" />
+    <rect x="195" y="48" width="10" height="36" rx="2" transform="rotate(-45 195 48)" fill="#1e293b" />
+    <circle cx="218" cy="46" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="3" />
+    <line x1="124" y1="114" x2="162" y2="88" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <line x1="162" y1="88" x2="198" y2="60" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <ellipse cx="198" cy="58" rx="8" ry="4" transform="rotate(-45 198 58)" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
   </g>
 
-  <!-- Encosto e Assento do Banco (Azul Cyan #0284c7) -->
-  <rect x="75" y="70" width="12" height="60" rx="3" transform="rotate(-40 75 70)" fill="#0284c7" filter="url(#dropShadow)" />
-  <rect x="100" y="118" width="32" height="10" rx="2" transform="rotate(10 100 118)" fill="#0284c7" filter="url(#dropShadow)" />
-
-  <!-- Cabeça e Tronco 100% Apoiados -->
-  <circle cx="70" cy="62" r="8.5" fill="#d97706" />
-  <path d="M62,58 C62,50 75,50 76,58 Z" fill="#78350f" />
-  <circle cx="61" cy="60" r="3" fill="#78350f" />
-  <path d="M72,70 L108,102 L98,114 L64,80 Z" fill="url(#kitGrad)" />
-  <path d="M98,114 L126,118 L122,130 L95,124 Z" fill="#0f172a" />
-
-  <!-- Braço e Mão Segurando Manípulo Lateral -->
-  <line x1="86" y1="88" x2="108" y2="114" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" />
-  <line x1="106" y1="112" x2="114" y2="120" stroke="#334155" stroke-width="4" stroke-linecap="round" />
-
-  <!-- ==================== POSIÇÃO GHOST INICIAL (Flexão de Joelho a 90° / Fundo) ==================== -->
-  <g opacity="0.38">
-    <!-- Coxa dobrada perto do peito -->
-    <path d="M115,116 L148,82" stroke="#d97706" stroke-width="8" stroke-dasharray="3,3" stroke-linecap="round" />
-    <!-- Tíbia em direção à plataforma -->
-    <path d="M148,82 L210,50" stroke="#d97706" stroke-width="7" stroke-dasharray="3,3" stroke-linecap="round" />
-    <circle cx="148" cy="82" r="4.5" fill="#94a3b8" />
-    <!-- Sled em posição recolhida -->
-    <circle cx="152" cy="74" r="12" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="2,2" />
+  <!-- Badge Live Animado -->
+  <g transform="translate(215, 12)">
+    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
+    </circle>
+    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">LEG PRESS 45°</text>
   </g>
-
-  <!-- ==================== POSIÇÃO FINAL ATIVA (Empurrada a 45° / Press Concluído) ==================== -->
-  <!-- Carrinho Móvel e Discos de Peso no topo -->
-  <g transform="translate(195, 75) rotate(45)">
-    <rect x="-16" y="-12" width="32" height="24" rx="2" fill="url(#machGrad)" />
-    <line x1="0" y1="-12" x2="0" y2="-28" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
-    <circle cx="0" cy="-22" r="16" fill="url(#plateGrad)" stroke="#7f1d1d" stroke-width="1.5" />
-    <circle cx="0" cy="-22" r="6" fill="#1e293b" />
-    <circle cx="0" cy="-22" r="2" fill="#ffffff" />
-  </g>
-
-  <!-- Perna em Extensão Potente (Sem Bloquear o Joelho) -->
-  <path d="M115,116 L175,90" stroke="#d97706" stroke-width="9.5" stroke-linecap="round" />
-  <!-- Destaque Muscular no Quadricípete -->
-  <path d="M124,111 L168,88" stroke="#ef4444" stroke-width="4" stroke-linecap="round" />
-
-  <path d="M175,90 L234,58" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
-  <circle cx="175" cy="90" r="4.5" fill="#d97706" />
-
-  <!-- Sapatilha contra a plataforma -->
-  <path d="M230,52 L242,58 L238,68 L226,62 Z" fill="#1e3a8a" stroke="#ffffff" stroke-width="1.2" />
-
-  <!-- ==================== VETORES DE MOVIMENTO / EMPURRÃO 45° ==================== -->
-  <g filter="url(#dropShadow)">
-    <!-- Trajetória dupla de empurrão e descida controlada -->
-    <line x1="150" y1="62" x2="198" y2="38" stroke="#2563eb" stroke-width="3" stroke-linecap="round" />
-    <polygon points="206,34 194,36 199,46" fill="#2563eb" />
-    <!-- Seta retorno excêntrico -->
-    <path d="M190,48 L170,58" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2" />
-  </g>
-
-  <!-- Tag Identificadora -->
-  <rect x="238" y="15" width="70" height="18" rx="4" fill="#0f172a" opacity="0.85" />
-  <text x="273" y="27" fill="#38bdf8" font-size="8.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" text-anchor="middle">LEG PRESS 45°</text>
 </svg>
