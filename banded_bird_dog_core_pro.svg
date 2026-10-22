@@ -29,32 +29,33 @@
     </filter>
   </defs>
 
-  <!-- Fundo Ginásio & Linha de Solo -->
+  <!-- Fundo do Ginásio & Linha de Solo -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
   <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
 
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(210, 10)">
+    <rect x="0" y="0" width="102" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DEADBUG CORE</text>
+  </g>
+
+
   <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.2" />
-  <!-- Tronco Selado no Solo -->
   <rect x="110" y="132" width="65" height="12" rx="4" fill="url(#kitGrad)" />
   <circle cx="100" cy="138" r="7.5" fill="#d97706" />
   <ellipse cx="178" cy="138" rx="8" ry="7" fill="#0f172a" />
-  <!-- Membro Superior e Inferior Opostos Estendendo (Deadbug) -->
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 178 138; 35 178 138; 35 178 138; 0 178 138" keyTimes="0; 0.45; 0.65; 1" dur="2.8s" repeatCount="indefinite" />
-    <line x1="178" y1="138" x2="230" y2="120" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
-    <ellipse cx="233" cy="120" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" />
+    <animateTransform attributeName="transform" type="rotate" values="0 178 138; 40 178 138; 40 178 138; 0 178 138" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="178" y1="138" x2="234" y2="118" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="237" cy="118" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" />
   </g>
   <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 115 132; -40 115 132; -40 115 132; 0 115 132" keyTimes="0; 0.45; 0.65; 1" dur="2.8s" repeatCount="indefinite" />
-    <line x1="115" y1="132" x2="80" y2="95" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+    <animateTransform attributeName="transform" type="rotate" values="0 115 132; -48 115 132; -48 115 132; 0 115 132" keyTimes="0; 0.45; 0.65; 1" dur="2.7s" repeatCount="indefinite" />
+    <line x1="115" y1="132" x2="75" y2="92" stroke="#d97706" stroke-width="5.5" stroke-linecap="round" />
   </g>
 
-  <!-- Badge Live Animado -->
-  <g transform="translate(215, 12)">
-    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
-    <circle cx="12" cy="9" r="3.5" fill="#22c55e">
-      <animate attributeName="opacity" values="1; 0.2; 1" dur="1.1s" repeatCount="indefinite" />
-    </circle>
-    <text x="53" y="12.5" fill="#38bdf8" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">DEADBUG CORE</text>
-  </g>
 </svg>
