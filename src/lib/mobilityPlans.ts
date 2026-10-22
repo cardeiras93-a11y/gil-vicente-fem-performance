@@ -155,22 +155,22 @@ export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
 };
 
 import { ALL_NINE_PLANS } from './generatedGymPlans';
+import {
+  ANAMNESE_PREVENTION_PLANS,
+  DEFAULT_ANAMNESE_ASSIGNMENTS,
+  isExcludedFromAutoPlans,
+} from './anamnesePlans';
 
-export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = ALL_NINE_PLANS;
+export { isExcludedFromAutoPlans };
 
-// Default assignments: automatic link for all Goalkeepers
+export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = [
+  ...ANAMNESE_PREVENTION_PLANS,
+  ...ALL_NINE_PLANS,
+];
+
+// Default assignments: Anamnese clinical assignments (Carol & Payton strictly excluded)
 export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
-  'pos_GR_mobilidade_pre_treino_gr': {
-    id: 'pos_GR_mobilidade_pre_treino_gr',
-    targetType: 'position',
-    targetId: 'GR',
-    targetName: 'Todas as Guarda-Redes (GR)',
-    planId: 'mobilidade_pre_treino_gr',
-    assignedAt: '2026-10-19T00:00:00.000Z',
-    assignedBy: 'Sistema',
-    active: true,
-    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
-  },
+  ...DEFAULT_ANAMNESE_ASSIGNMENTS,
 };
 
 export function getStoredMobilityPlans(): MobilityPlan[] {
@@ -232,7 +232,9 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
     if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
-      return parsed;
+      const merged = { ...DEFAULT_PLAN_ASSIGNMENTS, ...parsed };
+      delete merged['pos_GR_mobilidade_pre_treino_gr'];
+      return merged;
     }
     return { ...DEFAULT_PLAN_ASSIGNMENTS };
   } catch {
@@ -352,6 +354,9 @@ export function togglePositionPlanAssignment(
       : (ath.position !== 'GR' && !isGoalkeeper(ath.name));
 
     if (isThisPos) {
+      // Strictly exclude Carol and Payton from bulk automatic assignment
+      if (isExcludedFromAutoPlans(ath)) return;
+
       const athKey = `athlete_${ath.id}_${planId}`;
       current[athKey] = {
         id: athKey,
@@ -392,6 +397,9 @@ export function toggleAllSquadPlanAssignment(
   };
 
   athletesList.forEach((ath) => {
+    // Strictly exclude Carol and Payton from bulk automatic assignment
+    if (isExcludedFromAutoPlans(ath)) return;
+
     const athKey = `athlete_${ath.id}_${planId}`;
     current[athKey] = {
       id: athKey,
@@ -411,11 +419,25 @@ export function toggleAllSquadPlanAssignment(
 
 /**
  * Returns all active plans assigned to an athlete (direct athlete match, position match, or 'all').
+ * Strict exception: Carol (ath-2) and Payton (ath-26) will NEVER receive automatic plans.
  */
 export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   if (!athlete) return [];
   const allPlans = getStoredMobilityPlans();
   const assignments = getStoredAthletePlanAssignments();
+
+  // Strict exception for Carol and Payton: zero automatic plans
+  if (isExcludedFromAutoPlans(athlete)) {
+    // Only return plans if explicitly assigned manually by a coach (assignedBy === 'Treinador')
+    const manualPlans: MobilityPlan[] = [];
+    allPlans.forEach((plan) => {
+      const direct = assignments[`athlete_${athlete.id}_${plan.id}`];
+      if (direct && direct.active && direct.assignedBy === 'Treinador') {
+        manualPlans.push(plan);
+      }
+    });
+    return manualPlans;
+  }
 
   const isGk = athlete.position === 'GR' || (athlete.name ? isGoalkeeper(athlete.name) : false);
   const position = isGk ? 'GR' : 'Campo';

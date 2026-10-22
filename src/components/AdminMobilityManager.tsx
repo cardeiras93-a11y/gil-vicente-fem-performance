@@ -10,6 +10,7 @@ import {
   toggleAllSquadPlanAssignment,
   assignPlanToTarget,
   unassignPlan,
+  isExcludedFromAutoPlans,
 } from '@/lib/mobilityPlans';
 import { getDynamicAthletes } from '@/lib/storage';
 import { MobilityPlanModal } from './MobilityPlanModal';
@@ -103,6 +104,10 @@ export const AdminMobilityManager: React.FC = () => {
     const directAsgn = assignments[`athlete_${ath.id}_${activePlan.id}`];
     if (directAsgn !== undefined) {
       return Boolean(directAsgn.active);
+    }
+    // Strict exception for Carol and Payton: zero automatic plans
+    if (isExcludedFromAutoPlans(ath)) {
+      return false;
     }
     // 2. Position assignment
     const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
