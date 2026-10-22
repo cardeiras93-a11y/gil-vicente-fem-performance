@@ -1474,10 +1474,10 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
     durationMinutes: 20,
     durationTextPt: "20 MIN",
     durationTextEn: "20 MIN",
-    warmupPt: null,
-    warmupEn: null,
-    finisherPt: null,
-    finisherEn: null,
+    warmupPt: "",
+    warmupEn: "",
+    finisherPt: "",
+    finisherEn: "",
     blocks: [
       {
         id: "mobilidade_pre_treino_gr_block_01",
