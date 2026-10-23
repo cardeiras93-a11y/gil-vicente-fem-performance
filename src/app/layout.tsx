@@ -50,7 +50,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              var CURRENT_BUILD = '20261019_v45_crest';
+              var CURRENT_BUILD = '20261023_v46_banner';
               try {
                 if (localStorage.getItem('femperf_build') !== CURRENT_BUILD) {
                   localStorage.setItem('femperf_build', CURRENT_BUILD);

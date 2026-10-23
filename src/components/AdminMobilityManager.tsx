@@ -184,59 +184,68 @@ export const AdminMobilityManager: React.FC = () => {
       )}
 
       {/* Header Banner */}
-      <div className="rounded-3xl border border-slate-800 bg-gradient-to-r from-blue-950/40 via-dark-card to-dark-surface p-5 sm:p-6 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="rounded-3xl border border-slate-800 bg-gradient-to-r from-blue-950/40 via-dark-card to-dark-surface p-5 sm:p-6 shadow-xl relative overflow-hidden space-y-4">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <div className="p-2 rounded-xl bg-blue-600/20 text-blue-400 border border-blue-500/30">
-                <Dumbbell className="h-5 w-5" />
+        {/* Top: Title & Description */}
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4 relative z-10">
+          <div className="space-y-2 flex-1 min-w-0">
+            <div className="flex items-center space-x-3">
+              <div className="p-2.5 rounded-2xl bg-blue-600/20 text-blue-400 border border-blue-500/30 shrink-0">
+                <Dumbbell className="h-6 w-6" />
               </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-tight">
-                  Biblioteca de Planos de Ginásio & Mobilidade ({plans.length} Planos)
-                </h2>
-                <span className="text-[10px] text-blue-400 font-extrabold uppercase tracking-wide">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="text-lg sm:text-xl font-black text-slate-100 uppercase tracking-tight">
+                    Biblioteca de Planos de Ginásio & Mobilidade
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-blue-300 text-xs font-black whitespace-nowrap">
+                    {plans.length} Planos
+                  </span>
+                </div>
+                <p className="text-[11px] text-blue-400 font-extrabold uppercase tracking-wide mt-0.5">
                   Gil Vicente FC • Versão Bilingue (PT / ENG) com Desenhos Vetoriais
-                </span>
+                </p>
               </div>
             </div>
-            <p className="text-xs text-slate-400 max-w-2xl">
+            <p className="text-xs text-slate-400 max-w-3xl leading-relaxed">
               Gere os planos de força, potência e mobilidade. Associa qualquer plano ao perfil das atletas, posições ou a todo o plantel. As atualizações sincronizam instantaneamente na aplicação de cada jogadora.
             </p>
           </div>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-2 shrink-0">
-            <a
-              href="/planos/plano_anamnese_preventivo_plantel.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/50 text-xs font-black transition-all shadow-lg shadow-emerald-900/40 active:scale-95"
-              title="Abrir o Dossiê Clínico com Planos Gerais e Planos Individuais de cada jogadora"
-            >
-              <Sparkles className="h-4 w-4 text-emerald-200" />
-              <span>Dossiê Clínico Anamnese (Plantel & Atletas)</span>
-            </a>
-            <a
-              href="/planos/index.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-black transition-all shadow-md active:scale-95"
-              title="Abrir os 9 planos de máquinas de ginásio"
-            >
-              <ExternalLink className="h-4 w-4 text-brand-lime" />
-              <span>Máquinas de Ginásio A4</span>
-            </a>
-            <button
-              type="button"
-              onClick={() => setSelectedPlanForPreview(activePlan)}
-              className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/30 active:scale-95 cursor-pointer"
-            >
-              <Eye className="h-4 w-4" />
-              <span>Ver Plano Completo (Como a Jogadora Vê)</span>
-            </button>
-          </div>
+        {/* Action Buttons Row */}
+        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-800/80 relative z-10">
+          <a
+            href="/planos/plano_anamnese_preventivo_plantel.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-600/90 hover:bg-emerald-500 text-white border border-emerald-400/50 text-xs font-black transition-all shadow-lg shadow-emerald-950/50 active:scale-95"
+            title="Abrir o Dossiê Clínico com Planos Gerais e Planos Individuais de cada jogadora"
+          >
+            <Sparkles className="h-4 w-4 text-emerald-200 shrink-0" />
+            <span>Dossiê Clínico Anamnese (Plantel & Atletas)</span>
+          </a>
+
+          <a
+            href="/planos/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-black transition-all shadow-md active:scale-95"
+            title="Abrir os 9 planos de máquinas de ginásio"
+          >
+            <ExternalLink className="h-4 w-4 text-brand-lime shrink-0" />
+            <span>Máquinas de Ginásio A4</span>
+          </a>
+
+          <button
+            type="button"
+            onClick={() => setSelectedPlanForPreview(activePlan)}
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-black transition-all shadow-lg shadow-blue-600/30 active:scale-95 cursor-pointer ml-auto sm:ml-0"
+          >
+            <Eye className="h-4 w-4 shrink-0" />
+            <span>Ver Plano Completo (Como a Jogadora Vê)</span>
+          </button>
         </div>
       </div>
 
