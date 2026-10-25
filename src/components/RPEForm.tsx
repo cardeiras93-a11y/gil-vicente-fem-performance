@@ -32,27 +32,47 @@ export const RPEForm: React.FC<RPEFormProps> = ({
   const [showFatigueLegend, setShowFatigueLegend] = useState<boolean>(false);
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const [existingToday, setExistingToday] = useState<RPEEntry | null>(() => {
+
+  // Identifica se hoje há Ginásio de Equipa: Membros Inferiores programado
+  const [sessionsMap, setSessionsMap] = useState<Record<string, any>>(() => getStoredTrainingSessions());
+  const todaySession = sessionsMap[todayStr];
+  const hasGymLower = Boolean(todaySession?.complementaryWork?.lowerBody);
+
+  // Sessão ativa: 'field' (Treino de Campo) ou 'gym_lower' (Ginásio Membros Inferiores)
+  const [sessionType, setSessionType] = useState<'field' | 'gym_lower'>('field');
+
+  const [fieldEntry, setFieldEntry] = useState<RPEEntry | null>(() => {
     const localEntries = getRPELocally(activeAthlete.id);
-    return localEntries.find((e) => e.date === todayStr) || null;
+    return localEntries.find((e) => e.date === todayStr && (e.sessionType || 'field') === 'field') || null;
   });
+
+  const [gymEntry, setGymEntry] = useState<RPEEntry | null>(() => {
+    const localEntries = getRPELocally(activeAthlete.id);
+    return localEntries.find((e) => e.date === todayStr && e.sessionType === 'gym_lower') || null;
+  });
+
+  const existingActive = sessionType === 'gym_lower' ? gymEntry : fieldEntry;
 
   const [deadlineCheck, setDeadlineCheck] = useState(() =>
     isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id)
   );
 
-
   useEffect(() => {
     const refreshData = () => {
+      const allSessions = getStoredTrainingSessions();
+      setSessionsMap(allSessions);
+
       const localEntries = getRPELocally(activeAthlete.id);
-      const found = localEntries.find((e) => e.date === todayStr) || null;
-      setExistingToday(found);
+      const foundField = localEntries.find((e) => e.date === todayStr && (e.sessionType || 'field') === 'field') || null;
+      const foundGym = localEntries.find((e) => e.date === todayStr && e.sessionType === 'gym_lower') || null;
+      setFieldEntry(foundField);
+      setGymEntry(foundGym);
       setDeadlineCheck(isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id));
     };
 
     refreshData();
 
-    // Sincronização direta e instantânea com Supabase para garantir que submissões de PSE feitas noutro dispositivo aparecem no telemóvel
+    // Sincronização direta com Supabase
     secureFetch(`/api/rpe?athleteId=${activeAthlete.id}&t=${Date.now()}`)
       .then((res) => res.json())
       .then((resData) => {
@@ -76,12 +96,30 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     };
   }, [todayStr, activeAthlete.id]);
 
+  const handleSelectSessionType = (type: 'field' | 'gym_lower') => {
+    setSessionType(type);
+    setAllowEdit(false);
+    setError('');
+    const target = type === 'gym_lower' ? gymEntry : fieldEntry;
+    if (target) {
+      setPhysicalDemand(target.physicalDemand ?? null);
+      setPostFatigue(target.postFatigue ?? null);
+      setMuscleFatigue(target.muscleFatigue || {});
+      setComments(target.comments || '');
+    } else {
+      setPhysicalDemand(null);
+      setPostFatigue(null);
+      setMuscleFatigue({});
+      setComments('');
+    }
+  };
+
   const handleEditClick = () => {
-    if (existingToday) {
-      setPhysicalDemand(existingToday.physicalDemand ?? null);
-      setPostFatigue(existingToday.postFatigue ?? null);
-      setMuscleFatigue(existingToday.muscleFatigue || {});
-      setComments(existingToday.comments || '');
+    if (existingActive) {
+      setPhysicalDemand(existingActive.physicalDemand ?? null);
+      setPostFatigue(existingActive.postFatigue ?? null);
+      setMuscleFatigue(existingActive.muscleFatigue || {});
+      setComments(existingActive.comments || '');
     }
     setAllowEdit(true);
   };
@@ -91,7 +129,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     setError('');
 
     if (physicalDemand === null || postFatigue === null) {
-      setError('Por favor seleciona a exigência física do treino e o nível de fadiga pós-treino.');
+      setError(
+        sessionType === 'gym_lower'
+          ? 'Por favor seleciona a exigência física do ginásio e o nível de fadiga muscular.'
+          : 'Por favor seleciona a exigência física do treino e o nível de fadiga pós-treino.'
+      );
       return;
     }
 
@@ -99,8 +141,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
     const today = new Date().toISOString().split('T')[0];
     const sessions = getStoredTrainingSessions();
-    const sessionDurationMin = sessions[today]?.durationMin || 90;
-    const matchDayOffset = sessions[today]?.matchDayOffset || 'MD-3';
+    const currSession = sessions[today];
+    const targetSessionType = hasGymLower ? sessionType : 'field';
+    const targetExisting = targetSessionType === 'gym_lower' ? gymEntry : fieldEntry;
+    const sessionDurationMin = targetSessionType === 'gym_lower' ? 45 : (currSession?.durationMin || 90);
+    const matchDayOffset = currSession?.matchDayOffset || 'MD-3';
     const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
 
     const currentDeadlineCheck = isSubmissionPastDeadline(today, 'rpe', activeAthlete.id);
@@ -109,16 +154,16 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       currentDeadlineCheck.isPast &&
       !currentDeadlineCheck.isAuthorizedLate
     );
-    // Preserva estado inicial a horas caso esteja apenas a alterar valores durante o dia:
-    const isLate = existingToday ? (existingToday.isLate ?? isSubmissionLate) : isSubmissionLate;
-    const isAuthorizedLate = Boolean(currentDeadlineCheck.isAuthorizedLate || existingToday?.isAuthorizedLate);
-    const keepFine = isAuthorizedLate ? false : (existingToday?.keepFine !== undefined ? existingToday.keepFine : isLate);
+    const isLate = targetExisting ? (targetExisting.isLate ?? isSubmissionLate) : isSubmissionLate;
+    const isAuthorizedLate = Boolean(currentDeadlineCheck.isAuthorizedLate || targetExisting?.isAuthorizedLate);
+    const keepFine = isAuthorizedLate ? false : (targetExisting?.keepFine !== undefined ? targetExisting.keepFine : isLate);
 
     const newEntry: RPEEntry = {
-      id: existingToday ? existingToday.id : `rpe-${Date.now()}`,
+      id: targetExisting ? targetExisting.id : `rpe-${activeAthlete.id}-${today}-${targetSessionType}`,
       athleteId: activeAthlete.id,
       athleteName: activeAthlete.name,
       date: today,
+      sessionType: targetSessionType,
       matchDayOffset,
       physicalDemand,
       sessionDurationMin,
@@ -130,8 +175,8 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       isAuthorizedLate,
       keepFine,
       approvalStatus: 'approved',
-      submittedAt: existingToday?.submittedAt || new Date().toISOString(),
-      createdAt: existingToday?.createdAt || new Date().toISOString(),
+      submittedAt: targetExisting?.submittedAt || new Date().toISOString(),
+      createdAt: targetExisting?.createdAt || new Date().toISOString(),
     };
 
     const redirectDelay = 1800;
@@ -155,7 +200,12 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
       setTimeout(() => {
         setIsSuccess(false);
-        onSubmitSuccess();
+        // Se preencheu Campo e ainda tem Ginásio pendente, comuta para o Ginásio
+        if (targetSessionType === 'field' && hasGymLower && !gymEntry) {
+          handleSelectSessionType('gym_lower');
+        } else {
+          onSubmitSuccess();
+        }
       }, redirectDelay);
     } catch (err) {
       console.warn('Falha na API. Guardado localmente.');
@@ -164,7 +214,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       setIsSuccess(true);
       setTimeout(() => {
         setIsSuccess(false);
-        onSubmitSuccess();
+        if (targetSessionType === 'field' && hasGymLower && !gymEntry) {
+          handleSelectSessionType('gym_lower');
+        } else {
+          onSubmitSuccess();
+        }
       }, redirectDelay);
     }
   };
@@ -189,127 +243,270 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
   if (isSuccess) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 rounded-2xl border border-brand-cyan/40 bg-dark-card p-6 sm:p-8 text-center shadow-xl animate-fade-in">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-cyan text-slate-950 shadow-lg shadow-brand-cyan/30">
+      <div className={`flex flex-col items-center justify-center space-y-4 rounded-2xl border p-6 sm:p-8 text-center shadow-xl animate-fade-in ${
+        sessionType === 'gym_lower'
+          ? 'border-purple-500/40 bg-purple-950/20'
+          : 'border-brand-cyan/40 bg-dark-card'
+      }`}>
+        <div className={`flex h-16 w-16 items-center justify-center rounded-full text-slate-950 shadow-lg ${
+          sessionType === 'gym_lower'
+            ? 'bg-purple-400 shadow-purple-500/30'
+            : 'bg-brand-cyan shadow-brand-cyan/30'
+        }`}>
           <Check className="h-8 w-8 stroke-[3]" />
         </div>
-        <h3 className="text-xl font-extrabold text-slate-100">{t.rpe.successMessage}</h3>
+        <h3 className="text-xl font-extrabold text-slate-100">
+          {sessionType === 'gym_lower'
+            ? 'PSE Ginásio (MMII) Guardada!'
+            : hasGymLower
+            ? 'PSE Treino de Campo Guardada!'
+            : t.rpe.successMessage}
+        </h3>
         <p className="text-xs text-slate-300">
-          {activeAthlete.name}
+          {activeAthlete.name} &bull; {sessionType === 'gym_lower' ? 'Força & Potência MMII' : 'Treino de Campo'}
         </p>
-
-      </div>
-    );
-  }
-
-  if (existingToday && !allowEdit) {
-    return (
-      <div className="rounded-2xl border border-cyan-500/40 bg-dark-card p-6 shadow-xl space-y-5 animate-fade-in">
-        <div className="flex items-center space-x-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
-            <Check className="h-6 w-6 stroke-[3]" />
-          </div>
-          <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400">
-              PSE (RPE) Concluído Hoje
-            </span>
-            <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
-          </div>
-        </div>
-
-        <div className="rounded-xl bg-slate-900/80 p-4 border border-slate-800 space-y-3">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">Data de registo:</span>
-            <span className="font-bold text-slate-200">{existingToday.date}</span>
-          </div>
-          {existingToday.submittedAt && (
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">Hora de submissão:</span>
-              <span className="font-bold text-slate-200">
-                {new Date(existingToday.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </span>
-            </div>
-          )}
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">Esforço do Treino (Borg):</span>
-            <span className="font-black text-brand-cyan text-base">
-              {existingToday.physicalDemand} / 10
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-slate-400">Fadiga Pós-Treino:</span>
-            <span className="font-black text-amber-400 text-sm">
-              {existingToday.postFatigue} / 10
-            </span>
-          </div>
-
-        </div>
-
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={handleEditClick}
-            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2"
-          >
-            <span>✏️ Rever ou Atualizar Respostas</span>
-          </button>
-        </div>
+        {sessionType === 'field' && hasGymLower && !gymEntry && (
+          <p className="text-[11px] font-bold text-purple-300 animate-pulse bg-purple-950/60 border border-purple-500/30 px-3 py-1.5 rounded-xl">
+            A comutar para a PSE de Ginásio (MMII)...
+          </p>
+        )}
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 pb-8">
-      {/* Header Banner */}
-      <div className="rounded-xl border border-brand-cyan/30 bg-gradient-to-r from-dark-card to-dark-surface p-4 shadow-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-brand-cyan">
-              {t.rpe.title}
+    <div className="space-y-4 pb-8">
+      {/* OPÇÃO 2: CARTÕES SEPARADOS DE SESSÃO QUANDO HÁ GINÁSIO DE EQUIPA MMII */}
+      {hasGymLower && (
+        <div className="rounded-2xl bg-dark-card border border-purple-500/40 p-3 sm:p-4 shadow-xl space-y-3 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-950/90 border border-purple-500/50 text-base shadow-sm">
+                🏋️‍♀️
+              </span>
+              <div>
+                <h3 className="text-xs font-black uppercase text-purple-200 tracking-tight">
+                  Ginásio de Equipa &bull; Membros Inferiores
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Dia com 2 avaliações separadas: após o campo e após o ginásio.
+                </p>
+              </div>
+            </div>
+            <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 shrink-0">
+              2 PSEs Separadas
             </span>
-            <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
           </div>
-          <div className="flex flex-col items-end space-y-1">
-            <span className="text-xs font-semibold text-slate-400">
-              {new Date().toLocaleDateString()}
-            </span>
-            {deadlineCheck.hasDeadline && !deadlineCheck.isPast && (
-              <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${
-                deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
-                  : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+
+          <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+            {/* Cartão 1: PSE Treino de Campo */}
+            <button
+              type="button"
+              onClick={() => handleSelectSessionType('field')}
+              className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
+                sessionType === 'field'
+                  ? 'border-brand-cyan bg-cyan-950/40 ring-2 ring-brand-cyan/40 shadow-lg'
+                  : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-lg">⚽</span>
+                {fieldEntry ? (
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
+                    <Check className="h-2.5 w-2.5 inline" />
+                    <span>Borg {fieldEntry.physicalDemand}/10</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md animate-pulse">
+                    Pendente
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-black text-slate-100">1. Treino de Campo</span>
+              <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                {todaySession?.startTime && todaySession?.endTime ? `${todaySession.startTime} - ${todaySession.endTime}` : 'Campo / Relvado'}
+              </span>
+            </button>
+
+            {/* Cartão 2: PSE Ginásio MMII */}
+            <button
+              type="button"
+              onClick={() => handleSelectSessionType('gym_lower')}
+              className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
+                sessionType === 'gym_lower'
+                  ? 'border-purple-400 bg-purple-950/40 ring-2 ring-purple-500/40 shadow-lg'
+                  : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-lg">🏋️‍♀️</span>
+                {gymEntry ? (
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
+                    <Check className="h-2.5 w-2.5 inline" />
+                    <span>Borg {gymEntry.physicalDemand}/10</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-md animate-pulse">
+                    Pendente
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-black text-slate-100">2. Ginásio MMII</span>
+              <span className="text-[10px] text-purple-300/80 mt-0.5 font-medium">
+                Força & Potência &bull; 45 min
+              </span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ESTADO CONCLUÍDO DA SESSÃO SELECIONADA */}
+      {existingActive && !allowEdit ? (
+        <div className={`rounded-2xl border p-6 shadow-xl space-y-5 animate-fade-in ${
+          sessionType === 'gym_lower'
+            ? 'border-purple-500/40 bg-dark-card'
+            : 'border-cyan-500/40 bg-dark-card'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
+                sessionType === 'gym_lower'
+                  ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 text-xl'
+                  : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
               }`}>
-                <Clock className="h-3 w-3" />
-                <span>
-                  {deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
-                    ? `Faltam ${deadlineCheck.minutesRemaining} min (${deadlineCheck.deadlineTime})`
-                    : `Limite: ${deadlineCheck.deadlineTime}`}
+                {sessionType === 'gym_lower' ? '🏋️‍♀️' : <Check className="h-6 w-6 stroke-[3]" />}
+              </div>
+              <div>
+                <span className={`text-[10px] uppercase font-bold tracking-wider ${
+                  sessionType === 'gym_lower' ? 'text-purple-300' : 'text-cyan-400'
+                }`}>
+                  {sessionType === 'gym_lower' ? 'PSE Ginásio (MMII) Concluída' : 'PSE Treino de Campo Concluída'}
                 </span>
+                <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
+              </div>
+            </div>
+
+            {hasGymLower && (
+              <span className={`text-[10px] font-black px-2.5 py-1 rounded-md border ${
+                sessionType === 'gym_lower'
+                  ? 'bg-purple-950/80 border-purple-500/40 text-purple-200'
+                  : 'bg-slate-900 border-slate-800 text-cyan-300'
+              }`}>
+                {sessionType === 'gym_lower' ? '🏋️ Força MMII' : '⚽ Campo'}
               </span>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Editing Mode Banner */}
-      {allowEdit && existingToday && (
-        <div className="rounded-xl bg-cyan-500/15 border border-cyan-500/40 p-3.5 flex items-center justify-between text-xs text-cyan-200 animate-fade-in shadow-sm">
-          <div className="flex items-center space-x-2">
-            <span className="text-base shrink-0">✏️</span>
-            <div>
-              <span className="font-extrabold text-cyan-100">Modo de Edição Ativo</span>
-              <p className="text-[11px] text-cyan-200/80">Podes alterar a tua avaliação de esforço/fadiga e guardar novamente.</p>
+          <div className="rounded-xl bg-slate-900/80 p-4 border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Data de registo:</span>
+              <span className="font-bold text-slate-200">{existingActive.date}</span>
+            </div>
+            {existingActive.submittedAt && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Hora de submissão:</span>
+                <span className="font-bold text-slate-200">
+                  {new Date(existingActive.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">
+                {sessionType === 'gym_lower' ? 'Exigência de Força MMII (Borg):' : 'Esforço do Treino (Borg):'}
+              </span>
+              <span className={`font-black text-base ${
+                sessionType === 'gym_lower' ? 'text-purple-300' : 'text-brand-cyan'
+              }`}>
+                {existingActive.physicalDemand} / 10
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">
+                {sessionType === 'gym_lower' ? 'Fadiga Muscular Pós-Ginásio:' : 'Fadiga Pós-Treino:'}
+              </span>
+              <span className="font-black text-amber-400 text-sm">
+                {existingActive.postFatigue} / 10
+              </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={() => setAllowEdit(false)}
-            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-[11px] transition-all cursor-pointer shrink-0"
-          >
-            Cancelar Edição
-          </button>
+
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={handleEditClick}
+              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer"
+            >
+              <span>✏️ Rever ou Atualizar Respostas</span>
+            </button>
+          </div>
         </div>
-      )}
+      ) : (
+        /* FORMULÁRIO DE PREENCHIMENTO */
+        <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
+          {/* Header Banner */}
+          <div className={`rounded-xl border p-4 shadow-md ${
+            sessionType === 'gym_lower'
+              ? 'border-purple-500/40 bg-gradient-to-r from-purple-950/40 to-dark-surface'
+              : 'border-brand-cyan/30 bg-gradient-to-r from-dark-card to-dark-surface'
+          }`}>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className={`text-[10px] uppercase font-bold tracking-wider ${
+                  sessionType === 'gym_lower' ? 'text-purple-300' : 'text-brand-cyan'
+                }`}>
+                  {sessionType === 'gym_lower'
+                    ? 'PSE GINÁSIO — MEMBROS INFERIORES'
+                    : hasGymLower
+                    ? 'PSE TREINO DE CAMPO'
+                    : t.rpe.title}
+                </span>
+                <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
+              </div>
+              <div className="flex flex-col items-end space-y-1">
+                <span className="text-xs font-semibold text-slate-400">
+                  {new Date().toLocaleDateString()}
+                </span>
+                {sessionType === 'gym_lower' ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-purple-500/20 text-purple-300 border-purple-500/40">
+                    ⚡ Força & Potência MMII
+                  </span>
+                ) : deadlineCheck.hasDeadline && !deadlineCheck.isPast ? (
+                  <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${
+                    deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
+                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                      : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                  }`}>
+                    <Clock className="h-3 w-3" />
+                    <span>
+                      {deadlineCheck.minutesRemaining !== undefined && deadlineCheck.minutesRemaining <= 30
+                        ? `Faltam ${deadlineCheck.minutesRemaining} min (${deadlineCheck.deadlineTime})`
+                        : `Limite: ${deadlineCheck.deadlineTime}`}
+                    </span>
+                  </span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+
+          {/* Editing Mode Banner */}
+          {allowEdit && existingActive && (
+            <div className="rounded-xl bg-cyan-500/15 border border-cyan-500/40 p-3.5 flex items-center justify-between text-xs text-cyan-200 animate-fade-in shadow-sm">
+              <div className="flex items-center space-x-2">
+                <span className="text-base shrink-0">✏️</span>
+                <div>
+                  <span className="font-extrabold text-cyan-100">Modo de Edição Ativo</span>
+                  <p className="text-[11px] text-cyan-200/80">Podes alterar a tua avaliação de esforço/fadiga e guardar novamente.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAllowEdit(false)}
+                className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-bold text-[11px] transition-all cursor-pointer shrink-0"
+              >
+                Cancelar Edição
+              </button>
+            </div>
+          )}
 
 
 
@@ -506,16 +703,30 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-xl bg-gradient-to-r from-brand-cyan to-blue-500 py-4 text-sm font-extrabold text-slate-950 shadow-xl shadow-brand-cyan/25 hover:from-cyan-400 hover:to-blue-600 active:scale-98 transition-all disabled:opacity-50"
+        className={`w-full rounded-xl py-4 text-sm font-extrabold text-slate-950 shadow-xl active:scale-98 transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center space-x-2 ${
+          sessionType === 'gym_lower'
+            ? 'bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-300 hover:to-indigo-300 shadow-purple-500/25'
+            : 'bg-gradient-to-r from-brand-cyan to-blue-500 hover:from-cyan-400 hover:to-blue-600 shadow-brand-cyan/25'
+        }`}
       >
-        {isSubmitting
-          ? t.rpe.submitting
-          : allowEdit
-          ? '💾 Guardar Alterações do PSE (RPE)'
-          : deadlineCheck.requireApproval
-          ? 'Submeter Questionário (Sujeito a Validação)'
-          : t.rpe.submit}
+        {isSubmitting ? (
+          <span>{t.rpe.submitting}</span>
+        ) : allowEdit ? (
+          <span>💾 Guardar Alterações da PSE ({sessionType === 'gym_lower' ? 'Ginásio MMII' : 'Campo'})</span>
+        ) : deadlineCheck.requireApproval ? (
+          <span>Submeter Questionário (Sujeito a Validação)</span>
+        ) : (
+          <span>
+            {sessionType === 'gym_lower'
+              ? 'Submeter PSE Ginásio (MMII)'
+              : hasGymLower
+              ? 'Submeter PSE Treino de Campo'
+              : t.rpe.submit}
+          </span>
+        )}
       </button>
     </form>
+    )}
+    </div>
   );
 };

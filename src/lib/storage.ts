@@ -1239,8 +1239,11 @@ export function saveRPELocally(entry: RPEEntry): void {
       entry.sessionDurationMin = sessions[entry.date]?.durationMin || 90;
     }
 
+    const targetType = entry.sessionType || 'field';
     const list: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
-    const index = list.findIndex((item) => item.id === entry.id || (item.date === entry.date && item.athleteId === entry.athleteId));
+    const index = list.findIndex(
+      (item) => item.id === entry.id || (item.date === entry.date && item.athleteId === entry.athleteId && (item.sessionType || 'field') === targetType)
+    );
     if (index !== -1) {
       list[index] = entry;
     } else {

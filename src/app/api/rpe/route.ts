@@ -38,7 +38,8 @@ function saveEntryToFile(entry: any) {
   try {
     ensureFileExists();
     const entries = getStoredEntries();
-    const index = entries.findIndex((e) => e.id === entry.id || (e.date === entry.date && e.athleteId === entry.athleteId));
+    const targetType = entry.sessionType || 'field';
+    const index = entries.findIndex((e) => e.id === entry.id || (e.date === entry.date && e.athleteId === entry.athleteId && (e.sessionType || 'field') === targetType));
     if (index !== -1) {
       entries[index] = { ...entries[index], ...entry };
     } else {
@@ -64,8 +65,9 @@ export async function GET(request: Request) {
     const localEntries = getStoredEntries();
     localEntries.forEach((e) => {
       if (e) {
+        e.sessionType = e.sessionType || 'field';
         e.sessionDurationMin = Number(e.sessionDurationMin || 90);
-        entryMap.set(e.id || `${e.athleteId}-${e.date}`, e);
+        entryMap.set(e.id || `${e.athleteId}-${e.date}-${e.sessionType}`, e);
       }
     });
 
@@ -79,11 +81,13 @@ export async function GET(request: Request) {
         const { data, error } = await query;
         if (!error && data) {
           data.forEach((item: any) => {
+            const sType = item.session_type || item.sessionType || 'field';
             const mapped = {
-              id: item.id || `rpe-${item.athlete_id}-${item.date}`,
+              id: item.id || `rpe-${item.athlete_id}-${item.date}-${sType}`,
               athleteId: item.athlete_id,
               athleteName: item.athlete_name,
               date: item.date,
+              sessionType: sType,
               physicalDemand: Number(item.physical_demand),
               postFatigue: Number(item.post_fatigue),
               sessionDurationMin: Number(item.session_duration_min || 90),
@@ -119,8 +123,9 @@ export async function GET(request: Request) {
           if (Array.isArray(fallbackList)) {
             fallbackList.forEach((e) => {
               if (e) {
+                e.sessionType = e.sessionType || 'field';
                 e.sessionDurationMin = Number(e.sessionDurationMin || 90);
-                const key = e.id || `${e.athleteId}-${e.date}`;
+                const key = e.id || `${e.athleteId}-${e.date}-${e.sessionType}`;
                 if (!entryMap.has(key)) {
                   entryMap.set(key, e);
                 }
@@ -176,11 +181,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Dados incompletos' }, { status: 400 });
     }
 
+    const entrySessionType = body.sessionType || 'field';
     const entryToSave = {
-      id: body.id || `rpe-${Date.now()}`,
+      id: body.id || `rpe-${athleteId}-${date}-${entrySessionType}`,
       athleteId,
       athleteName,
       date,
+      sessionType: entrySessionType,
       physicalDemand: Number(physicalDemand),
       postFatigue: Number(postFatigue || 0),
       sessionDurationMin: Number(body.sessionDurationMin || 90),
@@ -234,7 +241,8 @@ export async function POST(request: Request) {
           try { existingFallback = JSON.parse(athData.name); } catch {}
         }
 
-        const index = existingFallback.findIndex((e: any) => e.id === entryToSave.id || (e.date === entryToSave.date && e.athleteId === entryToSave.athleteId));
+        const targetType = entryToSave.sessionType || 'field';
+        const index = existingFallback.findIndex((e: any) => e.id === entryToSave.id || (e.date === entryToSave.date && e.athleteId === entryToSave.athleteId && (e.sessionType || 'field') === targetType));
         if (index !== -1) {
           existingFallback[index] = { ...existingFallback[index], ...entryToSave };
         } else {

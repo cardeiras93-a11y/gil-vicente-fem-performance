@@ -60,6 +60,7 @@ export interface RPEEntry {
   athleteName: string;
   date: string;
   matchDayOffset?: MatchDayOffset;
+  sessionType?: 'field' | 'gym_lower'; // 'field' = treino de campo regular, 'gym_lower' = ginásio de equipa membros inferiores
   sessionDurationMin?: number;
   physicalDemand: number; // Borg CR10 (1-10)
   postFatigue: number; // 1-10

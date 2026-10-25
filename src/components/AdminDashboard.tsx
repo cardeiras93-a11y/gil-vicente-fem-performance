@@ -2193,7 +2193,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                               return (
                                 <tr key={r.id} className="hover:bg-slate-800/40">
                                   <td className="py-3 px-3 font-bold text-slate-100">
-                                    {r.athleteName}
+                                    <div className="flex items-center space-x-1.5">
+                                      <span>{r.athleteName}</span>
+                                      {r.sessionType === 'gym_lower' && (
+                                        <span className="px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-black uppercase tracking-wider">
+                                          🏋️ Ginásio MMII
+                                        </span>
+                                      )}
+                                    </div>
                                   </td>
 
                                   <td className="py-3 px-3 whitespace-nowrap">
