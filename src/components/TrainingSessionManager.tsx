@@ -19,7 +19,7 @@ import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
   AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users,
-  LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw, X
+  LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw, X, Pencil
 } from 'lucide-react';
 import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
 import { getAllMatches } from '@/data/matchRegistry';
@@ -1938,33 +1938,44 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                           </button>
                         </div>
 
-                        {/* Row 3: Time Bar (Full width of card, perfectly aligned, no overflow!) */}
+                        {/* Row 3: Time Bar (Full width of card, perfectly aligned, no overflow, visible hours!) */}
                         {dayType !== 'rest' ? (
                           <div className="flex items-center justify-between bg-slate-900/90 px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-inner">
-                            <div className="flex items-center space-x-1.5 text-cyan-300 font-bold text-[11px]">
+                            <div className="flex items-center space-x-1 text-cyan-300 font-bold text-xs shrink-0">
                               <Clock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                              <span className="uppercase tracking-wider text-[10px]">
+                              <span className="uppercase tracking-wider font-extrabold text-[10px]">
                                 {dayType === 'match' ? 'Jogo:' : 'Treino:'}
                               </span>
                             </div>
-                            <div className="flex items-center space-x-1 font-mono text-xs">
+                            <div className="flex items-center space-x-1 font-mono">
                               <input
                                 type="time"
                                 value={s?.startTime || (dayType === 'match' ? '10:00' : '09:00')}
                                 onChange={(e) => handleUpdateDayTimes(dateStr, e.target.value, s?.endTime || (dayType === 'match' ? '11:30' : '10:30'))}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-slate-800 text-cyan-200 font-black text-xs px-1.5 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-cyan-400 cursor-pointer text-center w-16"
+                                className="bg-slate-800 text-cyan-200 font-black text-xs sm:text-sm px-1.5 py-0.5 rounded border border-slate-600 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer text-center w-[74px] sm:w-[78px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Início (grava automaticamente)"
                               />
-                              <span className="text-slate-500 font-bold">-</span>
+                              <span className="text-slate-400 font-black text-xs">-</span>
                               <input
                                 type="time"
                                 value={s?.endTime || (dayType === 'match' ? '11:30' : '10:30')}
                                 onChange={(e) => handleUpdateDayTimes(dateStr, s?.startTime || (dayType === 'match' ? '10:00' : '09:00'), e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-slate-800 text-cyan-200 font-black text-xs px-1.5 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-cyan-400 cursor-pointer text-center w-16"
+                                className="bg-slate-800 text-cyan-200 font-black text-xs sm:text-sm px-1.5 py-0.5 rounded border border-slate-600 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer text-center w-[74px] sm:w-[78px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Término (grava automaticamente)"
                               />
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditDayModal(dateStr);
+                                }}
+                                className="p-1 rounded-md text-slate-400 hover:text-cyan-300 hover:bg-slate-800 transition-colors shrink-0 ml-0.5"
+                                title="Abrir atalhos rápidos e opções deste dia"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
                             </div>
                           </div>
                         ) : (
