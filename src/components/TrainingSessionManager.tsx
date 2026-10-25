@@ -19,7 +19,7 @@ import { secureFetch } from '@/lib/authGuard';
 import {
   Calendar, Clock, Dumbbell, MapPin, Sparkles, Save, CheckCircle2,
   AlertCircle, Trophy, Coffee, ChevronLeft, ChevronRight, FileText, Activity, ShieldCheck, Thermometer, Users,
-  LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw
+  LayoutGrid, List, Loader2, Share2, Copy, Check, MessageSquare, RotateCcw, X
 } from 'lucide-react';
 import { WeeklyPlanExportModal } from './WeeklyPlanExportModal';
 import { getAllMatches } from '@/data/matchRegistry';
@@ -95,6 +95,15 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     return '';
   });
   const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced'>('idle');
+
+  // Quick Day Schedule & Activity Edit Modal (for 7-day cards)
+  const [editingDayDate, setEditingDayDate] = useState<string | null>(null);
+  const [editDayModalType, setEditDayModalType] = useState<CalendarDayType>('training');
+  const [editDayModalStartTime, setEditDayModalStartTime] = useState<string>('09:00');
+  const [editDayModalEndTime, setEditDayModalEndTime] = useState<string>('10:30');
+  const [editDayModalMatchCategory, setEditDayModalMatchCategory] = useState<'friendly' | 'championship' | 'cup'>('championship');
+  const [editDayModalLocation, setEditDayModalLocation] = useState<string>('');
+  const [editDayModalFocus, setEditDayModalFocus] = useState<string>('');
 
   const handleManualSyncToCloud = async () => {
     setSyncStatus('syncing');
@@ -960,6 +969,125 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     syncTrainingSessionsToCloud(newSessions);
   };
 
+  // Update training or match times directly for any date
+  const handleUpdateDayTimes = (targetDate: string, newStartTime: string, newEndTime: string) => {
+    lastUserEditTimestamp.current = Date.now();
+    const dType = trainingSessions[targetDate]?.dayType || calendarSchedule[targetDate] || dayTypesMap[targetDate] || 'training';
+    const existing = trainingSessions[targetDate];
+
+    let duration = existing?.durationMin || 90;
+    if (newStartTime && newEndTime) {
+      const [sH, sM] = newStartTime.split(':').map((n) => parseInt(n, 10));
+      const [eH, eM] = newEndTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(sH) && !isNaN(sM) && !isNaN(eH) && !isNaN(eM)) {
+        let diff = (eH * 60 + eM) - (sH * 60 + sM);
+        if (diff < 0) diff += 24 * 60;
+        if (diff > 0) duration = diff;
+      }
+    }
+
+    const updatedSession: TrainingSessionInfo = {
+      ...(existing || {
+        date: targetDate,
+        dayType: dType,
+        matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+      }),
+      startTime: newStartTime,
+      endTime: newEndTime,
+      durationMin: duration,
+      updatedAt: Date.now(),
+    };
+
+    if (targetDate === selectedDate) {
+      setStartTime(newStartTime);
+      setEndTime(newEndTime);
+    }
+
+    const newSessions = {
+      ...trainingSessions,
+      [targetDate]: updatedSession,
+    };
+    setTrainingSessions(newSessions);
+    saveTrainingSessionInfo(updatedSession);
+    syncTrainingSessionsToCloud(newSessions);
+  };
+
+  const openEditDayModal = (dateStr: string) => {
+    const s = trainingSessions[dateStr];
+    const dType = s?.dayType || calendarSchedule[dateStr] || dayTypesMap[dateStr] || 'training';
+    setEditingDayDate(dateStr);
+    setEditDayModalType(dType);
+    setEditDayModalStartTime(s?.startTime || (dType === 'match' ? '10:00' : '09:00'));
+    setEditDayModalEndTime(s?.endTime || (dType === 'match' ? '11:30' : '10:30'));
+    setEditDayModalMatchCategory(s?.matchCategory || 'championship');
+    setEditDayModalLocation(s?.locationTime || '');
+    setEditDayModalFocus(s?.focusNotes || '');
+  };
+
+  const handleSaveEditDayModal = () => {
+    if (!editingDayDate) return;
+    lastUserEditTimestamp.current = Date.now();
+    const dateStr = editingDayDate;
+    const existing = trainingSessions[dateStr];
+    const offset = getAutoMatchDayOffset(dateStr, editDayModalType);
+
+    let duration = 90;
+    if (editDayModalStartTime && editDayModalEndTime) {
+      const [sH, sM] = editDayModalStartTime.split(':').map((n) => parseInt(n, 10));
+      const [eH, eM] = editDayModalEndTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(sH) && !isNaN(sM) && !isNaN(eH) && !isNaN(eM)) {
+        let diff = (eH * 60 + eM) - (sH * 60 + sM);
+        if (diff < 0) diff += 24 * 60;
+        if (diff > 0) duration = diff;
+      }
+    }
+
+    const updatedSession: TrainingSessionInfo = {
+      ...(existing || {}),
+      date: dateStr,
+      dayType: editDayModalType,
+      matchDayOffset: offset,
+      matchCategory: editDayModalType === 'match' ? editDayModalMatchCategory : undefined,
+      startTime: editDayModalType === 'rest' ? undefined : editDayModalStartTime,
+      endTime: editDayModalType === 'rest' ? undefined : editDayModalEndTime,
+      durationMin: duration,
+      locationTime: editDayModalLocation.trim() || undefined,
+      focusNotes: editDayModalFocus.trim() || undefined,
+      updatedAt: Date.now(),
+    };
+
+    const updatedSchedule = {
+      ...calendarSchedule,
+      [dateStr]: editDayModalType,
+    };
+    setCalendarSchedule(updatedSchedule);
+    saveCalendarSchedule(updatedSchedule);
+
+    const newSessions = {
+      ...trainingSessions,
+      [dateStr]: updatedSession,
+    };
+    setTrainingSessions(newSessions);
+    saveTrainingSessionInfo(updatedSession);
+    syncTrainingSessionsToCloud(newSessions);
+
+    if (dateStr === selectedDate) {
+      setDayType(editDayModalType);
+      setMatchDayOffset(offset);
+      if (editDayModalType === 'match') {
+        setMatchCategory(editDayModalMatchCategory);
+      }
+      setStartTime(editDayModalStartTime);
+      setEndTime(editDayModalEndTime);
+      setLocationName(editDayModalLocation);
+      setFocusNotes(editDayModalFocus);
+    }
+
+    setEditingDayDate(null);
+    setSaveSuccess(`Horário e atividade de ${getDayNamePt(dateStr)} (${formatDatePtShort(dateStr)}) atualizados com sucesso!`);
+    setTimeout(() => setSaveSuccess(null), 3000);
+  };
+
   // Apply weekly preset
   const handleApplyWeeklyPreset = async (presetKey: 'championship_saturday' | 'championship_sunday' | 'regenerative' | 'double_game') => {
     lastUserEditTimestamp.current = Date.now();
@@ -1805,15 +1933,36 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                             </button>
                           </div>
 
-                          {s?.startTime && dayType !== 'rest' && (
-                            <div className="text-[9px] text-slate-400 font-mono">
-                              {s.startTime} - {s.endTime}
+                          {/* Day Time / Status */}
+                          {dayType !== 'rest' ? (
+                            <div className="flex items-center space-x-1.5 bg-slate-900/90 px-2 py-1 rounded-lg border border-slate-700/80 shadow-inner mt-1">
+                              <Clock className="h-3 w-3 text-cyan-400 shrink-0" />
+                              <span className="text-[9px] font-black uppercase text-slate-400">
+                                {dayType === 'match' ? 'Jogo:' : 'Treino:'}
+                              </span>
+                              <input
+                                type="time"
+                                value={s?.startTime || (dayType === 'match' ? '10:00' : '09:00')}
+                                onChange={(e) => handleUpdateDayTimes(dateStr, e.target.value, s?.endTime || (dayType === 'match' ? '11:30' : '10:30'))}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-slate-800 text-cyan-300 font-mono font-black text-[10px] px-1.5 py-0.5 rounded border border-slate-700 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 cursor-pointer text-center"
+                                title="Hora de Início do Treino/Jogo (Clica para alterar diretamente)"
+                              />
+                              <span className="text-slate-500 font-mono text-[10px]">-</span>
+                              <input
+                                type="time"
+                                value={s?.endTime || (dayType === 'match' ? '11:30' : '10:30')}
+                                onChange={(e) => handleUpdateDayTimes(dateStr, s?.startTime || (dayType === 'match' ? '10:00' : '09:00'), e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-slate-800 text-cyan-300 font-mono font-black text-[10px] px-1.5 py-0.5 rounded border border-slate-700 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 cursor-pointer text-center"
+                                title="Hora de Fim do Treino/Jogo (Clica para alterar diretamente)"
+                              />
                             </div>
-                          )}
-                          {dayType === 'rest' && (
-                            <span className="text-[9px] text-amber-400/90 font-bold">
-                              Descanso / Recuperação
-                            </span>
+                          ) : (
+                            <div className="flex items-center space-x-1 text-[9px] text-amber-400/90 font-bold mt-1">
+                              <span>🏖️</span>
+                              <span>Descanso / Recuperação</span>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -1915,18 +2064,30 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                       </div>
                     </div>
 
-                    {/* Day Select Footer */}
-                    <button
-                      type="button"
-                      onClick={() => onSelectDate(dateStr)}
-                      className={`w-full py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-purple-600 text-white shadow'
-                          : 'bg-slate-900/60 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-                      }`}
-                    >
-                      {isSelected ? '✓ Dia Selecionado' : 'Editar Horário / Treino'}
-                    </button>
+                    {/* Day Select & Edit Schedule Footer */}
+                    <div className="flex items-center space-x-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => openEditDayModal(dateStr)}
+                        className="flex-1 py-1.5 px-2 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center justify-center space-x-1.5 bg-slate-900/90 hover:bg-slate-800 text-cyan-300 hover:text-cyan-200 border border-slate-700 hover:border-cyan-500/50 shadow-sm active:scale-95"
+                        title="Abrir editor de horário e detalhes para este dia"
+                      >
+                        <Clock className="h-3 w-3 text-cyan-400" />
+                        <span>Editar Horário / Treino</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onSelectDate(dateStr)}
+                        className={`p-1.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer border ${
+                          isSelected
+                            ? 'bg-purple-600 border-purple-500 text-white shadow ring-1 ring-purple-400'
+                            : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                        }`}
+                        title={isSelected ? 'Dia atualmente ativo no painel principal' : 'Selecionar este dia no painel'}
+                      >
+                        {isSelected ? <Check className="h-3.5 w-3.5 text-white" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                      </button>
+                    </div>
                   </div>
                 );
               })}
@@ -2872,6 +3033,263 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         </div>
         )}
       </div>
+      )}
+
+      {/* Quick Day Schedule & Activity Edit Modal */}
+      {editingDayDate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-800 bg-dark-card p-6 shadow-2xl space-y-5 text-left relative overflow-hidden">
+            {/* Background glow */}
+            <div className="absolute top-0 right-0 w-48 h-48 bg-purple-600/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 relative z-10">
+              <div className="flex items-center space-x-2.5">
+                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-100 uppercase tracking-tight">
+                    Editar Horário & Atividade
+                  </h3>
+                  <span className="text-[11px] text-purple-300 font-bold">
+                    {getDayNamePt(editingDayDate)} &bull; {formatDatePtShort(editingDayDate)}
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setEditingDayDate(null)}
+                className="rounded-full p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 relative z-10">
+              {/* 1. Tipo de Dia / Atividade */}
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-extrabold uppercase text-slate-300 block">
+                  Tipo de Atividade:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditDayModalType('training');
+                      if (editDayModalStartTime === '10:00' && editDayModalEndTime === '11:30') {
+                        setEditDayModalStartTime('09:00');
+                        setEditDayModalEndTime('10:30');
+                      }
+                    }}
+                    className={`py-2 px-3 rounded-xl border text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                      editDayModalType === 'training'
+                        ? 'bg-blue-600 text-white border-blue-400 shadow-md ring-2 ring-blue-500/40'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                  >
+                    <span>⚽</span>
+                    <span>Treino</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditDayModalType('match');
+                      if (editDayModalStartTime === '09:00' && editDayModalEndTime === '10:30') {
+                        setEditDayModalStartTime('10:00');
+                        setEditDayModalEndTime('11:30');
+                      }
+                    }}
+                    className={`py-2 px-3 rounded-xl border text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                      editDayModalType === 'match'
+                        ? 'bg-emerald-600 text-white border-emerald-400 shadow-md ring-2 ring-emerald-500/40'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                  >
+                    <span>🏆</span>
+                    <span>Jogo</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditDayModalType('rest')}
+                    className={`py-2 px-3 rounded-xl border text-xs font-black transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${
+                      editDayModalType === 'rest'
+                        ? 'bg-amber-500 text-slate-950 border-amber-300 shadow-md ring-2 ring-amber-400/40'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                    }`}
+                  >
+                    <span>🏖️</span>
+                    <span>Folga</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. Horários (apenas para Treino ou Jogo) */}
+              {editDayModalType !== 'rest' && (
+                <div className="space-y-2.5 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-extrabold uppercase text-cyan-300 flex items-center space-x-1">
+                      <Clock className="h-3.5 w-3.5" />
+                      <span>Horário {editDayModalType === 'match' ? 'do Jogo' : 'do Treino'}:</span>
+                    </label>
+                    {editDayModalStartTime && editDayModalEndTime && (() => {
+                      const [sH, sM] = editDayModalStartTime.split(':').map(Number);
+                      const [eH, eM] = editDayModalEndTime.split(':').map(Number);
+                      let diff = (eH * 60 + eM) - (sH * 60 + sM);
+                      if (diff < 0) diff += 24 * 60;
+                      return (
+                        <span className="text-[10px] font-black text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full">
+                          {diff > 0 ? `${diff} Min` : '--'}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block mb-1">Hora de Início:</span>
+                      <input
+                        type="time"
+                        value={editDayModalStartTime}
+                        onChange={(e) => setEditDayModalStartTime(e.target.value)}
+                        className="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs font-mono font-black text-slate-100 focus:outline-none focus:border-cyan-400 text-center"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold block mb-1">Hora de Fim:</span>
+                      <input
+                        type="time"
+                        value={editDayModalEndTime}
+                        onChange={(e) => setEditDayModalEndTime(e.target.value)}
+                        className="w-full rounded-xl bg-slate-800 border border-slate-700 px-3 py-2 text-xs font-mono font-black text-slate-100 focus:outline-none focus:border-cyan-400 text-center"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick time presets */}
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
+                      Atalhos Rápidos:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: '09:00 - 10:30', s: '09:00', e: '10:30' },
+                        { label: '10:00 - 11:30', s: '10:00', e: '11:30' },
+                        { label: '10:30 - 12:00', s: '10:30', e: '12:00' },
+                        { label: '15:00 - 16:30', s: '15:00', e: '16:30' },
+                        { label: '16:00 - 17:30', s: '16:00', e: '17:30' },
+                        { label: '17:00 - 18:30', s: '17:00', e: '18:30' },
+                        { label: '18:00 - 19:30', s: '18:00', e: '19:30' },
+                        { label: '19:00 - 20:30', s: '19:00', e: '20:30' },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            setEditDayModalStartTime(preset.s);
+                            setEditDayModalEndTime(preset.e);
+                          }}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border cursor-pointer ${
+                            editDayModalStartTime === preset.s && editDayModalEndTime === preset.e
+                              ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
+                              : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 3. Match Details if Match */}
+              {editDayModalType === 'match' && (
+                <div className="space-y-2 p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/30">
+                  <span className="text-[11px] font-extrabold uppercase text-emerald-300 block">
+                    Tipo de Competição:
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { key: 'championship', label: '🏆 Campeonato' },
+                      { key: 'cup', label: '🛡️ Taça' },
+                      { key: 'friendly', label: '🤝 Amigável' },
+                    ].map((cat) => (
+                      <button
+                        key={cat.key}
+                        type="button"
+                        onClick={() => setEditDayModalMatchCategory(cat.key as any)}
+                        className={`py-1.5 px-2 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
+                          editDayModalMatchCategory === cat.key
+                            ? 'bg-emerald-600 text-white border-emerald-400 shadow-sm'
+                            : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'
+                        }`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block mb-1">Local / Adversário:</span>
+                    <input
+                      type="text"
+                      placeholder="Ex: Estádio Adelino Ribeiro Novo • Gil Vicente vs ..."
+                      value={editDayModalLocation}
+                      onChange={(e) => setEditDayModalLocation(e.target.value)}
+                      className="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Training Location if Training */}
+              {editDayModalType === 'training' && (
+                <div className="space-y-2">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block mb-1">Local / Campo de Treino:</span>
+                    <input
+                      type="text"
+                      placeholder="Ex: Campo de São Martinho - Barcelos"
+                      value={editDayModalLocation}
+                      onChange={(e) => setEditDayModalLocation(e.target.value)}
+                      className="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-bold block mb-1">Foco Principal da Sessão:</span>
+                    <input
+                      type="text"
+                      placeholder="Ex: Força Rápida, Transições Ofensivas e Bola Parada"
+                      value={editDayModalFocus}
+                      onChange={(e) => setEditDayModalFocus(e.target.value)}
+                      className="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer Actions */}
+            <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-800 relative z-10">
+              <button
+                type="button"
+                onClick={() => setEditingDayDate(null)}
+                className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 text-xs font-bold transition-all cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEditDayModal}
+                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-black shadow-lg shadow-purple-900/40 transition-all cursor-pointer flex items-center space-x-1.5 active:scale-95"
+              >
+                <Check className="h-4 w-4" />
+                <span>Guardar Horário & Atividade</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Weekly Plan Export Modal (PDF / PNG / Print) */}
