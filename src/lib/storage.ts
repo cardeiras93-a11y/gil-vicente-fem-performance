@@ -612,12 +612,18 @@ export async function syncAllDataFromCloud(): Promise<void> {
             mergedSessions[d] = {
               ...loc,
               ...rem,
+              gymStartTime: rem.gymStartTime || loc.gymStartTime || undefined,
+              gymEndTime: rem.gymEndTime || loc.gymEndTime || undefined,
+              gymDurationMin: rem.gymDurationMin || loc.gymDurationMin || undefined,
             };
           } else if (locTime > remTime) {
             // Local is newer: preserve local customizations
             mergedSessions[d] = {
               ...rem,
               ...loc,
+              gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
+              gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
+              gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
             };
           } else {
             // Timestamps equal or not set: preserve local user times if set
@@ -628,6 +634,9 @@ export async function syncAllDataFromCloud(): Promise<void> {
               matchCategory: loc.matchCategory || rem.matchCategory || undefined,
               startTime: loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00'),
               endTime: loc.endTime || rem.endTime || (loc.dayType === 'match' ? '11:30' : '10:30'),
+              gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
+              gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
+              gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
               customDeadlineWellness: loc.customDeadlineWellness || rem.customDeadlineWellness || undefined,
               customDeadlineRpe: loc.customDeadlineRpe || rem.customDeadlineRpe || undefined,
             };

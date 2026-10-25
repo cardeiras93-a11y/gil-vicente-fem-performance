@@ -64,6 +64,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const [matchDayOffset, setMatchDayOffset] = useState<MatchDayOffset>('MD-3');
   const [startTime, setStartTime] = useState<string>('09:00');
   const [endTime, setEndTime] = useState<string>('10:30');
+  const [gymStartTime, setGymStartTime] = useState<string>('10:45');
+  const [gymEndTime, setGymEndTime] = useState<string>('11:30');
   const [tempStart, setTempStart] = useState<string>('20.0');
   const [tempEnd, setTempEnd] = useState<string>('25.0');
   const [locationName, setLocationName] = useState<string>('Campo de São Martinho - Barcelos');
@@ -334,6 +336,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       setMatchDayOffset(existing.matchDayOffset);
       setStartTime(existing.startTime || (existing.dayType === 'match' ? '10:00' : '09:00'));
       setEndTime(existing.endTime || (existing.dayType === 'match' ? '11:30' : '10:30'));
+      setGymStartTime(existing.gymStartTime || '10:45');
+      setGymEndTime(existing.gymEndTime || '11:30');
       setTempStart(existing.tempStart !== undefined ? existing.tempStart.toString() : '20.0');
       setTempEnd(existing.tempEnd !== undefined ? existing.tempEnd.toString() : '25.0');
       setLocationName(existing.locationTime || 'Campo de São Martinho - Barcelos');
@@ -420,6 +424,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         if (currentSession.matchDayOffset) setMatchDayOffset(currentSession.matchDayOffset);
         if (currentSession.startTime) setStartTime(currentSession.startTime);
         if (currentSession.endTime) setEndTime(currentSession.endTime);
+        if (currentSession.gymStartTime) setGymStartTime(currentSession.gymStartTime);
+        if (currentSession.gymEndTime) setGymEndTime(currentSession.gymEndTime);
         if (currentSession.tempStart !== undefined) setTempStart(currentSession.tempStart.toString());
         if (currentSession.tempEnd !== undefined) setTempEnd(currentSession.tempEnd.toString());
         if (currentSession.locationTime) setLocationName(currentSession.locationTime);
@@ -479,6 +485,25 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       }
     }
 
+    const existingSession = trainingSessions[selectedDate];
+    const gStartTime = explicitUpdates?.gymStartTime !== undefined 
+      ? explicitUpdates.gymStartTime 
+      : (gymStartTime || existingSession?.gymStartTime || '10:45');
+    const gEndTime = explicitUpdates?.gymEndTime !== undefined 
+      ? explicitUpdates.gymEndTime 
+      : (gymEndTime || existingSession?.gymEndTime || '11:30');
+    
+    let gDur = explicitUpdates?.gymDurationMin !== undefined ? explicitUpdates.gymDurationMin : (existingSession?.gymDurationMin || 45);
+    if (gStartTime && gEndTime && gStartTime.includes(':') && gEndTime.includes(':')) {
+      const [gsH, gsM] = gStartTime.split(':').map((n) => parseInt(n, 10));
+      const [geH, geM] = gEndTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(gsH) && !isNaN(gsM) && !isNaN(geH) && !isNaN(geM)) {
+        let diff = (geH * 60 + geM) - (gsH * 60 + gsM);
+        if (diff < 0) diff += 1440;
+        if (diff > 0) gDur = diff;
+      }
+    }
+
     const info: TrainingSessionInfo = {
       date: selectedDate,
       dayType: dType,
@@ -487,6 +512,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       startTime: sTime,
       endTime: eTime,
       durationMin: dur,
+      gymStartTime: gStartTime,
+      gymEndTime: gEndTime,
+      gymDurationMin: gDur,
       tempStart: isNaN(Number(tStart)) ? undefined : Number(tStart),
       tempEnd: isNaN(Number(tEnd)) ? undefined : Number(tEnd),
       tempDelta: tempDelta !== null ? tempDelta : undefined,
@@ -569,7 +597,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
         clearTimeout(autoSaveTimerRef.current);
       }
     };
-  }, [selectedDate, dayType, matchCategory, matchDayOffset, startTime, endTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses, customDeadlineWellness, customDeadlineRpe, customDeadline]);
+  }, [selectedDate, dayType, matchCategory, matchDayOffset, startTime, endTime, gymStartTime, gymEndTime, durationMin, tempStart, tempEnd, tempDelta, locationName, focusNotes, athleteStatuses, customDeadlineWellness, customDeadlineRpe, customDeadline]);
 
   // All dates in selected month for calendar strip
   const datesInMonth = useMemo(() => {
@@ -975,6 +1003,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   // Update training or match times directly for any date
   const handleUpdateDayTimes = (targetDate: string, newStartTime: string, newEndTime: string) => {
+    if (!newStartTime || !newEndTime || !newStartTime.includes(':') || !newEndTime.includes(':')) return;
     lastUserEditTimestamp.current = Date.now();
     const dType = trainingSessions[targetDate]?.dayType || calendarSchedule[targetDate] || dayTypesMap[targetDate] || 'training';
     const existing = trainingSessions[targetDate];
@@ -1017,6 +1046,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   };
 
   const handleUpdateDayGymTimes = (targetDate: string, newStartTime: string, newEndTime: string) => {
+    if (!newStartTime || !newEndTime || !newStartTime.includes(':') || !newEndTime.includes(':')) return;
     lastUserEditTimestamp.current = Date.now();
     const existing = trainingSessions[targetDate];
     const dType = existing?.dayType || calendarSchedule[targetDate] || dayTypesMap[targetDate] || 'training';
@@ -1044,6 +1074,11 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       gymDurationMin: duration,
       updatedAt: Date.now(),
     };
+
+    if (targetDate === selectedDate) {
+      setGymStartTime(newStartTime);
+      setGymEndTime(newEndTime);
+    }
 
     const newSessions = {
       ...trainingSessions,
@@ -1137,6 +1172,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       }
       setStartTime(editDayModalStartTime);
       setEndTime(editDayModalEndTime);
+      setGymStartTime(editDayModalGymStartTime);
+      setGymEndTime(editDayModalGymEndTime);
       setLocationName(editDayModalLocation);
       setFocusNotes(editDayModalFocus);
     }
@@ -2020,7 +2057,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                               <input
                                 type="time"
                                 value={s?.startTime || (dayType === 'match' ? '10:00' : '09:00')}
-                                onChange={(e) => handleUpdateDayTimes(dateStr, e.target.value, s?.endTime || (dayType === 'match' ? '11:30' : '10:30'))}
+                                onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                                onChange={(e) => {
+                                  lastUserEditTimestamp.current = Date.now();
+                                  if (e.target.value && e.target.value.includes(':')) {
+                                    handleUpdateDayTimes(dateStr, e.target.value, s?.endTime || (dayType === 'match' ? '11:30' : '10:30'));
+                                  }
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="bg-slate-800 text-cyan-200 font-black text-xs px-1 py-0.5 rounded border border-slate-600 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Início (grava automaticamente)"
@@ -2029,7 +2072,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                               <input
                                 type="time"
                                 value={s?.endTime || (dayType === 'match' ? '11:30' : '10:30')}
-                                onChange={(e) => handleUpdateDayTimes(dateStr, s?.startTime || (dayType === 'match' ? '10:00' : '09:00'), e.target.value)}
+                                onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                                onChange={(e) => {
+                                  lastUserEditTimestamp.current = Date.now();
+                                  if (e.target.value && e.target.value.includes(':')) {
+                                    handleUpdateDayTimes(dateStr, s?.startTime || (dayType === 'match' ? '10:00' : '09:00'), e.target.value);
+                                  }
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="bg-slate-800 text-cyan-200 font-black text-xs px-1 py-0.5 rounded border border-slate-600 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Término (grava automaticamente)"
@@ -2056,7 +2105,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                               <input
                                 type="time"
                                 value={s?.gymStartTime || '10:45'}
-                                onChange={(e) => handleUpdateDayGymTimes(dateStr, e.target.value, s?.gymEndTime || '11:30')}
+                                onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                                onChange={(e) => {
+                                  lastUserEditTimestamp.current = Date.now();
+                                  if (e.target.value && e.target.value.includes(':')) {
+                                    handleUpdateDayGymTimes(dateStr, e.target.value, s?.gymEndTime || '11:30');
+                                  }
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="bg-slate-800 text-purple-200 font-black text-xs px-1 py-0.5 rounded border border-purple-500/60 hover:border-purple-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Início do Ginásio (grava automaticamente)"
@@ -2065,7 +2120,13 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                               <input
                                 type="time"
                                 value={s?.gymEndTime || '11:30'}
-                                onChange={(e) => handleUpdateDayGymTimes(dateStr, s?.gymStartTime || '10:45', e.target.value)}
+                                onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                                onChange={(e) => {
+                                  lastUserEditTimestamp.current = Date.now();
+                                  if (e.target.value && e.target.value.includes(':')) {
+                                    handleUpdateDayGymTimes(dateStr, s?.gymStartTime || '10:45', e.target.value);
+                                  }
+                                }}
                                 onClick={(e) => e.stopPropagation()}
                                 className="bg-slate-800 text-purple-200 font-black text-xs px-1 py-0.5 rounded border border-purple-500/60 hover:border-purple-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
                                 title="Hora de Fim do Ginásio (utilizada para o questionário das jogadoras)"
@@ -2492,6 +2553,61 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 />
               </div>
             </div>
+
+            {/* Horário do Ginásio quando há Membros Inferiores programado */}
+            {dayType !== 'rest' && Boolean(complementaryWork?.lowerBody) && (
+              <div className="pt-2 border-t border-purple-500/30 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-black uppercase text-purple-300 flex items-center space-x-1.5">
+                    <span>🏋️</span>
+                    <span>Horário do Ginásio (Membros Inferiores):</span>
+                  </span>
+                  <span className="text-xs font-black text-purple-300 bg-purple-950/60 px-2.5 py-0.5 rounded-full border border-purple-500/30">
+                    ⏱️ {gymStartTime && gymEndTime ? (() => {
+                      const [sH, sM] = gymStartTime.split(':').map(Number);
+                      const [eH, eM] = gymEndTime.split(':').map(Number);
+                      let diff = (eH * 60 + eM) - (sH * 60 + sM);
+                      if (diff < 0) diff += 1440;
+                      return `${diff} Min`;
+                    })() : '45 Min'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold text-purple-300/80">Hora de Início do Ginásio:</span>
+                    <input
+                      type="time"
+                      value={gymStartTime}
+                      onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                      onChange={(e) => {
+                        lastUserEditTimestamp.current = Date.now();
+                        setGymStartTime(e.target.value);
+                        if (e.target.value && e.target.value.includes(':')) {
+                          performSave({ gymStartTime: e.target.value });
+                        }
+                      }}
+                      className="w-full rounded-xl border border-purple-500/40 bg-dark-bg p-2 text-xs font-bold text-purple-100 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-[11px] font-bold text-purple-300/80">Hora de Fim do Ginásio:</span>
+                    <input
+                      type="time"
+                      value={gymEndTime}
+                      onFocus={() => { lastUserEditTimestamp.current = Date.now(); }}
+                      onChange={(e) => {
+                        lastUserEditTimestamp.current = Date.now();
+                        setGymEndTime(e.target.value);
+                        if (e.target.value && e.target.value.includes(':')) {
+                          performSave({ gymEndTime: e.target.value });
+                        }
+                      }}
+                      className="w-full rounded-xl border border-purple-500/40 bg-dark-bg p-2 text-xs font-bold text-purple-100 focus:border-purple-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-slate-800/80">
               <span className="text-[10px] text-slate-400">

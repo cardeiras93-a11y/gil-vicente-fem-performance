@@ -82,6 +82,9 @@ export async function GET(request: Request) {
                 startTime: item.start_time || (item.day_type === 'match' ? '10:00' : '09:00'),
                 endTime: item.end_time || (item.day_type === 'match' ? '11:30' : '10:30'),
                 durationMin: item.duration_min || undefined,
+                gymStartTime: item.gym_start_time || item.gymStartTime || undefined,
+                gymEndTime: item.gym_end_time || item.gymEndTime || undefined,
+                gymDurationMin: item.gym_duration_min || item.gymDurationMin || undefined,
                 tempStart: item.temp_start !== null && item.temp_start !== undefined ? Number(item.temp_start) : 20.0,
                 tempEnd: item.temp_end !== null && item.temp_end !== undefined ? Number(item.temp_end) : 25.0,
                 locationTime: item.location_time || 'Campo de São Martinho - Barcelos',
@@ -98,6 +101,9 @@ export async function GET(request: Request) {
               sessions[dateStr] = {
                 ...existing,
                 matchCategory: existing.matchCategory || item.match_category || item.matchCategory || undefined,
+                gymStartTime: existing.gymStartTime || item.gym_start_time || item.gymStartTime || undefined,
+                gymEndTime: existing.gymEndTime || item.gym_end_time || item.gymEndTime || undefined,
+                gymDurationMin: existing.gymDurationMin || item.gym_duration_min || item.gymDurationMin || undefined,
                 updatedAt: existing.updatedAt || (item.updated_at ? new Date(item.updated_at).getTime() : undefined),
               };
             }
