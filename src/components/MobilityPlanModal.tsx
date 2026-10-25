@@ -214,87 +214,101 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
             </div>
           </div>
 
-          {/* Blocks of Exercises (Section 1: Mobilidade & Section 2: Ativação e Força) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {plan.blocks.map((block) => {
-              const isSec1 = block.number === '01' || block.titlePt.toLowerCase().includes('mobilidade');
-              const isSec2 = block.number === '02' || block.titlePt.toLowerCase().includes('ativação') || block.titlePt.toLowerCase().includes('força');
+          {/* Chronological Section Structure (Section 1: Mobilidade & Section 2: Ativação & Força) */}
+          <div className="space-y-5">
+            {plan.blocks.map((block, idx) => {
+              const isSec1 = idx === 0 || block.number === '01' || block.titlePt.toLowerCase().includes('mobilidade');
+              const isSec2 = idx === 1 || block.number === '02' || block.titlePt.toLowerCase().includes('ativação') || block.titlePt.toLowerCase().includes('força');
+              const exerciseCount = block.exercises.length;
               
               return (
                 <div
                   key={block.id}
-                  className={`rounded-2xl border p-3.5 sm:p-4 space-y-3 shadow-md transition-all flex flex-col justify-between ${
+                  className={`rounded-2xl border p-3.5 sm:p-5 space-y-3.5 shadow-lg transition-all ${
                     isSec1
-                      ? 'border-sky-500/40 bg-gradient-to-b from-sky-950/30 via-slate-900/80 to-slate-900/90'
+                      ? 'border-sky-500/50 bg-gradient-to-b from-sky-950/40 via-slate-900/80 to-slate-900/90'
                       : isSec2
-                      ? 'border-amber-500/40 bg-gradient-to-b from-amber-950/30 via-slate-900/80 to-slate-900/90'
+                      ? 'border-amber-500/50 bg-gradient-to-b from-amber-950/40 via-slate-900/80 to-slate-900/90'
                       : 'border-slate-800 bg-slate-900/60'
                   }`}
                 >
-                  {/* Block Header */}
-                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                    <div className="flex items-center space-x-2">
+                  {/* Section Header Banner */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+                    <div className="flex items-center space-x-2.5">
                       <span
-                        className={`flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-[11px] font-black shrink-0 ${
+                        className={`flex h-7 w-7 items-center justify-center rounded-xl text-xs font-black shadow-sm shrink-0 ${
                           isSec1
-                            ? 'bg-sky-400 text-slate-950'
+                            ? 'bg-sky-400 text-slate-950 shadow-sky-500/30'
                             : isSec2
-                            ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950'
+                            ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950 shadow-amber-500/30'
                             : 'bg-brand-cyan text-slate-950'
                         }`}
                       >
-                        {block.number}
+                        {isSec1 ? '🌊' : isSec2 ? '⚡' : block.number}
                       </span>
-                      <h3 className="text-xs sm:text-[13px] font-black text-slate-100 uppercase tracking-tight line-clamp-1">
-                        {isEn ? block.titleEn : block.titlePt}
-                      </h3>
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-black text-slate-100 uppercase tracking-tight">
+                          {isEn ? block.titleEn : block.titlePt}
+                        </h3>
+                        <p className="text-[10px] text-slate-400 font-medium">
+                          {isSec1
+                            ? (isEn ? 'Decompression & articular mobility before activation' : 'Descompressão articular e mobilidade prévia sem carga')
+                            : (isEn ? 'Neuromuscular activation, isometric tension & preventive strength' : 'Ativação neuromuscular, isometrias e reforço específico')}
+                        </p>
+                      </div>
                     </div>
-                    <span
-                      className={`text-[10px] font-extrabold flex items-center space-x-1 shrink-0 px-2.5 py-0.5 rounded-md border ${
-                        isSec1
-                          ? 'text-sky-300 bg-sky-950/80 border-sky-700/60'
-                          : isSec2
-                          ? 'text-amber-300 bg-amber-950/80 border-amber-700/60'
-                          : 'text-cyan-400 bg-cyan-950/50 border-cyan-800/50'
-                      }`}
-                    >
-                      <Clock className="h-3 w-3" />
-                      <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
-                    </span>
+                    <div className="flex items-center space-x-2 shrink-0 self-start sm:self-auto">
+                      <span className="text-[10px] font-black text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                        {exerciseCount} {exerciseCount === 1 ? (isEn ? 'Exercise' : 'Exercício') : (isEn ? 'Exercises' : 'Exercícios')}
+                      </span>
+                      <span
+                        className={`text-xs font-black flex items-center space-x-1 px-3 py-1 rounded-xl border shadow-sm ${
+                          isSec1
+                            ? 'text-sky-300 bg-sky-950/90 border-sky-600/70'
+                            : isSec2
+                            ? 'text-amber-300 bg-amber-950/90 border-amber-600/70'
+                            : 'text-cyan-400 bg-cyan-950/50 border-cyan-800/50'
+                        }`}
+                      >
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Exercises in Block */}
-                  <div className="space-y-3">
+                  {/* Exercises Grid in Section */}
+                  <div className={`grid gap-3.5 ${exerciseCount === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                     {block.exercises.map((ex) => (
                       <div
                         key={ex.id}
-                        className="rounded-xl border border-slate-800/80 bg-dark-card/90 p-2.5 sm:p-3 space-y-2 hover:border-slate-700 transition-all"
+                        className="flex flex-col rounded-xl border border-slate-800/90 bg-dark-card/95 p-3 space-y-2.5 hover:border-slate-700 transition-all shadow-md group"
                       >
-                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                          {/* Dynamic SVG Vector Drawing */}
-                          <div className="sm:col-span-5 rounded-lg bg-white border border-slate-300/80 p-1 flex items-center justify-center overflow-hidden h-28 sm:h-32 shadow-sm">
-                            <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
-                          </div>
+                        {/* Dynamic SVG Vector Drawing Container */}
+                        <div className="rounded-xl bg-white border border-slate-200 p-2 flex items-center justify-center overflow-hidden h-36 sm:h-40 shadow-inner w-full relative">
+                          <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
+                        </div>
 
-                          {/* Exercise Details */}
-                          <div className="sm:col-span-7 space-y-1.5">
-                            <div className="flex items-start justify-between gap-1">
-                              <h4 className="text-xs font-black text-slate-100 leading-tight">
+                        {/* Exercise Details */}
+                        <div className="space-y-2 flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between gap-1.5">
+                              <h4 className="text-xs sm:text-[13px] font-black text-slate-100 leading-snug group-hover:text-cyan-300 transition-colors">
                                 {isEn ? ex.nameEn : ex.namePt}
                               </h4>
-                              <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-full shrink-0">
+                            </div>
+                            <div className="mt-1 flex items-center gap-1.5">
+                              <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-md inline-block">
                                 {isEn ? ex.seriesRepsEn : ex.seriesRepsPt}
                               </span>
                             </div>
-
-                            <p className="text-[11px] text-slate-300 leading-relaxed font-normal">
+                            <p className="text-[11px] text-slate-300 leading-relaxed font-normal mt-1.5 line-clamp-3">
                               {isEn ? ex.descriptionEn : ex.descriptionPt}
                             </p>
+                          </div>
 
-                            <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-400">
-                              <Clock className="h-3 w-3 text-amber-400 shrink-0" />
-                              <span>{isEn ? ex.restEn : ex.restPt}</span>
-                            </div>
+                          <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 pt-2 border-t border-slate-800/60">
+                            <Clock className="h-3 w-3 text-amber-400 shrink-0" />
+                            <span>{isEn ? ex.restEn : ex.restPt}</span>
                           </div>
                         </div>
                       </div>

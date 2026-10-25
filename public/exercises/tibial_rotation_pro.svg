@@ -18,47 +18,50 @@
     </filter>
   </defs>
 
-  <!-- Fundo Ginásio Luminoso -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
   <line x1="0" y1="135" x2="320" y2="135" stroke="#cbd5e1" stroke-width="1" />
-
-  <!-- Caixa / Banco -->
   <rect x="55" y="115" width="65" height="50" rx="4" fill="url(#boxGrad)" filter="url(#dropShadow)" />
-
-  <!-- Sombra Projetada -->
   <ellipse cx="160" cy="156" rx="75" ry="10" fill="#0f172a" opacity="0.2" />
 
   <!-- Atleta Sentada no Banco -->
-  <!-- Coxa Horizontal -->
   <path d="M105,122 L168,122 L168,132 L105,132 Z" fill="#d97706" />
   <path d="M90,115 L122,115 L118,135 L90,133 Z" fill="#0f172a" />
-
-  <!-- Tronco / Camisola Gil Vicente FC -->
   <path d="M82,82 C82,77 108,77 108,82 L104,120 C100,122 87,122 82,120 Z" fill="url(#kitGrad)" />
-
-  <!-- Braços a Travar a Coxa -->
-  <path d="M92,90 L136,120" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
-  <circle cx="137" cy="121" r="4" fill="#d97706" />
-
-  <!-- Canela Vertical -->
-  <path d="M165,128 L165,153" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
-
-  <!-- Pé Apoiado pelo Calcanhar -->
-  <path d="M161,153 L178,147 L182,151 L165,157 Z" fill="#ffffff" filter="url(#dropShadow)" />
-  <ellipse cx="163" cy="155" rx="3.5" ry="2" fill="#0f172a" />
-
-  <!-- Cabeça e Cabelo (25px de margem livre no topo) -->
   <circle cx="95" cy="68" r="8" fill="#d97706" />
   <path d="M90,64 C90,58 100,58 100,64 L98,70 L92,70 Z" fill="#78350f" />
 
-  <!-- Vetores de Rotação Tibial -->
+  <!-- Braços a Travar a Coxa (Fémur Fixo) -->
+  <path d="M92,90 L136,120" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <circle cx="137" cy="121" r="4" fill="#d97706" />
+
+  <!-- Canela e Pé em Rotação Interna e Externa Contínua da Tíbia -->
+  <g>
+    <!-- Rotação axial do segmento tíbia/pé no calcanhar -->
+    <animateTransform attributeName="transform" type="rotate" values="0 163 155; 16 163 155; -14 163 155; 0 163 155" dur="2.4s" repeatCount="indefinite" />
+    <path d="M165,128 L165,153" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <path d="M161,153 L178,147 L182,151 L165,157 Z" fill="#ffffff" filter="url(#dropShadow)" />
+    <ellipse cx="163" cy="155" rx="3.5" ry="2" fill="#0f172a" />
+  </g>
+
+  <!-- Crachá Fémur Fixo -->
   <g filter="url(#dropShadow)">
-    <rect x="122" y="108" width="28" height="11" rx="2" fill="#1e3a8a" opacity="0.9" />
+    <rect x="122" y="108" width="28" height="11" rx="2" fill="#1e3a8a" opacity="0.95" />
     <text x="125" y="116" fill="#ffffff" font-family="system-ui, sans-serif" font-size="5.5" font-weight="bold">FÉMUR FIXO</text>
 
-    <!-- Arco de Rotação da Tíbia -->
-    <path d="M174,138 C190,144 190,154 174,160" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <!-- Arco de Rotação da Tíbia Animado -->
+    <path d="M174,138 C190,144 190,154 174,160" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" fill="none">
+      <animate attributeName="opacity" values="0.4; 1; 0.4" dur="2.4s" repeatCount="indefinite" />
+    </path>
     <polygon points="174,135 168,138 174,141" fill="#38bdf8" />
     <polygon points="174,157 168,160 174,163" fill="#38bdf8" />
+  </g>
+
+  <!-- Live Loop Badge -->
+  <g transform="translate(10, 160)">
+    <rect width="66" height="15" rx="4" fill="#0f172a" opacity="0.85" />
+    <circle cx="7" cy="7.5" r="3" fill="#10b981">
+      <animate attributeName="opacity" values="1; 0.3; 1" dur="1.2s" repeatCount="indefinite" />
+    </circle>
+    <text x="14" y="11" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="7.5" font-weight="900" letter-spacing="0.5">LIVE LOOP</text>
   </g>
 </svg>
