@@ -2,9 +2,9 @@ import { MobilityPlan, AthletePlanAssignment, Athlete } from './types';
 import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
-export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v1';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v1';
-export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v1';
+export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v2';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v2';
+export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v2';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
   id: 'mobility-gk-pre-training',
@@ -183,7 +183,7 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
       const planMap = new Map<string, MobilityPlan>();
       INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, p));
       parsed.forEach((p: MobilityPlan) => {
-        if (p && p.id && p.id !== 'mobility-gk-pre-training') {
+        if (p && p.id && !planMap.has(p.id) && p.id !== 'mobility-gk-pre-training') {
           planMap.set(p.id, p);
         }
       });

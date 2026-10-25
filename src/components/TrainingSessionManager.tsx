@@ -101,6 +101,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   const [editDayModalType, setEditDayModalType] = useState<CalendarDayType>('training');
   const [editDayModalStartTime, setEditDayModalStartTime] = useState<string>('09:00');
   const [editDayModalEndTime, setEditDayModalEndTime] = useState<string>('10:30');
+  const [editDayModalGymStartTime, setEditDayModalGymStartTime] = useState<string>('10:45');
+  const [editDayModalGymEndTime, setEditDayModalGymEndTime] = useState<string>('11:30');
   const [editDayModalMatchCategory, setEditDayModalMatchCategory] = useState<'friendly' | 'championship' | 'cup'>('championship');
   const [editDayModalLocation, setEditDayModalLocation] = useState<string>('');
   const [editDayModalFocus, setEditDayModalFocus] = useState<string>('');
@@ -1014,6 +1016,44 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     syncTrainingSessionsToCloud(newSessions);
   };
 
+  const handleUpdateDayGymTimes = (targetDate: string, newStartTime: string, newEndTime: string) => {
+    lastUserEditTimestamp.current = Date.now();
+    const existing = trainingSessions[targetDate];
+    const dType = existing?.dayType || calendarSchedule[targetDate] || dayTypesMap[targetDate] || 'training';
+
+    let duration = existing?.gymDurationMin || 45;
+    if (newStartTime && newEndTime) {
+      const [sH, sM] = newStartTime.split(':').map((n) => parseInt(n, 10));
+      const [eH, eM] = newEndTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(sH) && !isNaN(sM) && !isNaN(eH) && !isNaN(eM)) {
+        let diff = (eH * 60 + eM) - (sH * 60 + sM);
+        if (diff < 0) diff += 24 * 60;
+        if (diff > 0) duration = diff;
+      }
+    }
+
+    const updatedSession: TrainingSessionInfo = {
+      ...(existing || {
+        date: targetDate,
+        dayType: dType,
+        matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+        durationMin: 90,
+      }),
+      gymStartTime: newStartTime,
+      gymEndTime: newEndTime,
+      gymDurationMin: duration,
+      updatedAt: Date.now(),
+    };
+
+    const newSessions = {
+      ...trainingSessions,
+      [targetDate]: updatedSession,
+    };
+    setTrainingSessions(newSessions);
+    saveTrainingSessionInfo(updatedSession);
+    syncTrainingSessionsToCloud(newSessions);
+  };
+
   const openEditDayModal = (dateStr: string) => {
     const s = trainingSessions[dateStr];
     const dType = s?.dayType || calendarSchedule[dateStr] || dayTypesMap[dateStr] || 'training';
@@ -1021,6 +1061,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     setEditDayModalType(dType);
     setEditDayModalStartTime(s?.startTime || (dType === 'match' ? '10:00' : '09:00'));
     setEditDayModalEndTime(s?.endTime || (dType === 'match' ? '11:30' : '10:30'));
+    setEditDayModalGymStartTime(s?.gymStartTime || '10:45');
+    setEditDayModalGymEndTime(s?.gymEndTime || '11:30');
     setEditDayModalMatchCategory(s?.matchCategory || 'championship');
     setEditDayModalLocation(s?.locationTime || '');
     setEditDayModalFocus(s?.focusNotes || '');
@@ -1044,6 +1086,17 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       }
     }
 
+    let gymDuration = existing?.gymDurationMin || 45;
+    if (editDayModalGymStartTime && editDayModalGymEndTime) {
+      const [sH, sM] = editDayModalGymStartTime.split(':').map((n) => parseInt(n, 10));
+      const [eH, eM] = editDayModalGymEndTime.split(':').map((n) => parseInt(n, 10));
+      if (!isNaN(sH) && !isNaN(sM) && !isNaN(eH) && !isNaN(eM)) {
+        let diff = (eH * 60 + eM) - (sH * 60 + sM);
+        if (diff < 0) diff += 24 * 60;
+        if (diff > 0) gymDuration = diff;
+      }
+    }
+
     const updatedSession: TrainingSessionInfo = {
       ...(existing || {}),
       date: dateStr,
@@ -1053,6 +1106,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       startTime: editDayModalType === 'rest' ? undefined : editDayModalStartTime,
       endTime: editDayModalType === 'rest' ? undefined : editDayModalEndTime,
       durationMin: duration,
+      gymStartTime: editDayModalType === 'rest' ? undefined : editDayModalGymStartTime,
+      gymEndTime: editDayModalType === 'rest' ? undefined : editDayModalGymEndTime,
+      gymDurationMin: gymDuration,
       locationTime: editDayModalLocation.trim() || undefined,
       focusNotes: editDayModalFocus.trim() || undefined,
       updatedAt: Date.now(),
@@ -1984,6 +2040,37 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                           <div className="flex items-center justify-center space-x-1.5 bg-amber-950/20 px-2.5 py-1.5 rounded-xl border border-amber-500/20 text-amber-400 text-xs font-bold">
                             <span>🏖️</span>
                             <span>Descanso / Recuperação</span>
+                          </div>
+                        )}
+
+                        {/* Row 3B: Gym Time Bar (Only when Ginásio is active on this day) */}
+                        {dayType !== 'rest' && (comp.lowerBody || comp.upperBody || comp.core || s?.gymStartTime) && (
+                          <div className="flex items-center justify-between bg-purple-950/40 px-2.5 py-1.5 rounded-xl border border-purple-500/40 shadow-inner overflow-hidden min-w-0 animate-fade-in">
+                            <div className="flex items-center space-x-1 text-purple-300 font-bold text-xs shrink-0">
+                              <span className="text-xs">🏋️</span>
+                              <span className="uppercase tracking-wider font-extrabold text-[10px]">
+                                Ginásio:
+                              </span>
+                            </div>
+                            <div className="flex items-center space-x-1 font-mono shrink-0">
+                              <input
+                                type="time"
+                                value={s?.gymStartTime || '10:45'}
+                                onChange={(e) => handleUpdateDayGymTimes(dateStr, e.target.value, s?.gymEndTime || '11:30')}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-slate-800 text-purple-200 font-black text-xs px-1 py-0.5 rounded border border-purple-500/60 hover:border-purple-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
+                                title="Hora de Início do Ginásio (grava automaticamente)"
+                              />
+                              <span className="text-purple-400 font-black text-xs">-</span>
+                              <input
+                                type="time"
+                                value={s?.gymEndTime || '11:30'}
+                                onChange={(e) => handleUpdateDayGymTimes(dateStr, s?.gymStartTime || '10:45', e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-slate-800 text-purple-200 font-black text-xs px-1 py-0.5 rounded border border-purple-500/60 hover:border-purple-400 focus:outline-none focus:border-purple-400 focus:ring-1 focus:ring-purple-400 cursor-pointer text-center w-[54px] sm:w-[58px] tracking-tight [color-scheme:dark] [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-inner-spin-button]:hidden"
+                                title="Hora de Fim do Ginásio (utilizada para o questionário das jogadoras)"
+                              />
+                            </div>
                           </div>
                         )}
                       </div>
@@ -3215,6 +3302,83 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                             editDayModalStartTime === preset.s && editDayModalEndTime === preset.e
                               ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
                               : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2B. Horário do Ginásio (Força / MMII) */}
+              {editDayModalType !== 'rest' && (
+                <div className="space-y-2.5 p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/40 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-extrabold uppercase text-purple-300 flex items-center space-x-1.5">
+                      <span>🏋️</span>
+                      <span>Horário do Ginásio (Força / MMII):</span>
+                    </label>
+                    {editDayModalGymStartTime && editDayModalGymEndTime && (() => {
+                      const [sH, sM] = editDayModalGymStartTime.split(':').map(Number);
+                      const [eH, eM] = editDayModalGymEndTime.split(':').map(Number);
+                      let diff = (eH * 60 + eM) - (sH * 60 + sM);
+                      if (diff < 0) diff += 24 * 60;
+                      return (
+                        <span className="text-[10px] font-black text-purple-300 bg-purple-950/80 border border-purple-500/40 px-2 py-0.5 rounded-full">
+                          {diff > 0 ? `${diff} Min` : '--'}
+                        </span>
+                      );
+                    })()}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <span className="text-[10px] text-purple-300/80 font-bold block mb-1">Hora de Início:</span>
+                      <input
+                        type="time"
+                        value={editDayModalGymStartTime}
+                        onChange={(e) => setEditDayModalGymStartTime(e.target.value)}
+                        className="w-full rounded-xl bg-slate-800 border border-purple-500/50 px-3 py-2 text-xs font-mono font-black text-slate-100 focus:outline-none focus:border-purple-400 text-center"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-purple-300/80 font-bold block mb-1">Hora de Fim (p/ questionário):</span>
+                      <input
+                        type="time"
+                        value={editDayModalGymEndTime}
+                        onChange={(e) => setEditDayModalGymEndTime(e.target.value)}
+                        className="w-full rounded-xl bg-slate-800 border border-purple-500/50 px-3 py-2 text-xs font-mono font-black text-slate-100 focus:outline-none focus:border-purple-400 text-center"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Quick presets for gym */}
+                  <div className="space-y-1 pt-1">
+                    <span className="text-[10px] text-purple-400/80 font-bold uppercase tracking-wider">
+                      Atalhos Rápidos de Ginásio:
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        { label: '10:30 - 11:15', s: '10:30', e: '11:15' },
+                        { label: '10:45 - 11:30', s: '10:45', e: '11:30' },
+                        { label: '11:00 - 11:45', s: '11:00', e: '11:45' },
+                        { label: '11:30 - 12:15', s: '11:30', e: '12:15' },
+                        { label: '17:30 - 18:15', s: '17:30', e: '18:15' },
+                        { label: '18:00 - 18:45', s: '18:00', e: '18:45' },
+                      ].map((preset) => (
+                        <button
+                          key={preset.label}
+                          type="button"
+                          onClick={() => {
+                            setEditDayModalGymStartTime(preset.s);
+                            setEditDayModalGymEndTime(preset.e);
+                          }}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-mono font-bold transition-all border cursor-pointer ${
+                            editDayModalGymStartTime === preset.s && editDayModalGymEndTime === preset.e
+                              ? 'bg-purple-500 text-slate-950 border-purple-400 font-black shadow-sm'
+                              : 'bg-slate-800/80 text-purple-200 border-purple-500/30 hover:bg-purple-900/50'
                           }`}
                         >
                           {preset.label}

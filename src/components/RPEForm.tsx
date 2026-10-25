@@ -144,7 +144,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     const currSession = sessions[today];
     const targetSessionType = hasGymLower ? sessionType : 'field';
     const targetExisting = targetSessionType === 'gym_lower' ? gymEntry : fieldEntry;
-    const sessionDurationMin = targetSessionType === 'gym_lower' ? 45 : (currSession?.durationMin || 90);
+    const sessionDurationMin = targetSessionType === 'gym_lower' ? (currSession?.gymDurationMin || 45) : (currSession?.durationMin || 90);
     const matchDayOffset = currSession?.matchDayOffset || 'MD-3';
     const translatedComments = comments.trim() ? translateTextToPortuguese(comments.trim()) : undefined;
 
@@ -352,8 +352,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
                 )}
               </div>
               <span className="text-xs font-black text-slate-100">2. Ginásio MMII</span>
-              <span className="text-[10px] text-purple-300/80 mt-0.5 font-medium">
-                Força & Potência &bull; 45 min
+              <span className="text-[10px] text-purple-300/90 mt-0.5 font-bold flex items-center space-x-1">
+                <Clock className="h-2.5 w-2.5 inline" />
+                <span>Fim: {todaySession?.gymEndTime || '11:30'}</span>
               </span>
             </button>
           </div>
@@ -467,8 +468,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
                   {new Date().toLocaleDateString()}
                 </span>
                 {sessionType === 'gym_lower' ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-purple-500/20 text-purple-300 border-purple-500/40">
-                    ⚡ Força & Potência MMII
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-purple-500/20 text-purple-300 border-purple-500/40 flex items-center space-x-1">
+                    <Clock className="h-3 w-3 inline text-purple-400" />
+                    <span>Fim do Ginásio: {todaySession?.gymEndTime || '11:30'}</span>
                   </span>
                 ) : deadlineCheck.hasDeadline && !deadlineCheck.isPast ? (
                   <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${

@@ -172,6 +172,9 @@ export interface TrainingSessionInfo {
   startTime?: string; // HH:mm (e.g. "09:00")
   endTime?: string; // HH:mm (e.g. "10:30")
   durationMin: number; // Calculated automatically from startTime and endTime
+  gymStartTime?: string; // HH:mm (e.g. "10:45")
+  gymEndTime?: string; // HH:mm (e.g. "11:30")
+  gymDurationMin?: number; // Calculated automatically from gymStartTime and gymEndTime
   tempStart?: number; // °C (e.g. 21.0)
   tempEnd?: number; // °C (e.g. 26.5)
   tempDelta?: number; // °C calculated automatically (tempEnd - tempStart)
