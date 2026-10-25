@@ -3312,8 +3312,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                 </div>
               )}
 
-              {/* 2B. Horário do Ginásio (Força / MMII) */}
-              {editDayModalType !== 'rest' && (
+              {/* 2B. Horário do Ginásio (Apenas quando há Membros Inferiores programado) */}
+              {editDayModalType !== 'rest' && Boolean(editingDayDate && trainingSessions[editingDayDate]?.complementaryWork?.lowerBody) && (
                 <div className="space-y-2.5 p-3.5 rounded-2xl bg-purple-950/30 border border-purple-500/40 animate-fade-in">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-extrabold uppercase text-purple-300 flex items-center space-x-1.5">

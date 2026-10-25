@@ -34,12 +34,24 @@ export const RPEForm: React.FC<RPEFormProps> = ({
   const todayStr = new Date().toISOString().split('T')[0];
 
   // Identifica se hoje há Ginásio de Equipa: Membros Inferiores programado
+  // O questionário de ginásio SÓ deve aparecer se o dia não for de descanso E estiver assinalado Membros Inferiores
   const [sessionsMap, setSessionsMap] = useState<Record<string, any>>(() => getStoredTrainingSessions());
   const todaySession = sessionsMap[todayStr];
-  const hasGymLower = Boolean(todaySession?.complementaryWork?.lowerBody);
+  const hasGymLower = Boolean(
+    todaySession &&
+    todaySession.dayType !== 'rest' &&
+    todaySession.complementaryWork?.lowerBody === true
+  );
 
   // Sessão ativa: 'field' (Treino de Campo) ou 'gym_lower' (Ginásio Membros Inferiores)
   const [sessionType, setSessionType] = useState<'field' | 'gym_lower'>('field');
+
+  // Garante que se não houver ginásio de membros inferiores, a sessão é forçada a 'field'
+  useEffect(() => {
+    if (!hasGymLower && sessionType !== 'field') {
+      setSessionType('field');
+    }
+  }, [hasGymLower, sessionType]);
 
   const [fieldEntry, setFieldEntry] = useState<RPEEntry | null>(() => {
     const localEntries = getRPELocally(activeAthlete.id);
@@ -51,7 +63,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     return localEntries.find((e) => e.date === todayStr && e.sessionType === 'gym_lower') || null;
   });
 
-  const existingActive = sessionType === 'gym_lower' ? gymEntry : fieldEntry;
+  const existingActive = (sessionType === 'gym_lower' && hasGymLower) ? gymEntry : fieldEntry;
 
   const [deadlineCheck, setDeadlineCheck] = useState(() =>
     isSubmissionPastDeadline(todayStr, 'rpe', activeAthlete.id)
@@ -72,6 +84,20 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
     refreshData();
 
+    // Sincronização direta com as sessões de treino na cloud (para atualizar Membros Inferiores em tempo real)
+    secureFetch(`/api/training-sessions?t=${Date.now()}`, { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        const remote = data?.sessions || data?.data?.sessions;
+        if (remote && typeof remote === 'object' && Object.keys(remote).length > 0) {
+          const current = getStoredTrainingSessions();
+          const merged = { ...current, ...remote };
+          localStorage.setItem('femperf_training_sessions_info', JSON.stringify(merged));
+          setSessionsMap(merged);
+        }
+      })
+      .catch(() => {});
+
     // Sincronização direta com Supabase
     secureFetch(`/api/rpe?athleteId=${activeAthlete.id}&t=${Date.now()}`)
       .then((res) => res.json())
@@ -89,14 +115,17 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     const interval = setInterval(refreshData, 5000);
     window.addEventListener('femperf_credentials_updated', refreshData);
     window.addEventListener('femperf_data_updated', refreshData);
+    window.addEventListener('storage', refreshData);
     return () => {
       clearInterval(interval);
       window.removeEventListener('femperf_credentials_updated', refreshData);
       window.removeEventListener('femperf_data_updated', refreshData);
+      window.removeEventListener('storage', refreshData);
     };
   }, [todayStr, activeAthlete.id]);
 
   const handleSelectSessionType = (type: 'field' | 'gym_lower') => {
+    if (type === 'gym_lower' && !hasGymLower) return;
     setSessionType(type);
     setAllowEdit(false);
     setError('');
@@ -364,24 +393,28 @@ export const RPEForm: React.FC<RPEFormProps> = ({
       {/* ESTADO CONCLUÍDO DA SESSÃO SELECIONADA */}
       {existingActive && !allowEdit ? (
         <div className={`rounded-2xl border p-6 shadow-xl space-y-5 animate-fade-in ${
-          sessionType === 'gym_lower'
+          sessionType === 'gym_lower' && hasGymLower
             ? 'border-purple-500/40 bg-dark-card'
             : 'border-cyan-500/40 bg-dark-card'
         }`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border ${
-                sessionType === 'gym_lower'
+                sessionType === 'gym_lower' && hasGymLower
                   ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 text-xl'
                   : 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30'
               }`}>
-                {sessionType === 'gym_lower' ? '🏋️‍♀️' : <Check className="h-6 w-6 stroke-[3]" />}
+                {sessionType === 'gym_lower' && hasGymLower ? '🏋️‍♀️' : <Check className="h-6 w-6 stroke-[3]" />}
               </div>
               <div>
                 <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                  sessionType === 'gym_lower' ? 'text-purple-300' : 'text-cyan-400'
+                  sessionType === 'gym_lower' && hasGymLower ? 'text-purple-300' : 'text-cyan-400'
                 }`}>
-                  {sessionType === 'gym_lower' ? 'PSE Ginásio (MMII) Concluída' : 'PSE Treino de Campo Concluída'}
+                  {sessionType === 'gym_lower' && hasGymLower
+                    ? 'PSE Ginásio (MMII) Concluída'
+                    : hasGymLower
+                    ? 'PSE Treino de Campo Concluída'
+                    : 'PSE Concluída Hoje'}
                 </span>
                 <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
               </div>
@@ -413,17 +446,17 @@ export const RPEForm: React.FC<RPEFormProps> = ({
             )}
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-400">
-                {sessionType === 'gym_lower' ? 'Exigência de Força MMII (Borg):' : 'Esforço do Treino (Borg):'}
+                {sessionType === 'gym_lower' && hasGymLower ? 'Exigência de Força MMII (Borg):' : 'Esforço do Treino (Borg):'}
               </span>
               <span className={`font-black text-base ${
-                sessionType === 'gym_lower' ? 'text-purple-300' : 'text-brand-cyan'
+                sessionType === 'gym_lower' && hasGymLower ? 'text-purple-300' : 'text-brand-cyan'
               }`}>
                 {existingActive.physicalDemand} / 10
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-slate-400">
-                {sessionType === 'gym_lower' ? 'Fadiga Muscular Pós-Ginásio:' : 'Fadiga Pós-Treino:'}
+                {sessionType === 'gym_lower' && hasGymLower ? 'Fadiga Muscular Pós-Ginásio:' : 'Fadiga Pós-Treino:'}
               </span>
               <span className="font-black text-amber-400 text-sm">
                 {existingActive.postFatigue} / 10
@@ -437,7 +470,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
               onClick={handleEditClick}
               className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition-all border border-slate-700 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer"
             >
-              <span>✏️ Rever ou Atualizar Respostas</span>
+              <span>
+                {hasGymLower
+                  ? `✏️ Rever ou Atualizar PSE (${sessionType === 'gym_lower' ? 'Ginásio MMII' : 'Treino de Campo'})`
+                  : '✏️ Rever ou Atualizar Respostas'}
+              </span>
             </button>
           </div>
         </div>
@@ -446,16 +483,16 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         <form onSubmit={handleSubmit} className="space-y-5 animate-fade-in">
           {/* Header Banner */}
           <div className={`rounded-xl border p-4 shadow-md ${
-            sessionType === 'gym_lower'
+            sessionType === 'gym_lower' && hasGymLower
               ? 'border-purple-500/40 bg-gradient-to-r from-purple-950/40 to-dark-surface'
               : 'border-brand-cyan/30 bg-gradient-to-r from-dark-card to-dark-surface'
           }`}>
             <div className="flex items-center justify-between">
               <div>
                 <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                  sessionType === 'gym_lower' ? 'text-purple-300' : 'text-brand-cyan'
+                  sessionType === 'gym_lower' && hasGymLower ? 'text-purple-300' : 'text-brand-cyan'
                 }`}>
-                  {sessionType === 'gym_lower'
+                  {sessionType === 'gym_lower' && hasGymLower
                     ? 'PSE GINÁSIO — MEMBROS INFERIORES'
                     : hasGymLower
                     ? 'PSE TREINO DE CAMPO'
@@ -467,7 +504,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
                 <span className="text-xs font-semibold text-slate-400">
                   {new Date().toLocaleDateString()}
                 </span>
-                {sessionType === 'gym_lower' ? (
+                {sessionType === 'gym_lower' && hasGymLower ? (
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black border bg-purple-500/20 text-purple-300 border-purple-500/40 flex items-center space-x-1">
                     <Clock className="h-3 w-3 inline text-purple-400" />
                     <span>Fim do Ginásio: {todaySession?.gymEndTime || '11:30'}</span>
@@ -517,7 +554,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-slate-200">
             <Dumbbell className="h-5 w-5 text-brand-cyan" />
-            <h3 className="text-sm font-bold">{t.rpe.borgTitle}</h3>
+            <h3 className="text-sm font-bold">
+              {sessionType === 'gym_lower' && hasGymLower
+                ? '1. Exigência Física do Ginásio (Escala Borg CR10)'
+                : t.rpe.borgTitle}
+            </h3>
           </div>
           <span className="text-xs font-black text-brand-cyan bg-dark-bg px-3 py-1 rounded-full border border-brand-cyan/30">
             {physicalDemand !== null ? `${physicalDemand} / 10` : '- / 10'}
@@ -598,7 +639,11 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 text-slate-200">
             <Activity className="h-5 w-5 text-amber-400" />
-            <h3 className="text-sm font-bold">{t.rpe.postFatigueTitle}</h3>
+            <h3 className="text-sm font-bold">
+              {sessionType === 'gym_lower' && hasGymLower
+                ? '2. Fadiga Muscular nos Membros Inferiores (1 a 10)'
+                : t.rpe.postFatigueTitle}
+            </h3>
           </div>
           <span className="text-xs font-black text-amber-400 bg-dark-bg px-3 py-1 rounded-full border border-amber-400/30">
             {postFatigue !== null ? `${postFatigue} / 10` : '- / 10'}
@@ -706,7 +751,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         type="submit"
         disabled={isSubmitting}
         className={`w-full rounded-xl py-4 text-sm font-extrabold text-slate-950 shadow-xl active:scale-98 transition-all disabled:opacity-50 cursor-pointer flex items-center justify-center space-x-2 ${
-          sessionType === 'gym_lower'
+          sessionType === 'gym_lower' && hasGymLower
             ? 'bg-gradient-to-r from-purple-400 to-indigo-400 hover:from-purple-300 hover:to-indigo-300 shadow-purple-500/25'
             : 'bg-gradient-to-r from-brand-cyan to-blue-500 hover:from-cyan-400 hover:to-blue-600 shadow-brand-cyan/25'
         }`}
@@ -714,12 +759,12 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         {isSubmitting ? (
           <span>{t.rpe.submitting}</span>
         ) : allowEdit ? (
-          <span>💾 Guardar Alterações da PSE ({sessionType === 'gym_lower' ? 'Ginásio MMII' : 'Campo'})</span>
+          <span>💾 Guardar Alterações da PSE {hasGymLower ? `(${sessionType === 'gym_lower' ? 'Ginásio MMII' : 'Campo'})` : ''}</span>
         ) : deadlineCheck.requireApproval ? (
           <span>Submeter Questionário (Sujeito a Validação)</span>
         ) : (
           <span>
-            {sessionType === 'gym_lower'
+            {sessionType === 'gym_lower' && hasGymLower
               ? 'Submeter PSE Ginásio (MMII)'
               : hasGymLower
               ? 'Submeter PSE Treino de Campo'
