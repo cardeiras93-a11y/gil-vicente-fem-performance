@@ -1,6 +1,148 @@
 import { MobilityPlan } from "./types";
 
+export const FOAM_ROLLER_RECOVERY_PLAN: MobilityPlan = {
+  "id": "libertacao_miofascial_rolo",
+  "titlePt": "Rotina de Libertação Miofascial com Rolo (Foam Rolling & Recovery)",
+  "titleEn": "Self-Myofascial Release Foam Roller Routine (Full Body SMR & Recovery)",
+  "categoryPt": "Recuperação & Mobilidade • Libertação Miofascial com Rolo",
+  "categoryEn": "Recovery & Mobility • Self-Myofascial Release Foam Rolling",
+  "group": "inferiores",
+  "groupBadgePt": "🪵 Rolo Miofascial • SMR",
+  "groupBadgeEn": "🪵 Foam Roller • SMR",
+  "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • DEPARTAMENTO DE PERFORMANCE & RECUPERAÇÃO",
+  "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • PERFORMANCE & RECOVERY DEPARTMENT",
+  "targetPosition": "all",
+  "durationMinutes": 15,
+  "durationTextPt": "15 MIN",
+  "durationTextEn": "15 MIN",
+  "warmupPt": "Respiração diafragmática profunda e identificação de pontos de tensão / trigger points.",
+  "warmupEn": "Deep diaphragmatic breathing and identification of muscular trigger points.",
+  "finisherPt": "Mobilização articular global suave e hidratação.",
+  "finisherEn": "Gentle full-body mobility flow and post-session hydration.",
+  "blocks": [
+    {
+      "id": "foam_roller_sec01_posterior",
+      "number": "01",
+      "titlePt": "SECÇÃO 1: CADEIA POSTERIOR & GLÚTEOS (ROLO MIOFASCIAL)",
+      "titleEn": "SECTION 1: POSTERIOR CHAIN & GLUTES (FOAM ROLLER)",
+      "durationMinutes": 7,
+      "durationTextPt": "7 MIN",
+      "durationTextEn": "7 MIN",
+      "exercises": [
+        {
+          "id": "smr_calves",
+          "namePt": "1.1 Libertação Miofascial de Gémeos e Solear",
+          "nameEn": "1.1 Calves & Soleus Foam Rolling",
+          "seriesRepsPt": "2x 45-60s / perna",
+          "seriesRepsEn": "2x 45-60s / leg",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Sentada com as mãos a suportar o tronco atrás. Rolo colocado sob a barriga da perna. Desliza lentamente do tendão de Aquiles até à fossa poplítea. Roda a perna internamente e externamente para atingir todas as porções dos gémeos.",
+          "descriptionEn": "Seated with hands supporting weight behind. Foam roller under calf belly. Slowly roll from Achilles tendon up to knee crease. Rotate foot in and out to target medial and lateral gastrocnemius heads.",
+          "imageSrc": "/exercises/foam_roller_calves_pro.svg"
+        },
+        {
+          "id": "smr_hamstrings",
+          "namePt": "1.2 Libertação Miofascial de Isquiotibiais",
+          "nameEn": "1.2 Hamstrings Foam Rolling",
+          "seriesRepsPt": "2x 45-60s / perna",
+          "seriesRepsEn": "2x 45-60s / leg",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Mãos apoiadas no chão atrás com bacia ligeiramente elevada. Rolo sob a face posterior da coxa. Desliza suavemente desde a tuberosidade isquiática (glúteo) até 2 cm acima da dobra do joelho, insistindo nos pontos de maior rigidez.",
+          "descriptionEn": "Hands supported behind with hips slightly lifted. Foam roller under posterior thigh. Roll smoothly from ischial tuberosity down to just above knee crease, pausing on tight trigger points.",
+          "imageSrc": "/exercises/foam_roller_hamstrings_pro.svg"
+        },
+        {
+          "id": "smr_glutes_piriformis",
+          "namePt": "1.3 Libertação Miofascial de Glúteos & Piriforme (Figura-4)",
+          "nameEn": "1.3 Glutes & Piriformis Foam Rolling (Figure-4)",
+          "seriesRepsPt": "2x 45-60s / lado",
+          "seriesRepsEn": "2x 45-60s / side",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Sentada sobre o rolo. Cruza o tornozelo direito sobre o joelho esquerdo em formato de 4 e inclina o corpo ligeiramente para o glúteo direito. Faz passagens curtas e lentas para descomprimir o piriforme e rotadores externos profundos.",
+          "descriptionEn": "Sit directly on roller. Cross right ankle over left knee in a figure-4 and lean slightly onto right buttock. Use short, slow passes to release the piriformis and deep lateral hip rotators.",
+          "imageSrc": "/exercises/foam_roller_glutes_piriformis_pro.svg"
+        },
+        {
+          "id": "smr_itband",
+          "namePt": "1.4 Libertação do Trato Ílio-Tibial & TFL",
+          "nameEn": "1.4 IT Band & Tensor Fasciae Latae (TFL)",
+          "seriesRepsPt": "2x 45s / lado",
+          "seriesRepsEn": "2x 45s / side",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Deitada de lado em prancha sobre o antebraço. Rolo sob a face lateral da coxa. Perna superior cruzada à frente com pé no chão para descarregar o excesso de peso. Rola devagar desde a crista ilíaca (TFL) até à parte lateral do fémur superior.",
+          "descriptionEn": "Side-lying forearm plank with roller under lateral thigh. Cross top leg over in front with foot on floor to modulate pressure. Roll slowly along upper lateral thigh and TFL area.",
+          "imageSrc": "/exercises/foam_roller_lat_itband_pro.svg"
+        }
+      ]
+    },
+    {
+      "id": "foam_roller_sec02_anterior",
+      "number": "02",
+      "titlePt": "SECÇÃO 2: CADEIA ANTERIOR, ADUTORES & COLUNA TORÁCICA",
+      "titleEn": "SECTION 2: ANTERIOR CHAIN, ADDUCTORS & THORACIC SPINE",
+      "durationMinutes": 8,
+      "durationTextPt": "8 MIN",
+      "durationTextEn": "8 MIN",
+      "exercises": [
+        {
+          "id": "smr_quadriceps",
+          "namePt": "2.1 Libertação Miofascial de Quadricípites & Reto Femoral",
+          "nameEn": "2.1 Quadriceps & Rectus Femoris Foam Rolling",
+          "seriesRepsPt": "2x 45-60s / perna",
+          "seriesRepsEn": "2x 45-60s / leg",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Deitada de barriga para baixo em prancha baixa de antebraços. Rolo posicionado sob a parte anterior da coxa. Desliza controladamente desde a anca anterior até à parte superior da rótula. Respira fundo e mantém o core ligeiramente ativo.",
+          "descriptionEn": "Prone forearm plank with roller under front of thighs. Roll smoothly from hip crease down to just above patella. Maintain steady breathing and mild abdominal bracing to prevent lower back arching.",
+          "imageSrc": "/exercises/foam_roller_quadriceps_pro.svg"
+        },
+        {
+          "id": "smr_adductors",
+          "namePt": "2.2 Libertação Miofascial de Adutores / Virilha",
+          "nameEn": "2.2 Adductor & Inner Thigh Foam Rolling",
+          "seriesRepsPt": "2x 45-60s / perna",
+          "seriesRepsEn": "2x 45-60s / leg",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Deitada de barriga para baixo com uma perna fletida e aberta ao lado a 90°. Rolo paralelo ao corpo sob a face interna da coxa. Desliza a coxa lateralmente, passando desde a virilha/sínfise até à região medial do joelho.",
+          "descriptionEn": "Prone position with one leg opened to side at 90° knee angle. Roller oriented parallel to torso under inner thigh. Roll from groin attachment down towards medial knee.",
+          "imageSrc": "/exercises/foam_roller_adductors_pro.svg"
+        },
+        {
+          "id": "smr_hip_flexors",
+          "namePt": "2.3 Libertação dos Flexores da Anca (Psoas & TFL)",
+          "nameEn": "2.3 Hip Flexors & Psoas Foam Rolling",
+          "seriesRepsPt": "2x 45s / lado",
+          "seriesRepsEn": "2x 45s / side",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Deitada de bruços ligeiramente inclinada para um lado. Coloca o rolo logo abaixo da espinha ilíaca ântero-superior (crista ilíaca da anca). Faz micro-passagens lentas para aliviar a tensão profunda dos flexores da anca.",
+          "descriptionEn": "Prone tilted slightly to one side. Place roller just below the anterior superior iliac spine (ASIS). Perform small, controlled passes to release deep hip flexor tension.",
+          "imageSrc": "/exercises/foam_roller_hip_flexors_pro.svg"
+        },
+        {
+          "id": "smr_thoracic_spine",
+          "namePt": "2.4 Libertação & Extensão da Coluna Torácica",
+          "nameEn": "2.4 Thoracic Spine Extension & Foam Rolling",
+          "seriesRepsPt": "2x 60s",
+          "seriesRepsEn": "2x 60s",
+          "restPt": "15s transição",
+          "restEn": "15s transition",
+          "descriptionPt": "Deitada de costas com joelhos dobrados e pés apoiados no chão. Mãos atrás da cabeça a suportar o pescoço (sem puxar). Rolo colocado a meio das costas. Desliza da zona média torácica até à base das omoplatas, realizando pequenas extensões torácicas no final de cada passagem.",
+          "descriptionEn": "Supine with knees bent and feet flat on floor. Hands cradling head to support cervical spine. Roller under mid-back. Roll from mid-thoracic up to scapulae, gently extending over roller on exhales.",
+          "imageSrc": "/exercises/foam_roller_thoracic_spine_pro.svg"
+        }
+      ]
+    }
+  ]
+};
+
 export const ALL_NINE_PLANS: MobilityPlan[] = [
+  FOAM_ROLLER_RECOVERY_PLAN,
   {
     id: "competitivo_maquinas_pesos_livres",
     titlePt: "Plano de Treino \u2014 Competitivo (M\u00e1quinas & Pesos Livres)",

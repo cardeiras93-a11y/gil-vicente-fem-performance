@@ -41,7 +41,7 @@ export const AdminMobilityManager: React.FC = () => {
     const loaded = getStoredMobilityPlans();
     return loaded[0]?.id || '';
   });
-  const [groupFilter, setGroupFilter] = useState<'all' | 'anamnese' | 'ginasio' | 'superiores' | 'inferiores'>('anamnese');
+  const [groupFilter, setGroupFilter] = useState<'all' | 'anamnese' | 'ginasio' | 'rolo' | 'superiores' | 'inferiores'>('anamnese');
   const [selectedPlanForPreview, setSelectedPlanForPreview] = useState<MobilityPlan | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -69,11 +69,12 @@ export const AdminMobilityManager: React.FC = () => {
     }
   }, [plans, selectedPlanId]);
 
-  const handleGroupFilterChange = (newGroup: 'all' | 'anamnese' | 'ginasio' | 'superiores' | 'inferiores') => {
+  const handleGroupFilterChange = (newGroup: 'all' | 'anamnese' | 'ginasio' | 'rolo' | 'superiores' | 'inferiores') => {
     setGroupFilter(newGroup);
     let subset: MobilityPlan[] = plans;
     if (newGroup === 'anamnese') subset = plans.filter((p) => p.id.startsWith('prev_'));
     else if (newGroup === 'ginasio') subset = plans.filter((p) => !p.id.startsWith('prev_'));
+    else if (newGroup === 'rolo') subset = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
     else if (newGroup !== 'all') subset = plans.filter((p) => p.group === newGroup);
 
     if (subset.length > 0 && !subset.some((p) => p.id === selectedPlanId)) {
@@ -85,6 +86,7 @@ export const AdminMobilityManager: React.FC = () => {
     if (groupFilter === 'all') return plans;
     if (groupFilter === 'anamnese') return plans.filter((p) => p.id.startsWith('prev_'));
     if (groupFilter === 'ginasio') return plans.filter((p) => !p.id.startsWith('prev_'));
+    if (groupFilter === 'rolo') return plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
     return plans.filter((p) => p.group === groupFilter);
   }, [plans, groupFilter]);
 
@@ -100,6 +102,7 @@ export const AdminMobilityManager: React.FC = () => {
   const allCount = plans.length;
   const anamneseCount = plans.filter((p) => p.id.startsWith('prev_')).length;
   const ginasioCount = plans.filter((p) => !p.id.startsWith('prev_')).length;
+  const roloCount = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo')).length;
   const supCount = plans.filter((p) => p.group === 'superiores').length;
   const infCount = plans.filter((p) => p.group === 'inferiores').length;
 
@@ -277,6 +280,18 @@ export const AdminMobilityManager: React.FC = () => {
             >
               <span>🏋️ Máquinas Ginásio</span>
               <span>({ginasioCount})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleGroupFilterChange('rolo')}
+              className={`px-3 py-1.5 rounded-lg transition text-xs font-black cursor-pointer flex items-center space-x-1.5 ${
+                groupFilter === 'rolo'
+                  ? 'bg-amber-600 text-white shadow-sm'
+                  : 'text-amber-400 hover:text-amber-200 hover:bg-amber-950/40'
+              }`}
+            >
+              <span>🪵 Rolo Miofascial</span>
+              <span className="text-[10px] bg-amber-950 px-1.5 py-0.5 rounded-full border border-amber-500/40">({roloCount})</span>
             </button>
             <button
               type="button"
