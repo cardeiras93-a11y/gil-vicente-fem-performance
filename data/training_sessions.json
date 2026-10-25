@@ -1,5 +1,17 @@
 {
-  "sessions": {},
+  "sessions": {
+    "2026-10-25": {
+      "date": "2026-10-25",
+      "dayType": "match",
+      "matchCategory": "cup",
+      "matchDayOffset": "MD",
+      "startTime": "15:00",
+      "endTime": "16:45",
+      "durationMin": 94,
+      "locationTime": "Campo do Sporting da Cruz",
+      "focusNotes": "Taça de Portugal Feminina (2ª Eliminatória) vs Sporting da Cruz (29-0)"
+    }
+  },
   "schedule": {
     "2026-09-07": "training",
     "2026-09-08": "training",
@@ -12,6 +24,7 @@
     "2026-09-15": "training",
     "2026-09-16": "training",
     "2026-09-17": "training",
-    "2026-09-19": "match"
+    "2026-09-19": "match",
+    "2026-10-25": "match"
   }
 }
