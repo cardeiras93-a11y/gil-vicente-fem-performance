@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <!-- Gym floor -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(205, 10)">
+    <rect x="0" y="0" width="106" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="10" r="4" fill="#10b981">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4;5.5;4" dur="1.2s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="9" font-weight="900" font-family="Inter, system-ui, sans-serif" text-anchor="middle" letter-spacing="0.5">LIVE LOOP • 60fps</text>
+  </g>
+
+  <!-- Title indicator -->
+  <g transform="translate(14, 18)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#ef4444" />
+    <text x="14" y="8" fill="#334155" font-size="9" font-weight="800" font-family="Inter, system-ui, sans-serif">PRANCHA TOQUE OMBRO C/ BANDA</text>
+  </g>
+
+  
+  <!-- Solo -->
+  <line x1="20" y1="145" x2="300" y2="145" stroke="#cbd5e1" stroke-width="2" />
+
+  <!-- Atleta em prancha alta -->
+  <!-- Pernas e pés apoiados atrás -->
+  <path d="M60 142 L130 95" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+  <ellipse cx="58" cy="142" rx="6" ry="3" fill="#0284c7" />
+
+  <!-- Tronco rígido e cabeça -->
+  <path d="M130 95 L205 82" stroke="#1e3a8a" stroke-width="15" stroke-linecap="round" />
+  <circle cx="218" cy="76" r="9" fill="#f6ad55" />
+
+  <!-- Braço esquerdo de apoio fixo -->
+  <path d="M195 85 L195 142" stroke="#1e293b" stroke-width="9" stroke-linecap="round" />
+  <ellipse cx="195" cy="144" rx="5" ry="2.5" fill="#f6ad55" />
+
+  <!-- Braço direito alternando toque no ombro oposto -->
+  <path d="M195 85 L200 142" stroke="#f6ad55" stroke-width="8" stroke-linecap="round">
+    <animate attributeName="d" values="M195 85 L200 142; M195 85 L180 95; M195 85 L200 142" dur="1.8s" repeatCount="indefinite" />
+  </path>
+
+  <!-- Mini-banda de tensão nos pulsos -->
+  <line x1="195" y1="130" x2="200" y2="130" stroke="#ef4444" stroke-width="4">
+    <animate attributeName="x2" values="200; 182; 200" dur="1.8s" repeatCount="indefinite" />
+    <animate attributeName="y2" values="130; 98; 130" dur="1.8s" repeatCount="indefinite" />
+  </line>
+
+  <!-- Indicador Anti-Rotação -->
+  <g transform="translate(110, 50)">
+    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.8" />
+    <text x="47" y="12" fill="#38bdf8" font-size="8" font-weight="900" font-family="Inter, sans-serif" text-anchor="middle">ANTI-ROTAÇÃO DE CORE</text>
+  </g>
+
+</svg>

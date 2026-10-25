@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="poleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <!-- Gym floor -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="148" x2="320" y2="148" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(205, 10)">
+    <rect x="0" y="0" width="106" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="12" cy="10" r="4" fill="#10b981">
+      <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4;5.5;4" dur="1.2s" repeatCount="indefinite" />
+    </circle>
+    <text x="58" y="14" fill="#38bdf8" font-size="9" font-weight="900" font-family="Inter, system-ui, sans-serif" text-anchor="middle" letter-spacing="0.5">LIVE LOOP • 60fps</text>
+  </g>
+
+  <!-- Title indicator -->
+  <g transform="translate(14, 18)">
+    <rect x="0" y="0" width="8" height="8" rx="2" fill="#ef4444" />
+    <text x="14" y="8" fill="#334155" font-size="9" font-weight="800" font-family="Inter, system-ui, sans-serif">POLIQUIN STEP-UP (VMO)</text>
+  </g>
+
+  
+  <!-- Caixa / Step com cunha de calcanhar -->
+  <rect x="80" y="118" width="60" height="30" rx="3" fill="#334155" />
+  <polygon points="110,118 135,108 135,118" fill="#64748b" />
+
+  <!-- Perna e tronco em movimento ascendente/descendente controlado -->
+  <g id="poliquinAthlete">
+    <animateTransform attributeName="transform" type="translate" values="0,0; 0,16; 0,0" keyTimes="0;0.5;1" dur="2.4s" repeatCount="indefinite" />
+    
+    <!-- Perna ativa no step com calcanhar elevado -->
+    <path d="M125 78 L126 112" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+    <ellipse cx="128" cy="112" rx="7" ry="3" fill="#0284c7" />
+
+    <!-- Tronco ereto -->
+    <path d="M125 78 L122 40" stroke="#1e3a8a" stroke-width="14" stroke-linecap="round" />
+    <!-- Cabeça -->
+    <circle cx="122" cy="28" r="9" fill="#f6ad55" />
+    
+    <!-- Perna livre a tocar com calcanhar no solo -->
+    <path d="M125 78 L152 110 L152 136" stroke="#1e293b" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+    <ellipse cx="154" cy="138" rx="6" ry="3" fill="#0284c7" />
+
+    <!-- Mãos nas ancas -->
+    <path d="M122 50 L110 65 L118 72" stroke="#f6ad55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M122 50 L134 65 L126 72" stroke="#f6ad55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <!-- Seta indicadora de vetor VMO -->
+  <g transform="translate(180, 85)">
+    <path d="M0 25 L0 -10 M-5 -5 L0 -12 L5 -5" stroke="#06b6d4" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <animateTransform attributeName="transform" type="translate" values="0,8; 0,-8; 0,8" dur="2.4s" repeatCount="indefinite" />
+    </path>
+    <text x="14" y="8" fill="#0284c7" font-size="8.5" font-weight="900" font-family="Inter, sans-serif">DROP & VMO LOCK</text>
+  </g>
+
+</svg>
