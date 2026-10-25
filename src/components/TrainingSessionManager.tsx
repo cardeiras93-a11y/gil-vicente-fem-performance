@@ -678,10 +678,12 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
     saveTrainingSessionInfo(updatedInfo);
     saveTrainingSessionInfoAsync(updatedInfo);
-    setTrainingSessions((prev) => ({
-      ...prev,
+    const newSessions = {
+      ...trainingSessions,
       [dateStr]: updatedInfo,
-    }));
+    };
+    setTrainingSessions(newSessions);
+    syncTrainingSessionsToCloud(newSessions);
 
     // If currently selected date, update state & recalculate MD tag
     if (dateStr === selectedDate) {
@@ -1866,105 +1868,111 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                   >
                     <div className="space-y-2.5">
                       {/* Day Header */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-800/80 pb-2">
-                        <div>
+                      <div className="border-b border-slate-800/80 pb-2.5 space-y-2">
+                        {/* Row 1: Day Name + Date / MD Tag */}
+                        <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-1.5">
-                            <span className="text-xs font-black text-slate-100">
+                            <span className="text-xs sm:text-sm font-black text-slate-100 tracking-tight">
                               {getDayNamePt(dateStr)}
                             </span>
                             {isToday && (
-                              <span className="text-[9px] font-black uppercase text-brand-lime bg-brand-lime/10 px-1.5 py-0.2 rounded border border-brand-lime/30">
+                              <span className="text-[9px] font-black uppercase text-brand-lime bg-brand-lime/10 px-1.5 py-0.5 rounded border border-brand-lime/30">
                                 Hoje
                               </span>
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            {formatDatePtShort(dateStr)} • {dayType === 'rest' ? 'Folga' : s?.matchDayOffset || (dayType === 'match' ? 'MD' : 'MD-3')}
+                          <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-300">
+                            {formatDatePtShort(dateStr)} &bull; {dayType === 'rest' ? 'Folga' : s?.matchDayOffset || (dayType === 'match' ? 'MD' : 'MD-3')}
                           </span>
                         </div>
 
-                        {/* Day type selector buttons (1-click Treino / Jogo / Folga) */}
-                        <div className="flex flex-col items-start sm:items-end space-y-1">
-                          <div className="flex items-center space-x-0.5 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shadow-sm">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSetSpecificDayType(dateStr, 'training');
-                              }}
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
-                                dayType === 'training'
-                                  ? 'bg-blue-600 text-white shadow-sm font-black'
-                                  : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                              title="Definir como Dia de Treino"
-                            >
-                              ⚽ Treino
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSetSpecificDayType(dateStr, 'match');
-                              }}
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
-                                dayType === 'match'
-                                  ? 'bg-emerald-600 text-white shadow-sm font-black'
-                                  : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                              title="Definir como Dia de Jogo"
-                            >
-                              🏆 Jogo
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSetSpecificDayType(dateStr, 'rest');
-                              }}
-                              className={`px-1.5 py-0.5 rounded text-[9px] font-black transition-all cursor-pointer ${
-                                dayType === 'rest'
-                                  ? 'bg-amber-500 text-slate-950 shadow-sm font-black ring-1 ring-amber-300'
-                                  : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                              title="Definir como Dia de Folga"
-                            >
-                              🏖️ Folga
-                            </button>
-                          </div>
+                        {/* Row 2: Day Type Segmented Buttons (Full width of card, equal 3 columns) */}
+                        <div className="grid grid-cols-3 gap-1 bg-slate-900/90 p-1 rounded-xl border border-slate-800 shadow-inner">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetSpecificDayType(dateStr, 'training');
+                            }}
+                            className={`py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center justify-center space-x-1 ${
+                              dayType === 'training'
+                                ? 'bg-blue-600 text-white shadow-sm ring-1 ring-blue-400'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                            }`}
+                            title="Definir como Dia de Treino"
+                          >
+                            <span>⚽</span>
+                            <span>Treino</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetSpecificDayType(dateStr, 'match');
+                            }}
+                            className={`py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center justify-center space-x-1 ${
+                              dayType === 'match'
+                                ? 'bg-emerald-600 text-white shadow-sm ring-1 ring-emerald-400'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                            }`}
+                            title="Definir como Dia de Jogo"
+                          >
+                            <span>🏆</span>
+                            <span>Jogo</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetSpecificDayType(dateStr, 'rest');
+                            }}
+                            className={`py-1 rounded-lg text-[10px] font-black transition-all cursor-pointer flex items-center justify-center space-x-1 ${
+                              dayType === 'rest'
+                                ? 'bg-amber-500 text-slate-950 shadow-sm ring-1 ring-amber-300'
+                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                            }`}
+                            title="Definir como Dia de Folga"
+                          >
+                            <span>🏖️</span>
+                            <span>Folga</span>
+                          </button>
+                        </div>
 
-                          {/* Day Time / Status */}
-                          {dayType !== 'rest' ? (
-                            <div className="flex items-center space-x-1.5 bg-slate-900/90 px-2 py-1 rounded-lg border border-slate-700/80 shadow-inner mt-1">
-                              <Clock className="h-3 w-3 text-cyan-400 shrink-0" />
-                              <span className="text-[9px] font-black uppercase text-slate-400">
+                        {/* Row 3: Time Bar (Full width of card, perfectly aligned, no overflow!) */}
+                        {dayType !== 'rest' ? (
+                          <div className="flex items-center justify-between bg-slate-900/90 px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-inner">
+                            <div className="flex items-center space-x-1.5 text-cyan-300 font-bold text-[11px]">
+                              <Clock className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
+                              <span className="uppercase tracking-wider text-[10px]">
                                 {dayType === 'match' ? 'Jogo:' : 'Treino:'}
                               </span>
+                            </div>
+                            <div className="flex items-center space-x-1 font-mono text-xs">
                               <input
                                 type="time"
                                 value={s?.startTime || (dayType === 'match' ? '10:00' : '09:00')}
                                 onChange={(e) => handleUpdateDayTimes(dateStr, e.target.value, s?.endTime || (dayType === 'match' ? '11:30' : '10:30'))}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-slate-800 text-cyan-300 font-mono font-black text-[10px] px-1.5 py-0.5 rounded border border-slate-700 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 cursor-pointer text-center"
-                                title="Hora de Início do Treino/Jogo (Clica para alterar diretamente)"
+                                className="bg-slate-800 text-cyan-200 font-black text-xs px-1.5 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-cyan-400 cursor-pointer text-center w-16"
+                                title="Hora de Início (grava automaticamente)"
                               />
-                              <span className="text-slate-500 font-mono text-[10px]">-</span>
+                              <span className="text-slate-500 font-bold">-</span>
                               <input
                                 type="time"
                                 value={s?.endTime || (dayType === 'match' ? '11:30' : '10:30')}
                                 onChange={(e) => handleUpdateDayTimes(dateStr, s?.startTime || (dayType === 'match' ? '10:00' : '09:00'), e.target.value)}
                                 onClick={(e) => e.stopPropagation()}
-                                className="bg-slate-800 text-cyan-300 font-mono font-black text-[10px] px-1.5 py-0.5 rounded border border-slate-700 hover:border-cyan-400 focus:outline-none focus:border-cyan-400 cursor-pointer text-center"
-                                title="Hora de Fim do Treino/Jogo (Clica para alterar diretamente)"
+                                className="bg-slate-800 text-cyan-200 font-black text-xs px-1.5 py-0.5 rounded border border-slate-600 focus:outline-none focus:border-cyan-400 cursor-pointer text-center w-16"
+                                title="Hora de Término (grava automaticamente)"
                               />
                             </div>
-                          ) : (
-                            <div className="flex items-center space-x-1 text-[9px] text-amber-400/90 font-bold mt-1">
-                              <span>🏖️</span>
-                              <span>Descanso / Recuperação</span>
-                            </div>
-                          )}
-                        </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center space-x-1.5 bg-amber-950/20 px-2.5 py-1.5 rounded-xl border border-amber-500/20 text-amber-400 text-xs font-bold">
+                            <span>🏖️</span>
+                            <span>Descanso / Recuperação</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Chips by Category */}
