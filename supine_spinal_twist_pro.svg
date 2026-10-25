@@ -23,31 +23,43 @@
   <polygon points="30,122 285,122 305,162 10,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
   <ellipse cx="160" cy="148" rx="80" ry="8" fill="#0f172a" opacity="0.2" />
 
-  <!-- Cabeça e Ombros Planos no Chão -->
+  <!-- Cabeça e Ombros Planos no Chão (Fixos) -->
   <circle cx="82" cy="136" r="8" fill="#d97706" />
   <path d="M75,134 C75,128 88,128 88,134 Z" fill="#78350f" />
-
-  <!-- Braços em Cruz Apoiados no Solo -->
   <path d="M92,136 L62,112" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
   <path d="M92,138 L88,154" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
-
-  <!-- Tronco Superior Alinhado ao Solo -->
   <path d="M90,135 L144,136 L140,146 L88,144 Z" fill="url(#kitGrad)" />
 
-  <!-- Bacia e Coluna Lombar em Rotação Suave -->
-  <path d="M140,136 C152,134 164,124 158,114 L142,122 Z" fill="#0f172a" />
-
-  <!-- Joelhos Unidos e Deitados para o Lado -->
-  <path d="M158,122 L172,98" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
-  <path d="M172,98 L206,104" stroke="#b45309" stroke-width="7.5" stroke-linecap="round" />
-  <ellipse cx="208" cy="104" rx="4" ry="3" fill="#ffffff" />
+  <!-- Joelhos e Coluna Lombar em Rotação Lateral Oscilante -->
+  <g>
+    <animateTransform attributeName="transform" type="rotate" values="0 140 136; 9 140 136; 0 140 136" dur="2.6s" repeatCount="indefinite" />
+    <path d="M140,136 C152,134 164,124 158,114 L142,122 Z" fill="#0f172a" />
+    <path d="M158,122 L172,98" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <path d="M172,98 L206,104" stroke="#b45309" stroke-width="7.5" stroke-linecap="round" />
+    <ellipse cx="208" cy="104" rx="4" ry="3" fill="#ffffff" />
+  </g>
 
   <!-- Foco de Mobilidade Rotacional Lombar -->
-  <path d="M142,128 Q154,118 166,112" stroke="#38bdf8" stroke-width="3" fill="none" stroke-linecap="round" />
+  <path d="M142,128 Q154,118 166,112" stroke="#38bdf8" stroke-width="3" fill="none" stroke-linecap="round">
+    <animate attributeName="opacity" values="0.4; 1; 0.4" dur="2.6s" repeatCount="indefinite" />
+  </path>
 
-  <!-- Seta Curva de Rotação Suave para o Lado -->
+  <!-- Seta Curva Pulsante de Rotação Suave -->
   <g filter="url(#dropShadow)">
-    <path d="M152,90 Q170,82 178,94" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round" />
-    <polygon points="174,94 182,100 182,90" fill="#2563eb" />
+    <path d="M152,90 Q170,82 178,94" stroke="#2563eb" stroke-width="2.5" fill="none" stroke-linecap="round">
+      <animate attributeName="opacity" values="0.3; 1; 0.3" dur="2.6s" repeatCount="indefinite" />
+    </path>
+    <polygon points="174,94 182,100 182,90" fill="#2563eb">
+      <animate attributeName="opacity" values="0.3; 1; 0.3" dur="2.6s" repeatCount="indefinite" />
+    </polygon>
+  </g>
+
+  <!-- Live Loop Badge -->
+  <g transform="translate(10, 160)">
+    <rect width="66" height="15" rx="4" fill="#0f172a" opacity="0.85" />
+    <circle cx="7" cy="7.5" r="3" fill="#10b981">
+      <animate attributeName="opacity" values="1; 0.3; 1" dur="1.2s" repeatCount="indefinite" />
+    </circle>
+    <text x="14" y="11" fill="#38bdf8" font-family="system-ui, sans-serif" font-size="7.5" font-weight="900" letter-spacing="0.5">LIVE LOOP</text>
   </g>
 </svg>
