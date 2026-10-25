@@ -405,30 +405,40 @@ export const AdminMobilityManager: React.FC = () => {
 
             <div className="pt-2 border-t border-slate-800/80">
               <div className="text-[11px] font-bold text-slate-400 mb-1.5 flex items-center justify-between">
-                <span>Blocos do Plano ({activePlan.blocks.length}):</span>
+                <span>Secções do Plano ({activePlan.blocks.length}):</span>
                 <span className="text-cyan-400 font-black text-[10px]">
                   {activePlan.blocks.reduce((acc, b) => acc + b.exercises.length, 0)} Exercícios
                 </span>
               </div>
               <div className="space-y-1.5 max-h-[160px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-700">
-                {activePlan.blocks.map((b) => (
-                  <div
-                    key={b.id}
-                    className="p-2 rounded-xl bg-slate-900/60 border border-slate-800 text-[11px] space-y-1"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-extrabold text-slate-200 truncate pr-2">
-                        {b.number}. {b.titlePt}
-                      </span>
-                      <span className="text-cyan-400 font-extrabold text-[10px] shrink-0">
-                        {b.durationTextPt || `${b.durationMinutes} Min`}
-                      </span>
+                {activePlan.blocks.map((b) => {
+                  const isSec1 = b.number === '01' || b.titlePt.toLowerCase().includes('mobilidade');
+                  const isSec2 = b.number === '02' || b.titlePt.toLowerCase().includes('ativação') || b.titlePt.toLowerCase().includes('força');
+                  return (
+                    <div
+                      key={b.id}
+                      className={`p-2 rounded-xl border text-[11px] space-y-1 ${
+                        isSec1
+                          ? 'bg-sky-950/30 border-sky-800/50'
+                          : isSec2
+                          ? 'bg-amber-950/30 border-amber-800/50'
+                          : 'bg-slate-900/60 border-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={`font-extrabold truncate pr-2 ${isSec1 ? 'text-sky-200' : isSec2 ? 'text-amber-200' : 'text-slate-200'}`}>
+                          {b.number}. {b.titlePt}
+                        </span>
+                        <span className={`font-extrabold text-[10px] shrink-0 ${isSec1 ? 'text-sky-300' : isSec2 ? 'text-amber-300' : 'text-cyan-400'}`}>
+                          {b.durationTextPt || `${b.durationMinutes} Min`}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 truncate">
+                        {b.exercises.map((e) => e.namePt).join(' • ')}
+                      </div>
                     </div>
-                    <div className="text-[10px] text-slate-400 truncate">
-                      {b.exercises.map((e) => e.namePt).join(' • ')}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>

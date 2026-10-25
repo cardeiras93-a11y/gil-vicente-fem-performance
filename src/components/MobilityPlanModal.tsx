@@ -183,7 +183,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                   {isEn ? (plan.durationTextEn || `${plan.durationMinutes} MIN`) : (plan.durationTextPt || `${plan.durationMinutes} MIN`)}
                 </span>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  {isEn ? 'DURATION' : 'DURAÇÃO'}
+                  {isEn ? 'DURATION (MAX 15M)' : 'DURAÇÃO (MÁX 15M)'}
                 </span>
               </div>
             </div>
@@ -214,68 +214,95 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
             </div>
           </div>
 
-          {/* 4 Blocks of Exercises */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-            {plan.blocks.map((block) => (
-              <div
-                key={block.id}
-                className="rounded-2xl border border-slate-800 bg-slate-900/60 p-3 sm:p-4 space-y-3 shadow-md hover:border-slate-700 transition-all flex flex-col justify-between"
-              >
-                {/* Block Header */}
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-lg bg-brand-cyan text-slate-950 text-[11px] font-black shrink-0">
-                      {block.number}
-                    </span>
-                    <h3 className="text-xs sm:text-[13px] font-black text-slate-100 uppercase tracking-tight line-clamp-1">
-                      {isEn ? block.titleEn : block.titlePt}
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-extrabold text-cyan-400 flex items-center space-x-1 shrink-0 bg-cyan-950/50 px-2 py-0.5 rounded-md border border-cyan-800/50">
-                    <Clock className="h-3 w-3" />
-                    <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
-                  </span>
-                </div>
-
-                {/* Exercises in Block */}
-                <div className="space-y-3">
-                  {block.exercises.map((ex) => (
-                    <div
-                      key={ex.id}
-                      className="rounded-xl border border-slate-800/80 bg-dark-card/90 p-2.5 sm:p-3 space-y-2 hover:border-slate-700 transition-all"
+          {/* Blocks of Exercises (Section 1: Mobilidade & Section 2: Ativação e Força) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {plan.blocks.map((block) => {
+              const isSec1 = block.number === '01' || block.titlePt.toLowerCase().includes('mobilidade');
+              const isSec2 = block.number === '02' || block.titlePt.toLowerCase().includes('ativação') || block.titlePt.toLowerCase().includes('força');
+              
+              return (
+                <div
+                  key={block.id}
+                  className={`rounded-2xl border p-3.5 sm:p-4 space-y-3 shadow-md transition-all flex flex-col justify-between ${
+                    isSec1
+                      ? 'border-sky-500/40 bg-gradient-to-b from-sky-950/30 via-slate-900/80 to-slate-900/90'
+                      : isSec2
+                      ? 'border-amber-500/40 bg-gradient-to-b from-amber-950/30 via-slate-900/80 to-slate-900/90'
+                      : 'border-slate-800 bg-slate-900/60'
+                  }`}
+                >
+                  {/* Block Header */}
+                  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`flex h-5 w-5 sm:h-6 sm:w-6 items-center justify-center rounded-lg text-[11px] font-black shrink-0 ${
+                          isSec1
+                            ? 'bg-sky-400 text-slate-950'
+                            : isSec2
+                            ? 'bg-gradient-to-r from-amber-400 to-orange-400 text-slate-950'
+                            : 'bg-brand-cyan text-slate-950'
+                        }`}
+                      >
+                        {block.number}
+                      </span>
+                      <h3 className="text-xs sm:text-[13px] font-black text-slate-100 uppercase tracking-tight line-clamp-1">
+                        {isEn ? block.titleEn : block.titlePt}
+                      </h3>
+                    </div>
+                    <span
+                      className={`text-[10px] font-extrabold flex items-center space-x-1 shrink-0 px-2.5 py-0.5 rounded-md border ${
+                        isSec1
+                          ? 'text-sky-300 bg-sky-950/80 border-sky-700/60'
+                          : isSec2
+                          ? 'text-amber-300 bg-amber-950/80 border-amber-700/60'
+                          : 'text-cyan-400 bg-cyan-950/50 border-cyan-800/50'
+                      }`}
                     >
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-                        {/* Dynamic SVG Vector Drawing */}
-                        <div className="sm:col-span-5 rounded-lg bg-white border border-slate-300/80 p-1 flex items-center justify-center overflow-hidden h-28 sm:h-32 shadow-sm">
-                          <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
-                        </div>
+                      <Clock className="h-3 w-3" />
+                      <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
+                    </span>
+                  </div>
 
-                        {/* Exercise Details */}
-                        <div className="sm:col-span-7 space-y-1.5">
-                          <div className="flex items-start justify-between gap-1">
-                            <h4 className="text-xs font-black text-slate-100 leading-tight">
-                              {isEn ? ex.nameEn : ex.namePt}
-                            </h4>
-                            <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-full shrink-0">
-                              {isEn ? ex.seriesRepsEn : ex.seriesRepsPt}
-                            </span>
+                  {/* Exercises in Block */}
+                  <div className="space-y-3">
+                    {block.exercises.map((ex) => (
+                      <div
+                        key={ex.id}
+                        className="rounded-xl border border-slate-800/80 bg-dark-card/90 p-2.5 sm:p-3 space-y-2 hover:border-slate-700 transition-all"
+                      >
+                        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
+                          {/* Dynamic SVG Vector Drawing */}
+                          <div className="sm:col-span-5 rounded-lg bg-white border border-slate-300/80 p-1 flex items-center justify-center overflow-hidden h-28 sm:h-32 shadow-sm">
+                            <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
                           </div>
 
-                          <p className="text-[11px] text-slate-300 leading-relaxed font-normal">
-                            {isEn ? ex.descriptionEn : ex.descriptionPt}
-                          </p>
+                          {/* Exercise Details */}
+                          <div className="sm:col-span-7 space-y-1.5">
+                            <div className="flex items-start justify-between gap-1">
+                              <h4 className="text-xs font-black text-slate-100 leading-tight">
+                                {isEn ? ex.nameEn : ex.namePt}
+                              </h4>
+                              <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-full shrink-0">
+                                {isEn ? ex.seriesRepsEn : ex.seriesRepsPt}
+                              </span>
+                            </div>
 
-                          <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-400">
-                            <Clock className="h-3 w-3 text-amber-400 shrink-0" />
-                            <span>{isEn ? ex.restEn : ex.restPt}</span>
+                            <p className="text-[11px] text-slate-300 leading-relaxed font-normal">
+                              {isEn ? ex.descriptionEn : ex.descriptionPt}
+                            </p>
+
+                            <div className="flex items-center space-x-1 text-[10px] font-bold text-slate-400">
+                              <Clock className="h-3 w-3 text-amber-400 shrink-0" />
+                              <span>{isEn ? ex.restEn : ex.restPt}</span>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

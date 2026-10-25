@@ -2043,8 +2043,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
                           </div>
                         )}
 
-                        {/* Row 3B: Gym Time Bar (Only when Ginásio is active on this day) */}
-                        {dayType !== 'rest' && (comp.lowerBody || comp.upperBody || comp.core || s?.gymStartTime) && (
+                        {/* Row 3B: Gym Time Bar (Apenas quando há Ginásio de Membros Inferiores neste dia) */}
+                        {dayType !== 'rest' && Boolean(comp.lowerBody) && (
                           <div className="flex items-center justify-between bg-purple-950/40 px-2.5 py-1.5 rounded-xl border border-purple-500/40 shadow-inner overflow-hidden min-w-0 animate-fade-in">
                             <div className="flex items-center space-x-1 text-purple-300 font-bold text-xs shrink-0">
                               <span className="text-xs">🏋️</span>
