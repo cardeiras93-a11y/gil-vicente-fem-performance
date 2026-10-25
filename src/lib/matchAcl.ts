@@ -30,6 +30,7 @@ export function normalizeAthleteName(name: string): string {
   if (upper === 'CHELSEA') return 'Chelsea';
   if (upper === 'EVA') return 'Eva';
   if (upper === 'FAITH') return 'Faith';
+  if (upper === 'PAYTON') return 'Payton';
   return name.trim();
 }
 
