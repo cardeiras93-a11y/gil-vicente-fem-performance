@@ -3806,16 +3806,8 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
 };
 
 /**
- * Strict goalkeeper exemption: Carol and Payton must NEVER have automated plans
+ * Goalkeeper exemption (no longer blocks goalkeepers from receiving their specific GK plans)
  */
 export function isExcludedFromAutoPlans(athlete: { id: string; name: string }): boolean {
-  const upper = (athlete.name || '').toUpperCase().trim();
-  return (
-    upper === 'CAROL' ||
-    upper === 'PAYTON' ||
-    upper.includes('CAROL') ||
-    upper.includes('PAYTON') ||
-    athlete.id === 'ath-2' ||
-    athlete.id === 'ath-26'
-  );
+  return false;
 }

@@ -489,11 +489,13 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
       // 12. Mobility Plans: Cloud sync
       if (data.data.mobilityPlans && Array.isArray(data.data.mobilityPlans) && data.data.mobilityPlans.length > 0) {
         localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(data.data.mobilityPlans));
+        localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(data.data.mobilityPlans));
       }
 
       // 13. Athlete Plan Assignments: Cloud sync
       if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
         localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(data.data.athletePlanAssignments));
       }
 
       window.dispatchEvent(new Event('femperf_mobility_plans_updated'));

@@ -168,9 +168,64 @@ export const INITIAL_MOBILITY_PLANS: MobilityPlan[] = [
   ...ALL_NINE_PLANS,
 ];
 
-// Default assignments: Anamnese clinical assignments (Carol & Payton strictly excluded)
+// Default assignments: Anamnese clinical assignments + Goalkeepers baseline mobility plan
 export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
   ...DEFAULT_ANAMNESE_ASSIGNMENTS,
+  'pos_GR_mobilidade_pre_treino_gr': {
+    id: 'pos_GR_mobilidade_pre_treino_gr',
+    targetType: 'position',
+    targetId: 'GR',
+    targetName: 'Todas as Guarda-Redes (GR)',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
+  'athlete_ath-2_mobilidade_pre_treino_gr': {
+    id: 'athlete_ath-2_mobilidade_pre_treino_gr',
+    targetType: 'athlete',
+    targetId: 'ath-2',
+    targetName: 'CAROL',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
+  'athlete_ath-7_mobilidade_pre_treino_gr': {
+    id: 'athlete_ath-7_mobilidade_pre_treino_gr',
+    targetType: 'athlete',
+    targetId: 'ath-7',
+    targetName: 'LAURA PATRÍCIO',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
+  'athlete_ath-9_mobilidade_pre_treino_gr': {
+    id: 'athlete_ath-9_mobilidade_pre_treino_gr',
+    targetType: 'athlete',
+    targetId: 'ath-9',
+    targetName: 'LUANA MACEDO',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
+  'athlete_ath-26_mobilidade_pre_treino_gr': {
+    id: 'athlete_ath-26_mobilidade_pre_treino_gr',
+    targetType: 'athlete',
+    targetId: 'ath-26',
+    targetName: 'PAYTON',
+    planId: 'mobilidade_pre_treino_gr',
+    assignedAt: '2026-10-19T00:00:00.000Z',
+    assignedBy: 'Sistema',
+    active: true,
+    notes: 'Plano base específico para a posição de Guarda-Redes antes do treino.',
+  },
 };
 
 export function getStoredMobilityPlans(): MobilityPlan[] {
@@ -233,7 +288,10 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
       const merged = { ...DEFAULT_PLAN_ASSIGNMENTS, ...parsed };
-      delete merged['pos_GR_mobilidade_pre_treino_gr'];
+      // Always ensure the base GR position plan assignment exists unless explicitly set to false
+      if (!merged['pos_GR_mobilidade_pre_treino_gr']) {
+        merged['pos_GR_mobilidade_pre_treino_gr'] = DEFAULT_PLAN_ASSIGNMENTS['pos_GR_mobilidade_pre_treino_gr'];
+      }
       return merged;
     }
     return { ...DEFAULT_PLAN_ASSIGNMENTS };
@@ -354,9 +412,6 @@ export function togglePositionPlanAssignment(
       : (ath.position !== 'GR' && !isGoalkeeper(ath.name));
 
     if (isThisPos) {
-      // Strictly exclude Carol and Payton from bulk automatic assignment
-      if (isExcludedFromAutoPlans(ath)) return;
-
       const athKey = `athlete_${ath.id}_${planId}`;
       current[athKey] = {
         id: athKey,
@@ -397,9 +452,6 @@ export function toggleAllSquadPlanAssignment(
   };
 
   athletesList.forEach((ath) => {
-    // Strictly exclude Carol and Payton from bulk automatic assignment
-    if (isExcludedFromAutoPlans(ath)) return;
-
     const athKey = `athlete_${ath.id}_${planId}`;
     current[athKey] = {
       id: athKey,
@@ -419,32 +471,19 @@ export function toggleAllSquadPlanAssignment(
 
 /**
  * Returns all active plans assigned to an athlete (direct athlete match, position match, or 'all').
- * Strict exception: Carol (ath-2) and Payton (ath-26) will NEVER receive automatic plans.
+ * For Goalkeepers (GR), the baseline GK mobility plan is always included unless explicitly disabled.
  */
 export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   if (!athlete) return [];
   const allPlans = getStoredMobilityPlans();
   const assignments = getStoredAthletePlanAssignments();
 
-  // Strict exception for Carol and Payton: zero automatic plans
-  if (isExcludedFromAutoPlans(athlete)) {
-    // Only return plans if explicitly assigned manually by a coach (assignedBy === 'Treinador')
-    const manualPlans: MobilityPlan[] = [];
-    allPlans.forEach((plan) => {
-      const direct = assignments[`athlete_${athlete.id}_${plan.id}`];
-      if (direct && direct.active && direct.assignedBy === 'Treinador') {
-        manualPlans.push(plan);
-      }
-    });
-    return manualPlans;
-  }
-
   const isGk = athlete.position === 'GR' || (athlete.name ? isGoalkeeper(athlete.name) : false);
   const position = isGk ? 'GR' : 'Campo';
 
   const seenIds = new Set<string>();
 
-  return allPlans.filter((plan) => {
+  const assignedPlans = allPlans.filter((plan) => {
     if (plan.id === 'mobility-gk-pre-training') return false;
 
     // 1. Direct explicit athlete assignment takes priority
@@ -479,6 +518,20 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
 
     return false;
   });
+
+  // Fallback for Goalkeepers: Always ensure the GK mobility plan is included if not explicitly disabled
+  if (isGk && !seenIds.has('mobilidade_pre_treino_gr')) {
+    const direct = assignments[`athlete_${athlete.id}_mobilidade_pre_treino_gr`];
+    if (!direct || direct.active !== false) {
+      const gkPlan = allPlans.find((p) => p.id === 'mobilidade_pre_treino_gr');
+      if (gkPlan) {
+        assignedPlans.unshift(gkPlan);
+        seenIds.add(gkPlan.id);
+      }
+    }
+  }
+
+  return assignedPlans;
 }
 
 /**

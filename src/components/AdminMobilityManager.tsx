@@ -117,10 +117,6 @@ export const AdminMobilityManager: React.FC = () => {
     if (directAsgn !== undefined) {
       return Boolean(directAsgn.active);
     }
-    // Strict exception for Carol and Payton: zero automatic plans
-    if (isExcludedFromAutoPlans(ath)) {
-      return false;
-    }
     // 2. Position assignment
     const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
     if (isGk && isGkPositionAssigned) return true;
