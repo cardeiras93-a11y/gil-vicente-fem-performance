@@ -113,6 +113,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   };
 
   const [searchFilter, setSearchFilter] = useState<string>('');
+  const [rpeSessionFilter, setRpeSessionFilter] = useState<'all' | 'field' | 'gym_lower'>('all');
 
   const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility'>(() => {
     if (typeof window !== 'undefined') {
@@ -1149,15 +1150,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   const lowSleepCount = wellnessList.filter((w) => w.sleepQuality <= 2).length;
   const highStressCount = wellnessList.filter((w) => w.stress <= 2).length;
 
-  // RPE KPIs
-  const totalRPE = rpeList.length;
+  // RPE KPIs & filtering by session type
+  const fieldRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'field' || !r.sessionType), [rpeList]);
+  const gymRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'gym_lower'), [rpeList]);
+
+  const activeRpeList = useMemo(() => {
+    if (rpeSessionFilter === 'field') return fieldRpeList;
+    if (rpeSessionFilter === 'gym_lower') return gymRpeList;
+    return rpeList;
+  }, [rpeList, fieldRpeList, gymRpeList, rpeSessionFilter]);
+
+  const totalRPE = activeRpeList.length;
   const avgBorg = totalRPE
-    ? +(rpeList.reduce((acc, curr) => acc + curr.physicalDemand, 0) / totalRPE).toFixed(1)
+    ? +(activeRpeList.reduce((acc, curr) => acc + curr.physicalDemand, 0) / totalRPE).toFixed(1)
     : 0;
   const avgPostFatigue = totalRPE
-    ? +(rpeList.reduce((acc, curr) => acc + curr.postFatigue, 0) / totalRPE).toFixed(1)
+    ? +(activeRpeList.reduce((acc, curr) => acc + curr.postFatigue, 0) / totalRPE).toFixed(1)
     : 0;
-  const highBorgCount = rpeList.filter((r) => r.physicalDemand >= 7).length;
+  const highBorgCount = activeRpeList.filter((r) => r.physicalDemand >= 7).length;
 
   // Hydration KPIs
   const completedHydrationList = hydrationList.filter((h) => Number(h.postWeight) > 0);
@@ -1814,7 +1824,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         {filteredAthletes.map((ath) => {
                           const name = ath.name;
                           const wellness = wellnessList.find((w) => w.athleteName === name);
-                          const rpe = rpeList.find((r) => r.athleteName === name);
+                          const rpeField = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'field' || !r.sessionType));
+                          const rpeGym = rpeList.find((r) => r.athleteName === name && r.sessionType === 'gym_lower');
+                          const rpe = rpeField || rpeGym;
 
                           return (
                             <tr key={name} className="hover:bg-slate-800/40">
@@ -1844,7 +1856,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
                               {/* 7. Questionário PSE Status */}
                               <td className="py-3 px-3">
-                                {rpe ? (
+                                {rpeField && rpeGym ? (
+                                  <div className="space-y-0.5">
+                                    <span className="inline-flex items-center space-x-1 text-cyan-400 font-bold text-[11px]">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      <span>Campo</span>
+                                    </span>
+                                    <span className="inline-flex items-center space-x-1 text-purple-300 font-bold text-[11px] block">
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      <span>Ginásio</span>
+                                    </span>
+                                  </div>
+                                ) : rpeGym ? (
+                                  <span className="inline-flex items-center space-x-1 text-purple-300 font-bold">
+                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                    <span>Ginásio</span>
+                                  </span>
+                                ) : rpeField ? (
                                   <span className="inline-flex items-center space-x-1 text-cyan-400 font-bold">
                                     <CheckCircle2 className="h-3.5 w-3.5" />
                                     <span>Preenchido</span>
@@ -2116,18 +2144,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               <div className="space-y-6 animate-fade-in">
                 {/* RPE KPI Header Cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  <div className="rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-3.5 text-center">
-                    <span className="text-[11px] font-bold text-cyan-400 uppercase block">Total PSE Submetidos</span>
+                  <div className={`rounded-xl border p-3.5 text-center ${
+                    rpeSessionFilter === 'gym_lower'
+                      ? 'border-purple-500/40 bg-purple-950/20'
+                      : 'border-cyan-500/30 bg-cyan-950/20'
+                  }`}>
+                    <span className={`text-[11px] font-bold uppercase block ${
+                      rpeSessionFilter === 'gym_lower' ? 'text-purple-300' : 'text-cyan-400'
+                    }`}>
+                      {rpeSessionFilter === 'gym_lower' ? 'Total PSE Ginásio' : rpeSessionFilter === 'field' ? 'Total PSE Campo' : 'Total PSE Submetidos'}
+                    </span>
                     <span className="text-2xl font-black text-slate-100">{totalRPE} <span className="text-xs text-slate-500">/ {athletesList.length}</span></span>
                   </div>
 
                   <div className="rounded-xl border border-amber-500/30 bg-amber-950/20 p-3.5 text-center">
-                    <span className="text-[11px] font-bold text-amber-400 uppercase block">Média Borg CR10</span>
+                    <span className="text-[11px] font-bold text-amber-400 uppercase block">
+                      {rpeSessionFilter === 'gym_lower' ? 'Média Força MMII (Borg)' : 'Média Borg CR10'}
+                    </span>
                     <span className="text-2xl font-black text-amber-300">{avgBorg || '-'} / 10</span>
                   </div>
 
                   <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/20 p-3.5 text-center">
-                    <span className="text-[11px] font-bold text-indigo-400 uppercase block">Média Fadiga Pós-Treino</span>
+                    <span className="text-[11px] font-bold text-indigo-400 uppercase block">
+                      {rpeSessionFilter === 'gym_lower' ? 'Fadiga Pós-Ginásio' : 'Média Fadiga Pós-Treino'}
+                    </span>
                     <span className="text-2xl font-black text-indigo-300">{avgPostFatigue || '-'} / 10</span>
                   </div>
 
@@ -2140,14 +2180,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 </div>
 
                 {/* RPE Table View */}
-                <div className="space-y-4 rounded-2xl border border-cyan-500/30 bg-dark-card p-4 shadow-lg">
+                <div className={`space-y-4 rounded-2xl border p-4 shadow-lg ${
+                  rpeSessionFilter === 'gym_lower'
+                    ? 'border-purple-500/40 bg-dark-card shadow-purple-950/20'
+                    : 'border-cyan-500/30 bg-dark-card shadow-cyan-950/20'
+                }`}>
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
-                        <Dumbbell className="h-4 w-4 text-cyan-400" />
-                        <span>Relatório Detalhado de PSE Pós-Treino ({selectedDate})</span>
+                        {rpeSessionFilter === 'gym_lower' ? (
+                          <span className="text-base">🏋️</span>
+                        ) : (
+                          <Dumbbell className="h-4 w-4 text-cyan-400" />
+                        )}
+                        <span>
+                          {rpeSessionFilter === 'gym_lower'
+                            ? `Relatório Detalhado de PSE Ginásio MMII (${selectedDate})`
+                            : rpeSessionFilter === 'field'
+                            ? `Relatório Detalhado de PSE Treino de Campo (${selectedDate})`
+                            : `Relatório Detalhado de PSE Pós-Treino (${selectedDate})`}
+                        </span>
                       </h3>
-                      <p className="text-xs text-slate-400">Intensidade Borg CR10, fadiga pós-treino, trabalho prévio e mapas de fadiga muscular.</p>
+                      <p className="text-xs text-slate-400">
+                        {rpeSessionFilter === 'gym_lower'
+                          ? 'Perceção de esforço no ginásio (membros inferiores), fadiga muscular pós-ginásio e mapas corporais.'
+                          : 'Intensidade Borg CR10, fadiga pós-treino, trabalho prévio e mapas de fadiga muscular.'}
+                      </p>
                     </div>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
@@ -2161,10 +2219,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                     </div>
                   </div>
 
-                  {rpeList.length === 0 ? (
+                  {/* Filter Pills: Todas / Campo / Ginásio MMII */}
+                  <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-800/80">
+                    <button
+                      type="button"
+                      onClick={() => setRpeSessionFilter('all')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                        rpeSessionFilter === 'all'
+                          ? 'bg-slate-100 text-slate-950 border-slate-200 shadow-sm font-extrabold'
+                          : 'bg-dark-bg text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                      }`}
+                    >
+                      <span>Todas as Sessões ({rpeList.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRpeSessionFilter('field')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1.5 cursor-pointer ${
+                        rpeSessionFilter === 'field'
+                          ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-sm font-extrabold'
+                          : 'bg-dark-bg text-slate-400 border-slate-800 hover:bg-slate-800 hover:text-slate-200'
+                      }`}
+                    >
+                      <span>⚽ Campo ({fieldRpeList.length})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRpeSessionFilter('gym_lower')}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1.5 cursor-pointer ${
+                        rpeSessionFilter === 'gym_lower'
+                          ? 'bg-purple-600 text-white border-purple-500 shadow-md font-extrabold ring-2 ring-purple-500/40'
+                          : 'bg-dark-bg text-purple-300 border-purple-900/40 hover:bg-purple-950/40'
+                      }`}
+                    >
+                      <span>🏋️ Ginásio MMII ({gymRpeList.length})</span>
+                    </button>
+                  </div>
+
+                  {activeRpeList.length === 0 ? (
                     <div className="rounded-xl bg-dark-bg/60 p-8 text-center border border-slate-800 space-y-2">
                       <Dumbbell className="h-8 w-8 text-slate-600 mx-auto" />
-                      <p className="text-xs font-bold text-slate-400">Nenhum registo de PSE submetido para {selectedDate}.</p>
+                      <p className="text-xs font-bold text-slate-400">
+                        {rpeSessionFilter === 'gym_lower'
+                          ? `Nenhum registo de PSE de Ginásio MMII submetido para ${selectedDate}.`
+                          : rpeSessionFilter === 'field'
+                          ? `Nenhum registo de PSE de Treino de Campo submetido para ${selectedDate}.`
+                          : `Nenhum registo de PSE submetido para ${selectedDate}.`}
+                      </p>
                       <p className="text-[11px] text-slate-500">As jogadoras podem registar a carga no tab "PSE Pós-Treino".</p>
                     </div>
                   ) : (
@@ -2174,15 +2275,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                           <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                             <th className="py-2.5 px-3">Atleta</th>
                             <th className="py-2.5 px-3 whitespace-nowrap">Hora Submissão</th>
-                            <th className="py-2.5 px-3">Exigência Física (Borg)</th>
-                            <th className="py-2.5 px-3">Fadiga Pós-Treino</th>
+                            <th className="py-2.5 px-3">{rpeSessionFilter === 'gym_lower' ? 'Exigência Força MMII (Borg)' : 'Exigência Física (Borg)'}</th>
+                            <th className="py-2.5 px-3">{rpeSessionFilter === 'gym_lower' ? 'Fadiga Muscular Pós-Ginásio' : 'Fadiga Pós-Treino'}</th>
                             <th className="py-2.5 px-3">Trabalho Prévio</th>
                             <th className="py-2.5 px-3">Zonas c/ Dor (Body Chart)</th>
                             <th className="py-2.5 px-3">Comentários</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-medium">
-                          {rpeList
+                          {activeRpeList
                             .filter((r) => r.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
                             .map((r) => {
                               const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
