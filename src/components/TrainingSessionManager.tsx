@@ -528,7 +528,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       updatedAt: Date.now(),
     };
 
-    // 1. Synchronously update component state and local storage immediately
+    // 1. Synchronously update component state immediately
     setTrainingSessions((prev) => ({
       ...prev,
       [selectedDate]: info,
@@ -538,9 +538,8 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       [selectedDate]: dType,
     }));
 
-    saveTrainingSessionInfo(info);
+    // 2. Persist cleanly to local storage and sync to cloud
     await saveTrainingSessionInfoAsync(info);
-    syncTrainingSessionsToCloud({ ...trainingSessions, [selectedDate]: info });
 
     try {
       const dCfg = getStoredDeadlineConfig();
@@ -916,7 +915,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     const existing = trainingSessions[targetDate] || {
       date: targetDate,
       dayType: dType,
-      matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+      matchDayOffset: targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType),
       durationMin: 90,
       startTime: dType === 'match' ? '10:00' : '09:00',
       endTime: dType === 'match' ? '11:30' : '10:30',
@@ -954,7 +953,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     const existing = trainingSessions[targetDate] || {
       date: targetDate,
       dayType: dType,
-      matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+      matchDayOffset: targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType),
       durationMin: 90,
       startTime: dType === 'match' ? '10:00' : '09:00',
       endTime: dType === 'match' ? '11:30' : '10:30',
@@ -1007,8 +1006,9 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       ...(existing || {
         date: targetDate,
         dayType: dType,
-        matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+        matchDayOffset: targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType),
       }),
+      matchDayOffset: existing?.matchDayOffset || (targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType)),
       startTime: newStartTime,
       endTime: newEndTime,
       durationMin: duration,
@@ -1050,9 +1050,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
       ...(existing || {
         date: targetDate,
         dayType: dType,
-        matchDayOffset: getAutoMatchDayOffset(targetDate, dType),
+        matchDayOffset: targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType),
         durationMin: 90,
       }),
+      matchDayOffset: existing?.matchDayOffset || (targetDate === selectedDate ? matchDayOffset : getAutoMatchDayOffset(targetDate, dType)),
       gymStartTime: newStartTime,
       gymEndTime: newEndTime,
       gymDurationMin: duration,

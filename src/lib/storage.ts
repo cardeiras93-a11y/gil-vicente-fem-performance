@@ -609,11 +609,15 @@ export async function syncAllDataFromCloud(): Promise<void> {
           const locTime = loc.updatedAt || 0;
           const remTime = rem.updatedAt || 0;
 
+          // Always respect manual/local matchDayOffset unless remote has an explicitly newer timestamp
+          const chosenOffset = (locTime >= remTime ? loc.matchDayOffset : rem.matchDayOffset) || loc.matchDayOffset || rem.matchDayOffset;
+
           if (remTime > locTime || (!locTime && remTime)) {
             // Remote is newer or local has no timestamp: remote is authoritative
             mergedSessions[d] = {
               ...loc,
               ...rem,
+              matchDayOffset: chosenOffset,
               gymStartTime: rem.gymStartTime || loc.gymStartTime || undefined,
               gymEndTime: rem.gymEndTime || loc.gymEndTime || undefined,
               gymDurationMin: rem.gymDurationMin || loc.gymDurationMin || undefined,
@@ -623,15 +627,17 @@ export async function syncAllDataFromCloud(): Promise<void> {
             mergedSessions[d] = {
               ...rem,
               ...loc,
+              matchDayOffset: chosenOffset,
               gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
               gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
               gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
             };
           } else {
-            // Timestamps equal or not set: preserve local user times if set
+            // Timestamps equal or not set: preserve local user times and tags
             mergedSessions[d] = {
               ...rem,
               ...loc,
+              matchDayOffset: chosenOffset,
               dayType: loc.dayType || rem.dayType,
               matchCategory: loc.matchCategory || rem.matchCategory || undefined,
               startTime: loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00'),
@@ -1384,7 +1390,7 @@ export function getStoredTrainingSessions(): Record<string, TrainingSessionInfo>
   }
 }
 
-export function saveTrainingSessionInfo(info: TrainingSessionInfo): void {
+export function saveTrainingSessionInfo(info: TrainingSessionInfo, skipCloudSync = false): void {
   if (typeof window === 'undefined') return;
   try {
     const map = getStoredTrainingSessions();
@@ -1430,11 +1436,13 @@ export function saveTrainingSessionInfo(info: TrainingSessionInfo): void {
       saveDeadlineConfig(dConfig);
     }
 
-    secureFetch('/api/training-sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'session', info: cleanInfo }),
-    }).catch(() => {});
+    if (!skipCloudSync) {
+      secureFetch('/api/training-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'session', info: cleanInfo }),
+      }).catch(() => {});
+    }
     dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar informação de treino:', e);
@@ -1442,7 +1450,8 @@ export function saveTrainingSessionInfo(info: TrainingSessionInfo): void {
 }
 
 export async function saveTrainingSessionInfoAsync(info: TrainingSessionInfo): Promise<boolean> {
-  saveTrainingSessionInfo(info);
+  // Update local storage synchronously first and skip redundant unawaited fetch
+  saveTrainingSessionInfo(info, true);
   try {
     const cleanInfo = {
       ...info,

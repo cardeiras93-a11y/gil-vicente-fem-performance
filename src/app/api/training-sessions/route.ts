@@ -101,6 +101,7 @@ export async function GET(request: Request) {
               sessions[dateStr] = {
                 ...existing,
                 matchCategory: existing.matchCategory || item.match_category || item.matchCategory || undefined,
+                matchDayOffset: existing.matchDayOffset || item.match_day_offset || item.matchDayOffset || undefined,
                 gymStartTime: existing.gymStartTime || item.gym_start_time || item.gymStartTime || undefined,
                 gymEndTime: existing.gymEndTime || item.gym_end_time || item.gymEndTime || undefined,
                 gymDurationMin: existing.gymDurationMin || item.gym_duration_min || item.gymDurationMin || undefined,
@@ -207,23 +208,33 @@ export async function POST(request: Request) {
     if ((body.type === 'bulk_sessions' || body.type === 'sessions') && body.sessions && typeof body.sessions === 'object') {
       Object.entries(body.sessions).forEach(([d, sess]: [string, any]) => {
         if (!sess) return;
-        const cleanInfo = {
-          ...sess,
-          updatedAt: sess.updatedAt || Date.now(),
-        };
-        currentData.sessions[d] = cleanInfo;
-        if (sess.dayType) {
-          currentData.schedule[d] = sess.dayType;
+        const existing = currentData.sessions[d] || {};
+        const incomingTime = sess.updatedAt || 0;
+        const existingTime = existing.updatedAt || 0;
+        if (incomingTime >= existingTime || !existingTime) {
+          const cleanInfo = {
+            ...existing,
+            ...sess,
+            matchDayOffset: sess.matchDayOffset || existing.matchDayOffset || 'MD-3',
+            updatedAt: incomingTime || Date.now(),
+          };
+          currentData.sessions[d] = cleanInfo;
+          if (cleanInfo.dayType) {
+            currentData.schedule[d] = cleanInfo.dayType;
+          }
         }
       });
     } else if (body.type === 'session' && body.info) {
+      const existing = currentData.sessions[body.info.date] || {};
       const cleanInfo = {
+        ...existing,
         ...body.info,
+        matchDayOffset: body.info.matchDayOffset || existing.matchDayOffset || 'MD-3',
         updatedAt: body.info.updatedAt || Date.now(),
       };
       currentData.sessions[body.info.date] = cleanInfo;
-      if (body.info.dayType) {
-        currentData.schedule[body.info.date] = body.info.dayType;
+      if (cleanInfo.dayType) {
+        currentData.schedule[body.info.date] = cleanInfo.dayType;
       }
     } else if (body.type === 'schedule' && body.schedule) {
       currentData.schedule = { ...currentData.schedule, ...body.schedule };
@@ -234,17 +245,30 @@ export async function POST(request: Request) {
     } else if (body.sessions && typeof body.sessions === 'object') {
       Object.entries(body.sessions).forEach(([d, sess]: [string, any]) => {
         if (!sess) return;
-        const cleanInfo = {
-          ...sess,
-          updatedAt: sess.updatedAt || Date.now(),
-        };
-        currentData.sessions[d] = cleanInfo;
-        if (sess.dayType) {
-          currentData.schedule[d] = sess.dayType;
+        const existing = currentData.sessions[d] || {};
+        const incomingTime = sess.updatedAt || 0;
+        const existingTime = existing.updatedAt || 0;
+        if (incomingTime >= existingTime || !existingTime) {
+          const cleanInfo = {
+            ...existing,
+            ...sess,
+            matchDayOffset: sess.matchDayOffset || existing.matchDayOffset || 'MD-3',
+            updatedAt: incomingTime || Date.now(),
+          };
+          currentData.sessions[d] = cleanInfo;
+          if (cleanInfo.dayType) {
+            currentData.schedule[d] = cleanInfo.dayType;
+          }
         }
       });
     } else if (body.date && body.dayType) {
-      currentData.sessions[body.date] = body;
+      const existing = currentData.sessions[body.date] || {};
+      currentData.sessions[body.date] = {
+        ...existing,
+        ...body,
+        matchDayOffset: body.matchDayOffset || existing.matchDayOffset || 'MD-3',
+        updatedAt: body.updatedAt || Date.now(),
+      };
       currentData.schedule[body.date] = body.dayType;
     }
 
