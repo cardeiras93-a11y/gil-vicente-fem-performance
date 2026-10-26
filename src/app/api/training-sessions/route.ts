@@ -279,30 +279,35 @@ export async function POST(request: Request) {
     } catch {}
 
     // 2. Persist to Supabase authoritative fallback row in athletes table
+    let dbSuccess = false;
+    let dbError = null;
     if (isSupabaseConfigured && supabase) {
       try {
-        const { error: upErr } = await supabase.from('athletes').update({
-          name: JSON.stringify(currentData),
-          created_at: new Date().toISOString(),
-        }).eq('id', '__TRAINING_SESSIONS__');
+        const { error: upsertErr } = await supabase.from('athletes').upsert(
+          {
+            id: '__TRAINING_SESSIONS__',
+            name: JSON.stringify(currentData),
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
 
-        if (upErr) {
-          await supabase.from('athletes').upsert(
-            {
-              id: '__TRAINING_SESSIONS__',
-              name: JSON.stringify(currentData),
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: 'id' }
-          );
+        if (upsertErr) {
+          console.error('Erro ao guardar sessões em athletes via upsert:', upsertErr);
+          dbError = upsertErr.message || String(upsertErr);
+        } else {
+          dbSuccess = true;
         }
-      } catch (e) {
-        console.error('Erro ao guardar fallback de sessões em athletes:', e);
+      } catch (e: any) {
+        console.error('Exceção ao guardar fallback de sessões em athletes:', e);
+        dbError = e?.message || String(e);
       }
     }
 
     return NextResponse.json({
       success: true,
+      dbSuccess,
+      dbError,
       sessions: currentData.sessions,
       schedule: currentData.schedule,
       message: 'Informação de treino guardada com sucesso'

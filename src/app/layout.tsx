@@ -50,7 +50,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              var CURRENT_BUILD = '20261026_v61_fix_md_offset_refresh_persistence';
+              var CURRENT_BUILD = '20261026_v62_fix_md_offset_persistence';
               try {
                 if (localStorage.getItem('femperf_build') !== CURRENT_BUILD) {
                   localStorage.setItem('femperf_build', CURRENT_BUILD);

@@ -761,6 +761,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   // Change day type for currently selected session and auto-update microcycle tag
   const handleSelectDayType = (newType: CalendarDayType) => {
     lastUserEditTimestamp.current = Date.now();
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
     setDayType(newType);
     const newOffset = getAutoMatchDayOffset(selectedDate, newType);
     setMatchDayOffset(newOffset);
@@ -798,6 +802,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   // Change match category (friendly, championship, cup) and save immediately
   const handleSelectMatchCategory = (cat: 'friendly' | 'championship' | 'cup') => {
     lastUserEditTimestamp.current = Date.now();
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
     setMatchCategory(cat);
     performSave({
       matchCategory: cat,
@@ -807,6 +815,10 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
   // Change match day microcycle tag and save immediately without resetting
   const handleSelectMatchDayOffset = (newOffset: MatchDayOffset) => {
     lastUserEditTimestamp.current = Date.now();
+    if (autoSaveTimerRef.current) {
+      clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+    }
     setMatchDayOffset(newOffset);
     performSave({
       matchDayOffset: newOffset,
