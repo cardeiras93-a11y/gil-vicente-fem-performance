@@ -333,7 +333,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     if (existing) {
       setDayType(existing.dayType);
       setMatchCategory(existing.matchCategory || 'championship');
-      setMatchDayOffset(existing.matchDayOffset);
+      setMatchDayOffset(existing.matchDayOffset || getAutoMatchDayOffset(selectedDate, existing.dayType));
       setStartTime(existing.startTime || (existing.dayType === 'match' ? '10:00' : '09:00'));
       setEndTime(existing.endTime || (existing.dayType === 'match' ? '11:30' : '10:30'));
       setGymStartTime(existing.gymStartTime || '10:45');
@@ -692,7 +692,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     saveCalendarSchedule(updatedSched);
 
     const existing = trainingSessions[dateStr];
-    const offset = getAutoMatchDayOffset(dateStr, next);
+    const offset = next === 'match' ? 'MD' : (existing?.matchDayOffset || getAutoMatchDayOffset(dateStr, next));
 
     const updatedInfo: TrainingSessionInfo = {
       ...(existing || {}),
@@ -798,36 +798,20 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
 
   // Change match category (friendly, championship, cup) and save immediately
   const handleSelectMatchCategory = (cat: 'friendly' | 'championship' | 'cup') => {
+    lastUserEditTimestamp.current = Date.now();
     setMatchCategory(cat);
-
-    const startT = parseFloat(tempStart);
-    const endT = parseFloat(tempEnd);
-
-    const info: TrainingSessionInfo = {
-      date: selectedDate,
-      dayType,
+    performSave({
       matchCategory: cat,
-      matchDayOffset,
-      startTime,
-      endTime,
-      durationMin,
-      tempStart: isNaN(startT) ? undefined : startT,
-      tempEnd: isNaN(endT) ? undefined : endT,
-      tempDelta: tempDelta !== null ? tempDelta : undefined,
-      locationTime: locationName,
-      focusNotes,
-      athleteStatuses,
-      customDeadline: customDeadlineWellness.trim() || customDeadline.trim() || '',
-      customDeadlineWellness: customDeadlineWellness.trim() || '',
-      customDeadlineRpe: customDeadlineRpe.trim() || '',
-      updatedAt: Date.now(),
-    };
+    });
+  };
 
-    saveTrainingSessionInfo(info);
-    setTrainingSessions((prev) => ({
-      ...prev,
-      [selectedDate]: info,
-    }));
+  // Change match day microcycle tag and save immediately without resetting
+  const handleSelectMatchDayOffset = (newOffset: MatchDayOffset) => {
+    lastUserEditTimestamp.current = Date.now();
+    setMatchDayOffset(newOffset);
+    performSave({
+      matchDayOffset: newOffset,
+    });
   };
 
   // Update athlete training status
@@ -1108,7 +1092,7 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
     lastUserEditTimestamp.current = Date.now();
     const dateStr = editingDayDate;
     const existing = trainingSessions[dateStr];
-    const offset = getAutoMatchDayOffset(dateStr, editDayModalType);
+    const offset = editDayModalType === 'match' ? 'MD' : (existing?.matchDayOffset || getAutoMatchDayOffset(dateStr, editDayModalType));
 
     let duration = 90;
     if (editDayModalStartTime && editDayModalEndTime) {
@@ -2483,20 +2467,36 @@ export const TrainingSessionManager: React.FC<TrainingSessionManagerProps> = ({
               <label className="text-xs font-extrabold uppercase text-slate-300 block">
                 2. Fase do Microciclo de Jogo (Match Day Tag)
               </label>
-              <span className="text-[10px] font-extrabold text-red-400 bg-red-500/10 px-2.5 py-0.5 rounded-full border border-red-500/30 flex items-center space-x-1">
-                <span>⚡ Auto:</span>
-                <span className="font-black text-white">{matchDayOffset}</span>
-              </span>
+              <div className="flex items-center space-x-2">
+                {saveStatus === 'saving' && (
+                  <span className="text-[10px] font-bold text-amber-400 animate-pulse bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                    A guardar...
+                  </span>
+                )}
+                {saveStatus === 'saved' && (
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    ✓ Guardado
+                  </span>
+                )}
+                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border flex items-center space-x-1 ${
+                  matchDayOffset === getAutoMatchDayOffset(selectedDate, dayType)
+                    ? 'text-red-400 bg-red-500/10 border-red-500/30'
+                    : 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+                }`}>
+                  <span>{matchDayOffset === getAutoMatchDayOffset(selectedDate, dayType) ? '⚡ Auto:' : '✓ Manual:'}</span>
+                  <span className="font-black text-white">{matchDayOffset}</span>
+                </span>
+              </div>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {(['MD-6', 'MD-5', 'MD-4', 'MD-3', 'MD-2', 'MD-1', 'MD', 'MD+1', 'MD+2'] as const).map((tag) => (
                 <button
                   key={tag}
                   type="button"
-                  onClick={() => setMatchDayOffset(tag)}
-                  className={`px-3 py-2 text-xs font-extrabold rounded-xl border transition-all ${
+                  onClick={() => handleSelectMatchDayOffset(tag)}
+                  className={`px-3 py-2 text-xs font-extrabold rounded-xl border transition-all cursor-pointer ${
                     matchDayOffset === tag
-                      ? 'bg-red-600 text-white border-red-500 shadow-md'
+                      ? 'bg-red-600 text-white border-red-500 shadow-md ring-2 ring-red-500/40'
                       : 'bg-dark-bg border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-slate-200'
                   }`}
                 >
