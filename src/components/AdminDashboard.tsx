@@ -1151,8 +1151,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   const highStressCount = wellnessList.filter((w) => w.stress <= 2).length;
 
   // RPE KPIs & filtering by session type
-  const fieldRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'field' || !r.sessionType), [rpeList]);
-  const gymRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'gym_lower'), [rpeList]);
+  const fieldRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))), [rpeList]);
+  const gymRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))), [rpeList]);
 
   const activeRpeList = useMemo(() => {
     if (rpeSessionFilter === 'field') return fieldRpeList;
@@ -1824,8 +1824,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         {filteredAthletes.map((ath) => {
                           const name = ath.name;
                           const wellness = wellnessList.find((w) => w.athleteName === name);
-                          const rpeField = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'field' || !r.sessionType));
-                          const rpeGym = rpeList.find((r) => r.athleteName === name && r.sessionType === 'gym_lower');
+                          const rpeField = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))));
+                          const rpeGym = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))));
                           const rpe = rpeField || rpeGym;
 
                           return (
@@ -2296,7 +2296,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                                   <td className="py-3 px-3 font-bold text-slate-100">
                                     <div className="flex items-center space-x-1.5">
                                       <span>{r.athleteName}</span>
-                                      {r.sessionType === 'gym_lower' && (
+                                      {(r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))) && (
                                         <span className="px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 text-[9px] font-black uppercase tracking-wider">
                                           🏋️ Ginásio MMII
                                         </span>

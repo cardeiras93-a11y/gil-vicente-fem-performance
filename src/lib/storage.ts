@@ -728,12 +728,22 @@ export async function syncAllDataFromCloud(): Promise<void> {
       const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
       const map = new Map<string, RPEEntry>();
       const getKey = (item: RPEEntry) => {
-        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-        return item.id || `rpe_${Math.random()}`;
+        const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
+        if (item.id) return item.id;
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}_${sType}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}_${sType}`;
+        return `rpe_${Math.random()}`;
       };
-      local.forEach((item) => map.set(getKey(item), item));
+      local.forEach((item) => {
+        if (!item.sessionType && item.id?.includes('gym_lower')) {
+          item.sessionType = 'gym_lower';
+        }
+        map.set(getKey(item), item);
+      });
       items.forEach((item) => {
+        if (!item.sessionType && item.id?.includes('gym_lower')) {
+          item.sessionType = 'gym_lower';
+        }
         const key = getKey(item);
         const existing = map.get(key);
         if (existing) {
@@ -1256,10 +1266,11 @@ export function saveRPELocally(entry: RPEEntry): void {
       entry.sessionDurationMin = sessions[entry.date]?.durationMin || 90;
     }
 
-    const targetType = entry.sessionType || 'field';
+    const targetType = entry.sessionType || (entry.id && entry.id.includes('gym_lower') ? 'gym_lower' : 'field');
+    entry.sessionType = targetType;
     const list: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
     const index = list.findIndex(
-      (item) => item.id === entry.id || (item.date === entry.date && item.athleteId === entry.athleteId && (item.sessionType || 'field') === targetType)
+      (item) => item.id === entry.id || (item.date === entry.date && item.athleteId === entry.athleteId && (item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field')) === targetType)
     );
     if (index !== -1) {
       list[index] = entry;
@@ -1284,10 +1295,15 @@ export function getRPELocally(athleteId?: string): RPEEntry[] {
   try {
     const list: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
     const sessions = getStoredTrainingSessions();
-    const resolved = list.map((item) => ({
-      ...item,
-      sessionDurationMin: item.sessionDurationMin || sessions[item.date]?.durationMin || 90,
-    }));
+    const resolved = list.map((item) => {
+      const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
+      const defDur = sType === 'gym_lower' ? (sessions[item.date]?.gymDurationMin || 45) : (sessions[item.date]?.durationMin || 90);
+      return {
+        ...item,
+        sessionType: sType,
+        sessionDurationMin: item.sessionDurationMin || defDur,
+      };
+    });
     if (athleteId) {
       return resolved.filter((item) => item.athleteId === athleteId);
     }

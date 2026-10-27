@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v62-fix-md-offset-persistence-20261026';
+const CACHE_NAME = 'femperf-v63-fix-gym-rpe-visibility-20261027';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
