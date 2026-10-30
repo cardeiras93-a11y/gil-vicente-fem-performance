@@ -50,6 +50,15 @@ const getYesterdayLocalDateStr = () => {
   return `${year}-${month}-${day}`;
 };
 
+const getTomorrowLocalDateStr = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose, onOpenAthleteSelector }) => {
   const { t, language } = useLanguage();
 
@@ -780,6 +789,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     setSelectedDate(getYesterdayLocalDateStr());
   };
 
+  const setTomorrowDate = () => {
+    setSelectedDate(getTomorrowLocalDateStr());
+  };
+
   const handleSyncGsheets = async (isSilent = false) => {
     if (!isSilent) {
       setIsSyncing(true);
@@ -1289,6 +1302,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 }`}
               >
                 Ontem
+              </button>
+              <button
+                type="button"
+                onClick={setTomorrowDate}
+                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                  selectedDate === getTomorrowLocalDateStr()
+                    ? 'bg-sky-600 text-white font-black shadow-sm'
+                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                }`}
+              >
+                Amanhã
               </button>
               <input
                 type="date"

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v63-fix-gym-rpe-visibility-20261027';
+const CACHE_NAME = 'femperf-v64-add-tomorrow-quick-button-20261030';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
