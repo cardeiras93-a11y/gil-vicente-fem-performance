@@ -276,18 +276,6 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Evidência NotebookLM Gemini */}
-                  {isSec2 && (
-                    <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
-                      <ShieldCheck className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                      <span>
-                        {isEn
-                          ? 'Targeted Hip & Core Neuromuscular Protocol: Proven 20% to 60% reduction in knee ligament injuries for female athletes.'
-                          : 'Protocolo Neuromuscular Anca & Core: Redução comprovada entre 20% e 60% nas lesões ligamentares do joelho em atletas femininas.'}
-                      </span>
-                    </div>
-                  )}
-
                   {/* Exercises Grid in Section */}
                   <div className={`grid gap-3.5 ${exerciseCount === 2 ? 'grid-cols-1 md:grid-cols-2' : exerciseCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
                     {block.exercises.map((ex) => (
