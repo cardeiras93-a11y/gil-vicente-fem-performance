@@ -6,6 +6,8 @@ import { MobilityPlan, AthletePlanAssignment } from './types';
 //   Secção 01: Mobilidade Articular & Descompressão (6 MIN)
 //   Secção 02: Ativação Neuromuscular & Força Preventiva (8 MIN)
 // Duração Total: 14 MINUTOS
+// Protocolo Neuromuscular Evidência Gemini: Anca (Monster Walk) & Core (Dead-Bug)
+// em TODOS os planos para redução comprovada de 20% a 60% em lesões ligamentares do joelho.
 // ==============================================================================
 
 export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
@@ -30,7 +32,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "finisherEn": "Gentle peri-patellar massage and calm recovery.",
     "blocks": [
       {
-        "id": "prev_joelho_sec01",
+        "id": "prev_joelho_lca_menisco_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -39,7 +41,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pj_mob_1",
+            "id": "ex_kg",
             "namePt": "1.1 Knee Gapping com Toalha/Banda em Descarga",
             "nameEn": "1.1 Knee Joint Gapping w/ Towel/Band",
             "seriesRepsPt": "2x 10 pulsos / joelho",
@@ -51,8 +53,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/knee_gapping_pro.svg"
           },
           {
-            "id": "pj_mob_2",
-            "namePt": "1.2 Rotações Interna & Externa da Tíbia Sentada",
+            "id": "ex_tr",
+            "namePt": "1.2 Rotação Interna & Externa da Tíbia Sentada",
             "nameEn": "1.2 Seated Tibial Internal/External Rotations",
             "seriesRepsPt": "2x 8 reps / perna",
             "seriesRepsEn": "2x 8 reps / leg",
@@ -65,7 +67,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       },
       {
-        "id": "prev_joelho_sec02",
+        "id": "prev_joelho_lca_menisco_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -74,11 +76,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pj_str_1",
+            "id": "ex_ss",
             "namePt": "2.1 Spanish Squat Isométrico com Banda Dupla",
             "nameEn": "2.1 Spanish Squat Isometric w/ Double Heavy Band",
-            "seriesRepsPt": "3x 35-40 segundos (Isometria contínua)",
-            "seriesRepsEn": "3x 35-40 seconds (Continuous hold)",
+            "seriesRepsPt": "3x 35-40 segundos contínuos",
+            "seriesRepsEn": "3x 35-40 continuous seconds",
             "restPt": "40s",
             "restEn": "40s",
             "descriptionPt": "Banda resistente ancorada à altura da rótula. Flete joelhos a 60°-70° mantendo tronco rigorosamente ereto e tíbias verticais. Co-contração quadricípete/isquiotibiais que alivia a tensão anterior do LCA.",
@@ -86,7 +88,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/spanish_squat_isometric_pro.svg"
           },
           {
-            "id": "pj_str_2",
+            "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
             "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
@@ -98,16 +100,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "pj_str_3",
-            "namePt": "2.3 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
-            "nameEn": "2.3 Hip-Dominant Split Squat w/ Knee Band",
-            "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
-            "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Passada estável com inclinação anterior do tronco a 45°. Foco na dominância glútea e alinhamento rígido joelho-segundo dedo do pé, eliminando qualquer colapso em valgo dinâmico.",
-            "descriptionEn": "Staggered stance with 45° forward torso hinge. Heavy glute recruitment and strict knee tracking over 2nd toe, eradicating dynamic valgus collapse.",
-            "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -134,7 +148,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "finisherEn": "Plantar fascia release and calm recovery.",
     "blocks": [
       {
-        "id": "prev_tornozelo_sec01",
+        "id": "prev_tornozelo_sindesmose_peroneais_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -143,9 +157,9 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pt_mob_1",
-            "namePt": "1.1 Tração Articular Anterior de Tornozelo com Banda (Deslize do Astrágalo)",
-            "nameEn": "1.1 Banded Ankle Joint Traction (Talus Posterior Glide)",
+            "id": "ex_at",
+            "namePt": "1.1 Tração Articular Anterior de Tornozelo com Banda",
+            "nameEn": "1.1 Banded Ankle Joint Traction",
             "seriesRepsPt": "2x 10 pulsos / tornozelo",
             "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
@@ -155,11 +169,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_traction_pro.svg"
           },
           {
-            "id": "pt_mob_2",
-            "namePt": "1.2 Rotações Circulares Ativas de Tornozelo (Ankle CARs Controladas)",
+            "id": "ex_ac",
+            "namePt": "1.2 Rotações Circulares Ativas de Tornozelo (Ankle CARs)",
             "nameEn": "1.2 Controlled Articular Rotations (Ankle CARs)",
-            "seriesRepsPt": "2x 6 círculos lentos / sentido",
-            "seriesRepsEn": "2x 6 slow circles / direction",
+            "seriesRepsPt": "2x 6 círculos / sentido",
+            "seriesRepsEn": "2x 6 circles / direction",
             "restPt": "20s",
             "restEn": "20s",
             "descriptionPt": "Joelho estabilizado com as mãos. Desenha o maior círculo possível com a ponta do pé sem rodar a tíbia. Explora dorsiflexão, inversão, flexão plantar e eversão máxima.",
@@ -169,7 +183,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       },
       {
-        "id": "prev_tornozelo_sec02",
+        "id": "prev_tornozelo_sindesmose_peroneais_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -178,11 +192,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pt_str_1",
-            "namePt": "2.1 Eversão Resistida com Banda (Reforço dos Peroneais Longo e Curto)",
+            "id": "ex_ae",
+            "namePt": "2.1 Eversão Resistida com Banda (Reforço dos Peroneais)",
             "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
-            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s no pico)",
-            "seriesRepsEn": "3x 12-15 reps / foot (2s peak hold)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -190,28 +204,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_eversion_pro.svg"
           },
           {
-            "id": "pt_str_2",
+            "id": "ex_sf",
             "namePt": "2.2 Ativação da Abóbada Plantar & Short-Foot Isométrico",
-            "nameEn": "2.2 Plantar Arch Activation & Short-Foot Isometric",
+            "nameEn": "2.2 Plantar Arch & Short-Foot Isometric",
             "seriesRepsPt": "3x 25 segundos / pé",
             "seriesRepsEn": "3x 25 seconds / foot",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Pé descalço apoiado no solo (tripé: calcanhar, base do 1º e 5º metatarso). Encurta o pé puxando o metatarso em direção ao calcanhar sem dobrar os dedos. Ergue o arco plantar.",
-            "descriptionEn": "Barefoot tripod contact. Shorten foot pulling metatarsal heads towards heel without curling toes, elevating medial longitudinal arch.",
+            "descriptionPt": "Pé descalço apoiado no solo. Encurta o pé puxando o metatarso em direção ao calcanhar sem dobrar os dedos. Ergue o arco plantar e estabiliza o astrágalo e navicular.",
+            "descriptionEn": "Barefoot tripod contact. Shorten foot pulling metatarsal heads towards heel without curling toes, elevating medial arch.",
             "imageSrc": "/exercises/ankle_shortfoot_pro.svg"
           },
           {
-            "id": "pt_str_3",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez da Sindesmose & Aquiles)",
-            "nameEn": "2.3 Reactive Pogo Hops (Syndesmosis & Achilles Stiffness)",
-            "seriesRepsPt": "3x 15 saltos elásticos rápidos",
-            "seriesRepsEn": "3x 15 quick elastic hops",
-            "restPt": "40s",
-            "restEn": "40s",
-            "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
-            "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization of syndesmosis.",
-            "imageSrc": "/exercises/pogo_hops_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -238,7 +264,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "finisherEn": "Light unloaded hamstring flow and relaxation.",
     "blocks": [
       {
-        "id": "prev_isquios_sec01",
+        "id": "prev_isquios_quads_excentrico_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -247,9 +273,9 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pi_mob_1",
-            "namePt": "1.1 Slump Floss Neural Dinâmico Sentada (Descompressão do Nervo Ciático)",
-            "nameEn": "1.1 Seated Dynamic Neural Slump Floss (Sciatic Nerve Flossing)",
+            "id": "ex_slump",
+            "namePt": "1.1 Slump Floss Neural Dinâmico Sentada (Nervo Ciático)",
+            "nameEn": "1.1 Seated Dynamic Neural Slump Floss",
             "seriesRepsPt": "2x 8 ciclos / perna",
             "seriesRepsEn": "2x 8 cycles / leg",
             "restPt": "20s",
@@ -259,11 +285,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/hamstring_floss_neural_pro.svg"
           },
           {
-            "id": "pi_mob_2",
-            "namePt": "1.2 Alongamento Dinâmico em Decúbito com Banda (Hamstring Band Flow)",
+            "id": "ex_shb",
+            "namePt": "1.2 Alongamento Dinâmico em Decúbito com Banda",
             "nameEn": "1.2 Supine Dynamic Hamstring Flow w/ Band",
-            "seriesRepsPt": "2x 30s / perna (Movimento contínuo)",
-            "seriesRepsEn": "2x 30s / leg (Continuous flow)",
+            "seriesRepsPt": "2x 30s / perna",
+            "seriesRepsEn": "2x 30s / leg",
             "restPt": "20s",
             "restEn": "20s",
             "descriptionPt": "Deitada de costas com banda elástica presa no pé. Eleva a perna esticada até ao limite confortável e desce controlada, bombeando flexão dorsal do tornozelo no topo.",
@@ -273,7 +299,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       },
       {
-        "id": "prev_isquios_sec02",
+        "id": "prev_isquios_quads_excentrico_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -282,11 +308,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pi_str_1",
+            "id": "ex_llb",
             "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Isometric Peak Hold",
-            "seriesRepsPt": "3x 8-10 reps (Pausa 3s no topo)",
-            "seriesRepsEn": "3x 8-10 reps (3s peak hold)",
+            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "seriesRepsPt": "3x 8 reps (Pausa 3s)",
+            "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
             "restEn": "35s",
             "descriptionPt": "Deitada de costas com calcanhares no solo afastados das nádegas (joelhos a ~140°). Eleva a bacia contraindo intensamente o bíceps femoral distal com retroversão pélvica.",
@@ -294,11 +320,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
           },
           {
-            "id": "pi_str_2",
+            "id": "ex_nc",
             "namePt": "2.2 Nordic Hamstring Curl Excêntrico Assistido com Banda",
             "nameEn": "2.2 Band-Assisted Eccentric Nordic Hamstring Curl",
-            "seriesRepsPt": "3x 6 reps (Descida em 4-5 segundos)",
-            "seriesRepsEn": "3x 6 reps (4-5s slow descent)",
+            "seriesRepsPt": "3x 6 reps (Descida em 4s)",
+            "seriesRepsEn": "3x 6 reps (4s slow fall)",
             "restPt": "45s",
             "restEn": "45s",
             "descriptionPt": "Ajoelhada com tornozelos presos e banda de suporte no peito ancorada atrás. Inclina o corpo para a frente mantendo linha reta joelho-anca-ombro. O padrão de ouro contra roturas em sprint.",
@@ -306,16 +332,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/assisted_nordic_curl_band_pro.svg"
           },
           {
-            "id": "pi_str_3",
-            "namePt": "2.3 Flexão Prone de Isquiotibiais Unipodal com Banda Elástica",
-            "nameEn": "2.3 Single-Leg Prone Banded Hamstring Curl",
-            "seriesRepsPt": "2x 10 reps / perna (Controlo excêntrico)",
-            "seriesRepsEn": "2x 10 reps / leg (Controlled return)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de barriga para baixo com banda elástica presa ao calcanhar e ancorada à frente. Flete o joelho trazendo o calcanhar ao glúteo, corrigindo assimetrias bilaterais.",
-            "descriptionEn": "Prone lying with elastic band looped around heel. Curl heel towards glutes with 2s peak squeeze, balancing single-leg strength deficits.",
-            "imageSrc": "/exercises/prone_leg_curl_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -325,24 +363,24 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "id": "prev_rotuliano_patelar_bipartida",
     "titlePt": "Plano Preventivo: Tendão Rotuliano & Rótula Bipartida (Analgesia & VMO)",
     "titleEn": "Preventive Plan: Patellar Tendon & Bipartite Patella (Analgesia & VMO)",
-    "categoryPt": "Clínico • Prevenção Rotuliana (2 Secções • 14 Min)",
+    "categoryPt": "Clínico • Prevenção Rótula (2 Secções • 14 Min)",
     "categoryEn": "Clinical • Patellar Prevention (2 Sections • 14 Min)",
     "group": "inferiores",
-    "groupBadgePt": "🩺 Rótula & Tendão Rotuliano",
-    "groupBadgeEn": "🩺 Patella & Patellar Tendon",
+    "groupBadgePt": "🛡️ Rótula & Tendão Patelar",
+    "groupBadgeEn": "🛡️ Patella & Patellar Tendon",
     "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • DEPARTAMENTO DE PERFORMANCE & SAÚDE",
     "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • PERFORMANCE & HEALTH DEPARTMENT",
     "targetPosition": "all",
     "durationMinutes": 14,
     "durationTextPt": "14 MIN (Máx. 15 Min)",
     "durationTextEn": "14 MIN (Max 15 Min)",
-    "warmupPt": "Mobilização passiva e suave da patela em descarga completa.",
-    "warmupEn": "Passive gentle patellar mobilization in complete unloading.",
-    "finisherPt": "Descarga em decúbito com pernas elevadas.",
-    "finisherEn": "Legs elevated rest and tendon recovery.",
+    "warmupPt": "Libertação miofascial supra-patelar e mobilização capsular suave.",
+    "warmupEn": "Supra-patellar release and gentle capsular mobilization.",
+    "finisherPt": "Descompressão quadricipital suave em decúbito.",
+    "finisherEn": "Gentle quad release and calm recovery.",
     "blocks": [
       {
-        "id": "prev_rot_sec01",
+        "id": "prev_rotuliano_patelar_bipartida_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -351,11 +389,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pr_mob_1",
+            "id": "ex_pm",
             "namePt": "1.1 Mobilização Manual da Rótula Superior & Inferior",
             "nameEn": "1.1 Manual Superior/Inferior Patellar Glides",
-            "seriesRepsPt": "2x 30 segundos / joelho",
-            "seriesRepsEn": "2x 30 seconds / knee",
+            "seriesRepsPt": "2x 30s / joelho",
+            "seriesRepsEn": "2x 30s / knee",
             "restPt": "20s",
             "restEn": "20s",
             "descriptionPt": "Sentada com a perna totalmente relaxada no solo. Com os polegares e indicadores, desliza a rótula suavemente para cima, para baixo e lateralmente sem dor para libertar a cápsula.",
@@ -363,21 +401,21 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/patellar_mobilization_pro.svg"
           },
           {
-            "id": "pr_mob_2",
-            "namePt": "1.2 Alongamento de Sóleo na Parede com Joelho Fletido",
-            "nameEn": "1.2 Wall Soleus Stretch w/ Bent Knee",
-            "seriesRepsPt": "2x 30 segundos / perna",
-            "seriesRepsEn": "2x 30 seconds / leg",
+            "id": "ex_ad",
+            "namePt": "1.2 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
+            "nameEn": "1.2 Wall Banded Ankle Dorsiflexion Mobilization",
+            "seriesRepsPt": "2x 10 pulsos / tornozelo",
+            "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
             "restEn": "20s",
-            "descriptionPt": "Perna traseira com joelho fletido e calcanhar colado ao solo na parede. Reduz a tração descendente do tendão de Aquiles que afeta a mecânica fémoro-rotuliana.",
-            "descriptionEn": "Back leg bent at knee with heel glued to floor. Stretches soleus, preventing restricted dorsiflexion from overloading patellar tendon.",
-            "imageSrc": "/exercises/soleus_wall_stretch_pro.svg"
+            "descriptionPt": "Em lunge virada para a parede com banda elástica a puxar o astrágalo para trás. Avança o joelho além da ponta dos dedos mantendo calcanhar colado ao chão.",
+            "descriptionEn": "Half kneeling facing wall with band pulling talus posterior. Drive knee past toes keeping heel firmly grounded.",
+            "imageSrc": "/exercises/ankle_dorsiflexion_band_pro.svg"
           }
         ]
       },
       {
-        "id": "prev_rot_sec02",
+        "id": "prev_rotuliano_patelar_bipartida_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -386,11 +424,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pr_str_1",
+            "id": "ex_wsb",
             "namePt": "2.1 Wall-Sit Isométrico a 90° com Aperto de Bola (Analgesia Patelar)",
             "nameEn": "2.1 90° Isometric Wall-Sit w/ Ball Squeeze (Patellar Analgesia)",
-            "seriesRepsPt": "3x 35-45 segundos contínuos",
-            "seriesRepsEn": "3x 35-45 continuous seconds",
+            "seriesRepsPt": "3x 35 segundos contínuos",
+            "seriesRepsEn": "3x 35 continuous seconds",
             "restPt": "40s",
             "restEn": "40s",
             "descriptionPt": "Costas coladas à parede, coxas paralelas ao solo (90°). Aperta uma bola de borracha entre os joelhos para recrutar adutores e vasto medial, descarregando a rótula bipartida.",
@@ -398,28 +436,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_sit_isometric_ball_pro.svg"
           },
           {
-            "id": "pr_str_2",
-            "namePt": "2.2 Poliquin Step-Up com Calcanhar Elevado em Bloco",
-            "nameEn": "2.2 Heel-Elevated Poliquin Step-Up",
-            "seriesRepsPt": "3x 8-10 reps / perna (Descida lenta)",
-            "seriesRepsEn": "3x 8-10 reps / leg (Controlled drop)",
+            "id": "ex_tke",
+            "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
+            "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "No bordo de um pequeno degrau com cunha no calcanhar. Desce a perna livre tocando apenas com o calcanhar no solo enquanto o joelho da frente avança em linha com o pé.",
-            "descriptionEn": "On low wedge with elevated heel. Lower opposite heel to gently touch floor while driving active knee forward, firing pure VMO fibers.",
-            "imageSrc": "/exercises/poliquin_step_up_pro.svg"
+            "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
+            "descriptionEn": "Band anchored in front. Fully extend knee against elastic tension, firing VMO for 2s peak contraction before controlled return.",
+            "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "pr_str_3",
-            "namePt": "2.3 Terminal Knee Extension (TKE) com Foco no Vasto Medial",
-            "nameEn": "2.3 Terminal Knee Extension (TKE) w/ Heavy Band",
-            "seriesRepsPt": "3x 12 reps / perna (Bloqueio 2s no topo)",
-            "seriesRepsEn": "3x 12 reps / leg (2s lockout hold)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Banda ancorada à frente logo acima da linha articular. Estende totalmente o joelho contra a banda, contraindo com força máxima o VMO nos últimos 15° de extensão.",
-            "descriptionEn": "Band anchored in front. Lock out knee forcefully against elastic tension in terminal 15 degrees, reinforcing patellar central track.",
-            "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -428,25 +478,25 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
   {
     "id": "prev_adutores_virilha_copenhagen",
     "titlePt": "Plano Preventivo: Adutores & Púbis (Groin / Sínfise Púbica & Bacia)",
-    "titleEn": "Preventive Plan: Adductors & Pubis (Groin & Pelvic Stability)",
+    "titleEn": "Preventive Plan: Adductors & Pubic Symphysis (Groin Care)",
     "categoryPt": "Clínico • Prevenção Adutores (2 Secções • 14 Min)",
     "categoryEn": "Clinical • Adductor Prevention (2 Sections • 14 Min)",
     "group": "inferiores",
-    "groupBadgePt": "🛡️ Adutores • Virilha & Púbis",
-    "groupBadgeEn": "🛡️ Adductors • Groin & Pubis",
+    "groupBadgePt": "💎 Adutores & Púbis",
+    "groupBadgeEn": "💎 Adductors & Pubis",
     "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • DEPARTAMENTO DE PERFORMANCE & SAÚDE",
     "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • PERFORMANCE & HEALTH DEPARTMENT",
     "targetPosition": "all",
     "durationMinutes": 14,
     "durationTextPt": "14 MIN (Máx. 15 Min)",
     "durationTextEn": "14 MIN (Max 15 Min)",
-    "warmupPt": "Mobilidade dinâmica da cápsula articular da anca.",
-    "warmupEn": "Dynamic hip capsule mobility.",
-    "finisherPt": "Libertação em decúbito dorsal e respiração diafragmática.",
-    "finisherEn": "Supine adductor relaxation and deep breathing.",
+    "warmupPt": "Descompressão fascial adutora e mobilidade articular da anca.",
+    "warmupEn": "Adductor myofascial release and hip joint mobilization.",
+    "finisherPt": "Alongamento passivo de virilha em descarga.",
+    "finisherEn": "Passive groin stretch and calm recovery.",
     "blocks": [
       {
-        "id": "prev_adutores_sec01",
+        "id": "prev_adutores_virilha_copenhagen_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -455,33 +505,33 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pa_mob_1",
-            "namePt": "1.1 Mobilidade Adutora em Balanço Quádrupe (Adductor Rocking)",
-            "nameEn": "1.1 Quadruped Dynamic Adductor Rocking",
-            "seriesRepsPt": "2x 8 reps / perna",
-            "seriesRepsEn": "2x 8 reps / leg",
+            "id": "ex_9090",
+            "namePt": "1.1 Transições 90/90 de Anca com Alcance Dinâmico",
+            "nameEn": "1.1 90/90 Hip Flow w/ Dynamic Reach",
+            "seriesRepsPt": "2x 6 reps / lado",
+            "seriesRepsEn": "2x 6 reps / side",
             "restPt": "20s",
             "restEn": "20s",
-            "descriptionPt": "Em 4 apoios com uma perna estendida lateralmente e pé colado ao solo. Balança a bacia para trás em direção ao calcanhar, libertando a fáscia dos adutores magno e longo.",
-            "descriptionEn": "Quadruped with one leg extended laterally with flat foot. Rock hips back towards heel to dynamically open adductor canal.",
-            "imageSrc": "/exercises/adductor_rocking_pro.svg"
+            "descriptionPt": "Sentada em 90/90. Transita os joelhos de um lado para o outro mantendo tronco ereto e alcança a mão em diagonal para abrir a fáscia lombo-pélvica.",
+            "descriptionEn": "Seated in 90/90. Transition knees smoothly side to side and project torso forward to release lumbo-pelvic fascia.",
+            "imageSrc": "/exercises/hip_90_90_flow_reach_pro.svg"
           },
           {
-            "id": "pa_mob_2",
-            "namePt": "1.2 Alongamento Rã Ativo com Rotação Interna de Anca (Frog Flow)",
-            "nameEn": "1.2 Active Frog Stretch w/ Internal Hip Rotations",
-            "seriesRepsPt": "2x 8 respirações profundas",
-            "seriesRepsEn": "2x 8 deep breaths",
+            "id": "ex_shb",
+            "namePt": "1.2 Alongamento Dinâmico em Decúbito com Banda",
+            "nameEn": "1.2 Supine Dynamic Hamstring Flow w/ Band",
+            "seriesRepsPt": "2x 30s / perna",
+            "seriesRepsEn": "2x 30s / leg",
             "restPt": "20s",
             "restEn": "20s",
-            "descriptionPt": "Joelhos bem afastados no colchonete com ancas a 90°. Balança suavemente a bacia abrindo a cápsula articular medial da anca e aliviando a sínfise púbica.",
-            "descriptionEn": "Knees wide on mat at 90° angle. Smoothly rock hips forward and back opening medial hip capsule and relieving pubic symphysis.",
-            "imageSrc": "/exercises/frog_stretch_pro.svg"
+            "descriptionPt": "Deitada de costas com banda elástica presa no pé. Eleva a perna esticada até ao limite confortável e desce controlada, bombeando flexão dorsal do tornozelo no topo.",
+            "descriptionEn": "Supine holding elastic band on midfoot. Rhythmically raise straight leg to end range and lower smoothly with active dorsiflexion.",
+            "imageSrc": "/exercises/supine_hamstring_band_pro.svg"
           }
         ]
       },
       {
-        "id": "prev_adutores_sec02",
+        "id": "prev_adutores_virilha_copenhagen_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -490,11 +540,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pa_str_1",
+            "id": "ex_cp",
             "namePt": "2.1 Copenhagen Plank Isométrico Curto com Joelho no Banco",
             "nameEn": "2.1 Short-Lever Copenhagen Adductor Plank",
-            "seriesRepsPt": "3x 15-20 segundos / lado",
-            "seriesRepsEn": "3x 15-20 seconds / side",
+            "seriesRepsPt": "3x 15-20s / lado",
+            "seriesRepsEn": "3x 15-20s / side",
             "restPt": "35s",
             "restEn": "35s",
             "descriptionPt": "Prancha lateral com o joelho superior apoiado no banco (alavanca curta protetora). Eleva a bacia alinhada e mantém a perna inferior suspensa sem cair.",
@@ -502,28 +552,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/copenhagen_plank_pro.svg"
           },
           {
-            "id": "pa_str_2",
-            "namePt": "2.2 Copenhagen Dinâmico com Elevação da Perna Suspensa",
-            "nameEn": "2.2 Dynamic Copenhagen Adduction Lift",
-            "seriesRepsPt": "3x 8 reps / lado",
-            "seriesRepsEn": "3x 8 reps / side",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Na posição de Copenhagen, sobe e desce a perna inferior tocando levemente no banco de baixo. Força concêntrica e excêntrica para remate e passe de futebol.",
-            "descriptionEn": "From Copenhagen position, raise bottom leg up to meet bench and lower smoothly. Dynamic kicking power and pubic groin shielding.",
-            "imageSrc": "/exercises/copenhagen_adduction_dynamic_pro.svg"
-          },
-          {
-            "id": "pa_str_3",
-            "namePt": "2.3 Adução Isométrica em Decúbito Lateral",
-            "nameEn": "2.3 Side-Lying Isometric Adductor Hold",
-            "seriesRepsPt": "2x 20 segundos / lado",
-            "seriesRepsEn": "2x 20 seconds / side",
+            "id": "ex_sq",
+            "namePt": "2.2 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
+            "nameEn": "2.2 Hip-Dominant Split Squat w/ Knee Band",
+            "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
+            "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de lado com a perna superior cruzada à frente. Eleva a perna de baixo estendida contra a gravidade sustentando a contração no adutor longo.",
-            "descriptionEn": "Side lying with top leg crossed forward. Elevate bottom straight leg against gravity holding peak adductor tension.",
-            "imageSrc": "/exercises/side_lying_hip_adduction_pro.svg"
+            "descriptionPt": "Passada estável com inclinação anterior do tronco a 45°. Foco na dominância glútea e alinhamento rígido joelho-segundo dedo do pé, eliminando qualquer colapso em valgo dinâmico.",
+            "descriptionEn": "Staggered stance with 45° forward torso hinge. Heavy glute recruitment and strict knee tracking over 2nd toe, eradicating dynamic valgus collapse.",
+            "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -536,21 +598,21 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "categoryPt": "Clínico • Prevenção Membro Superior (2 Secções • 14 Min)",
     "categoryEn": "Clinical • Upper Body Prevention (2 Sections • 14 Min)",
     "group": "superiores",
-    "groupBadgePt": "🧗 Ombro, Cotovelo & Coluna",
-    "groupBadgeEn": "🧗 Shoulder, Elbow & Spine",
+    "groupBadgePt": "💪 Ombro & Cotovelo",
+    "groupBadgeEn": "💪 Shoulder & Elbow",
     "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • DEPARTAMENTO DE PERFORMANCE & SAÚDE",
     "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • PERFORMANCE & HEALTH DEPARTMENT",
     "targetPosition": "all",
     "durationMinutes": 14,
     "durationTextPt": "14 MIN (Máx. 15 Min)",
     "durationTextEn": "14 MIN (Max 15 Min)",
-    "warmupPt": "Mobilidade escapular e torácica sem carga.",
-    "warmupEn": "Scapular and thoracic unloaded mobility.",
-    "finisherPt": "Alongamento peitoral em porta/parede e descompressão cervical.",
-    "finisherEn": "Doorway pectoral stretch and cervical decompression.",
+    "warmupPt": "Mobilidade glenoumeral e descompressão da coluna torácica.",
+    "warmupEn": "Glenohumeral and thoracic mobility flow.",
+    "finisherPt": "Alongamento peitoral ligeiro e respiração diafragmática.",
+    "finisherEn": "Light chest stretch and diaphragmatic breathing.",
     "blocks": [
       {
-        "id": "prev_ombro_sec01",
+        "id": "prev_ombro_cotovelo_cervical_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -559,7 +621,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "po_mob_1",
+            "id": "ex_trreach",
             "namePt": "1.1 Rotação Torácica & Alcance Superior em Meio-Ajoelhado com Banda",
             "nameEn": "1.1 Half-Kneeling Banded Thoracic Rotation & High Reach",
             "seriesRepsPt": "2x 8 reps / lado",
@@ -571,11 +633,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/half_kneeling_band_thoracic_reach_pro.svg"
           },
           {
-            "id": "po_mob_2",
+            "id": "ex_disl",
             "namePt": "1.2 Passagens de Ombros e Peitoral com Banda (Dislocates Fluídos)",
             "nameEn": "1.2 Band Shoulder Dislocates & Chest Opening",
-            "seriesRepsPt": "2x 10 reps fluídas",
-            "seriesRepsEn": "2x 10 fluid reps",
+            "seriesRepsPt": "2x 10 reps",
+            "seriesRepsEn": "2x 10 reps",
             "restPt": "20s",
             "restEn": "20s",
             "descriptionPt": "De pé com pegada larga na banda elástica e braços estendidos. Passa a banda por cima da cabeça até às costas sem arquear a lombar, abrindo a cápsula glenoumeral.",
@@ -585,7 +647,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       },
       {
-        "id": "prev_ombro_sec02",
+        "id": "prev_ombro_cotovelo_cervical_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -594,11 +656,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "po_str_1",
-            "namePt": "2.1 Wall Slides com Mini-Banda nos Pulsos (W para Y com Ativação Serratus)",
-            "nameEn": "2.1 Wall Slides w/ Wrist Miniband (W-to-Y Scapular Activation)",
-            "seriesRepsPt": "3x 8-10 reps (Pausa 2s no topo)",
-            "seriesRepsEn": "3x 8-10 reps (2s top reach hold)",
+            "id": "ex_ws",
+            "namePt": "2.1 Wall Slides com Mini-Banda nos Pulsos (W para Y)",
+            "nameEn": "2.1 Wall Slides w/ Wrist Miniband (W-to-Y)",
+            "seriesRepsPt": "3x 8 reps (Pausa 2s no topo)",
+            "seriesRepsEn": "3x 8 reps (2s top hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Antebraços encostados à parede em 'W' com mini-banda tensa entre os pulsos. Desliza os braços para cima até formar um 'Y', empurrando ativamente a parede para ativar o serrátil anterior.",
@@ -606,11 +668,11 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_slide_w_to_y_miniband_pro.svg"
           },
           {
-            "id": "po_str_2",
+            "id": "ex_ptap",
             "namePt": "2.2 Prancha Alta com Toque nos Ombros e Mini-Banda",
             "nameEn": "2.2 High Plank Shoulder Taps w/ Miniband",
-            "seriesRepsPt": "3x 8 toques / lado (Bacia imóvel)",
-            "seriesRepsEn": "3x 8 taps / side (Locked hips)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto sem rodar a bacia ou colapsar o cotovelo de apoio. Proteção para quedas e choques.",
@@ -618,16 +680,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg"
           },
           {
-            "id": "po_str_3",
-            "namePt": "2.3 Pássaro-Cão com Banda Cruzada & Estabilidade Cervico-Torácica",
-            "nameEn": "2.3 Banded Cross-Body Bird-Dog & Cervical Stability",
-            "seriesRepsPt": "2x 8 reps / lado",
-            "seriesRepsEn": "2x 8 reps / side",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Em 4 apoios com banda presa entre mão e pé opostos. Estende simultaneamente sem oscilação da coluna, mantendo olhar no solo e pescoço alinhado.",
-            "descriptionEn": "Quadruped with band looped across opposite hand and foot. Extend horizontally maintaining neutral cervical spine and rock-solid core.",
-            "imageSrc": "/exercises/banded_bird_dog_core_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -654,7 +728,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
     "finisherEn": "Child's pose decompression and calm recovery.",
     "blocks": [
       {
-        "id": "prev_core_sec01",
+        "id": "prev_core_anti_rotacao_extensao_sec01",
         "number": "01",
         "titlePt": "SECÇÃO 1: MOBILIDADE ARTICULAR & DESCOMPRESSÃO",
         "titleEn": "SECTION 1: JOINT MOBILITY & DECOMPRESSION",
@@ -663,7 +737,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "6 MIN",
         "exercises": [
           {
-            "id": "pc_mob_1",
+            "id": "ex_stwist",
             "namePt": "1.1 Torção Vertebral em Decúbito Dorsal (Supine Spinal Twist)",
             "nameEn": "1.1 Supine Spinal Twist Flow",
             "seriesRepsPt": "2x 30s / lado",
@@ -675,7 +749,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/supine_spinal_twist_pro.svg"
           },
           {
-            "id": "pc_mob_2",
+            "id": "ex_9090",
             "namePt": "1.2 Transições 90/90 de Anca com Alcance Dinâmico",
             "nameEn": "1.2 90/90 Hip Flow w/ Dynamic Reach",
             "seriesRepsPt": "2x 6 reps / lado",
@@ -689,7 +763,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       },
       {
-        "id": "prev_core_sec02",
+        "id": "prev_core_anti_rotacao_extensao_sec02",
         "number": "02",
         "titlePt": "SECÇÃO 2: ATIVAÇÃO NEUROMUSCULAR & FORÇA PREVENTIVA",
         "titleEn": "SECTION 2: NEUROMUSCULAR ACTIVATION & PREVENTIVE STRENGTH",
@@ -698,40 +772,52 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "durationTextEn": "8 MIN",
         "exercises": [
           {
-            "id": "pc_str_1",
+            "id": "ex_pallof",
             "namePt": "2.1 Pallof Press Isométrico com Rotação Controlada do Tronco",
             "nameEn": "2.1 Isometric Pallof Press w/ Controlled Torso Rotation",
-            "seriesRepsPt": "3x 8-10 reps / lado (Pausa 2s)",
-            "seriesRepsEn": "3x 8-10 reps / side (2s pause)",
-            "restPt": "35s",
-            "restEn": "35s",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
             "descriptionPt": "De pé com banda ancorada lateralmente na altura do peito. Empurra a banda à frente e resiste à força de rotação. Roda 15° de tronco mantendo bacia totalmente imóvel.",
             "descriptionEn": "Standing with chest-high anchored band. Press band forward resisting lateral pull, performing micro 15° rotations with locked hips.",
             "imageSrc": "/exercises/pallof_press_band_rotation_pro.svg"
           },
           {
-            "id": "pc_str_2",
-            "namePt": "2.2 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar)",
-            "nameEn": "2.2 Dead-Bug w/ Foot Miniband (Anti-Extension Core)",
+            "id": "ex_cp",
+            "namePt": "2.2 Copenhagen Plank Isométrico Curto com Joelho no Banco",
+            "nameEn": "2.2 Short-Lever Copenhagen Adductor Plank",
+            "seriesRepsPt": "3x 15-20s / lado",
+            "seriesRepsEn": "3x 15-20s / side",
+            "restPt": "35s",
+            "restEn": "35s",
+            "descriptionPt": "Prancha lateral com o joelho superior apoiado no banco (alavanca curta protetora). Eleva a bacia alinhada e mantém a perna inferior suspensa sem cair.",
+            "descriptionEn": "Side plank with top knee resting on gym bench (protective short lever). Elevate pelvis maintaining straight body line with bottom leg hovering.",
+            "imageSrc": "/exercises/copenhagen_plank_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços verticais. Estende perna e braço opostos mantendo a lombar colada ao solo, eliminando hiperlordose compensatória.",
-            "descriptionEn": "Supine with miniband around feet. Extend opposite arm and leg while pressing lumbar spine firmly into floor against extension.",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
             "imageSrc": "/exercises/deadbug_miniband_pro.svg"
-          },
-          {
-            "id": "pc_str_3",
-            "namePt": "2.3 Pássaro-Cão com Banda Cruzada & Estabilidade Diagonal",
-            "nameEn": "2.3 Cross-Body Banded Bird-Dog Diagonal Hold",
-            "seriesRepsPt": "2x 8 reps / lado",
-            "seriesRepsEn": "2x 8 reps / side",
-            "restPt": "30s",
-            "restEn": "30s",
-            "descriptionPt": "Em 4 apoios com banda cruzada mão-pé opostos. Estende mantendo pelve rigorosamente nivelada com o solo. Fortalece oblíquos internos e multífidos.",
-            "descriptionEn": "Quadruped with cross band. Extend horizontally maintaining level pelvis. Builds deep spinal multifidi and oblique sling strength.",
-            "imageSrc": "/exercises/banded_bird_dog_core_pro.svg"
           }
         ]
       }
@@ -817,8 +903,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -826,16 +912,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_sq",
-            "namePt": "2.3 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
-            "nameEn": "2.3 Hip-Dominant Split Squat w/ Knee Band",
-            "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
-            "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Passada estável com inclinação anterior do tronco a 45°. Foco na dominância glútea e alinhamento rígido joelho-segundo dedo do pé, eliminando qualquer colapso em valgo dinâmico.",
-            "descriptionEn": "Staggered stance with 45° forward torso hinge. Heavy glute recruitment and strict knee tracking over 2nd toe, eradicating dynamic valgus collapse.",
-            "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -918,28 +1016,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_sit_isometric_ball_pro.svg"
           },
           {
-            "id": "ex_ws",
-            "namePt": "2.1 Wall Slides com Mini-Banda nos Pulsos (W para Y)",
-            "nameEn": "2.1 Wall Slides w/ Wrist Miniband (W-to-Y)",
-            "seriesRepsPt": "3x 8 reps (Pausa 2s no topo)",
-            "seriesRepsEn": "3x 8 reps (2s top hold)",
-            "restPt": "30s",
-            "restEn": "30s",
-            "descriptionPt": "Antebraços encostados à parede em 'W' com mini-banda tensa entre os pulsos. Desliza os braços para cima até formar um 'Y', empurrando ativamente a parede para ativar o serrátil anterior.",
-            "descriptionEn": "Forearms on wall in 'W' with miniband tension. Slide up into 'Y' pushing against wall to activate serratus and lower traps.",
-            "imageSrc": "/exercises/wall_slide_w_to_y_miniband_pro.svg"
-          },
-          {
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
             "descriptionEn": "Band anchored in front. Fully extend knee against elastic tension, firing VMO for 2s peak contraction before controlled return.",
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -976,8 +1086,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_9090",
-            "namePt": "1.2 Transições 90/90 de Anca com Alcance Dinâmico",
-            "nameEn": "1.2 90/90 Hip Flow w/ Dynamic Reach",
+            "namePt": "1.1 Transições 90/90 de Anca com Alcance Dinâmico",
+            "nameEn": "1.1 90/90 Hip Flow w/ Dynamic Reach",
             "seriesRepsPt": "2x 6 reps / lado",
             "seriesRepsEn": "2x 6 reps / side",
             "restPt": "20s",
@@ -1023,8 +1133,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "namePt": "2.2 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
+            "nameEn": "2.2 Long-Lever Hamstring Bridge w/ Peak Hold",
             "seriesRepsPt": "3x 8 reps (Pausa 3s)",
             "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
@@ -1035,15 +1145,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos",
-            "nameEn": "2.3 Monster Walk w/ Miniband around Knees",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Em posição atlética de semi-agachamento com mini-banda logo acima dos joelhos. Passos diagonais curtos mantendo joelhos e pés alinhados, ativando glúteo médio e rotadores externos.",
-            "descriptionEn": "Athletic semi-squat stance with miniband above knees. Short diagonal steps keeping knees pressed wide, firing gluteus medius.",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
             "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1126,28 +1248,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/spanish_squat_isometric_pro.svg"
           },
           {
-            "id": "ex_cp",
-            "namePt": "2.1 Copenhagen Plank Isométrico Curto com Joelho no Banco",
-            "nameEn": "2.1 Short-Lever Copenhagen Adductor Plank",
-            "seriesRepsPt": "3x 15-20s / lado",
-            "seriesRepsEn": "3x 15-20s / side",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Prancha lateral com o joelho superior apoiado no banco (alavanca curta protetora). Eleva a bacia alinhada e mantém a perna inferior suspensa sem cair.",
-            "descriptionEn": "Side plank with top knee resting on gym bench (protective short lever). Elevate pelvis maintaining straight body line with bottom leg hovering.",
-            "imageSrc": "/exercises/copenhagen_plank_pro.svg"
-          },
-          {
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
             "descriptionEn": "Band anchored in front. Fully extend knee against elastic tension, firing VMO for 2s peak contraction before controlled return.",
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1219,8 +1353,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_nc",
-            "namePt": "2.2 Nordic Hamstring Curl Excêntrico Assistido com Banda",
-            "nameEn": "2.2 Band-Assisted Eccentric Nordic Hamstring Curl",
+            "namePt": "2.1 Nordic Hamstring Curl Excêntrico Assistido com Banda",
+            "nameEn": "2.1 Band-Assisted Eccentric Nordic Hamstring Curl",
             "seriesRepsPt": "3x 6 reps (Descida em 4s)",
             "seriesRepsEn": "3x 6 reps (4s slow fall)",
             "restPt": "45s",
@@ -1231,8 +1365,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "namePt": "2.2 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
+            "nameEn": "2.2 Long-Lever Hamstring Bridge w/ Peak Hold",
             "seriesRepsPt": "3x 8 reps (Pausa 3s)",
             "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
@@ -1242,16 +1376,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
           },
           {
-            "id": "ex_plc",
-            "namePt": "2.3 Flexão Prone de Isquiotibiais Unipodal com Banda",
-            "nameEn": "2.3 Single-Leg Prone Banded Hamstring Curl",
-            "seriesRepsPt": "2x 10 reps / perna",
-            "seriesRepsEn": "2x 10 reps / leg",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de barriga para baixo com banda elástica presa ao calcanhar e ancorada à frente. Flete o joelho trazendo o calcanhar ao glúteo, corrigindo assimetrias bilaterais.",
-            "descriptionEn": "Prone lying with elastic band looped around heel. Curl heel towards glutes with 2s peak squeeze, balancing single-leg strength deficits.",
-            "imageSrc": "/exercises/prone_leg_curl_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1300,8 +1446,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_trreach",
-            "namePt": "1.1 Rotação Torácica & Alcance Superior em Meio-Ajoelhado com Banda",
-            "nameEn": "1.1 Half-Kneeling Banded Thoracic Rotation & High Reach",
+            "namePt": "1.2 Rotação Torácica & Alcance Superior em Meio-Ajoelhado com Banda",
+            "nameEn": "1.2 Half-Kneeling Banded Thoracic Rotation & High Reach",
             "seriesRepsPt": "2x 8 reps / lado",
             "seriesRepsEn": "2x 8 reps / side",
             "restPt": "20s",
@@ -1323,10 +1469,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.1 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -1346,16 +1492,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_shortfoot_pro.svg"
           },
           {
-            "id": "ex_ws",
-            "namePt": "2.1 Wall Slides com Mini-Banda nos Pulsos (W para Y)",
-            "nameEn": "2.1 Wall Slides w/ Wrist Miniband (W-to-Y)",
-            "seriesRepsPt": "3x 8 reps (Pausa 2s no topo)",
-            "seriesRepsEn": "3x 8 reps (2s top hold)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Antebraços encostados à parede em 'W' com mini-banda tensa entre os pulsos. Desliza os braços para cima até formar um 'Y', empurrando ativamente a parede para ativar o serrátil anterior.",
-            "descriptionEn": "Forearms on wall in 'W' with miniband tension. Slide up into 'Y' pushing against wall to activate serratus and lower traps.",
-            "imageSrc": "/exercises/wall_slide_w_to_y_miniband_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1392,8 +1550,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_9090",
-            "namePt": "1.2 Transições 90/90 de Anca com Alcance Dinâmico",
-            "nameEn": "1.2 90/90 Hip Flow w/ Dynamic Reach",
+            "namePt": "1.1 Transições 90/90 de Anca com Alcance Dinâmico",
+            "nameEn": "1.1 90/90 Hip Flow w/ Dynamic Reach",
             "seriesRepsPt": "2x 6 reps / lado",
             "seriesRepsEn": "2x 6 reps / side",
             "restPt": "20s",
@@ -1439,8 +1597,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_sq",
-            "namePt": "2.3 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
-            "nameEn": "2.3 Hip-Dominant Split Squat w/ Knee Band",
+            "namePt": "2.2 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
+            "nameEn": "2.2 Hip-Dominant Split Squat w/ Knee Band",
             "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
             "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
             "restPt": "30s",
@@ -1450,16 +1608,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
           },
           {
-            "id": "ex_pallof",
-            "namePt": "2.1 Pallof Press Isométrico com Rotação Controlada do Tronco",
-            "nameEn": "2.1 Isometric Pallof Press w/ Controlled Torso Rotation",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "De pé com banda ancorada lateralmente na altura do peito. Empurra a banda à frente e resiste à força de rotação. Roda 15° de tronco mantendo bacia totalmente imóvel.",
-            "descriptionEn": "Standing with chest-high anchored band. Press band forward resisting lateral pull, performing micro 15° rotations with locked hips.",
-            "imageSrc": "/exercises/pallof_press_band_rotation_pro.svg"
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1543,8 +1713,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_wsb",
-            "namePt": "2.1 Wall-Sit Isométrico a 90° com Aperto de Bola (Analgesia Patelar)",
-            "nameEn": "2.1 90° Isometric Wall-Sit w/ Ball Squeeze (Patellar Analgesia)",
+            "namePt": "2.2 Wall-Sit Isométrico a 90° com Aperto de Bola (Analgesia Patelar)",
+            "nameEn": "2.2 90° Isometric Wall-Sit w/ Ball Squeeze (Patellar Analgesia)",
             "seriesRepsPt": "3x 35 segundos contínuos",
             "seriesRepsEn": "3x 35 continuous seconds",
             "restPt": "40s",
@@ -1554,16 +1724,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_sit_isometric_ball_pro.svg"
           },
           {
-            "id": "ex_tke",
-            "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
-            "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
-            "descriptionEn": "Band anchored in front. Fully extend knee against elastic tension, firing VMO for 2s peak contraction before controlled return.",
-            "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1635,8 +1817,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_sf",
-            "namePt": "2.2 Ativação da Abóbada Plantar & Short-Foot Isométrico",
-            "nameEn": "2.2 Plantar Arch & Short-Foot Isometric",
+            "namePt": "2.1 Ativação da Abóbada Plantar & Short-Foot Isométrico",
+            "nameEn": "2.1 Plantar Arch & Short-Foot Isometric",
             "seriesRepsPt": "3x 25 segundos / pé",
             "seriesRepsEn": "3x 25 seconds / foot",
             "restPt": "30s",
@@ -1647,10 +1829,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.2 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.2 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -1658,16 +1840,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_eversion_pro.svg"
           },
           {
-            "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
-            "seriesRepsPt": "3x 15 saltos rápidos",
-            "seriesRepsEn": "3x 15 quick hops",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
-            "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
-            "imageSrc": "/exercises/pogo_hops_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1750,21 +1944,9 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/copenhagen_plank_pro.svg"
           },
           {
-            "id": "ex_db",
-            "namePt": "2.2 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar)",
-            "nameEn": "2.2 Dead-Bug w/ Foot Miniband (Anti-Extension)",
-            "seriesRepsPt": "3x 8 reps / lado",
-            "seriesRepsEn": "3x 8 reps / side",
-            "restPt": "30s",
-            "restEn": "30s",
-            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços verticais. Estende perna e braço opostos mantendo a lombar colada ao solo, eliminando hiperlordose compensatória.",
-            "descriptionEn": "Supine with miniband around feet. Extend opposite arm and leg while pressing lumbar spine firmly into floor against extension.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
-          },
-          {
             "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
+            "namePt": "2.2 Pogo Hops Reativos no Solo (Rigidez Elástica)",
+            "nameEn": "2.2 Reactive Pogo Hops (Elastic Stiffness)",
             "seriesRepsPt": "3x 15 saltos rápidos",
             "seriesRepsEn": "3x 15 quick hops",
             "restPt": "35s",
@@ -1772,6 +1954,30 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
             "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
             "imageSrc": "/exercises/pogo_hops_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1820,8 +2026,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ad",
-            "namePt": "1.1 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
-            "nameEn": "1.1 Wall Banded Ankle Dorsiflexion Mobilization",
+            "namePt": "1.2 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
+            "nameEn": "1.2 Wall Banded Ankle Dorsiflexion Mobilization",
             "seriesRepsPt": "2x 10 pulsos / tornozelo",
             "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
@@ -1854,28 +2060,40 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_sit_isometric_ball_pro.svg"
           },
           {
-            "id": "ex_ps",
-            "namePt": "2.2 Poliquin Step-Up com Calcanhar Elevado em Bloco",
-            "nameEn": "2.2 Heel-Elevated Poliquin Step-Up",
-            "seriesRepsPt": "3x 8-10 reps / perna",
-            "seriesRepsEn": "3x 8-10 reps / leg",
-            "restPt": "30s",
-            "restEn": "30s",
-            "descriptionPt": "No bordo de um pequeno degrau com cunha no calcanhar. Desce a perna livre tocando apenas com o calcanhar no solo enquanto o joelho da frente avança em linha com o pé.",
-            "descriptionEn": "On low wedge with elevated heel. Lower opposite heel to gently touch floor while driving active knee forward, firing pure VMO fibers.",
-            "imageSrc": "/exercises/poliquin_step_up_pro.svg"
-          },
-          {
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
             "descriptionEn": "Band anchored in front. Fully extend knee against elastic tension, firing VMO for 2s peak contraction before controlled return.",
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -1912,8 +2130,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_9090",
-            "namePt": "1.2 Transições 90/90 de Anca com Alcance Dinâmico",
-            "nameEn": "1.2 90/90 Hip Flow w/ Dynamic Reach",
+            "namePt": "1.1 Transições 90/90 de Anca com Alcance Dinâmico",
+            "nameEn": "1.1 90/90 Hip Flow w/ Dynamic Reach",
             "seriesRepsPt": "2x 6 reps / lado",
             "seriesRepsEn": "2x 6 reps / side",
             "restPt": "20s",
@@ -1924,8 +2142,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_trreach",
-            "namePt": "1.1 Rotação Torácica & Alcance Superior em Meio-Ajoelhado com Banda",
-            "nameEn": "1.1 Half-Kneeling Banded Thoracic Rotation & High Reach",
+            "namePt": "1.2 Rotação Torácica & Alcance Superior em Meio-Ajoelhado com Banda",
+            "nameEn": "1.2 Half-Kneeling Banded Thoracic Rotation & High Reach",
             "seriesRepsPt": "2x 8 reps / lado",
             "seriesRepsEn": "2x 8 reps / side",
             "restPt": "20s",
@@ -1959,8 +2177,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "namePt": "2.2 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
+            "nameEn": "2.2 Long-Lever Hamstring Bridge w/ Peak Hold",
             "seriesRepsPt": "3x 8 reps (Pausa 3s)",
             "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
@@ -1970,16 +2188,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
           },
           {
-            "id": "ex_ptap",
-            "namePt": "2.2 Prancha Alta com Toque nos Ombros e Mini-Banda",
-            "nameEn": "2.2 High Plank Shoulder Taps w/ Miniband",
-            "seriesRepsPt": "3x 8 toques / lado",
-            "seriesRepsEn": "3x 8 taps / side",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto sem rodar a bacia ou colapsar o cotovelo de apoio. Proteção para quedas e choques.",
-            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid fall resilience.",
-            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2051,8 +2281,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_nc",
-            "namePt": "2.2 Nordic Hamstring Curl Excêntrico Assistido com Banda",
-            "nameEn": "2.2 Band-Assisted Eccentric Nordic Hamstring Curl",
+            "namePt": "2.1 Nordic Hamstring Curl Excêntrico Assistido com Banda",
+            "nameEn": "2.1 Band-Assisted Eccentric Nordic Hamstring Curl",
             "seriesRepsPt": "3x 6 reps (Descida em 4s)",
             "seriesRepsEn": "3x 6 reps (4s slow fall)",
             "restPt": "45s",
@@ -2062,21 +2292,9 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/assisted_nordic_curl_band_pro.svg"
           },
           {
-            "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos",
-            "nameEn": "2.3 Monster Walk w/ Miniband around Knees",
-            "seriesRepsPt": "2x 10 passos / direção",
-            "seriesRepsEn": "2x 10 steps / direction",
-            "restPt": "30s",
-            "restEn": "30s",
-            "descriptionPt": "Em posição atlética de semi-agachamento com mini-banda logo acima dos joelhos. Passos diagonais curtos mantendo joelhos e pés alinhados, ativando glúteo médio e rotadores externos.",
-            "descriptionEn": "Athletic semi-squat stance with miniband above knees. Short diagonal steps keeping knees pressed wide, firing gluteus medius.",
-            "imageSrc": "/exercises/monster_walk_band_pro.svg"
-          },
-          {
             "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
+            "namePt": "2.2 Pogo Hops Reativos no Solo (Rigidez Elástica)",
+            "nameEn": "2.2 Reactive Pogo Hops (Elastic Stiffness)",
             "seriesRepsPt": "3x 15 saltos rápidos",
             "seriesRepsEn": "3x 15 quick hops",
             "restPt": "35s",
@@ -2084,6 +2302,30 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
             "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
             "imageSrc": "/exercises/pogo_hops_pro.svg"
+          },
+          {
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2167,10 +2409,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.2 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.2 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -2178,16 +2420,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_eversion_pro.svg"
           },
           {
-            "id": "ex_sf",
-            "namePt": "2.2 Ativação da Abóbada Plantar & Short-Foot Isométrico",
-            "nameEn": "2.2 Plantar Arch & Short-Foot Isometric",
-            "seriesRepsPt": "3x 25 segundos / pé",
-            "seriesRepsEn": "3x 25 seconds / foot",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Pé descalço apoiado no solo. Encurta o pé puxando o metatarso em direção ao calcanhar sem dobrar os dedos. Ergue o arco plantar e estabiliza o astrágalo e navicular.",
-            "descriptionEn": "Barefoot tripod contact. Shorten foot pulling metatarsal heads towards heel without curling toes, elevating medial arch.",
-            "imageSrc": "/exercises/ankle_shortfoot_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2236,8 +2490,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ad",
-            "namePt": "1.1 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
-            "nameEn": "1.1 Wall Banded Ankle Dorsiflexion Mobilization",
+            "namePt": "1.2 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
+            "nameEn": "1.2 Wall Banded Ankle Dorsiflexion Mobilization",
             "seriesRepsPt": "2x 10 pulsos / tornozelo",
             "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
@@ -2259,10 +2513,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.1 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -2282,16 +2536,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_shortfoot_pro.svg"
           },
           {
-            "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
-            "seriesRepsPt": "3x 15 saltos rápidos",
-            "seriesRepsEn": "3x 15 quick hops",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
-            "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
-            "imageSrc": "/exercises/pogo_hops_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2340,8 +2606,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_at",
-            "namePt": "1.1 Tração Articular Anterior de Tornozelo com Banda",
-            "nameEn": "1.1 Banded Ankle Joint Traction",
+            "namePt": "1.2 Tração Articular Anterior de Tornozelo com Banda",
+            "nameEn": "1.2 Banded Ankle Joint Traction",
             "seriesRepsPt": "2x 10 pulsos / tornozelo",
             "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
@@ -2363,8 +2629,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_nc",
-            "namePt": "2.2 Nordic Hamstring Curl Excêntrico Assistido com Banda",
-            "nameEn": "2.2 Band-Assisted Eccentric Nordic Hamstring Curl",
+            "namePt": "2.1 Nordic Hamstring Curl Excêntrico Assistido com Banda",
+            "nameEn": "2.1 Band-Assisted Eccentric Nordic Hamstring Curl",
             "seriesRepsPt": "3x 6 reps (Descida em 4s)",
             "seriesRepsEn": "3x 6 reps (4s slow fall)",
             "restPt": "45s",
@@ -2375,10 +2641,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.2 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.2 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -2386,16 +2652,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_eversion_pro.svg"
           },
           {
-            "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
-            "seriesRepsPt": "3x 8 reps (Pausa 3s)",
-            "seriesRepsEn": "3x 8 reps (3s hold)",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Deitada de costas com calcanhares no solo afastados das nádegas (joelhos a ~140°). Eleva a bacia contraindo intensamente o bíceps femoral distal com retroversão pélvica.",
-            "descriptionEn": "Supine with heels placed far from glutes (knee angle ~140°). Elevate hips with posterior pelvic tilt targeting distal biceps femoris.",
-            "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2481,8 +2759,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -2490,16 +2768,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
-            "seriesRepsPt": "3x 15 saltos rápidos",
-            "seriesRepsEn": "3x 15 quick hops",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
-            "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
-            "imageSrc": "/exercises/pogo_hops_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2585,8 +2875,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -2594,16 +2884,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_cp",
-            "namePt": "2.1 Copenhagen Plank Isométrico Curto com Joelho no Banco",
-            "nameEn": "2.1 Short-Lever Copenhagen Adductor Plank",
-            "seriesRepsPt": "3x 15-20s / lado",
-            "seriesRepsEn": "3x 15-20s / side",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Prancha lateral com o joelho superior apoiado no banco (alavanca curta protetora). Eleva a bacia alinhada e mantém a perna inferior suspensa sem cair.",
-            "descriptionEn": "Side plank with top knee resting on gym bench (protective short lever). Elevate pelvis maintaining straight body line with bottom leg hovering.",
-            "imageSrc": "/exercises/copenhagen_plank_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2689,8 +2991,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -2698,16 +3000,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_sq",
-            "namePt": "2.3 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
-            "nameEn": "2.3 Hip-Dominant Split Squat w/ Knee Band",
-            "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
-            "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Passada estável com inclinação anterior do tronco a 45°. Foco na dominância glútea e alinhamento rígido joelho-segundo dedo do pé, eliminando qualquer colapso em valgo dinâmico.",
-            "descriptionEn": "Staggered stance with 45° forward torso hinge. Heavy glute recruitment and strict knee tracking over 2nd toe, eradicating dynamic valgus collapse.",
-            "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2793,8 +3107,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -2802,16 +3116,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
-            "seriesRepsPt": "3x 8 reps (Pausa 3s)",
-            "seriesRepsEn": "3x 8 reps (3s hold)",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Deitada de costas com calcanhares no solo afastados das nádegas (joelhos a ~140°). Eleva a bacia contraindo intensamente o bíceps femoral distal com retroversão pélvica.",
-            "descriptionEn": "Supine with heels placed far from glutes (knee angle ~140°). Elevate hips with posterior pelvic tilt targeting distal biceps femoris.",
-            "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2897,8 +3223,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -2906,16 +3232,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
-            "seriesRepsPt": "3x 8 reps (Pausa 3s)",
-            "seriesRepsEn": "3x 8 reps (3s hold)",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Deitada de costas com calcanhares no solo afastados das nádegas (joelhos a ~140°). Eleva a bacia contraindo intensamente o bíceps femoral distal com retroversão pélvica.",
-            "descriptionEn": "Supine with heels placed far from glutes (knee angle ~140°). Elevate hips with posterior pelvic tilt targeting distal biceps femoris.",
-            "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -2952,8 +3290,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_9090",
-            "namePt": "1.2 Transições 90/90 de Anca com Alcance Dinâmico",
-            "nameEn": "1.2 90/90 Hip Flow w/ Dynamic Reach",
+            "namePt": "1.1 Transições 90/90 de Anca com Alcance Dinâmico",
+            "nameEn": "1.1 90/90 Hip Flow w/ Dynamic Reach",
             "seriesRepsPt": "2x 6 reps / lado",
             "seriesRepsEn": "2x 6 reps / side",
             "restPt": "20s",
@@ -2999,8 +3337,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "namePt": "2.2 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
+            "nameEn": "2.2 Long-Lever Hamstring Bridge w/ Peak Hold",
             "seriesRepsPt": "3x 8 reps (Pausa 3s)",
             "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
@@ -3011,15 +3349,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos",
-            "nameEn": "2.3 Monster Walk w/ Miniband around Knees",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Em posição atlética de semi-agachamento com mini-banda logo acima dos joelhos. Passos diagonais curtos mantendo joelhos e pés alinhados, ativando glúteo médio e rotadores externos.",
-            "descriptionEn": "Athletic semi-squat stance with miniband above knees. Short diagonal steps keeping knees pressed wide, firing gluteus medius.",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
             "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -3068,8 +3418,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_ad",
-            "namePt": "1.1 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
-            "nameEn": "1.1 Wall Banded Ankle Dorsiflexion Mobilization",
+            "namePt": "1.2 Dorsiflexão Dinâmica de Tornozelo na Parede com Banda de Deslize",
+            "nameEn": "1.2 Wall Banded Ankle Dorsiflexion Mobilization",
             "seriesRepsPt": "2x 10 pulsos / tornozelo",
             "seriesRepsEn": "2x 10 pulses / ankle",
             "restPt": "20s",
@@ -3077,18 +3427,6 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "descriptionPt": "Em lunge virada para a parede com banda elástica a puxar o astrágalo para trás. Avança o joelho além da ponta dos dedos mantendo calcanhar colado ao chão.",
             "descriptionEn": "Half kneeling facing wall with band pulling talus posterior. Drive knee past toes keeping heel firmly grounded.",
             "imageSrc": "/exercises/ankle_dorsiflexion_band_pro.svg"
-          },
-          {
-            "id": "ex_ac",
-            "namePt": "1.2 Rotações Circulares Ativas de Tornozelo (Ankle CARs)",
-            "nameEn": "1.2 Controlled Articular Rotations (Ankle CARs)",
-            "seriesRepsPt": "2x 6 círculos / sentido",
-            "seriesRepsEn": "2x 6 circles / direction",
-            "restPt": "20s",
-            "restEn": "20s",
-            "descriptionPt": "Joelho estabilizado com as mãos. Desenha o maior círculo possível com a ponta do pé sem rodar a tíbia. Explora dorsiflexão, inversão, flexão plantar e eversão máxima.",
-            "descriptionEn": "Knee stabilized with arms. Draw maximal controlled circle with foot exploring full articular margins without tibial rotation.",
-            "imageSrc": "/exercises/ankle_cars_pro.svg"
           }
         ]
       },
@@ -3103,10 +3441,10 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_ae",
-            "namePt": "2.1 Eversão Resistida com Banda (Peroneais)",
-            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal)",
-            "seriesRepsPt": "3x 12-15 reps / pé",
-            "seriesRepsEn": "3x 12-15 reps / foot",
+            "namePt": "2.1 Eversão Resistida com Banda (Reforço dos Peroneais)",
+            "nameEn": "2.1 Banded Resisted Ankle Eversion (Peroneal Strengthening)",
+            "seriesRepsPt": "3x 12-15 reps / pé (Pausa 2s)",
+            "seriesRepsEn": "3x 12-15 reps / foot (2s hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada lateralmente. Roda a planta do pé para fora contra a resistência elástica. Ativação dos estabilizadores dinâmicos contra a entorse em inversão.",
@@ -3126,16 +3464,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/ankle_shortfoot_pro.svg"
           },
           {
-            "id": "ex_ph",
-            "namePt": "2.3 Pogo Hops Reativos no Solo (Rigidez Elástica)",
-            "nameEn": "2.3 Reactive Pogo Hops (Elastic Stiffness)",
-            "seriesRepsPt": "3x 15 saltos rápidos",
-            "seriesRepsEn": "3x 15 quick hops",
-            "restPt": "35s",
-            "restEn": "35s",
-            "descriptionPt": "Saltos curtos e reativos apoiando no terço anterior do pé sem deixar os calcanhares tocarem no solo. Joelhos quase esticados para gerar rigidez elástica pura.",
-            "descriptionEn": "Fast, stiff vertical pogo hops on forefoot with minimal knee bend. Trains tendon stiffness and reactive stabilization.",
-            "imageSrc": "/exercises/pogo_hops_pro.svg"
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -3221,8 +3571,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "id": "ex_tke",
             "namePt": "2.2 Terminal Knee Extension (TKE) com Banda Elástica",
             "nameEn": "2.2 Terminal Knee Extension (TKE) w/ Elastic Band",
-            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s)",
-            "seriesRepsEn": "3x 12 reps / leg (2s hold)",
+            "seriesRepsPt": "3x 12 reps / perna (Pausa 2s no bloqueio)",
+            "seriesRepsEn": "3x 12 reps / leg (2s peak hold)",
             "restPt": "30s",
             "restEn": "30s",
             "descriptionPt": "Banda ancorada em frente logo acima da linha articular. Estende totalmente o joelho contra a resistência elástica, esmagando o vasto medial oblíquo (VMO) no bloqueio terminal.",
@@ -3230,16 +3580,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/terminal_knee_extension_band_pro.svg"
           },
           {
-            "id": "ex_sq",
-            "namePt": "2.3 Split Squat Hip-Dominant (Anti-Valgo com Banda)",
-            "nameEn": "2.3 Hip-Dominant Split Squat w/ Knee Band",
-            "seriesRepsPt": "2x 8 reps / perna (Descida lenta 3s)",
-            "seriesRepsEn": "2x 8 reps / leg (3s slow descent)",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Passada estável com inclinação anterior do tronco a 45°. Foco na dominância glútea e alinhamento rígido joelho-segundo dedo do pé, eliminando qualquer colapso em valgo dinâmico.",
-            "descriptionEn": "Staggered stance with 45° forward torso hinge. Heavy glute recruitment and strict knee tracking over 2nd toe, eradicating dynamic valgus collapse.",
-            "imageSrc": "/exercises/split_squat_hip_dominant_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -3311,8 +3673,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         "exercises": [
           {
             "id": "ex_nc",
-            "namePt": "2.2 Nordic Hamstring Curl Excêntrico Assistido com Banda",
-            "nameEn": "2.2 Band-Assisted Eccentric Nordic Hamstring Curl",
+            "namePt": "2.1 Nordic Hamstring Curl Excêntrico Assistido com Banda",
+            "nameEn": "2.1 Band-Assisted Eccentric Nordic Hamstring Curl",
             "seriesRepsPt": "3x 6 reps (Descida em 4s)",
             "seriesRepsEn": "3x 6 reps (4s slow fall)",
             "restPt": "45s",
@@ -3323,8 +3685,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_llb",
-            "namePt": "2.1 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
-            "nameEn": "2.1 Long-Lever Hamstring Bridge w/ Peak Hold",
+            "namePt": "2.2 Ponte Isquiotibial Long-Lever com Pausa Isométrica",
+            "nameEn": "2.2 Long-Lever Hamstring Bridge w/ Peak Hold",
             "seriesRepsPt": "3x 8 reps (Pausa 3s)",
             "seriesRepsEn": "3x 8 reps (3s hold)",
             "restPt": "35s",
@@ -3334,16 +3696,28 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/long_lever_bridge_dumbbell_pro.svg"
           },
           {
-            "id": "ex_plc",
-            "namePt": "2.3 Flexão Prone de Isquiotibiais Unipodal com Banda",
-            "nameEn": "2.3 Single-Leg Prone Banded Hamstring Curl",
-            "seriesRepsPt": "2x 10 reps / perna",
-            "seriesRepsEn": "2x 10 reps / leg",
+            "id": "ex_mw",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de barriga para baixo com banda elástica presa ao calcanhar e ancorada à frente. Flete o joelho trazendo o calcanhar ao glúteo, corrigindo assimetrias bilaterais.",
-            "descriptionEn": "Prone lying with elastic band looped around heel. Curl heel towards glutes with 2s peak squeeze, balancing single-leg strength deficits.",
-            "imageSrc": "/exercises/prone_leg_curl_band_pro.svg"
+            "descriptionPt": "Em semi-agachamento atlético com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2º dedo do pé. Ativação pura de glúteo médio e rotadores externos para impedir o colapso em valgo dinâmico.",
+            "descriptionEn": "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
+            "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
           }
         ]
       }
@@ -3361,7 +3735,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia."
+    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Ativação Neuromuscular Anti-Valgo."
   },
   "athlete_ath-3_plan_indiv_ath-3_cartaxo": {
     "id": "athlete_ath-3_plan_indiv_ath-3_cartaxo",
@@ -3372,7 +3746,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço rotuliano e desenvolvimento de força escapular/membro superior."
+    "notes": "Prioridade Clínica: Reforço rotuliano e desenvolvimento de força escapular + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-4_plan_indiv_ath-4_eva": {
     "id": "athlete_ath-4_plan_indiv_ath-4_eva",
@@ -3383,7 +3757,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Otimização de estabilidade pélvica, adutores e cadeia posterior."
+    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Ativação Neuromuscular Anca e Core."
   },
   "athlete_ath-5_plan_indiv_ath-5_faith": {
     "id": "athlete_ath-5_plan_indiv_ath-5_faith",
@@ -3394,7 +3768,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção do menisco medial e alinhamento rotuliano em rotação."
+    "notes": "Prioridade Clínica: Proteção do menisco medial e alinhamento rotuliano + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-6_plan_indiv_ath-6_lara": {
     "id": "athlete_ath-6_plan_indiv_ath-6_lara",
@@ -3405,7 +3779,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão neural ciática e reforço excêntrico do bíceps femoral."
+    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-7_plan_indiv_ath-7_laura_patrício": {
     "id": "athlete_ath-7_plan_indiv_ath-7_laura_patrício",
@@ -3416,7 +3790,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade ligamentar da sindesmose e proteção da cintura escapular/cotovelo."
+    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-8_plan_indiv_ath-8_luana_correia": {
     "id": "athlete_ath-8_plan_indiv_ath-8_luana_correia",
@@ -3427,7 +3801,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Reforço preventivo de adutores, split squats e controlo anti-rotação."
+    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-9_plan_indiv_ath-9_luana_macedo": {
     "id": "athlete_ath-9_plan_indiv_ath-9_luana_macedo",
@@ -3438,7 +3812,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão meniscal e estabilidade escapular de guarda-redes."
+    "notes": "Prioridade Clínica: Descompressão meniscal e estabilidade escapular + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-10_plan_indiv_ath-10_magui": {
     "id": "athlete_ath-10_plan_indiv_ath-10_magui",
@@ -3449,7 +3823,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé e peroneais."
+    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-11_plan_indiv_ath-11_malta": {
     "id": "athlete_ath-11_plan_indiv_ath-11_malta",
@@ -3460,7 +3834,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Core anti-extensão, adutores e reatividade elástica sem fadiga respiratória."
+    "notes": "Perfil sem lesões: Core anti-extensão, adutores e reatividade elástica + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-12_plan_indiv_ath-12_manu": {
     "id": "athlete_ath-12_plan_indiv_ath-12_manu",
@@ -3471,7 +3845,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e reforço do VMO sem impacto."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-13_plan_indiv_ath-13_marthe": {
     "id": "athlete_ath-13_plan_indiv_ath-13_marthe",
@@ -3482,7 +3856,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil norueguês de potência: Adutores dinâmicos, pontes de isquios e estabilidade de prancha."
+    "notes": "Perfil de potência: Adutores dinâmicos, pontes de isquios e estabilidade + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-14_plan_indiv_ath-14_meriva": {
     "id": "athlete_ath-14_plan_indiv_ath-14_meriva",
@@ -3493,7 +3867,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço excêntrico de cadeia posterior e ativação de rotadores de anca."
+    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-15_plan_indiv_ath-15_nicole": {
     "id": "athlete_ath-15_plan_indiv_ath-15_nicole",
@@ -3504,7 +3878,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo e combate a microlesões."
+    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-16_plan_indiv_ath-16_ramos": {
     "id": "athlete_ath-16_plan_indiv_ath-16_ramos",
@@ -3515,7 +3889,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reconstrução dos peroneais, tração articular de retropé e rigidez."
+    "notes": "Prioridade Clínica: Reconstrução dos peroneais, tração articular de retropé + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-17_plan_indiv_ath-17_ribeiro": {
     "id": "athlete_ath-17_plan_indiv_ath-17_ribeiro",
@@ -3526,7 +3900,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural e estabilidade de tornozelo."
+    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-18_plan_indiv_ath-18_rita_r": {
     "id": "athlete_ath-18_plan_indiv_ath-18_rita_r",
@@ -3537,7 +3911,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Bloqueio do joelho em ângulos seguros (sem hiperextensão) e proprioceção de tornozelo."
+    "notes": "Prioridade Clínica: Bloqueio articular seguro e proprioceção de tornozelo + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-19_plan_indiv_ath-19_sara_alves": {
     "id": "athlete_ath-19_plan_indiv_ath-19_sara_alves",
@@ -3548,7 +3922,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força adutora pélvica."
+    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-20_plan_indiv_ath-20_sara_teixeira": {
     "id": "athlete_ath-20_plan_indiv_ath-20_sara_teixeira",
@@ -3559,7 +3933,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica posterior e extensão terminal."
+    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-21_plan_indiv_ath-21_serena": {
     "id": "athlete_ath-21_plan_indiv_ath-21_serena",
@@ -3570,7 +3944,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Screw-home mechanism, força isométrica anterior e cadeia posterior."
+    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-22_plan_indiv_ath-22_simães": {
     "id": "athlete_ath-22_plan_indiv_ath-22_simães",
@@ -3581,7 +3955,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana, ativação do VMO e cadeia posterior sem impacto."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana e ativação do VMO + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-23_plan_indiv_ath-23_ticha": {
     "id": "athlete_ath-23_plan_indiv_ath-23_ticha",
@@ -3592,7 +3966,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Adutores em alavanca curta, cadeia posterior e estabilidade de anca."
+    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-24_plan_indiv_ath-24_tita": {
     "id": "athlete_ath-24_plan_indiv_ath-24_tita",
@@ -3603,7 +3977,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais e força intrínseca do pé."
+    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-25_plan_indiv_ath-25_verónica": {
     "id": "athlete_ath-25_plan_indiv_ath-25_verónica",
@@ -3614,7 +3988,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção bilateral de LCA, alinhamento axial fémoro-tibial e força excêntrica."
+    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-27_plan_indiv_ath-27_chelsea": {
     "id": "athlete_ath-27_plan_indiv_ath-27_chelsea",
@@ -3625,7 +3999,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Correção da assimetria bilateral de isquiotibiais e força excêntrica nórdica."
+    "notes": "Prioridade Clínica: Correção de assimetria bilateral e força excêntrica nórdica + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-1_prev_joelho_lca_menisco": {
     "id": "athlete_ath-1_prev_joelho_lca_menisco",
@@ -3636,7 +4010,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia."
+    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Ativação Neuromuscular Anti-Valgo."
   },
   "athlete_ath-4_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-4_prev_adutores_virilha_copenhagen",
@@ -3647,7 +4021,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Otimização de estabilidade pélvica, adutores e cadeia posterior."
+    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Ativação Neuromuscular Anca e Core."
   },
   "athlete_ath-6_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-6_prev_isquios_quads_excentrico",
@@ -3658,7 +4032,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão neural ciática e reforço excêntrico do bíceps femoral."
+    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-7_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-7_prev_tornozelo_sindesmose_peroneais",
@@ -3669,7 +4043,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade ligamentar da sindesmose e proteção da cintura escapular/cotovelo."
+    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-8_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-8_prev_adutores_virilha_copenhagen",
@@ -3680,7 +4054,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Reforço preventivo de adutores, split squats e controlo anti-rotação."
+    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-10_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-10_prev_tornozelo_sindesmose_peroneais",
@@ -3691,7 +4065,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé e peroneais."
+    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-12_prev_rotuliano_patelar_bipartida": {
     "id": "athlete_ath-12_prev_rotuliano_patelar_bipartida",
@@ -3702,7 +4076,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e reforço do VMO sem impacto."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-14_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-14_prev_isquios_quads_excentrico",
@@ -3713,7 +4087,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço excêntrico de cadeia posterior e ativação de rotadores de anca."
+    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-15_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-15_prev_tornozelo_sindesmose_peroneais",
@@ -3724,7 +4098,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo e combate a microlesões."
+    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-17_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-17_prev_isquios_quads_excentrico",
@@ -3735,7 +4109,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural e estabilidade de tornozelo."
+    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-19_prev_joelho_lca_menisco": {
     "id": "athlete_ath-19_prev_joelho_lca_menisco",
@@ -3746,7 +4120,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força adutora pélvica."
+    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-20_prev_joelho_lca_menisco": {
     "id": "athlete_ath-20_prev_joelho_lca_menisco",
@@ -3757,7 +4131,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica posterior e extensão terminal."
+    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-21_prev_joelho_lca_menisco": {
     "id": "athlete_ath-21_prev_joelho_lca_menisco",
@@ -3768,7 +4142,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Screw-home mechanism, força isométrica anterior e cadeia posterior."
+    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-23_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-23_prev_adutores_virilha_copenhagen",
@@ -3779,7 +4153,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Adutores em alavanca curta, cadeia posterior e estabilidade de anca."
+    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-24_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-24_prev_tornozelo_sindesmose_peroneais",
@@ -3790,7 +4164,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais e força intrínseca do pé."
+    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Ativação Neuromuscular de Anca e Core."
   },
   "athlete_ath-25_prev_joelho_lca_menisco": {
     "id": "athlete_ath-25_prev_joelho_lca_menisco",
@@ -3801,13 +4175,21 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção bilateral de LCA, alinhamento axial fémoro-tibial e força excêntrica."
+    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Ativação Neuromuscular de Anca e Core."
   }
 };
 
 /**
- * Goalkeeper exemption (no longer blocks goalkeepers from receiving their specific GK plans)
+ * Strict goalkeeper exemption: Carol and Payton must NEVER have automated plans
  */
 export function isExcludedFromAutoPlans(athlete: { id: string; name: string }): boolean {
-  return false;
+  const upper = (athlete.name || '').toUpperCase().trim();
+  return (
+    upper === 'CAROL' ||
+    upper === 'PAYTON' ||
+    upper.includes('CAROL') ||
+    upper.includes('PAYTON') ||
+    athlete.id === 'ath-2' ||
+    athlete.id === 'ath-26'
+  );
 }
