@@ -1,148 +1,6 @@
 import { MobilityPlan } from "./types";
 
-export const FOAM_ROLLER_RECOVERY_PLAN: MobilityPlan = {
-  "id": "libertacao_miofascial_rolo",
-  "titlePt": "Rotina de Libertação Miofascial com Rolo (Foam Rolling & Recovery)",
-  "titleEn": "Self-Myofascial Release Foam Roller Routine (Full Body SMR & Recovery)",
-  "categoryPt": "Recuperação & Mobilidade • Libertação Miofascial com Rolo",
-  "categoryEn": "Recovery & Mobility • Self-Myofascial Release Foam Rolling",
-  "group": "inferiores",
-  "groupBadgePt": "🪵 Rolo Miofascial • SMR",
-  "groupBadgeEn": "🪵 Foam Roller • SMR",
-  "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • DEPARTAMENTO DE PERFORMANCE & RECUPERAÇÃO",
-  "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • PERFORMANCE & RECOVERY DEPARTMENT",
-  "targetPosition": "all",
-  "durationMinutes": 15,
-  "durationTextPt": "15 MIN",
-  "durationTextEn": "15 MIN",
-  "warmupPt": "Respiração diafragmática profunda e identificação de pontos de tensão / trigger points.",
-  "warmupEn": "Deep diaphragmatic breathing and identification of muscular trigger points.",
-  "finisherPt": "Mobilização articular global suave e hidratação.",
-  "finisherEn": "Gentle full-body mobility flow and post-session hydration.",
-  "blocks": [
-    {
-      "id": "foam_roller_sec01_posterior",
-      "number": "01",
-      "titlePt": "SECÇÃO 1: CADEIA POSTERIOR & GLÚTEOS (ROLO MIOFASCIAL)",
-      "titleEn": "SECTION 1: POSTERIOR CHAIN & GLUTES (FOAM ROLLER)",
-      "durationMinutes": 7,
-      "durationTextPt": "7 MIN",
-      "durationTextEn": "7 MIN",
-      "exercises": [
-        {
-          "id": "smr_calves",
-          "namePt": "1.1 Libertação Miofascial de Gémeos e Solear",
-          "nameEn": "1.1 Calves & Soleus Foam Rolling",
-          "seriesRepsPt": "2x 45-60s / perna",
-          "seriesRepsEn": "2x 45-60s / leg",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Sentada com as mãos a suportar o tronco atrás. Rolo colocado sob a barriga da perna. Desliza lentamente do tendão de Aquiles até à fossa poplítea. Roda a perna internamente e externamente para atingir todas as porções dos gémeos.",
-          "descriptionEn": "Seated with hands supporting weight behind. Foam roller under calf belly. Slowly roll from Achilles tendon up to knee crease. Rotate foot in and out to target medial and lateral gastrocnemius heads.",
-          "imageSrc": "/exercises/foam_roller_calves_pro.svg"
-        },
-        {
-          "id": "smr_hamstrings",
-          "namePt": "1.2 Libertação Miofascial de Isquiotibiais",
-          "nameEn": "1.2 Hamstrings Foam Rolling",
-          "seriesRepsPt": "2x 45-60s / perna",
-          "seriesRepsEn": "2x 45-60s / leg",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Mãos apoiadas no chão atrás com bacia ligeiramente elevada. Rolo sob a face posterior da coxa. Desliza suavemente desde a tuberosidade isquiática (glúteo) até 2 cm acima da dobra do joelho, insistindo nos pontos de maior rigidez.",
-          "descriptionEn": "Hands supported behind with hips slightly lifted. Foam roller under posterior thigh. Roll smoothly from ischial tuberosity down to just above knee crease, pausing on tight trigger points.",
-          "imageSrc": "/exercises/foam_roller_hamstrings_pro.svg"
-        },
-        {
-          "id": "smr_glutes_piriformis",
-          "namePt": "1.3 Libertação Miofascial de Glúteos & Piriforme (Figura-4)",
-          "nameEn": "1.3 Glutes & Piriformis Foam Rolling (Figure-4)",
-          "seriesRepsPt": "2x 45-60s / lado",
-          "seriesRepsEn": "2x 45-60s / side",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Sentada sobre o rolo. Cruza o tornozelo direito sobre o joelho esquerdo em formato de 4 e inclina o corpo ligeiramente para o glúteo direito. Faz passagens curtas e lentas para descomprimir o piriforme e rotadores externos profundos.",
-          "descriptionEn": "Sit directly on roller. Cross right ankle over left knee in a figure-4 and lean slightly onto right buttock. Use short, slow passes to release the piriformis and deep lateral hip rotators.",
-          "imageSrc": "/exercises/foam_roller_glutes_piriformis_pro.svg"
-        },
-        {
-          "id": "smr_itband",
-          "namePt": "1.4 Libertação do Trato Ílio-Tibial & TFL",
-          "nameEn": "1.4 IT Band & Tensor Fasciae Latae (TFL)",
-          "seriesRepsPt": "2x 45s / lado",
-          "seriesRepsEn": "2x 45s / side",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Deitada de lado em prancha sobre o antebraço. Rolo sob a face lateral da coxa. Perna superior cruzada à frente com pé no chão para descarregar o excesso de peso. Rola devagar desde a crista ilíaca (TFL) até à parte lateral do fémur superior.",
-          "descriptionEn": "Side-lying forearm plank with roller under lateral thigh. Cross top leg over in front with foot on floor to modulate pressure. Roll slowly along upper lateral thigh and TFL area.",
-          "imageSrc": "/exercises/foam_roller_lat_itband_pro.svg"
-        }
-      ]
-    },
-    {
-      "id": "foam_roller_sec02_anterior",
-      "number": "02",
-      "titlePt": "SECÇÃO 2: CADEIA ANTERIOR, ADUTORES & COLUNA TORÁCICA",
-      "titleEn": "SECTION 2: ANTERIOR CHAIN, ADDUCTORS & THORACIC SPINE",
-      "durationMinutes": 8,
-      "durationTextPt": "8 MIN",
-      "durationTextEn": "8 MIN",
-      "exercises": [
-        {
-          "id": "smr_quadriceps",
-          "namePt": "2.1 Libertação Miofascial de Quadricípites & Reto Femoral",
-          "nameEn": "2.1 Quadriceps & Rectus Femoris Foam Rolling",
-          "seriesRepsPt": "2x 45-60s / perna",
-          "seriesRepsEn": "2x 45-60s / leg",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Deitada de barriga para baixo em prancha baixa de antebraços. Rolo posicionado sob a parte anterior da coxa. Desliza controladamente desde a anca anterior até à parte superior da rótula. Respira fundo e mantém o core ligeiramente ativo.",
-          "descriptionEn": "Prone forearm plank with roller under front of thighs. Roll smoothly from hip crease down to just above patella. Maintain steady breathing and mild abdominal bracing to prevent lower back arching.",
-          "imageSrc": "/exercises/foam_roller_quadriceps_pro.svg"
-        },
-        {
-          "id": "smr_adductors",
-          "namePt": "2.2 Libertação Miofascial de Adutores / Virilha",
-          "nameEn": "2.2 Adductor & Inner Thigh Foam Rolling",
-          "seriesRepsPt": "2x 45-60s / perna",
-          "seriesRepsEn": "2x 45-60s / leg",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Deitada de barriga para baixo com uma perna fletida e aberta ao lado a 90°. Rolo paralelo ao corpo sob a face interna da coxa. Desliza a coxa lateralmente, passando desde a virilha/sínfise até à região medial do joelho.",
-          "descriptionEn": "Prone position with one leg opened to side at 90° knee angle. Roller oriented parallel to torso under inner thigh. Roll from groin attachment down towards medial knee.",
-          "imageSrc": "/exercises/foam_roller_adductors_pro.svg"
-        },
-        {
-          "id": "smr_hip_flexors",
-          "namePt": "2.3 Libertação dos Flexores da Anca (Psoas & TFL)",
-          "nameEn": "2.3 Hip Flexors & Psoas Foam Rolling",
-          "seriesRepsPt": "2x 45s / lado",
-          "seriesRepsEn": "2x 45s / side",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Deitada de bruços ligeiramente inclinada para um lado. Coloca o rolo logo abaixo da espinha ilíaca ântero-superior (crista ilíaca da anca). Faz micro-passagens lentas para aliviar a tensão profunda dos flexores da anca.",
-          "descriptionEn": "Prone tilted slightly to one side. Place roller just below the anterior superior iliac spine (ASIS). Perform small, controlled passes to release deep hip flexor tension.",
-          "imageSrc": "/exercises/foam_roller_hip_flexors_pro.svg"
-        },
-        {
-          "id": "smr_thoracic_spine",
-          "namePt": "2.4 Libertação & Extensão da Coluna Torácica",
-          "nameEn": "2.4 Thoracic Spine Extension & Foam Rolling",
-          "seriesRepsPt": "2x 60s",
-          "seriesRepsEn": "2x 60s",
-          "restPt": "15s transição",
-          "restEn": "15s transition",
-          "descriptionPt": "Deitada de costas com joelhos dobrados e pés apoiados no chão. Mãos atrás da cabeça a suportar o pescoço (sem puxar). Rolo colocado a meio das costas. Desliza da zona média torácica até à base das omoplatas, realizando pequenas extensões torácicas no final de cada passagem.",
-          "descriptionEn": "Supine with knees bent and feet flat on floor. Hands cradling head to support cervical spine. Roller under mid-back. Roll from mid-thoracic up to scapulae, gently extending over roller on exhales.",
-          "imageSrc": "/exercises/foam_roller_thoracic_spine_pro.svg"
-        }
-      ]
-    }
-  ]
-};
-
 export const ALL_NINE_PLANS: MobilityPlan[] = [
-  FOAM_ROLLER_RECOVERY_PLAN,
   {
     id: "competitivo_maquinas_pesos_livres",
     titlePt: "Plano de Treino \u2014 Competitivo (M\u00e1quinas & Pesos Livres)",
@@ -1920,6 +1778,168 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
             descriptionPt: "6 voltas intervaladas: 45s a alta cad\u00eancia (90-100 RPM em Z3 aer\u00f3bia) alternadas com 45s de recupera\u00e7\u00e3o fluida (70 RPM). Sem pedalar em p\u00e9. Esfor\u00e7o gerado por velocidade e n\u00e3o por trav\u00e3o mec\u00e2nico, sem dor no quadric\u00edpete.",
             descriptionEn: "6 interval rounds: 45s at high cadence (90-100 RPM, aerobic Z3) alternating with 45s active spin (70 RPM). Never stand up. Power driven by cadence not heavy flywheel brake, pain-free.",
             imageSrc: "/exercises/bike_interval_conditioning_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
+  {
+    id: "reforco_mobilidade_lombar_bandas",
+    titlePt: "Plano de Mobilidade e Refor\u00e7o da Regi\u00e3o Lombar",
+    titleEn: "Lumbar Spine Mobility & Strengthening Plan",
+    categoryPt: "Coluna Lombar \u2022 Mobilidade & Refor\u00e7o Funcional",
+    categoryEn: "Lumbar Spine \u2022 Mobility & Functional Strength",
+    group: "inferiores",
+    groupBadgePt: "\ud83d\udee1\ufe0f Refor\u00e7o & Mobilidade \u2022 Regi\u00e3o Lombar",
+    groupBadgeEn: "\ud83d\udee1\ufe0f Strengthening & Mobility \u2022 Lumbar Spine",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 CAMPEONATO NACIONAL II DIVIS\u00c3O FEMININA",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 WOMEN'S NATIONAL II DIVISION",
+    targetPosition: "all",
+    durationMinutes: 25,
+    durationTextPt: "25 MIN",
+    durationTextEn: "25 MIN",
+    warmupPt: "Aquecimento (3 MIN): Respira\u00e7\u00e3o diafragm\u00e1tica 90/90 no solo + b\u00e1sculas p\u00e9lvicas suaves.",
+    warmupEn: "Warmup (3 MIN): 90/90 supine diaphragmatic breathing + gentle pelvic tilts.",
+    finisherPt: "Descompress\u00e3o (2 MIN): Posi\u00e7\u00e3o da Crian\u00e7a com respira\u00e7\u00e3o profunda.",
+    finisherEn: "Decompression (2 MIN): Child's Pose with deep belly breathing.",
+    blocks: [
+      {
+        id: "reforco_mobilidade_lombar_bandas_block_01",
+        number: "01",
+        titlePt: "Mobilidade Articular & Descompress\u00e3o Segmentar",
+        titleEn: "Joint Mobility & Segmental Decompression",
+        durationMinutes: 6,
+        durationTextPt: "6 MIN",
+        durationTextEn: "6 MIN",
+        exercises: [
+          {
+            id: "reforco_mobilidade_lombar_bandas_b01_ex1",
+            namePt: "1.1 Gato-Camelo Din\u00e2mico (Isot\u00f3nico \u2022 Mobilidade Ativa)",
+            nameEn: "1.1 Segmental Cat-Cow Flow (Isotonic \u2022 Active Mobility)",
+            seriesRepsPt: "2x 10 ciclos lentos (Expira/Inspira)",
+            seriesRepsEn: "2x 10 slow cycles (Exhale/Inhale)",
+            restPt: "20s repouso",
+            restEn: "20s rest",
+            descriptionPt: "Em 4 apoios com punhos sob ombros. Arqueia lentamente a coluna vertebral para o teto expirando todo o ar (gato), e deixa descer em extens\u00e3o suave inspirando (camelo). Mobiliza\u00e7\u00e3o isot\u00f3nica da f\u00e1scia toracolombar sem compress\u00e3o.",
+            descriptionEn: "On all fours with hands beneath shoulders. Slowly round spine towards ceiling while exhaling (cat), then gently arch into extension while inhaling (camel). Fluid isotonic mobilization of thoracolumbar fascia.",
+            imageSrc: "/exercises/cat_cow_stretch_pro.svg"
+          },
+          {
+            id: "reforco_mobilidade_lombar_bandas_b01_ex2",
+            namePt: "1.2 Posi\u00e7\u00e3o da Crian\u00e7a com Descompress\u00e3o Lateral (Isom\u00e9trico)",
+            nameEn: "1.2 Lateral Child's Pose Hold (Isometric Decompression)",
+            seriesRepsPt: "2x 35s / lado (Sustenta\u00e7\u00e3o Est\u00e1tica)",
+            seriesRepsEn: "2x 35s / side (Static Hold)",
+            restPt: "20s repouso",
+            restEn: "20s rest",
+            descriptionPt: "De joelhos com bacia sobre calcanhares. Caminha as m\u00e3os diagonalmente para um dos lados ancorando a tra\u00e7\u00e3o no solo. Sustenta a isometria respirando fundo para descompress\u00e3o do quadrado lombar e grande dorsal.",
+            descriptionEn: "Kneeling with hips back on heels. Walk hands diagonally to one side anchoring firmly into floor. Hold static position with deep diaphragmatic breaths to decompress QL and latissimus dorsi.",
+            imageSrc: "/exercises/lateral_childs_pose_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_mobilidade_lombar_bandas_block_02",
+        number: "02",
+        titlePt: "Estabilidade Isom\u00e9trica & Anti-Movimento (Banda & Mini-Banda)",
+        titleEn: "Isometric Stability & Anti-Movement (Band & Miniband)",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "reforco_mobilidade_lombar_bandas_b02_ex1",
+            namePt: "2.1 Pallof Press Isom\u00e9trico com Banda El\u00e1stica (Isom\u00e9trico c/ Banda)",
+            nameEn: "2.1 Isometric Pallof Press w/ Elastic Band (Isometric w/ Band)",
+            seriesRepsPt: "3x 25-30s / lado (Isometria R\u00edgida)",
+            seriesRepsEn: "3x 25-30s / side (Rigid Isometric Hold)",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Em base atl\u00e9tica perpendicular ao ponto de fixa\u00e7\u00e3o da banda. Estende os bra\u00e7os ao n\u00edvel do peito e sustenta a contra\u00e7\u00e3o isom\u00e9trica pura sem permitir rota\u00e7\u00e3o do tronco ou b\u00e1scula p\u00e9lvica. Elimina for\u00e7as de cisalhamento na lombar.",
+            descriptionEn: "Standing athletic base perpendicular to anchor point. Press band forward to chest level and hold rigid isometric tension preventing torso rotation or pelvic tilt. Eradicates lumbar shear stress.",
+            imageSrc: "/exercises/pallof_press_band_rotation_pro.svg"
+          },
+          {
+            id: "reforco_mobilidade_lombar_bandas_b02_ex2",
+            namePt: "2.2 Prancha Lateral com Apoio de Joelho e Mini-Banda (Isom\u00e9trico c/ Mini-Banda)",
+            nameEn: "2.2 Side Plank w/ Miniband Abduction (Isometric w/ Miniband)",
+            seriesRepsPt: "3x 25s / lado (Anti-Flex\u00e3o Lateral)",
+            seriesRepsEn: "3x 25s / side (Lateral Anti-Flexion)",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Em prancha lateral sobre o antebra\u00e7o com joelhos a 90\u00b0 e mini-banda acima dos joelhos. Eleva a anca mantendo linha r\u00edgida e faz ligeira abdu\u00e7\u00e3o contra a banda. Isometria potente para quadrado lombar e gl\u00fateo m\u00e9dio.",
+            descriptionEn: "Side plank on forearm with knees bent at 90\u00b0 and miniband above knees. Elevate hips into straight alignment and hold slight top knee abduction against band. Fires QL and gluteus medius stabilizers.",
+            imageSrc: "/exercises/side_plank_miniband_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_mobilidade_lombar_bandas_block_03",
+        number: "03",
+        titlePt: "Refor\u00e7o Din\u00e2mico & Controlo Lombo-P\u00e9lvico (Mini-Banda)",
+        titleEn: "Dynamic Strengthening & Lumbo-Pelvic Control (Miniband)",
+        durationMinutes: 6,
+        durationTextPt: "6 MIN",
+        durationTextEn: "6 MIN",
+        exercises: [
+          {
+            id: "reforco_mobilidade_lombar_bandas_b03_ex1",
+            namePt: "3.1 P\u00e1ssaro-C\u00e3o Din\u00e2mico com Mini-Banda (Isot\u00f3nico c/ Mini-Banda)",
+            nameEn: "3.1 Banded Bird-Dog Dynamic Reach (Isotonic w/ Miniband)",
+            seriesRepsPt: "3x 8-10 reps / lado (Pausa 2s)",
+            seriesRepsEn: "3x 8-10 reps / side (2s Peak Hold)",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Em 4 apoios com mini-banda conectada p\u00e9-m\u00e3o contr\u00e1rios. Estende simultaneamente bra\u00e7o e perna opostos com controlo isot\u00f3nico, pausando 2s no topo sem oscilar a lombar. Recruta os eretores profundos e mult\u00edfidos.",
+            descriptionEn: "Quadruped stance with band across opposite hand and foot. Smoothly extend opposite limbs under isotonic control, holding 2s at horizontal without spinal sagging. Fires deep multifidus and erectors.",
+            imageSrc: "/exercises/banded_bird_dog_core_pro.svg"
+          },
+          {
+            id: "reforco_mobilidade_lombar_bandas_b03_ex2",
+            namePt: "3.2 Ponte de Gl\u00fateos com Mini-Banda nos Joelhos (Isot\u00f3nico c/ Pico Isom\u00e9trico)",
+            nameEn: "3.2 Glute Bridge w/ Miniband (Isotonic w/ Isometric Peak)",
+            seriesRepsPt: "3x 10-12 reps (3s Isometria no Topo)",
+            seriesRepsEn: "3x 10-12 reps (3s Peak Hold)",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Deitada de costas com mini-banda acima dos joelhos e calcanhares firmes. Eleva a bacia contra a resist\u00eancia el\u00e1stica at\u00e9 alinhar joelhos-anca-ombros, sustentando 3s no topo. Fortalece gl\u00fateos e estabiliza a sacroil\u00edaca.",
+            descriptionEn: "Supine with miniband above knees and feet shoulder-width. Drive through heels to elevate hips against outward band tension, holding 3s at lockout. Re-educates glute dominance and relieves lumbar spine.",
+            imageSrc: "/exercises/glute_bridge_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_mobilidade_lombar_bandas_block_04",
+        number: "04",
+        titlePt: "For\u00e7a Posterior em Dobradi\u00e7a & Eretores Lombares (Banda)",
+        titleEn: "Posterior Chain Hinge & Lumbar Erectors (Band)",
+        durationMinutes: 6,
+        durationTextPt: "6 MIN",
+        durationTextEn: "6 MIN",
+        exercises: [
+          {
+            id: "reforco_mobilidade_lombar_bandas_b04_ex1",
+            namePt: "4.1 Good Morning com Banda El\u00e1stica nos Ombros (Isot\u00f3nico c/ Banda)",
+            nameEn: "4.1 Banded Good Morning (Isotonic Hinge w/ Elastic Band)",
+            seriesRepsPt: "3x 10 reps (Descida Exc\u00eantrica 3s)",
+            seriesRepsEn: "3x 10 reps (3s Eccentric Tempo)",
+            restPt: "40s entre s\u00e9ries",
+            restEn: "40s between sets",
+            descriptionPt: "P\u00e9s sobre a banda el\u00e1stica fechada e la\u00e7o superior apoiado sobre os ombros/trap\u00e9zios. Mantendo joelhos destravados e peito aberto, recua a anca dobrando o tronco at\u00e9 45\u00b0-60\u00b0, retornando por tra\u00e7\u00e3o dos eretores e gl\u00fateos.",
+            descriptionEn: "Stand on closed-loop band with top loop across upper back/shoulders. With soft knees and flat spine, hinge hips backward lowering torso to 45\u00b0-60\u00b0, then drive hips forward contracting erectors and glutes.",
+            imageSrc: "/exercises/good_morning_band_pro.svg"
+          },
+          {
+            id: "reforco_mobilidade_lombar_bandas_b04_ex2",
+            namePt: "4.2 Extens\u00e3o Lombar no Banco 45\u00b0 com Isometria Terminal (Isot\u00f3nico + Isom\u00e9trico)",
+            nameEn: "4.2 45\u00b0 Back Extension w/ Peak Isometric Lockout (Isotonic + Isometric)",
+            seriesRepsPt: "3x 8-10 reps (3s Isometria no Topo)",
+            seriesRepsEn: "3x 8-10 reps (3s Isometric Hold)",
+            restPt: "40s entre s\u00e9ries",
+            restEn: "40s between sets",
+            descriptionPt: "No banco a 45\u00b0 com calcanhares fixos e cristas il\u00edacas no bordo do apoio. Desce em flex\u00e3o controlada de anca e sobe estendendo a coluna at\u00e9 \u00e0 posi\u00e7\u00e3o neutra, sustentando 3s de isometria nos eretores espinhais lombares.",
+            descriptionEn: "On 45\u00b0 hyperextension bench with heels locked and hip crests free. Lower torso in controlled flexion and extend up to neutral alignment, holding 3s isometric contraction on lumbar erectors at peak.",
+            imageSrc: "/exercises/back_extension_45_glute_pro.svg"
           },
         ]
       },
