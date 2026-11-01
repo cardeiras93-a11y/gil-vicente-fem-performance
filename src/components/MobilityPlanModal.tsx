@@ -184,12 +184,12 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
               {/* Duration Badge */}
               <div className="flex sm:flex-col items-center justify-center bg-dark-bg/90 border border-slate-700/80 px-4 py-2 sm:py-2.5 rounded-2xl shadow-inner shrink-0 self-start sm:self-auto space-x-2 sm:space-x-0">
                 <span className="text-xl sm:text-2xl font-black text-brand-lime leading-none">
-                  {selectedDay === 1 || selectedDay === 3
-                    ? (isEn ? (plan.durationTextEn || `${plan.durationMinutes} MIN`) : (plan.durationTextPt || `${plan.durationMinutes} MIN`))
-                    : (isEn ? '11 MIN' : '11 MIN')}
+                  {selectedDay === 1 || selectedDay === 3 ? '20 MIN' : '14 MIN'}
                 </span>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
-                  {isEn ? 'DURATION (MAX 15M)' : 'DURAÇÃO (MÁX 15M)'}
+                  {selectedDay === 1 || selectedDay === 3
+                    ? (isEn ? 'DURATION (MAX 20M)' : 'DURAÇÃO (MÁX 20M)')
+                    : (isEn ? 'DURATION (MAX 15M)' : 'DURAÇÃO (MÁX 15M)')}
                 </span>
               </div>
             </div>
@@ -337,7 +337,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                         <span>
                           {isSec1
                             ? (isEn ? '6 MIN' : '6 MIN')
-                            : (selectedDay === 1 || selectedDay === 3 ? (isEn ? '8 MIN' : '8 MIN') : (isEn ? '5 MIN' : '5 MIN'))}
+                            : (selectedDay === 1 || selectedDay === 3 ? (isEn ? '14 MIN' : '14 MIN') : (isEn ? '8 MIN' : '8 MIN'))}
                         </span>
                       </span>
                     </div>
