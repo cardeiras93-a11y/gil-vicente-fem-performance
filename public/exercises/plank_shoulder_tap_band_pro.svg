@@ -39,10 +39,9 @@
   <!-- Title indicator -->
   <g transform="translate(14, 18)">
     <rect x="0" y="0" width="8" height="8" rx="2" fill="#ef4444" />
-    <text x="14" y="8" fill="#334155" font-size="9" font-weight="800" font-family="Inter, system-ui, sans-serif">PRANCHA TOQUE OMBRO C/ BANDA</text>
+    <text x="14" y="8" fill="#334155" font-size="9" font-weight="800" font-family="Inter, system-ui, sans-serif">PRANCHA TOQUE OMBROS</text>
   </g>
 
-  
   <!-- Solo -->
   <line x1="20" y1="145" x2="300" y2="145" stroke="#cbd5e1" stroke-width="2" />
 
@@ -59,21 +58,14 @@
   <path d="M195 85 L195 142" stroke="#1e293b" stroke-width="9" stroke-linecap="round" />
   <ellipse cx="195" cy="144" rx="5" ry="2.5" fill="#f6ad55" />
 
-  <!-- Braço direito alternando toque no ombro oposto -->
+  <!-- Braço direito alternando toque no ombro oposto (sem banda) -->
   <path d="M195 85 L200 142" stroke="#f6ad55" stroke-width="8" stroke-linecap="round">
     <animate attributeName="d" values="M195 85 L200 142; M195 85 L180 95; M195 85 L200 142" dur="1.8s" repeatCount="indefinite" />
   </path>
 
-  <!-- Mini-banda de tensão nos pulsos -->
-  <line x1="195" y1="130" x2="200" y2="130" stroke="#ef4444" stroke-width="4">
-    <animate attributeName="x2" values="200; 182; 200" dur="1.8s" repeatCount="indefinite" />
-    <animate attributeName="y2" values="130; 98; 130" dur="1.8s" repeatCount="indefinite" />
-  </line>
-
   <!-- Indicador Anti-Rotação -->
   <g transform="translate(110, 50)">
-    <rect x="0" y="0" width="95" height="18" rx="9" fill="#0f172a" fill-opacity="0.8" />
-    <text x="47" y="12" fill="#38bdf8" font-size="8" font-weight="900" font-family="Inter, sans-serif" text-anchor="middle">ANTI-ROTAÇÃO DE CORE</text>
+    <rect x="0" y="0" width="100" height="18" rx="9" fill="#0f172a" fill-opacity="0.8" />
+    <text x="50" y="12" fill="#38bdf8" font-size="8" font-weight="900" font-family="Inter, sans-serif" text-anchor="middle">ANTI-ROTAÇÃO DE CORE</text>
   </g>
-
 </svg>
