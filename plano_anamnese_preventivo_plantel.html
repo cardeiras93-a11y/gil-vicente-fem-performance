@@ -4525,10 +4525,10 @@
       const isCore = currentSelectedDay === 1 || currentSelectedDay === 3;
       
       if (isCore) {
-        status.innerHTML = '⚡ +2 Core Ativo (Seg & Qua)';
+        status.innerHTML = '⚡ +2 Core (20 MIN)';
         status.className = 'text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse';
       } else {
-        status.innerHTML = 'Core ativo só Seg & Qua';
+        status.innerHTML = '14 MIN (Core ativo só Seg & Qua)';
         status.className = 'text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700';
       }
 
@@ -4605,7 +4605,7 @@
       document.getElementById('planBadge').innerText = plan.groupBadgePt || 'PREVENÇÃO CLÍNICA';
       document.getElementById('planTitle').innerText = plan.titlePt;
       document.getElementById('planCategory').innerText = plan.categoryPt;
-      document.getElementById('planDuration').innerText = isCoreDay ? '14 MINUTOS' : '11 MINUTOS';
+      document.getElementById('planDuration').innerText = isCoreDay ? '20 MINUTOS' : '14 MINUTOS';
 
       const container = document.getElementById('sectionsContainer');
       container.innerHTML = plan.blocks.map((block, bIdx) => {
@@ -4643,7 +4643,7 @@
                   ${exCount} ${exCount === 1 ? 'Exercício' : 'Exercícios'}
                 </span>
                 <span class="text-xs font-black px-3 py-1 rounded-xl border ${badgeColor}">
-                  ⏱️ ${isSec1 ? '6 MIN' : (isCoreDay ? '8 MIN' : '5 MIN')}
+                  ⏱️ ${isSec1 ? '6 MIN' : (isCoreDay ? '14 MIN' : '8 MIN')}
                 </span>
               </div>
             </div>
