@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="30,122 285,122 305,162 10,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="148" rx="80" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Cabeça e Ombros -->
+  <circle cx="82" cy="136" r="8" fill="#d97706" />
+  <path d="M75,134 C75,128 88,128 88,134 Z" fill="#78350f" />
+
+  <!-- Tronco Supino -->
+  <path d="M90,135 L144,136 L140,146 L88,144 Z" fill="url(#kitGrad)" />
+  <path d="M142,135 L156,128 L154,142 Z" fill="#0f172a" />
+
+  <!-- Perna Oposta 100% Esticada e Pressionada no Solo -->
+  <path d="M154,138 L244,140" stroke="#b45309" stroke-width="8" stroke-linecap="round" />
+  <ellipse cx="248" cy="139" rx="5" ry="3" fill="#ffffff" />
+  <line x1="190" y1="144" x2="230" y2="144" stroke="#38bdf8" stroke-width="2" stroke-dasharray="2,2" />
+
+  <!-- Joelho Ativo Dobrado e Puxado ao Peito -->
+  <path d="M152,126 L130,94" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <path d="M130,94 L152,86" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <ellipse cx="154" cy="88" rx="4" ry="3" fill="#ffffff" />
+
+  <!-- Mãos a abraçar o joelho -->
+  <path d="M110,132 Q120,102 134,92" stroke="#1e3a8a" stroke-width="5.5" stroke-linecap="round" fill="none" />
+  <ellipse cx="134" cy="92" rx="4" ry="4" fill="#d97706" />
+
+  <!-- Descompressão Lombo-Sagrada -->
+  <ellipse cx="140" cy="136" rx="8" ry="4" fill="#38bdf8" opacity="0.45" />
+
+  <!-- Setas Duplas de Dissociação: Uma ao peito, uma empurrando para baixo -->
+  <g filter="url(#dropShadow)">
+    <path d="M144,78 L126,94" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="126,88 120,98 131,95" fill="#2563eb" />
+    <path d="M210,130 L210,140" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="207,138 210,144 213,138" fill="#2563eb" />
+  </g>
+</svg>

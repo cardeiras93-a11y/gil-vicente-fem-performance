@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+  <polygon points="30,122 285,122 305,162 10,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+  <ellipse cx="160" cy="148" rx="85" ry="8" fill="#0f172a" opacity="0.2" />
+
+  <!-- Pés e Calcanhares colados -->
+  <ellipse cx="78" cy="140" rx="12" ry="5" fill="#e2e8f0" />
+  <!-- Bacia colada nos calcanhares -->
+  <path d="M78,132 C78,118 96,114 112,122 L110,138 C94,142 80,140 78,132 Z" fill="#0f172a" />
+
+  <!-- Tronco em Flexão Curvada para a Diagonal (45° de Rotação Lateral) -->
+  <path d="M106,120 C122,110 156,108 190,118 L184,130 C152,122 122,124 102,134 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça Apoiada e Inclinada -->
+  <circle cx="200" cy="122" r="8" fill="#d97706" />
+  <path d="M195,119 C195,114 206,114 206,119 Z" fill="#78350f" />
+
+  <!-- Braços Estendidos para a Diagonal Superior Direita (Alongando Quadrado Lombar Esquerdo) -->
+  <path d="M182,120 L256,114" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+  <path d="M184,124 L252,120" stroke="#b45309" stroke-width="6" stroke-linecap="round" />
+  <ellipse cx="258" cy="114" rx="5" ry="3" fill="#d97706" />
+
+  <!-- Destaque Linha Tensão Flanco / Quadrado Lombar (QL) -->
+  <path d="M104,118 C128,106 165,108 188,116" stroke="#ef4444" stroke-width="3" stroke-dasharray="3,2" fill="none" />
+
+  <!-- Setas Curvas de Alongamento Lateral e Ancoragem da Bacia -->
+  <g filter="url(#dropShadow)">
+    <path d="M228,102 Q246,100 258,106" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" fill="none" />
+    <polygon points="256,102 264,108 256,111" fill="#2563eb" />
+    <path d="M96,116 L80,122" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <polygon points="82,118 74,125 83,126" fill="#2563eb" />
+  </g>
+</svg>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio Luminoso -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="130" x2="320" y2="130" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Tapete Azul Centrado -->
+  <polygon points="35,120 285,120 305,162 15,162" fill="url(#matGrad)" filter="url(#dropShadow)" />
+
+  <!-- Sombra Projetada -->
+  <ellipse cx="160" cy="154" rx="75" ry="8" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta em Ponte de Glúteo -->
+  <circle cx="80" cy="138" r="8" fill="#d97706" />
+  <path d="M75,134 C75,129 85,129 85,134 L83,140 L77,140 Z" fill="#78350f" />
+
+  <!-- Tronco Elevado -->
+  <path d="M86,138 L146,110 L143,123 L86,145 Z" fill="url(#kitGrad)" />
+
+  <!-- Calções / Glúteos -->
+  <path d="M141,107 L164,101 L159,119 L139,123 Z" fill="#0f172a" />
+
+  <!-- Coxas Elevadas -->
+  <path d="M161,102 L212,100 L209,110 L159,116 Z" fill="#d97706" />
+
+  <!-- Canelas Verticais -->
+  <path d="M211,101 L215,138" stroke="#d97706" stroke-width="7" stroke-linecap="round" />
+  <ellipse cx="217" cy="140" rx="8" ry="3.5" fill="#ffffff" />
+
+  <!-- Bola / Bloco Amarelo (Aperto de Adutores) -->
+  <circle cx="202,105" r="8" fill="#f59e0b" stroke="#d97706" stroke-width="1.5" filter="url(#dropShadow)" />
+  <text x="197" y="108" fill="#78350f" font-family="system-ui, sans-serif" font-size="5.5" font-weight="900">SQUEEZE</text>
+
+  <!-- Vetores de Ativação -->
+  <g filter="url(#dropShadow)">
+    <path d="M188,105 L195,105" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <path d="M216,105 L209,105" stroke="#2563eb" stroke-width="2" stroke-linecap="round" />
+    <path d="M150,123 L150,104" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
+    <polygon points="147,107 150,100 153,107" fill="#38bdf8" />
+  </g>
+</svg>

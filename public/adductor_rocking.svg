@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1e293b" />
+    </linearGradient>
+    <linearGradient id="matGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#334155" />
+      <stop offset="100%" stop-color="#475569" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="400" height="225" fill="url(#bgGrad)" />
+  <rect x="30" y="165" width="340" height="20" rx="6" fill="url(#matGrad)" />
+  
+  <!-- Atleta em 4 apoios com perna direita aberta de lado -->
+  <!-- Cabeça -->
+  <circle cx="110" cy="110" r="14" fill="#cbd5e1" />
+  <!-- Tronco horizontal -->
+  <path d="M115,118 L195,128 L190,150 L120,140 Z" fill="#1e40af" />
+  <!-- Braços no chão -->
+  <path d="M125,130 L125,170" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+  <path d="M150,132 L150,170" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- Perna Esquerda (joelho fletido no chão) -->
+  <path d="M190,135 L190,170 L170,170" stroke="#3b82f6" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  
+  <!-- Perna Direita (Totalmente estendida lateralmente - Destaque Adutor) -->
+  <path d="M190,135 L320,168" stroke="#ef4444" stroke-width="14" stroke-linecap="round" />
+  <!-- Pé no chão -->
+  <path d="M315,168 L345,168" stroke="#cbd5e1" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- Linha de Tensão / Foco -->
+  <path d="M210,142 L300,165" stroke="#fca5a5" stroke-dasharray="3,3" stroke-width="2" />
+  
+  <!-- Seta de oscilação para trás -->
+  <path d="M175,105 L150,105" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+  <polygon points="152,100 144,105 152,110" fill="#38bdf8" />
+  
+  <!-- Badges -->
+  <rect x="20" y="16" width="145" height="24" rx="6" fill="#1e3a8a" opacity="0.9" />
+  <text x="28" y="32" fill="#93c5fd" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">ADDUCTOR ROCKING</text>
+  
+  <rect x="250" y="16" width="130" height="24" rx="6" fill="#7f1d1d" opacity="0.9" />
+  <text x="258" y="32" fill="#fca5a5" font-family="system-ui, sans-serif" font-size="10" font-weight="bold">GRÁCIL & ADUTOR</text>
+</svg>

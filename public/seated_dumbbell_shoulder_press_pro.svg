@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="benchGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="145" x2="320" y2="145" stroke="#cbd5e1" stroke-width="1" />
+
+  <!-- Banco com Encosto a 80° (à esquerda) -->
+  <rect x="110" y="55" width="10" height="55" rx="2" transform="rotate(-6 115 82)" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="110" y="105" width="45" height="10" rx="2" fill="#0284c7" filter="url(#dropShadow)" />
+  <line x1="125" y1="115" x2="125" y2="145" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="155" cy="150" rx="45" ry="6" fill="#0f172a" opacity="0.2" />
+
+  <!-- Pés e Pernas da Atleta -->
+  <line x1="150" y1="108" x2="175" y2="108" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <line x1="175" y1="108" x2="175" y2="145" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <rect x="170" y="142" width="16" height="5" rx="2.5" fill="#ffffff" />
+
+  <!-- Calções / Bacia no Assento -->
+  <path d="M122,100 L146,100 L144,112 L120,112 Z" fill="#0f172a" />
+
+  <!-- Tronco Apoiado no Encosto -->
+  <path d="M125,62 L146,62 L142,102 L122,102 Z" fill="url(#kitGrad)" />
+
+  <!-- Cabeça e Cabelo -->
+  <circle cx="138" cy="50" r="8" fill="#d97706" />
+  <path d="M132,46 C132,40 144,40 144,46 Z" fill="#78350f" />
+
+  <!-- Deltoides e Braços a Empurrar os Halteres para Cima -->
+  <!-- Braço Esquerdo (Parcialmente Visível) -->
+  <path d="M128,64 L114,48 L116,28" stroke="#b45309" stroke-width="4.5" stroke-linecap="round" />
+  <!-- Haltere Esquerdo no Topo -->
+  <line x1="106" y1="25" x2="126" y2="25" stroke="#0f172a" stroke-width="6" stroke-linecap="round" />
+  <circle cx="106" cy="25" r="4" fill="#334155" />
+  <circle cx="126" cy="25" r="4" fill="#334155" />
+
+  <!-- Braço Direito (Em Empurrão Vertical) -->
+  <path d="M144,64 L158,46 L156,26" stroke="#d97706" stroke-width="5" stroke-linecap="round" />
+  <!-- Haltere Direito no Topo -->
+  <line x1="146" y1="23" x2="166" y2="23" stroke="#0f172a" stroke-width="6" stroke-linecap="round" />
+  <circle cx="146" cy="23" r="4" fill="#334155" />
+  <circle cx="166" cy="23" r="4" fill="#334155" />
+
+  <!-- Foco Muscular no Deltoide Anterior e Lateral -->
+  <circle cx="146" cy="62" r="5" fill="#ef4444" opacity="0.8" />
+
+  <!-- Seta Vertical de Press para Cima -->
+  <g filter="url(#dropShadow)">
+    <path d="M172,48 L172,26" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round" />
+    <polygon points="168,30 172,20 176,30" fill="#2563eb" />
+  </g>
+</svg>
