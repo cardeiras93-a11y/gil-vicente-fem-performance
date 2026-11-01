@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   Dumbbell,
   Globe,
+  Calendar,
 } from 'lucide-react';
 
 interface MobilityPlanModalProps {
@@ -42,6 +43,9 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
   const [lang, setLang] = useState<'pt' | 'en'>(initialLang || (globalLang === 'en' ? 'en' : 'pt'));
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  const realTodayDay = new Date().getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+  const [selectedDay, setSelectedDay] = useState<number>(realTodayDay);
 
   useEffect(() => {
     if (initialLang) {
@@ -180,7 +184,9 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
               {/* Duration Badge */}
               <div className="flex sm:flex-col items-center justify-center bg-dark-bg/90 border border-slate-700/80 px-4 py-2 sm:py-2.5 rounded-2xl shadow-inner shrink-0 self-start sm:self-auto space-x-2 sm:space-x-0">
                 <span className="text-xl sm:text-2xl font-black text-brand-lime leading-none">
-                  {isEn ? (plan.durationTextEn || `${plan.durationMinutes} MIN`) : (plan.durationTextPt || `${plan.durationMinutes} MIN`)}
+                  {selectedDay === 1 || selectedDay === 3
+                    ? (isEn ? (plan.durationTextEn || `${plan.durationMinutes} MIN`) : (plan.durationTextPt || `${plan.durationMinutes} MIN`))
+                    : (isEn ? '11 MIN' : '11 MIN')}
                 </span>
                 <span className="text-[9px] font-extrabold text-slate-400 uppercase tracking-wider">
                   {isEn ? 'DURATION (MAX 15M)' : 'DURAÇÃO (MÁX 15M)'}
@@ -214,12 +220,69 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
             </div>
           </div>
 
+          {/* Day of Week Filter Bar (Segunda & Quarta Core Scheduling) */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-md">
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-cyan-400 shrink-0" />
+              <span className="text-xs font-black text-slate-200 uppercase tracking-tight">
+                {isEn ? 'TRAINING DAY:' : 'DIA DE TREINO:'}
+              </span>
+              {(selectedDay === 1 || selectedDay === 3) ? (
+                <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 animate-pulse">
+                  ⚡ +2 Core Ativo (Seg & Qua)
+                </span>
+              ) : (
+                <span className="text-[10px] font-bold text-slate-400">
+                  {isEn ? 'Core active Mon & Wed only' : 'Core ativo só Seg & Qua'}
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center space-x-1.5 overflow-x-auto pb-0.5 scrollbar-thin">
+              {[
+                { day: 1, labelPt: 'Seg', labelEn: 'Mon', hasCore: true },
+                { day: 2, labelPt: 'Ter', labelEn: 'Tue', hasCore: false },
+                { day: 3, labelPt: 'Qua', labelEn: 'Wed', hasCore: true },
+                { day: 4, labelPt: 'Qui', labelEn: 'Thu', hasCore: false },
+                { day: 5, labelPt: 'Sex', labelEn: 'Fri', hasCore: false },
+                { day: 6, labelPt: 'Sáb', labelEn: 'Sat', hasCore: false },
+                { day: 0, labelPt: 'Dom', labelEn: 'Sun', hasCore: false },
+              ].map((d) => {
+                const isSelected = selectedDay === d.day;
+                const isToday = realTodayDay === d.day;
+                return (
+                  <button
+                    key={d.day}
+                    type="button"
+                    onClick={() => setSelectedDay(d.day)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase transition-all flex items-center space-x-1 shrink-0 cursor-pointer ${
+                      isSelected
+                        ? d.hasCore
+                          ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
+                          : 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                        : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>{isEn ? d.labelEn : d.labelPt}</span>
+                    {d.hasCore && <span className="text-[8px]">⚡</span>}
+                    {isToday && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ml-0.5" title="Hoje" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* Chronological Section Structure (Section 1: Mobilidade & Section 2: Ativação & Força) */}
           <div className="space-y-5">
             {plan.blocks.map((block, idx) => {
               const isSec1 = idx === 0 || block.number === '01' || block.titlePt.toLowerCase().includes('mobilidade');
               const isSec2 = idx === 1 || block.number === '02' || block.titlePt.toLowerCase().includes('ativação') || block.titlePt.toLowerCase().includes('força');
-              const exerciseCount = block.exercises.length;
+              
+              const visibleExercises = block.exercises.filter((ex) => {
+                if (!ex.daysOfWeek || ex.daysOfWeek.length === 0) return true;
+                return ex.daysOfWeek.includes(selectedDay);
+              });
+              const exerciseCount = visibleExercises.length;
               
               return (
                 <div
@@ -271,48 +334,64 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                         }`}
                       >
                         <Clock className="h-3.5 w-3.5" />
-                        <span>{isEn ? (block.durationTextEn || `${block.durationMinutes} MIN`) : (block.durationTextPt || `${block.durationMinutes} MIN`)}</span>
+                        <span>
+                          {isSec1
+                            ? (isEn ? '6 MIN' : '6 MIN')
+                            : (selectedDay === 1 || selectedDay === 3 ? (isEn ? '8 MIN' : '8 MIN') : (isEn ? '5 MIN' : '5 MIN'))}
+                        </span>
                       </span>
                     </div>
                   </div>
 
                   {/* Exercises Grid in Section */}
                   <div className={`grid gap-3.5 ${exerciseCount === 2 ? 'grid-cols-1 md:grid-cols-2' : exerciseCount === 4 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'}`}>
-                    {block.exercises.map((ex) => (
-                      <div
-                        key={ex.id}
-                        className="flex flex-col rounded-xl border border-slate-800/90 bg-dark-card/95 p-3 space-y-2.5 hover:border-slate-700 transition-all shadow-md group"
-                      >
-                        {/* Dynamic SVG Vector Drawing Container */}
-                        <div className="rounded-xl bg-white border border-slate-200 p-2 flex items-center justify-center overflow-hidden h-36 sm:h-40 shadow-inner w-full relative">
-                          <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
-                        </div>
+                    {visibleExercises.map((ex, exIdx) => {
+                      const cleanName = (isEn ? ex.nameEn : ex.namePt).replace(/^\d+\.\d+\s*/, '');
+                      const displayTitle = `${block.number}.${exIdx + 1} ${cleanName}`;
+                      const isScheduledCore = Boolean(ex.daysOfWeek && ex.daysOfWeek.includes(1) && ex.daysOfWeek.includes(3));
 
-                        {/* Exercise Details */}
-                        <div className="space-y-2 flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-start justify-between gap-1.5">
-                              <h4 className="text-xs sm:text-[13px] font-black text-slate-100 leading-snug group-hover:text-cyan-300 transition-colors">
-                                {isEn ? ex.nameEn : ex.namePt}
-                              </h4>
-                            </div>
-                            <div className="mt-1 flex items-center gap-1.5">
-                              <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-md inline-block">
-                                {isEn ? ex.seriesRepsEn : ex.seriesRepsPt}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-300 leading-relaxed font-normal mt-1.5 line-clamp-3">
-                              {isEn ? ex.descriptionEn : ex.descriptionPt}
-                            </p>
+                      return (
+                        <div
+                          key={ex.id}
+                          className="flex flex-col rounded-xl border border-slate-800/90 bg-dark-card/95 p-3 space-y-2.5 hover:border-slate-700 transition-all shadow-md group"
+                        >
+                          {/* Dynamic SVG Vector Drawing Container */}
+                          <div className="rounded-xl bg-white border border-slate-200 p-2 flex items-center justify-center overflow-hidden h-36 sm:h-40 shadow-inner w-full relative">
+                            <ExerciseIllustration drawingKey={ex.drawingKey} imageSrc={ex.imageSrc} />
                           </div>
 
-                          <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 pt-2 border-t border-slate-800/60">
-                            <Clock className="h-3 w-3 text-amber-400 shrink-0" />
-                            <span>{isEn ? ex.restEn : ex.restPt}</span>
+                          {/* Exercise Details */}
+                          <div className="space-y-2 flex-1 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-start justify-between gap-1.5">
+                                <h4 className="text-xs sm:text-[13px] font-black text-slate-100 leading-snug group-hover:text-cyan-300 transition-colors">
+                                  {displayTitle}
+                                </h4>
+                              </div>
+                              <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                                <span className="text-[10px] font-black text-brand-lime bg-lime-500/10 border border-lime-500/30 px-2 py-0.5 rounded-md inline-block">
+                                  {isEn ? ex.seriesRepsEn : ex.seriesRepsPt}
+                                </span>
+                                {isScheduledCore && (
+                                  <span className="text-[9px] font-black text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 rounded-md flex items-center space-x-1">
+                                    <span>⚡</span>
+                                    <span>{isEn ? 'CORE (MON & WED)' : 'CORE (SEG & QUA)'}</span>
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-slate-300 leading-relaxed font-normal mt-1.5 line-clamp-3">
+                                {isEn ? ex.descriptionEn : ex.descriptionPt}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center space-x-1.5 text-[10px] font-bold text-slate-400 pt-2 border-t border-slate-800/60">
+                              <Clock className="h-3 w-3 text-amber-400 shrink-0" />
+                              <span>{isEn ? ex.restEn : ex.restPt}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               );

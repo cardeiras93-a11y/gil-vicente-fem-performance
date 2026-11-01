@@ -5,9 +5,9 @@ import { MobilityPlan, AthletePlanAssignment } from './types';
 // Estrutura Rigorosa em 2 Secções (Máximo 15 Minutos):
 //   Secção 01: Mobilidade Articular & Descompressão (6 MIN)
 //   Secção 02: Ativação Neuromuscular & Força Preventiva (8 MIN)
-// Duração Total: 14 MINUTOS
-// Protocolo Neuromuscular Evidência Gemini: Anca (Monster Walk) & Core (Dead-Bug)
-// em TODOS os planos para redução comprovada de 20% a 60% em lesões ligamentares do joelho.
+// Duração Total: 14 MINUTOS (Com Core às Seg e Qua) / 11 MINUTOS (Outros dias)
+// Os 2 exercícios de Core (Dead-Bug e Prancha com Toque nos Ombros) estão
+// agendados exclusivamente para Segunda (1) e Quarta (3) (daysOfWeek: [1, 3]).
 // ==============================================================================
 
 export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
@@ -101,8 +101,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -113,7 +113,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -121,7 +121,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -217,8 +237,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -229,7 +249,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -237,7 +257,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -333,8 +373,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -345,7 +385,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -353,7 +393,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -449,8 +509,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -461,7 +521,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -469,7 +529,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -565,8 +645,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -577,7 +657,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -585,7 +665,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -668,21 +768,21 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/wall_slide_w_to_y_miniband_pro.svg"
           },
           {
-            "id": "ex_ptap",
-            "namePt": "2.2 Prancha Alta com Toque nos Ombros e Mini-Banda",
-            "nameEn": "2.2 High Plank Shoulder Taps w/ Miniband",
-            "seriesRepsPt": "3x 8 toques / lado",
-            "seriesRepsEn": "3x 8 taps / side",
+            "id": "ex_pallof",
+            "namePt": "2.2 Pallof Press Isométrico com Rotação Controlada do Tronco",
+            "nameEn": "2.2 Isometric Pallof Press w/ Controlled Torso Rotation",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto sem rodar a bacia ou colapsar o cotovelo de apoio. Proteção para quedas e choques.",
-            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid fall resilience.",
-            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg"
+            "descriptionPt": "De pé com banda ancorada lateralmente na altura do peito. Empurra a banda à frente e resiste à força de rotação. Roda 15° de tronco mantendo bacia totalmente imóvel.",
+            "descriptionEn": "Standing with chest-high anchored band. Press band forward resisting lateral pull, performing micro 15° rotations with locked hips.",
+            "imageSrc": "/exercises/pallof_press_band_rotation_pro.svg"
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -693,7 +793,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -701,7 +801,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -797,8 +917,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -809,7 +929,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -817,7 +937,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -913,8 +1053,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -925,7 +1065,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -933,7 +1073,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1029,8 +1189,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1041,7 +1201,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1049,7 +1209,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1145,8 +1325,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1157,7 +1337,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1165,7 +1345,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1261,8 +1461,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1273,7 +1473,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1281,7 +1481,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1377,8 +1597,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1389,7 +1609,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1397,7 +1617,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1493,8 +1733,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1505,7 +1745,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1513,7 +1753,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1609,8 +1869,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1621,7 +1881,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1629,7 +1889,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1725,8 +2005,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1737,7 +2017,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1745,7 +2025,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1841,8 +2141,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1853,7 +2153,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1861,7 +2161,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -1957,8 +2277,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -1969,7 +2289,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -1977,7 +2297,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2073,8 +2413,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2085,7 +2425,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2093,7 +2433,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2189,8 +2549,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2201,7 +2561,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2209,7 +2569,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2305,8 +2685,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2317,7 +2697,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2325,7 +2705,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2421,8 +2821,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2433,7 +2833,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2441,7 +2841,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2537,8 +2957,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2549,7 +2969,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2557,7 +2977,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2653,8 +3093,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2665,7 +3105,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2673,7 +3113,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2769,8 +3229,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2781,7 +3241,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2789,7 +3249,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -2885,8 +3365,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -2897,7 +3377,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -2905,7 +3385,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3001,8 +3501,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3013,7 +3513,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3021,7 +3521,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3117,8 +3637,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3129,7 +3649,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3137,7 +3657,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3233,8 +3773,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3245,7 +3785,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3253,7 +3793,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3349,8 +3909,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3361,7 +3921,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3369,7 +3929,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3465,8 +4045,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3477,7 +4057,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3485,7 +4065,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3581,8 +4181,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3593,7 +4193,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3601,7 +4201,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3697,8 +4317,8 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_mw",
-            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação Neuromuscular de Anca & Anti-Valgo)",
-            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Neuromuscular Activation & Anti-Valgus)",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Ativação de Anca & Anti-Valgo)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Hip Activation & Anti-Valgus)",
             "seriesRepsPt": "2x 10 passos / direção",
             "seriesRepsEn": "2x 10 steps / direction",
             "restPt": "30s",
@@ -3709,7 +4329,7 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
           },
           {
             "id": "ex_db",
-            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Estabilidade do Core & Controlo Lombo-Pélvico)",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Estabilidade do Core)",
             "nameEn": "2.4 Dead-Bug w/ Foot Miniband (Core Stability & Lumbo-Pelvic Control)",
             "seriesRepsPt": "3x 8 reps / lado",
             "seriesRepsEn": "3x 8 reps / side",
@@ -3717,7 +4337,27 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "restEn": "30s",
             "descriptionPt": "Deitada de costas com mini-banda nos pés e braços estendidos. Estende perna e braço opostos mantendo a lombar colada ao solo. Elimina a hiperlordose compensatória e resiste às forças rotacionais do joelho.",
             "descriptionEn": "Supine with miniband around feet. Extend opposite limbs while flattening lumbar spine to floor. Eradicates anterior pelvic tilt and absorbs knee rotational torque.",
-            "imageSrc": "/exercises/deadbug_miniband_pro.svg"
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
+          },
+          {
+            "id": "ex_ptap",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros e Mini-Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.5 High Plank Shoulder Taps w/ Miniband (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos e pés afastados. Toca no ombro oposto com controlo máximo sem rodar a bacia ou colapsar o tronco. Estabilidade central e proteção anti-queda.",
+            "descriptionEn": "High plank with wrist band and wide feet. Touch opposite shoulder with minimal hip rotation, building solid anti-rotational core stability and fall resilience.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [
+              1,
+              3
+            ]
           }
         ]
       }
@@ -3735,7 +4375,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Ativação Neuromuscular Anti-Valgo."
+    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Core Seg & Qua."
   },
   "athlete_ath-3_plan_indiv_ath-3_cartaxo": {
     "id": "athlete_ath-3_plan_indiv_ath-3_cartaxo",
@@ -3746,7 +4386,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço rotuliano e desenvolvimento de força escapular + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Reforço rotuliano e desenvolvimento de força escapular + Core Seg & Qua."
   },
   "athlete_ath-4_plan_indiv_ath-4_eva": {
     "id": "athlete_ath-4_plan_indiv_ath-4_eva",
@@ -3757,7 +4397,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Ativação Neuromuscular Anca e Core."
+    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Core Seg & Qua."
   },
   "athlete_ath-5_plan_indiv_ath-5_faith": {
     "id": "athlete_ath-5_plan_indiv_ath-5_faith",
@@ -3768,7 +4408,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção do menisco medial e alinhamento rotuliano + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Proteção do menisco medial e alinhamento rotuliano + Core Seg & Qua."
   },
   "athlete_ath-6_plan_indiv_ath-6_lara": {
     "id": "athlete_ath-6_plan_indiv_ath-6_lara",
@@ -3779,7 +4419,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Core Seg & Qua."
   },
   "athlete_ath-7_plan_indiv_ath-7_laura_patrício": {
     "id": "athlete_ath-7_plan_indiv_ath-7_laura_patrício",
@@ -3790,7 +4430,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Core Seg & Qua."
   },
   "athlete_ath-8_plan_indiv_ath-8_luana_correia": {
     "id": "athlete_ath-8_plan_indiv_ath-8_luana_correia",
@@ -3801,7 +4441,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Core Seg & Qua."
   },
   "athlete_ath-9_plan_indiv_ath-9_luana_macedo": {
     "id": "athlete_ath-9_plan_indiv_ath-9_luana_macedo",
@@ -3812,7 +4452,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão meniscal e estabilidade escapular + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Descompressão meniscal e estabilidade escapular + Core Seg & Qua."
   },
   "athlete_ath-10_plan_indiv_ath-10_magui": {
     "id": "athlete_ath-10_plan_indiv_ath-10_magui",
@@ -3823,7 +4463,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Core Seg & Qua."
   },
   "athlete_ath-11_plan_indiv_ath-11_malta": {
     "id": "athlete_ath-11_plan_indiv_ath-11_malta",
@@ -3834,7 +4474,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil sem lesões: Core anti-extensão, adutores e reatividade elástica + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil sem lesões: Core anti-extensão, adutores e reatividade elástica + Core Seg & Qua."
   },
   "athlete_ath-12_plan_indiv_ath-12_manu": {
     "id": "athlete_ath-12_plan_indiv_ath-12_manu",
@@ -3845,7 +4485,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Core Seg & Qua."
   },
   "athlete_ath-13_plan_indiv_ath-13_marthe": {
     "id": "athlete_ath-13_plan_indiv_ath-13_marthe",
@@ -3856,7 +4496,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil de potência: Adutores dinâmicos, pontes de isquios e estabilidade + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil de potência: Adutores dinâmicos, pontes de isquios e estabilidade + Core Seg & Qua."
   },
   "athlete_ath-14_plan_indiv_ath-14_meriva": {
     "id": "athlete_ath-14_plan_indiv_ath-14_meriva",
@@ -3867,7 +4507,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Core Seg & Qua."
   },
   "athlete_ath-15_plan_indiv_ath-15_nicole": {
     "id": "athlete_ath-15_plan_indiv_ath-15_nicole",
@@ -3878,7 +4518,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Core Seg & Qua."
   },
   "athlete_ath-16_plan_indiv_ath-16_ramos": {
     "id": "athlete_ath-16_plan_indiv_ath-16_ramos",
@@ -3889,7 +4529,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reconstrução dos peroneais, tração articular de retropé + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Reconstrução dos peroneais, tração articular de retropé + Core Seg & Qua."
   },
   "athlete_ath-17_plan_indiv_ath-17_ribeiro": {
     "id": "athlete_ath-17_plan_indiv_ath-17_ribeiro",
@@ -3900,7 +4540,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Core Seg & Qua."
   },
   "athlete_ath-18_plan_indiv_ath-18_rita_r": {
     "id": "athlete_ath-18_plan_indiv_ath-18_rita_r",
@@ -3911,7 +4551,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Bloqueio articular seguro e proprioceção de tornozelo + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Bloqueio articular seguro e proprioceção de tornozelo + Core Seg & Qua."
   },
   "athlete_ath-19_plan_indiv_ath-19_sara_alves": {
     "id": "athlete_ath-19_plan_indiv_ath-19_sara_alves",
@@ -3922,7 +4562,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Core Seg & Qua."
   },
   "athlete_ath-20_plan_indiv_ath-20_sara_teixeira": {
     "id": "athlete_ath-20_plan_indiv_ath-20_sara_teixeira",
@@ -3933,7 +4573,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Core Seg & Qua."
   },
   "athlete_ath-21_plan_indiv_ath-21_serena": {
     "id": "athlete_ath-21_plan_indiv_ath-21_serena",
@@ -3944,7 +4584,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Core Seg & Qua."
   },
   "athlete_ath-22_plan_indiv_ath-22_simães": {
     "id": "athlete_ath-22_plan_indiv_ath-22_simães",
@@ -3955,7 +4595,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana e ativação do VMO + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana e ativação do VMO + Core Seg & Qua."
   },
   "athlete_ath-23_plan_indiv_ath-23_ticha": {
     "id": "athlete_ath-23_plan_indiv_ath-23_ticha",
@@ -3966,7 +4606,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Core Seg & Qua."
   },
   "athlete_ath-24_plan_indiv_ath-24_tita": {
     "id": "athlete_ath-24_plan_indiv_ath-24_tita",
@@ -3977,7 +4617,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Core Seg & Qua."
   },
   "athlete_ath-25_plan_indiv_ath-25_verónica": {
     "id": "athlete_ath-25_plan_indiv_ath-25_verónica",
@@ -3988,7 +4628,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Core Seg & Qua."
   },
   "athlete_ath-27_plan_indiv_ath-27_chelsea": {
     "id": "athlete_ath-27_plan_indiv_ath-27_chelsea",
@@ -3999,7 +4639,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Correção de assimetria bilateral e força excêntrica nórdica + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Correção de assimetria bilateral e força excêntrica nórdica + Core Seg & Qua."
   },
   "athlete_ath-1_prev_joelho_lca_menisco": {
     "id": "athlete_ath-1_prev_joelho_lca_menisco",
@@ -4010,7 +4650,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Ativação Neuromuscular Anti-Valgo."
+    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Core Seg & Qua."
   },
   "athlete_ath-4_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-4_prev_adutores_virilha_copenhagen",
@@ -4021,7 +4661,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Ativação Neuromuscular Anca e Core."
+    "notes": "Perfil profilático: Estabilidade pélvica, adutores e cadeia posterior + Core Seg & Qua."
   },
   "athlete_ath-6_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-6_prev_isquios_quads_excentrico",
@@ -4032,7 +4672,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Descompressão ciática e excêntrico do bíceps femoral + Core Seg & Qua."
   },
   "athlete_ath-7_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-7_prev_tornozelo_sindesmose_peroneais",
@@ -4043,7 +4683,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Estabilidade da sindesmose e proteção articular + Core Seg & Qua."
   },
   "athlete_ath-8_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-8_prev_adutores_virilha_copenhagen",
@@ -4054,7 +4694,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil profilático: Reforço preventivo de adutores e controlo de valgo + Core Seg & Qua."
   },
   "athlete_ath-10_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-10_prev_tornozelo_sindesmose_peroneais",
@@ -4065,7 +4705,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Core Seg & Qua."
   },
   "athlete_ath-12_prev_rotuliano_patelar_bipartida": {
     "id": "athlete_ath-12_prev_rotuliano_patelar_bipartida",
@@ -4076,7 +4716,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Analgesia fémoro-rotuliana com isometria a 90° e VMO + Core Seg & Qua."
   },
   "athlete_ath-14_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-14_prev_isquios_quads_excentrico",
@@ -4087,7 +4727,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Reforço excêntrico posterior e reatividade elástica + Core Seg & Qua."
   },
   "athlete_ath-15_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-15_prev_tornozelo_sindesmose_peroneais",
@@ -4098,7 +4738,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Core Seg & Qua."
   },
   "athlete_ath-17_prev_isquios_quads_excentrico": {
     "id": "athlete_ath-17_prev_isquios_quads_excentrico",
@@ -4109,7 +4749,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Excêntrico de isquiotibiais com deslizamento neural + Core Seg & Qua."
   },
   "athlete_ath-19_prev_joelho_lca_menisco": {
     "id": "athlete_ath-19_prev_joelho_lca_menisco",
@@ -4120,7 +4760,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Proteção máxima do enxerto LCA, co-contração e força + Core Seg & Qua."
   },
   "athlete_ath-20_prev_joelho_lca_menisco": {
     "id": "athlete_ath-20_prev_joelho_lca_menisco",
@@ -4131,7 +4771,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Controlo de valgo dinâmico, força excêntrica e VMO + Core Seg & Qua."
   },
   "athlete_ath-21_prev_joelho_lca_menisco": {
     "id": "athlete_ath-21_prev_joelho_lca_menisco",
@@ -4142,7 +4782,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Core Seg & Qua."
   },
   "athlete_ath-23_prev_adutores_virilha_copenhagen": {
     "id": "athlete_ath-23_prev_adutores_virilha_copenhagen",
@@ -4153,7 +4793,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Ativação Neuromuscular de Anca e Core."
+    "notes": "Perfil profilático: Adutores em alavanca curta e cadeia posterior + Core Seg & Qua."
   },
   "athlete_ath-24_prev_tornozelo_sindesmose_peroneais": {
     "id": "athlete_ath-24_prev_tornozelo_sindesmose_peroneais",
@@ -4164,7 +4804,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Deslize posterior do astrágalo, eversão de peroneais + Core Seg & Qua."
   },
   "athlete_ath-25_prev_joelho_lca_menisco": {
     "id": "athlete_ath-25_prev_joelho_lca_menisco",
@@ -4175,7 +4815,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
-    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Ativação Neuromuscular de Anca e Core."
+    "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Core Seg & Qua."
   }
 };
 

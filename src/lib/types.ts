@@ -242,6 +242,7 @@ export interface MobilityExercise {
   descriptionEn: string;
   drawingKey?: string; // e.g. "rotation-band-reach"
   imageSrc?: string; // e.g. "/exercises/squat_band_trunk_rotation_pro.svg"
+  daysOfWeek?: number[]; // [1, 3] = Monday (1) & Wednesday (3) only
 }
 
 export interface MobilityBlock {
