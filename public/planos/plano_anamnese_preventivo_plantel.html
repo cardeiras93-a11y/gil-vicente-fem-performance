@@ -4506,13 +4506,17 @@
       if (tab === 'general') {
         genBtn.className = 'px-3.5 py-1.5 rounded-lg transition font-black bg-emerald-600 text-white shadow-sm cursor-pointer';
         indBtn.className = 'px-3.5 py-1.5 rounded-lg transition font-black text-slate-400 hover:text-white cursor-pointer';
-        const firstGen = ALL_PLANS.find(p => p.id.startsWith('prev_'));
-        if (firstGen) currentSelectedPlanId = firstGen.id;
+        if (!currentSelectedPlanId || !currentSelectedPlanId.startsWith('prev_')) {
+          const firstGen = ALL_PLANS.find(p => p.id.startsWith('prev_'));
+          if (firstGen) currentSelectedPlanId = firstGen.id;
+        }
       } else {
         indBtn.className = 'px-3.5 py-1.5 rounded-lg transition font-black bg-emerald-600 text-white shadow-sm cursor-pointer';
         genBtn.className = 'px-3.5 py-1.5 rounded-lg transition font-black text-slate-400 hover:text-white cursor-pointer';
-        const firstInd = ALL_PLANS.find(p => p.id.startsWith('plan_indiv_'));
-        if (firstInd) currentSelectedPlanId = firstInd.id;
+        if (!currentSelectedPlanId || !currentSelectedPlanId.startsWith('plan_indiv_')) {
+          const firstInd = ALL_PLANS.find(p => p.id.startsWith('plan_indiv_'));
+          if (firstInd) currentSelectedPlanId = firstInd.id;
+        }
       }
       renderPills();
       renderDaySelector();
@@ -4736,8 +4740,25 @@
       if (e.key === 'Escape') closeExerciseModal();
     });
 
-    // Initialize
-    switchMainTab('general');
+    // Initialize with hash or query param support
+    const urlParams = new URLSearchParams(window.location.search);
+    const hash = (window.location.hash || '').replace('#', '').toLowerCase();
+    const planParam = urlParams.get('plan') || hash;
+    
+    let targetPlan = null;
+    if (planParam) {
+      targetPlan = ALL_PLANS.find(p => p.id.toLowerCase() === planParam || p.id.toLowerCase().includes(planParam));
+    }
+    
+    if (targetPlan && targetPlan.id.startsWith('plan_indiv_')) {
+      currentSelectedPlanId = targetPlan.id;
+      switchMainTab('individual');
+    } else if (targetPlan) {
+      currentSelectedPlanId = targetPlan.id;
+      switchMainTab('general');
+    } else {
+      switchMainTab('general');
+    }
   </script>
 </body>
 </html>
