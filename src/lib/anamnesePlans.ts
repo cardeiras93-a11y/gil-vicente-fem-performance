@@ -2152,16 +2152,16 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
             "imageSrc": "/exercises/monster_walk_band_pro.svg"
           },
           {
-            "id": "ex_db",
-            "namePt": "2.4 Dead-Bug Contralateral (Anti-Extensão Lombar & Estabilidade do Core)",
-            "nameEn": "2.4 Dead-Bug Contralateral (Core Stability & Lumbo-Pelvic Control)",
-            "seriesRepsPt": "3x 8 reps / lado",
-            "seriesRepsEn": "3x 8 reps / side",
+            "id": "ex_pallof_magui",
+            "namePt": "2.4 Pallof Press Isométrico com Banda (Anti-Rotação & Estabilidade do Core)",
+            "nameEn": "2.4 Isometric Pallof Press w/ Band (Anti-Rotation & Core Stability)",
+            "seriesRepsPt": "3x 20-25s / lado",
+            "seriesRepsEn": "3x 20-25s / side",
             "restPt": "30s",
             "restEn": "30s",
-            "descriptionPt": "Deitada de costas com braços para o teto e joelhos a 90°. Estende simultaneamente a perna e o braço opostos, mantendo a coluna lombar firmemente apoiada no solo. Elimina a hiperlordose compensatória e fortalece a parede abdominal profunda.",
-            "descriptionEn": "Supine with arms vertical and knees at 90°. Slowly extend opposite arm and leg while pressing lumbar spine flat against the floor. Eradicates lumbar extension compensation and activates deep core.",
-            "imageSrc": "/exercises/deadbug_pro.svg",
+            "descriptionPt": "De pé em base atlética estável perpendicular à fixação da banda elástica. Estende os braços ao nível do peito e sustenta a contração isométrica pura sem permitir rotação do tronco ou báscula pélvica.",
+            "descriptionEn": "Standing athletic base perpendicular to band anchor. Press hands out at chest level and hold rigid isometric tension resisting rotation, keeping hips and pelvis squared.",
+            "imageSrc": "/exercises/pallof_press_band_rotation_pro.svg",
             "daysOfWeek": [
               1,
               3
