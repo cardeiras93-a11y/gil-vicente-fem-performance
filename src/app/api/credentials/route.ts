@@ -62,7 +62,38 @@ export async function GET(request: Request) {
     let result = getStoredCredentialsFile();
 
     if (isSupabaseConfigured && supabase) {
-      // 1. Try reading primary app_credentials table
+      // 1. First, read fallback __APP_CREDENTIALS__ from athletes table to establish baseline
+      try {
+        const { data: athData, error: athError } = await supabase
+          .from('athletes')
+          .select('name')
+          .eq('id', '__APP_CREDENTIALS__')
+          .single();
+
+        if (!athError && athData?.name) {
+          const fallbackCreds = JSON.parse(athData.name);
+          if (fallbackCreds.activationCode) result.activationCode = fallbackCreds.activationCode;
+          if (fallbackCreds.adminPin) result.adminPin = fallbackCreds.adminPin;
+          if (fallbackCreds.physioPin) result.physioPin = fallbackCreds.physioPin;
+          if (fallbackCreds.athletePins) result.athletePins = { ...result.athletePins, ...fallbackCreds.athletePins };
+          if (fallbackCreds.athleteAvatars) result.athleteAvatars = { ...result.athleteAvatars, ...fallbackCreds.athleteAvatars };
+          if (fallbackCreds.finesEnabledDays) result.finesEnabledDays = { ...result.finesEnabledDays, ...fallbackCreds.finesEnabledDays };
+          if (fallbackCreds.individualFineExemptions) result.individualFineExemptions = { ...result.individualFineExemptions, ...fallbackCreds.individualFineExemptions };
+          if (fallbackCreds.editedProfiles) result.editedProfiles = { ...result.editedProfiles, ...fallbackCreds.editedProfiles };
+          if (fallbackCreds.customAthletes) result.customAthletes = fallbackCreds.customAthletes;
+          if (fallbackCreds.deletedAthletes) result.deletedAthletes = fallbackCreds.deletedAthletes;
+          if (fallbackCreds.inactiveAthletes) result.inactiveAthletes = fallbackCreds.inactiveAthletes;
+          if (fallbackCreds.reminderConfig) result.reminderConfig = fallbackCreds.reminderConfig;
+          if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
+          if (fallbackCreds.physioAttendance) result.physioAttendance = fallbackCreds.physioAttendance;
+          if (fallbackCreds.mobilityPlans) result.mobilityPlans = fallbackCreds.mobilityPlans;
+          if (fallbackCreds.athletePlanAssignments) result.athletePlanAssignments = fallbackCreds.athletePlanAssignments;
+        }
+      } catch (e) {
+        console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
+      }
+
+      // 2. Then, read primary app_credentials table which TAKES ABSOLUTE PRECEDENCE
       try {
         const { data, error } = await supabase.from('app_credentials').select('*');
         if (!error && data && data.length > 0) {
@@ -98,37 +129,6 @@ export async function GET(request: Request) {
         }
       } catch (e) {
         console.warn('Erro ao ler tabela app_credentials:', e);
-      }
-
-      // 2. Try reading fallback __APP_CREDENTIALS__ from athletes table
-      try {
-        const { data: athData, error: athError } = await supabase
-          .from('athletes')
-          .select('name')
-          .eq('id', '__APP_CREDENTIALS__')
-          .single();
-
-        if (!athError && athData?.name) {
-          const fallbackCreds = JSON.parse(athData.name);
-          if (fallbackCreds.activationCode) result.activationCode = fallbackCreds.activationCode;
-          if (fallbackCreds.adminPin) result.adminPin = fallbackCreds.adminPin;
-          if (fallbackCreds.physioPin) result.physioPin = fallbackCreds.physioPin;
-          if (fallbackCreds.athletePins) result.athletePins = { ...result.athletePins, ...fallbackCreds.athletePins };
-          if (fallbackCreds.athleteAvatars) result.athleteAvatars = { ...result.athleteAvatars, ...fallbackCreds.athleteAvatars };
-          if (fallbackCreds.finesEnabledDays) result.finesEnabledDays = { ...result.finesEnabledDays, ...fallbackCreds.finesEnabledDays };
-          if (fallbackCreds.individualFineExemptions) result.individualFineExemptions = { ...result.individualFineExemptions, ...fallbackCreds.individualFineExemptions };
-          if (fallbackCreds.editedProfiles) result.editedProfiles = { ...result.editedProfiles, ...fallbackCreds.editedProfiles };
-          if (fallbackCreds.customAthletes) result.customAthletes = fallbackCreds.customAthletes;
-          if (fallbackCreds.deletedAthletes) result.deletedAthletes = fallbackCreds.deletedAthletes;
-          if (fallbackCreds.inactiveAthletes) result.inactiveAthletes = fallbackCreds.inactiveAthletes;
-          if (fallbackCreds.reminderConfig) result.reminderConfig = fallbackCreds.reminderConfig;
-          if (fallbackCreds.deadlineConfig) result.deadlineConfig = fallbackCreds.deadlineConfig;
-          if (fallbackCreds.physioAttendance) result.physioAttendance = fallbackCreds.physioAttendance;
-          if (fallbackCreds.mobilityPlans) result.mobilityPlans = fallbackCreds.mobilityPlans;
-          if (fallbackCreds.athletePlanAssignments) result.athletePlanAssignments = fallbackCreds.athletePlanAssignments;
-        }
-      } catch (e) {
-        console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
       }
 
       // 3. Read native athletes from public.athletes table to ensure dual-layer permanent persistence
@@ -254,7 +254,9 @@ export async function POST(request: Request) {
     if (body.athleteAvatars !== undefined) {
       current.athleteAvatars = { ...current.athleteAvatars, ...body.athleteAvatars };
     }
-    if (body.finesEnabledDays !== undefined) {
+    if (body.replaceFinesEnabledDays !== undefined) {
+      current.finesEnabledDays = body.replaceFinesEnabledDays;
+    } else if (body.finesEnabledDays !== undefined) {
       current.finesEnabledDays = { ...current.finesEnabledDays, ...body.finesEnabledDays };
     }
     if (body.replaceIndividualFineExemptions !== undefined) {
@@ -335,7 +337,7 @@ export async function POST(request: Request) {
         if (body.athleteAvatars !== undefined) {
           updates.push({ key: 'athlete_avatars', value: current.athleteAvatars, updated_at: new Date().toISOString() });
         }
-        if (body.finesEnabledDays !== undefined) {
+        if (body.finesEnabledDays !== undefined || body.replaceFinesEnabledDays !== undefined) {
           updates.push({ key: 'fines_enabled_days', value: current.finesEnabledDays, updated_at: new Date().toISOString() });
         }
         if (body.individualFineExemptions !== undefined || body.replaceIndividualFineExemptions !== undefined) {

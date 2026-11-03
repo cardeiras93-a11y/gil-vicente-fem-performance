@@ -443,11 +443,9 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
       }
 
-      // 4b. Individual Fine Exemptions: Merge cloud and local so neither are wiped
+      // 4b. Individual Fine Exemptions: Cloud takes priority
       if (cloudIndividualFineExemptions && typeof cloudIndividualFineExemptions === 'object') {
-        const local = getStoredFineExemptions();
-        const merged = { ...cloudIndividualFineExemptions, ...local };
-        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(merged));
+        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(cloudIndividualFineExemptions));
       }
 
       // 5. Edited Profiles: Cloud is authoritative
@@ -918,18 +916,25 @@ export function getStoredFinesEnabledDays(): Record<string, boolean | DayFineCon
   }
 }
 
-export function saveFinesEnabledDays(map: Record<string, boolean | DayFineConfig>): void {
-  if (typeof window === 'undefined') return;
+export async function saveFinesEnabledDays(map: Record<string, boolean | DayFineConfig>): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(FINES_ENABLED_DAYS_KEY, JSON.stringify(map));
-    secureFetch('/api/credentials', {
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+    window.dispatchEvent(new Event('femperf_fines_updated'));
+
+    const res = await secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ finesEnabledDays: map }),
-    }).catch(() => {});
-    window.dispatchEvent(new Event('femperf_credentials_updated'));
+      body: JSON.stringify({
+        finesEnabledDays: map,
+        replaceFinesEnabledDays: map,
+      }),
+    });
+    return res.ok;
   } catch (e) {
     console.error('Erro ao guardar isenções/multas por dia:', e);
+    return false;
   }
 }
 
@@ -945,8 +950,8 @@ export function getStoredFineExemptions(): Record<string, IndividualFineExemptio
   }
 }
 
-export function saveFineExemptions(exemptions: IndividualFineExemption[]): void {
-  if (typeof window === 'undefined' || !exemptions || !exemptions.length) return;
+export async function saveFineExemptions(exemptions: IndividualFineExemption[]): Promise<boolean> {
+  if (typeof window === 'undefined' || !exemptions || !exemptions.length) return false;
   try {
     const current = getStoredFineExemptions();
     exemptions.forEach((ex) => {
@@ -981,24 +986,137 @@ export function saveFineExemptions(exemptions: IndividualFineExemption[]): void 
     });
 
     localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
-    secureFetch('/api/credentials', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ individualFineExemptions: current }),
-    }).catch(() => {});
     window.dispatchEvent(new Event('femperf_fines_updated'));
     window.dispatchEvent(new Event('femperf_credentials_updated'));
+
+    const res = await secureFetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        individualFineExemptions: current,
+        replaceIndividualFineExemptions: current,
+      }),
+    });
+    return res.ok;
   } catch (e) {
     console.error('Erro ao guardar isenções de multas:', e);
+    return false;
   }
 }
 
-export function saveFineExemption(exemption: IndividualFineExemption): void {
-  saveFineExemptions([exemption]);
+export function saveFineExemption(exemption: IndividualFineExemption): Promise<boolean> {
+  return saveFineExemptions([exemption]);
 }
 
-export function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'hydration' | 'all'): void {
-  if (typeof window === 'undefined') return;
+/**
+ * Retira / isenta a multa a TODAS as jogadoras do plantel para uma data e questionário específicos.
+ * Garante dupla camada de persistência (finesEnabledDays + individualFineExemptions + desmarcação de keepFine)
+ * e gravação imediata na nuvem para que nunca reverta ao fazer refresh.
+ */
+export async function waiveFineForAllAthletes(
+  date: string,
+  type: 'wellness' | 'rpe' | 'hydration' | 'all'
+): Promise<{ success: boolean; athletesCount: number; date: string; type: string }> {
+  if (typeof window === 'undefined') return { success: false, athletesCount: 0, date, type };
+  try {
+    const athletes = getDynamicAthletes();
+    const now = new Date().toISOString();
+
+    // 1. Atualizar configuração do dia (finesEnabledDays) desativando a multa no questionário indicado
+    const currentDays = getStoredFinesEnabledDays();
+    const schedule = getStoredCalendarSchedule();
+    const dayType = schedule[date] || 'training';
+    const currentCfg = normalizeDayFineConfig(currentDays[date], dayType);
+
+    const updatedCfg: DayFineConfig = {
+      wellness: (type === 'wellness' || type === 'all') ? false : currentCfg.wellness,
+      rpe: (type === 'rpe' || type === 'all') ? false : currentCfg.rpe,
+      hydration: (type === 'hydration' || type === 'all') ? false : currentCfg.hydration,
+    };
+    currentDays[date] = updatedCfg;
+    localStorage.setItem(FINES_ENABLED_DAYS_KEY, JSON.stringify(currentDays));
+
+    // 2. Retirar keepFine de submissões fora de horas já aprovadas para esse dia
+    if (type === 'wellness' || type === 'all') {
+      const wList = getWellnessLocally();
+      wList.forEach((w) => {
+        if (w.date === date && w.keepFine) {
+          w.keepFine = false;
+          saveWellnessLocally(w);
+        }
+      });
+    }
+    if (type === 'rpe' || type === 'all') {
+      const rList = getRPELocally();
+      rList.forEach((r) => {
+        if (r.date === date && r.keepFine) {
+          r.keepFine = false;
+          saveRPELocally(r);
+        }
+      });
+    }
+
+    // 3. Registar isenções individuais para todo o plantel
+    const currentExemptions = getStoredFineExemptions();
+    athletes.forEach((ath) => {
+      const cleanId = (ath.id || '').trim();
+      const cleanName = (ath.name || '').trim();
+      const slug = cleanName.toLowerCase().replace(/\s+/g, '-');
+
+      const typesToSet = type === 'all'
+        ? (['wellness', 'rpe', 'hydration', 'all'] as const)
+        : ([type] as const);
+
+      typesToSet.forEach((t) => {
+        const ex: IndividualFineExemption = {
+          id: `${cleanId}_${date}_${t}`,
+          athleteId: cleanId,
+          athleteName: cleanName,
+          date,
+          type: t as any,
+          waivedAt: now,
+          reason: 'Isenção coletiva aplicada pelo treinador',
+        };
+        currentExemptions[`${cleanId}_${date}_${t}`] = ex;
+        if (cleanName) {
+          currentExemptions[`${cleanName}_${date}_${t}`] = ex;
+          if (slug) currentExemptions[`${slug}_${date}_${t}`] = ex;
+        }
+      });
+    });
+    localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(currentExemptions));
+
+    // 4. Disparar eventos imediatos para atualizar a UI em tempo real
+    window.dispatchEvent(new Event('femperf_fines_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+    window.dispatchEvent(new Event('femperf_data_updated'));
+
+    // 5. Gravação atómica e definitiva na nuvem (Supabase + fallback) sem perdas
+    const cloudRes = await secureFetch('/api/credentials', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        finesEnabledDays: currentDays,
+        replaceFinesEnabledDays: currentDays,
+        individualFineExemptions: currentExemptions,
+        replaceIndividualFineExemptions: currentExemptions,
+      }),
+    });
+
+    return {
+      success: cloudRes.ok,
+      athletesCount: athletes.length,
+      date,
+      type,
+    };
+  } catch (e) {
+    console.error('Erro ao retirar multa a todas as jogadoras:', e);
+    return { success: false, athletesCount: 0, date, type };
+  }
+}
+
+export async function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'hydration' | 'all'): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
   try {
     const current = getStoredFineExemptions();
     const cleanId = (athleteId || '').trim();
@@ -1026,15 +1144,18 @@ export function removeFineExemption(athleteId: string, date: string, type: 'well
     });
 
     localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(current));
-    secureFetch('/api/credentials', {
+    window.dispatchEvent(new Event('femperf_fines_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+
+    const res = await secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ replaceIndividualFineExemptions: current }),
-    }).catch(() => {});
-    window.dispatchEvent(new Event('femperf_fines_updated'));
-    window.dispatchEvent(new Event('femperf_credentials_updated'));
+    });
+    return res.ok;
   } catch (e) {
     console.error('Erro ao remover isenção individual de multa:', e);
+    return false;
   }
 }
 

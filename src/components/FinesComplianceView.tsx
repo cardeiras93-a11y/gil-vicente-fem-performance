@@ -24,13 +24,14 @@ import {
   removeFineExemption,
   isFineExempt,
   approveWellnessSubmission,
-  approveRPESubmission
+  approveRPESubmission,
+  waiveFineForAllAthletes,
 } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import {
   AlertTriangle, Calendar, CheckCircle2, ChevronDown, ChevronUp, Copy,
   Euro, ShieldAlert, Sparkles, UserX, Dumbbell, Coffee, FileSpreadsheet, Trophy, Check, X,
-  HeartPulse, Scale, Settings2, Clock, Trash2, RotateCcw, LayoutGrid, List, Users
+  HeartPulse, Scale, Settings2, Clock, Trash2, RotateCcw, LayoutGrid, List, Users, Loader2
 } from 'lucide-react';
 
 interface FinesComplianceViewProps {
@@ -114,6 +115,58 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Individual fine exemptions (athleteId_date_type -> IndividualFineExemption)
   const [fineExemptions, setFineExemptions] = useState<Record<string, IndividualFineExemption>>(() => getStoredFineExemptions());
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
+
+  // Squad-wide Fine Waiver Modal State (retirar multa a todas as jogadoras)
+  const [showWaiveModal, setShowWaiveModal] = useState<boolean>(false);
+  const [waiveDate, setWaiveDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [waiveQuestionnaire, setWaiveQuestionnaire] = useState<'wellness' | 'rpe' | 'hydration' | 'all'>('all');
+  const [isWaivingSquadFine, setIsWaivingSquadFine] = useState<boolean>(false);
+
+  // Quick helper dates
+  const getTodayDateStr = () => new Date().toISOString().split('T')[0];
+  const getYesterdayDateStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split('T')[0];
+  };
+  const getTomorrowDateStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  // Remove fine for all athletes on a specific date and questionnaire
+  const handleWaiveFineForAll = async (
+    targetDate: string = waiveDate,
+    targetType: 'wellness' | 'rpe' | 'hydration' | 'all' = waiveQuestionnaire
+  ) => {
+    if (!targetDate) return;
+    setIsWaivingSquadFine(true);
+    try {
+      const result = await waiveFineForAllAthletes(targetDate, targetType);
+      setFinesEnabledDays(getStoredFinesEnabledDays());
+      setFineExemptions(getStoredFineExemptions());
+
+      const qLabel =
+        targetType === 'wellness'
+          ? 'Wellness (Manhã)'
+          : targetType === 'rpe'
+          ? 'PSE / RPE'
+          : targetType === 'hydration'
+          ? 'Pesagem (Hidratação)'
+          : 'Todos os Questionários';
+
+      setActionFeedback(`✓ Multa de ${qLabel} do dia ${targetDate} retirada com sucesso a todas as ${result.athletesCount} jogadoras! Guardada permanentemente na nuvem.`);
+      setTimeout(() => setActionFeedback(null), 7000);
+      setShowWaiveModal(false);
+    } catch (e) {
+      console.error('Erro ao retirar multa ao plantel:', e);
+      setActionFeedback('⚠️ Erro ao retirar multa ao plantel. Tente novamente.');
+      setTimeout(() => setActionFeedback(null), 5000);
+    } finally {
+      setIsWaivingSquadFine(false);
+    }
+  };
 
   useEffect(() => {
     setManualDayTypes(getStoredCalendarSchedule());
@@ -418,23 +471,40 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   };
 
   // Save updated fine config from modal
-  const handleSaveModalFineConfig = (applyToMatchingDayType: boolean = false) => {
+  const handleSaveModalFineConfig = async (applyToMatchingDayType: boolean = false) => {
     if (!configuringDate) return;
     const targetType = dayTypesMap[configuringDate];
     const updated = { ...finesEnabledDays };
 
+    const targetDates: string[] = [];
     if (applyToMatchingDayType && targetType) {
       datesInMonth.forEach((dStr) => {
         if (dayTypesMap[dStr] === targetType) {
           updated[dStr] = { ...modalFineConfig };
+          targetDates.push(dStr);
         }
       });
     } else {
       updated[configuringDate] = { ...modalFineConfig };
+      targetDates.push(configuringDate);
     }
 
     setFinesEnabledDays(updated);
-    saveFinesEnabledDays(updated);
+    await saveFinesEnabledDays(updated);
+
+    // If any questionnaire was set to false (isento), ensure late keepFine are cleared and exemptions recorded
+    for (const d of targetDates) {
+      if (!modalFineConfig.wellness) {
+        await waiveFineForAllAthletes(d, 'wellness');
+      }
+      if (!modalFineConfig.rpe) {
+        await waiveFineForAllAthletes(d, 'rpe');
+      }
+      if (!modalFineConfig.hydration) {
+        await waiveFineForAllAthletes(d, 'hydration');
+      }
+    }
+    setFineExemptions(getStoredFineExemptions());
 
     // Save custom deadlines for this specific date
     try {
@@ -748,6 +818,20 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               className="w-16 bg-transparent text-xs font-extrabold text-brand-lime text-center focus:outline-none"
             />
           </div>
+
+          {/* Squad Fine Waiver Button */}
+          <button
+            type="button"
+            onClick={() => {
+              setWaiveDate(todayStr);
+              setShowWaiveModal(true);
+            }}
+            className="flex items-center space-x-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-brand-lime border border-brand-lime/40 hover:border-brand-lime px-3.5 py-2 text-xs font-black shadow-lg shadow-black/40 transition-all active:scale-95 cursor-pointer"
+            title="Retirar multa a todas as jogadoras num dia e questionário específicos"
+          >
+            <ShieldAlert className="h-4 w-4 text-brand-lime shrink-0" />
+            <span>Retirar Multa ao Plantel</span>
+          </button>
 
           {/* Copy Report Button */}
           <button
@@ -1171,13 +1255,27 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       {/* Roster Fines & Compliance Master Table */}
       {(finesSubTab === 'table' || finesSubTab === 'all') && (
         <div className="space-y-3 rounded-2xl border border-slate-800 bg-dark-card p-5 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-extrabold text-slate-100 uppercase tracking-wide">
-            Contabilização do Plantel ({complianceReports.length} Jogadoras)
-          </h3>
-          <span className="text-xs font-bold text-slate-400">
-            {pastAndTodayFineActiveDates.length} dias com multa avaliados até hoje
-          </span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-100 uppercase tracking-wide">
+              Contabilização do Plantel ({complianceReports.length} Jogadoras)
+            </h3>
+            <span className="text-xs font-bold text-slate-400">
+              {pastAndTodayFineActiveDates.length} dias com multa avaliados até hoje
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setWaiveDate(todayStr);
+              setShowWaiveModal(true);
+            }}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-extrabold transition-all cursor-pointer self-start sm:self-auto shadow-sm active:scale-95"
+            title="Retirar multa de um questionário e dia específico a todo o plantel"
+          >
+            <ShieldAlert className="h-3.5 w-3.5" />
+            <span>Retirar Multa a Todas</span>
+          </button>
         </div>
 
         <div className="overflow-x-auto">
@@ -1800,12 +1898,39 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               </div>
             </div>
 
+            {/* Quick Action: Waive all for squad on this specific date */}
+            <div className="pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (configuringDate) {
+                    await handleWaiveFineForAll(configuringDate, 'all');
+                    setConfiguringDate(null);
+                  }
+                }}
+                disabled={isWaivingSquadFine}
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-black transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95 shadow-sm disabled:opacity-50"
+              >
+                {isWaivingSquadFine ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>A retirar multas do plantel...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldAlert className="h-4 w-4 text-rose-400" />
+                    <span>Retirar Todas as Multas Deste Dia a Todo o Plantel ({configuringDate})</span>
+                  </>
+                )}
+              </button>
+            </div>
+
             {/* Modal Bottom Actions */}
             <div className="pt-2 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => handleSaveModalFineConfig(true)}
-                className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-center"
+                className="w-full sm:w-auto px-3.5 py-2 rounded-xl text-xs font-bold border border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white transition-all text-center cursor-pointer"
               >
                 Aplicar a todos os{' '}
                 {dayTypesMap[configuringDate] === 'training'
@@ -1820,18 +1945,223 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setConfiguringDate(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={() => handleSaveModalFineConfig(false)}
-                  className="px-5 py-2 rounded-xl text-xs font-black bg-brand-lime text-slate-950 shadow-lg shadow-brand-lime/20 hover:bg-lime-400 transition-all active:scale-95"
+                  className="px-5 py-2 rounded-xl text-xs font-black bg-brand-lime text-slate-950 shadow-lg shadow-brand-lime/20 hover:bg-lime-400 transition-all active:scale-95 cursor-pointer"
                 >
                   Confirmar & Guardar
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Squad-wide Fine Waiver Modal */}
+      {showWaiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg rounded-2xl border border-slate-700 bg-dark-card p-6 shadow-2xl space-y-5">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400">
+                  <ShieldAlert className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-100 uppercase tracking-tight">
+                    Retirar Multa a Todas as Jogadoras
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Isenção definitiva por dia e questionário específico ({athletes.length} atletas)
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowWaiveModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Date Selection */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-300 block">
+                1. Seleciona o Dia em Específico:
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center space-x-2 bg-dark-surface border border-slate-700 px-3 py-2 rounded-xl flex-1 min-w-[180px]">
+                  <Calendar className="h-4 w-4 text-brand-lime shrink-0" />
+                  <input
+                    type="date"
+                    value={waiveDate}
+                    onChange={(e) => setWaiveDate(e.target.value)}
+                    className="bg-transparent text-xs font-bold text-slate-100 focus:outline-none w-full cursor-pointer"
+                  />
+                </div>
+                <div className="flex items-center space-x-1">
+                  <button
+                    type="button"
+                    onClick={() => setWaiveDate(getTodayDateStr())}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-black border transition-all cursor-pointer ${
+                      waiveDate === getTodayDateStr()
+                        ? 'bg-rose-600 text-white border-rose-500'
+                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                    }`}
+                  >
+                    Hoje
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWaiveDate(getYesterdayDateStr())}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-black border transition-all cursor-pointer ${
+                      waiveDate === getYesterdayDateStr()
+                        ? 'bg-rose-600 text-white border-rose-500'
+                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                    }`}
+                  >
+                    Ontem
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setWaiveDate(getTomorrowDateStr())}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-black border transition-all cursor-pointer ${
+                      waiveDate === getTomorrowDateStr()
+                        ? 'bg-rose-600 text-white border-rose-500'
+                        : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
+                    }`}
+                  >
+                    Amanhã
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Questionnaire Selection */}
+            <div className="space-y-2">
+              <label className="text-xs font-black uppercase tracking-wider text-slate-300 block">
+                2. Seleciona o Questionário a Isentar:
+              </label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Option 1: Wellness */}
+                <div
+                  onClick={() => setWaiveQuestionnaire('wellness')}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                    waiveQuestionnaire === 'wellness'
+                      ? 'border-emerald-500 bg-emerald-950/40 text-emerald-200 shadow-md ring-1 ring-emerald-500/50'
+                      : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg ${waiveQuestionnaire === 'wellness' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <HeartPulse className="h-4 w-4" />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-black text-slate-100">Wellness</p>
+                    <p className="text-[10px] text-slate-400 truncate">Questionário Matinal</p>
+                  </div>
+                </div>
+
+                {/* Option 2: PSE */}
+                <div
+                  onClick={() => setWaiveQuestionnaire('rpe')}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                    waiveQuestionnaire === 'rpe'
+                      ? 'border-cyan-500 bg-cyan-950/40 text-cyan-200 shadow-md ring-1 ring-cyan-500/50'
+                      : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg ${waiveQuestionnaire === 'rpe' ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Dumbbell className="h-4 w-4" />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-black text-slate-100">PSE / RPE</p>
+                    <p className="text-[10px] text-slate-400 truncate">Perceção Pós-Treino/Jogo</p>
+                  </div>
+                </div>
+
+                {/* Option 3: Hydration */}
+                <div
+                  onClick={() => setWaiveQuestionnaire('hydration')}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                    waiveQuestionnaire === 'hydration'
+                      ? 'border-blue-500 bg-blue-950/40 text-blue-200 shadow-md ring-1 ring-blue-500/50'
+                      : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg ${waiveQuestionnaire === 'hydration' ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Scale className="h-4 w-4" />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-black text-slate-100">Pesagem</p>
+                    <p className="text-[10px] text-slate-400 truncate">Hidratação Pré / Pós</p>
+                  </div>
+                </div>
+
+                {/* Option 4: All */}
+                <div
+                  onClick={() => setWaiveQuestionnaire('all')}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                    waiveQuestionnaire === 'all'
+                      ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-md ring-1 ring-amber-500/50'
+                      : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg ${waiveQuestionnaire === 'all' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-black text-slate-100">Todos os Questionários</p>
+                    <p className="text-[10px] text-slate-400 truncate">Isenção 100% integral</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Anti-reversion guarantee badge */}
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/20 p-3 text-xs space-y-1">
+              <div className="flex items-center space-x-2 text-emerald-400 font-bold">
+                <CheckCircle2 className="h-4 w-4 shrink-0" />
+                <span>Garantia de Gravação Permanente</span>
+              </div>
+              <p className="text-[11px] text-slate-300">
+                Esta ação desativa a multa e isenta automaticamente todas as <strong>{athletes.length} jogadoras</strong>, remove multas de eventuais atrasos já aprovados e grava diretamente na nuvem (Supabase), garantindo que ao fazer refresh ou mudar de separador <strong>não volta atrás</strong>.
+              </p>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-end space-x-3 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowWaiveModal(false)}
+                disabled={isWaivingSquadFine}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all cursor-pointer disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleWaiveFineForAll(waiveDate, waiveQuestionnaire)}
+                disabled={isWaivingSquadFine}
+                className="px-5 py-2.5 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30 transition-all active:scale-95 cursor-pointer flex items-center space-x-2 disabled:opacity-50"
+              >
+                {isWaivingSquadFine ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>A gravar na nuvem...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 stroke-[3]" />
+                    <span>Confirmar & Retirar Multa</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
