@@ -201,7 +201,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   }, []);
 
   // Eliminate fine individually for an athlete on a specific date
-  const handleEliminateFine = (
+  const handleEliminateFine = async (
     athleteId: string,
     athleteName: string,
     date: string,
@@ -235,7 +235,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       reason: 'Eliminada pelo treinador',
     };
 
-    saveFineExemption(newExemption);
+    await saveFineExemption(newExemption);
     setFineExemptions(getStoredFineExemptions());
 
     const typeLabel =
@@ -247,12 +247,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         ? 'Falta Pesagem'
         : 'Multa';
 
-    setActionFeedback(`✓ ${typeLabel} (${date}) eliminada com sucesso para ${athleteName}.`);
+    setActionFeedback(`✓ ${typeLabel} (${date}) eliminada com sucesso para ${athleteName}. Guardada na nuvem.`);
     setTimeout(() => setActionFeedback(null), 4000);
   };
 
   // Eliminate all fines in month atomically for an athlete
-  const handleEliminateAllFinesForAthlete = (
+  const handleEliminateAllFinesForAthlete = async (
     athleteId: string,
     athleteName: string,
     failedDates: AthleteComplianceReport['failedDates']
@@ -286,21 +286,21 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       reason: 'Eliminada pelo treinador',
     }));
 
-    saveFineExemptions(exemptionsToSave);
+    await saveFineExemptions(exemptionsToSave);
     setFineExemptions(getStoredFineExemptions());
 
-    setActionFeedback(`✓ Todas as ${failedDates.length} datas de multa eliminadas com sucesso para ${athleteName}.`);
+    setActionFeedback(`✓ Todas as ${failedDates.length} datas de multa eliminadas com sucesso para ${athleteName}. Guardadas na nuvem.`);
     setTimeout(() => setActionFeedback(null), 4000);
   };
 
   // Restore/re-activate fine individually
-  const handleRestoreFine = (
+  const handleRestoreFine = async (
     athleteId: string,
     athleteName: string,
     date: string,
     type: 'wellness' | 'rpe' | 'hydration' | 'all'
   ) => {
-    removeFineExemption(athleteId, date, type);
+    await removeFineExemption(athleteId, date, type);
     setFineExemptions(getStoredFineExemptions());
 
     const typeLabel =

@@ -438,14 +438,51 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(cloudAthleteAvatars));
       }
 
-      // 4. Fines Enabled Days: Cloud takes priority
+      // 4. Fines Enabled Days: Safe two-way merge (never wipe user waivers)
+      const localDays = getStoredFinesEnabledDays();
+      const mergedDays: Record<string, boolean | DayFineConfig> = { ...localDays };
       if (cloudFinesEnabledDays && typeof cloudFinesEnabledDays === 'object') {
-        localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
+        Object.entries(cloudFinesEnabledDays).forEach(([d, cfg]) => {
+          if (mergedDays[d] === undefined) {
+            mergedDays[d] = cfg as any;
+          } else {
+            // Both exist: if either local or cloud has a waived questionnaire (false), honor the waiver!
+            const localCfg = normalizeDayFineConfig(mergedDays[d]);
+            const cloudCfg = normalizeDayFineConfig(cfg as any);
+            mergedDays[d] = {
+              wellness: localCfg.wellness && cloudCfg.wellness,
+              rpe: localCfg.rpe && cloudCfg.rpe,
+              hydration: localCfg.hydration && cloudCfg.hydration,
+            };
+          }
+        });
       }
+      localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(mergedDays));
 
-      // 4b. Individual Fine Exemptions: Cloud takes priority
-      if (cloudIndividualFineExemptions && typeof cloudIndividualFineExemptions === 'object') {
-        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(cloudIndividualFineExemptions));
+      // 4b. Individual Fine Exemptions: Safe merge (exemptions are never lost)
+      const localExemptions = getStoredFineExemptions();
+      const mergedExemptions = {
+        ...(cloudIndividualFineExemptions || {}),
+        ...localExemptions, // Preserve all local exemptions
+      };
+      localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(mergedExemptions));
+
+      // If local had dates or exemptions missing in cloud, heal cloud immediately
+      const missingInCloud =
+        Object.keys(mergedDays).some((k) => !cloudFinesEnabledDays || cloudFinesEnabledDays[k] === undefined) ||
+        Object.keys(mergedExemptions).some((k) => !cloudIndividualFineExemptions || cloudIndividualFineExemptions[k] === undefined);
+
+      if (missingInCloud) {
+        secureFetch('/api/credentials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            finesEnabledDays: mergedDays,
+            replaceFinesEnabledDays: mergedDays,
+            individualFineExemptions: mergedExemptions,
+            replaceIndividualFineExemptions: mergedExemptions,
+          }),
+        }).catch(() => {});
       }
 
       // 5. Edited Profiles: Cloud is authoritative
@@ -705,6 +742,8 @@ export async function syncAllDataFromCloud(): Promise<void> {
           map.set(key, {
             ...existing,
             ...item,
+            keepFine: (existing.keepFine === false) ? false : (item.keepFine ?? existing.keepFine),
+            approvalStatus: (existing.approvalStatus === 'approved') ? 'approved' : (item.approvalStatus || existing.approvalStatus),
             morningWeight: Number(item.morningWeight) > 0 ? item.morningWeight : existing.morningWeight,
           });
         } else {
@@ -745,7 +784,12 @@ export async function syncAllDataFromCloud(): Promise<void> {
         const key = getKey(item);
         const existing = map.get(key);
         if (existing) {
-          map.set(key, { ...existing, ...item });
+          map.set(key, {
+            ...existing,
+            ...item,
+            keepFine: (existing.keepFine === false) ? false : (item.keepFine ?? existing.keepFine),
+            approvalStatus: (existing.approvalStatus === 'approved') ? 'approved' : (item.approvalStatus || existing.approvalStatus),
+          });
         } else {
           map.set(key, item);
         }

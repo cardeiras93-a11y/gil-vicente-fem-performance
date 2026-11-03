@@ -93,44 +93,6 @@ export async function GET(request: Request) {
         console.warn('Erro ao ler fallback __APP_CREDENTIALS__ de athletes:', e);
       }
 
-      // 2. Then, read primary app_credentials table which TAKES ABSOLUTE PRECEDENCE
-      try {
-        const { data, error } = await supabase.from('app_credentials').select('*');
-        if (!error && data && data.length > 0) {
-          data.forEach((item: any) => {
-            if (item.key === 'activation_code' && item.value?.code) {
-              result.activationCode = item.value.code;
-            } else if (item.key === 'admin_pin' && item.value?.pin) {
-              result.adminPin = item.value.pin;
-            } else if (item.key === 'physio_pin' && item.value?.pin) {
-              result.physioPin = item.value.pin;
-            } else if (item.key === 'athlete_pins' && item.value) {
-              result.athletePins = { ...result.athletePins, ...item.value };
-            } else if (item.key === 'athlete_avatars' && item.value) {
-              result.athleteAvatars = { ...result.athleteAvatars, ...item.value };
-            } else if (item.key === 'fines_enabled_days' && item.value) {
-              result.finesEnabledDays = { ...result.finesEnabledDays, ...item.value };
-            } else if (item.key === 'individual_fine_exemptions' && item.value) {
-              result.individualFineExemptions = { ...result.individualFineExemptions, ...item.value };
-            } else if (item.key === 'edited_profiles' && item.value) {
-              result.editedProfiles = { ...result.editedProfiles, ...item.value };
-            } else if (item.key === 'custom_athletes' && item.value) {
-              result.customAthletes = item.value;
-            } else if (item.key === 'reminder_config' && item.value) {
-              result.reminderConfig = item.value;
-            } else if (item.key === 'deadline_config' && item.value) {
-              result.deadlineConfig = item.value;
-            } else if (item.key === 'mobility_plans' && item.value) {
-              result.mobilityPlans = item.value;
-            } else if (item.key === 'athlete_plan_assignments' && item.value) {
-              result.athletePlanAssignments = item.value;
-            }
-          });
-        }
-      } catch (e) {
-        console.warn('Erro ao ler tabela app_credentials:', e);
-      }
-
       // 3. Read native athletes from public.athletes table to ensure dual-layer permanent persistence
       try {
         const { data: dbAthletes, error: athError } = await supabase
@@ -319,68 +281,33 @@ export async function POST(request: Request) {
     saveCredentialsFile(current);
 
     if (isSupabaseConfigured && supabase) {
-      // 1. Try upserting to primary app_credentials table
+      // 1. Direct, guaranteed atomic save to __APP_CREDENTIALS__ in athletes table
       try {
-        const updates = [];
-        if (body.activationCode !== undefined) {
-          updates.push({ key: 'activation_code', value: { code: body.activationCode }, updated_at: new Date().toISOString() });
-        }
-        if (body.adminPin !== undefined) {
-          updates.push({ key: 'admin_pin', value: { pin: body.adminPin }, updated_at: new Date().toISOString() });
-        }
-        if (body.physioPin !== undefined) {
-          updates.push({ key: 'physio_pin', value: { pin: body.physioPin }, updated_at: new Date().toISOString() });
-        }
-        if (body.athletePins !== undefined) {
-          updates.push({ key: 'athlete_pins', value: current.athletePins, updated_at: new Date().toISOString() });
-        }
-        if (body.athleteAvatars !== undefined) {
-          updates.push({ key: 'athlete_avatars', value: current.athleteAvatars, updated_at: new Date().toISOString() });
-        }
-        if (body.finesEnabledDays !== undefined || body.replaceFinesEnabledDays !== undefined) {
-          updates.push({ key: 'fines_enabled_days', value: current.finesEnabledDays, updated_at: new Date().toISOString() });
-        }
-        if (body.individualFineExemptions !== undefined || body.replaceIndividualFineExemptions !== undefined) {
-          updates.push({ key: 'individual_fine_exemptions', value: current.individualFineExemptions, updated_at: new Date().toISOString() });
-        }
-        if (body.editedProfiles !== undefined) {
-          updates.push({ key: 'edited_profiles', value: current.editedProfiles, updated_at: new Date().toISOString() });
-        }
-        if (body.customAthletes !== undefined) {
-          updates.push({ key: 'custom_athletes', value: current.customAthletes, updated_at: new Date().toISOString() });
-        }
-        if (body.reminderConfig !== undefined) {
-          updates.push({ key: 'reminder_config', value: current.reminderConfig, updated_at: new Date().toISOString() });
-        }
-        if (body.deadlineConfig !== undefined) {
-          updates.push({ key: 'deadline_config', value: current.deadlineConfig, updated_at: new Date().toISOString() });
-        }
-        if (body.mobilityPlans !== undefined) {
-          updates.push({ key: 'mobility_plans', value: current.mobilityPlans, updated_at: new Date().toISOString() });
-        }
-        if (body.athletePlanAssignments !== undefined) {
-          updates.push({ key: 'athlete_plan_assignments', value: current.athletePlanAssignments, updated_at: new Date().toISOString() });
-        }
-
-        if (updates.length > 0) {
-          await supabase.from('app_credentials').upsert(updates, { onConflict: 'key' });
+        const payload = {
+          id: '__APP_CREDENTIALS__',
+          name: JSON.stringify(current),
+          created_at: new Date().toISOString(),
+        };
+        const { error: upsertErr } = await supabase.from('athletes').upsert(payload, { onConflict: 'id' });
+        if (upsertErr) {
+          console.warn('supabase-js upsert warning, using direct REST:', upsertErr);
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+          const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+          if (supabaseUrl && supabaseKey) {
+            await fetch(`${supabaseUrl}/rest/v1/athletes?on_conflict=id`, {
+              method: 'POST',
+              headers: {
+                'apikey': supabaseKey,
+                'Authorization': `Bearer ${supabaseKey}`,
+                'Content-Type': 'application/json',
+                'Prefer': 'resolution=merge-duplicates',
+              },
+              body: JSON.stringify(payload),
+            });
+          }
         }
       } catch (e) {
-        console.warn('Falha no upsert app_credentials (ignorado):', e);
-      }
-
-      // 2. Always upsert to fallback __APP_CREDENTIALS__ row in athletes table for guaranteed persistence
-      try {
-        await supabase.from('athletes').upsert(
-          {
-            id: '__APP_CREDENTIALS__',
-            name: JSON.stringify(current),
-            created_at: new Date().toISOString(),
-          },
-          { onConflict: 'id' }
-        );
-      } catch (e) {
-        console.error('Erro ao guardar fallback em athletes:', e);
+        console.error('Erro ao guardar __APP_CREDENTIALS__ em athletes:', e);
       }
 
       // 3. Upsert custom athletes directly into public.athletes table
