@@ -238,8 +238,9 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
       const planMap = new Map<string, MobilityPlan>();
       INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, p));
       parsed.forEach((p: MobilityPlan) => {
-        if (p && p.id && !planMap.has(p.id) && p.id !== 'mobility-gk-pre-training') {
-          planMap.set(p.id, p);
+        if (p && p.id && p.id !== 'mobility-gk-pre-training') {
+          const existing = planMap.get(p.id);
+          planMap.set(p.id, existing ? { ...existing, ...p } : p);
         }
       });
       return Array.from(planMap.values());
@@ -530,6 +531,13 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
       }
     }
   }
+
+  // Prioritize individual dedicated plans (e.g. plan_indiv_ath-10_magui) so they always appear first as default!
+  assignedPlans.sort((a, b) => {
+    const aIsIndiv = (a.id.startsWith('plan_indiv_') || (athlete && a.id.includes(athlete.id))) ? 1 : 0;
+    const bIsIndiv = (b.id.startsWith('plan_indiv_') || (athlete && b.id.includes(athlete.id))) ? 1 : 0;
+    return bIsIndiv - aIsIndiv;
+  });
 
   return assignedPlans;
 }

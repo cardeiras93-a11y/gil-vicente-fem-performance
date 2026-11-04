@@ -247,6 +247,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                 { day: 5, labelPt: 'Sex', labelEn: 'Fri', hasCore: false },
                 { day: 6, labelPt: 'Sáb', labelEn: 'Sat', hasCore: false },
                 { day: 0, labelPt: 'Dom', labelEn: 'Sun', hasCore: false },
+                { day: -1, labelPt: 'Todos', labelEn: 'All', hasCore: true },
               ].map((d) => {
                 const isSelected = selectedDay === d.day;
                 const isToday = realTodayDay === d.day;
@@ -257,7 +258,9 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                     onClick={() => setSelectedDay(d.day)}
                     className={`px-2.5 py-1 rounded-xl text-[10px] font-black uppercase transition-all flex items-center space-x-1 shrink-0 cursor-pointer ${
                       isSelected
-                        ? d.hasCore
+                        ? d.day === -1
+                          ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
+                          : d.hasCore
                           ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/30'
                           : 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
                         : 'bg-slate-800/80 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
@@ -279,6 +282,7 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
               const isSec2 = idx === 1 || block.number === '02' || block.titlePt.toLowerCase().includes('ativação') || block.titlePt.toLowerCase().includes('força');
               
               const visibleExercises = block.exercises.filter((ex) => {
+                if (selectedDay === -1) return true; // Show all
                 if (!ex.daysOfWeek || ex.daysOfWeek.length === 0) return true;
                 return ex.daysOfWeek.includes(selectedDay);
               });
@@ -393,6 +397,36 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
                       );
                     })}
                   </div>
+
+                  {/* Scheduled Exercises Notice (e.g., Core scheduled on Mon & Wed) */}
+                  {block.exercises.some((ex) => ex.daysOfWeek && !ex.daysOfWeek.includes(selectedDay)) && selectedDay !== -1 && (
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 mt-2">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-sm">⚡</span>
+                        <span className="text-[11px] font-semibold">
+                          {isEn
+                            ? 'Additional Core exercise scheduled for Mon & Wed (e.g. Pallof Press)'
+                            : 'Exercício de Core agendado para Seg & Qua (ex: Pallof Press Isométrico)'}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2 self-start sm:self-auto shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDay(1)}
+                          className="px-2 py-0.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[10px] transition-all cursor-pointer shadow-sm"
+                        >
+                          {isEn ? 'View Mon / Wed' : 'Ver Seg / Qua'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDay(-1)}
+                          className="px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-[10px] border border-slate-700 transition-all cursor-pointer"
+                        >
+                          {isEn ? 'Show All' : 'Ver Todos'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

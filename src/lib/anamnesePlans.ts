@@ -4704,8 +4704,8 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "planId": "prev_tornozelo_sindesmose_peroneais",
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
-    "active": true,
-    "notes": "Prioridade Clínica: Rigidez da abóbada plantar, estabilidade de médio-pé + Core Seg & Qua."
+    "active": false,
+    "notes": "Substituído pelo plano individual dedicado: plan_indiv_ath-10_magui."
   },
   "athlete_ath-12_prev_rotuliano_patelar_bipartida": {
     "id": "athlete_ath-12_prev_rotuliano_patelar_bipartida",

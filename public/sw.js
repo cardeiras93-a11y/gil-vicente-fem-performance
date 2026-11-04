@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v66-permanent-fines-persistence-20261103';
+const CACHE_NAME = 'femperf-v67-magui-plan-pallof-press-20261104';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
