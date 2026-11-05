@@ -428,14 +428,49 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         localStorage.setItem(PHYSIO_PIN_KEY, cloudPhysioPin);
       }
 
-      // 2. Athlete PINs: Cloud is the single source of truth
-      if (cloudAthletePins && typeof cloudAthletePins === 'object') {
-        localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(cloudAthletePins));
+      // 2. Athlete PINs: Safe two-way merge (never wipe local pins with empty cloud object)
+      const localPinsRaw = localStorage.getItem(ATHLETE_PINS_KEY);
+      let localPins: Record<string, string> = {};
+      try {
+        localPins = localPinsRaw ? JSON.parse(localPinsRaw) : {};
+      } catch {}
+      const cloudPinsValid = cloudAthletePins && typeof cloudAthletePins === 'object' ? cloudAthletePins : {};
+      const mergedPins = {
+        ...localPins,
+        ...cloudPinsValid,
+      };
+      if (Object.keys(mergedPins).length > 0) {
+        localStorage.setItem(ATHLETE_PINS_KEY, JSON.stringify(mergedPins));
+      }
+      // If local had pins missing from cloud, heal cloud immediately
+      if (cloudPinsValid && Object.keys(localPins).some((id) => !cloudPinsValid[id])) {
+        secureFetch('/api/credentials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ athletePins: mergedPins }),
+        }).catch(() => {});
       }
 
-      // 3. Athlete Avatars: Cloud is the single source of truth
-      if (cloudAthleteAvatars && typeof cloudAthleteAvatars === 'object') {
-        localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(cloudAthleteAvatars));
+      // 3. Athlete Avatars: Safe two-way merge
+      const localAvatarsRaw = localStorage.getItem(ATHLETE_AVATARS_KEY);
+      let localAvatars: Record<string, string> = {};
+      try {
+        localAvatars = localAvatarsRaw ? JSON.parse(localAvatarsRaw) : {};
+      } catch {}
+      const cloudAvatarsValid = cloudAthleteAvatars && typeof cloudAthleteAvatars === 'object' ? cloudAthleteAvatars : {};
+      const mergedAvatars = {
+        ...localAvatars,
+        ...cloudAvatarsValid,
+      };
+      if (Object.keys(mergedAvatars).length > 0) {
+        localStorage.setItem(ATHLETE_AVATARS_KEY, JSON.stringify(mergedAvatars));
+      }
+      if (cloudAvatarsValid && Object.keys(localAvatars).some((id) => !cloudAvatarsValid[id])) {
+        secureFetch('/api/credentials', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ athleteAvatars: mergedAvatars }),
+        }).catch(() => {});
       }
 
       // 4. Fines Enabled Days: Safe two-way merge (never wipe user waivers)

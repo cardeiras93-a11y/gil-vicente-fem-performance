@@ -11,6 +11,24 @@ export const fetchCache = 'force-no-store';
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'credentials.json');
 
+const KNOWN_BASELINE_ATHLETE_PINS: Record<string, string> = {
+  'ath-1': '1101',
+  'ath-2': '1976',
+  'ath-3': '2724',
+  'ath-11': '2724',
+  'ath-13': '4993',
+  'ath-14': '1215',
+  'ath-17': '1402',
+  'ath-18': '1905',
+  'ath-19': '3218',
+  'ath-23': '0000',
+  'ath-24': '1230',
+  'ath-26': '7656',
+  'ath-custom-1790842877064': '1234',
+  'ath-custom-1789036116210': '0000',
+  'ath-custom-test-123': '9999',
+};
+
 function ensureFileExists() {
   try {
     if (!fs.existsSync(DATA_DIR)) {
@@ -19,9 +37,9 @@ function ensureFileExists() {
     if (!fs.existsSync(FILE_PATH)) {
       const initial = {
         activationCode: 'GVFC2026@',
-        adminPin: '2026',
-        physioPin: '2026',
-        athletePins: {},
+        adminPin: '2627',
+        physioPin: '1924',
+        athletePins: KNOWN_BASELINE_ATHLETE_PINS,
         athleteAvatars: {},
         finesEnabledDays: {},
         individualFineExemptions: {},
@@ -41,7 +59,17 @@ function getStoredCredentialsFile(): any {
     const raw = fs.readFileSync(FILE_PATH, 'utf-8');
     return JSON.parse(raw);
   } catch {
-    return { activationCode: 'GVFC2026@', adminPin: '2026', physioPin: '2026', athletePins: {}, athleteAvatars: {}, finesEnabledDays: {}, individualFineExemptions: {}, editedProfiles: {}, customAthletes: [] };
+    return {
+      activationCode: 'GVFC2026@',
+      adminPin: '2627',
+      physioPin: '1924',
+      athletePins: KNOWN_BASELINE_ATHLETE_PINS,
+      athleteAvatars: {},
+      finesEnabledDays: {},
+      individualFineExemptions: {},
+      editedProfiles: {},
+      customAthletes: [],
+    };
   }
 }
 
@@ -130,6 +158,9 @@ export async function GET(request: Request) {
     }
 
     result.activationCode = result.activationCode || 'GVFC2026@';
+    result.adminPin = result.adminPin || '2627';
+    result.physioPin = result.physioPin || '1924';
+    result.athletePins = { ...KNOWN_BASELINE_ATHLETE_PINS, ...(result.athletePins || {}) };
     const existingDeadlineConfig = result.deadlineConfig || {};
     let getWellnessMatch = existingDeadlineConfig.wellnessMatchTime;
     if (!getWellnessMatch || getWellnessMatch === '11:00') getWellnessMatch = '12:00';
@@ -277,6 +308,9 @@ export async function POST(request: Request) {
     }
 
     current.activationCode = current.activationCode || 'GVFC2026@';
+    current.adminPin = current.adminPin || '2627';
+    current.physioPin = current.physioPin || '1924';
+    current.athletePins = { ...KNOWN_BASELINE_ATHLETE_PINS, ...(current.athletePins || {}) };
 
     saveCredentialsFile(current);
 

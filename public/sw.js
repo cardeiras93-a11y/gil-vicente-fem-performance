@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v67-magui-plan-pallof-press-20261104';
+const CACHE_NAME = 'femperf-v68-restore-athlete-pins-20261105';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
