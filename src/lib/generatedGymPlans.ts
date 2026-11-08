@@ -2200,35 +2200,35 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       {
         id: "competitivo_ginasio_potencia_v3_block_03",
         number: "03",
-        titlePt: "For\u00e7a Adutora Isom\u00e9trica em Dupla",
-        titleEn: "Partner Isometric Adductor Strength",
+        titlePt: "For\u00e7a Adutora & Abdutora em Dupla",
+        titleEn: "Partner Interlocked Adductor/Abductor Strength",
         durationMinutes: 10,
         durationTextPt: "10 MIN",
         durationTextEn: "10 MIN",
         exercises: [
           {
             id: "competitivo_ginasio_potencia_v3_b03_ex1",
-            namePt: "3.1 Adu\u00e7\u00e3o Isom\u00e9trica no Solo c/ Colega \u2014 Perna Direita (ISO Adductor)",
-            nameEn: "3.1 Partner Seated ISO Adductor Exercise \u2014 Right Leg",
-            seriesRepsPt: "3x 10-15s isometria m\u00e1xima",
-            seriesRepsEn: "3x 10-15s maximal isometric hold",
+            namePt: "3.1 Isometria em Dupla c/ Pernas Interla\u00e7adas \u2014 Empurrar para Dentro",
+            nameEn: "3.1 Partner Interlocked ISO Adductor \u2014 Inward Push (Adductors)",
+            seriesRepsPt: "3x 10-15s isometria / perna",
+            seriesRepsEn: "3x 10-15s isometric hold / leg",
             restPt: "45s entre s\u00e9ries",
             restEn: "45s between sets",
-            descriptionPt: "Sentadas no solo de frente para a colega com o core ativo em V-sit. Perna esquerda fletida no solo para suporte est\u00e1vel. Perna direita estendida \u00e0 frente cruzando o bordo medial do p\u00e9/tornozelo contra a colega. Ambas exercem for\u00e7a isom\u00e9trica m\u00e1xima de adu\u00e7\u00e3o (aperto para dentro) sem movimento articular.",
-            descriptionEn: "Seated facing partner on floor with active core in V-sit. Left leg bent on floor for stable base. Right leg extended forward locking medial ankle/foot against partner's foot. Both athletes exert maximal inward isometric adduction force against each other with zero joint movement.",
-            imageSrc: "/exercises/partner_iso_adductor_exercise_pro.svg"
+            descriptionPt: "Sentadas de frente para a colega no solo em V-sit com as pernas interla\u00e7adas. Perna posicionada por fora pressionando com for\u00e7a m\u00e1xima para dentro (adu\u00e7\u00e3o pura contra a perna da colega). A colega resiste firmemente por dentro gerando uma contra\u00e7\u00e3o isom\u00e9trica intensa sem movimento articular.",
+            descriptionEn: "Seated facing partner on floor in V-sit with working legs interlocked. Position leg on the outside and drive with maximal force inward (pure adduction against partner's leg). Partner firmly resists from the inside, generating high-intensity isometric contraction with zero joint movement.",
+            imageSrc: "/exercises/partner_iso_adductor_inward_pro.svg"
           },
           {
             id: "competitivo_ginasio_potencia_v3_b03_ex2",
-            namePt: "3.2 Adu\u00e7\u00e3o Isom\u00e9trica no Solo c/ Colega \u2014 Perna Esquerda (ISO Adductor)",
-            nameEn: "3.2 Partner Seated ISO Adductor Exercise \u2014 Left Leg",
-            seriesRepsPt: "3x 10-15s isometria m\u00e1xima",
-            seriesRepsEn: "3x 10-15s maximal isometric hold",
+            namePt: "3.2 Isometria em Dupla c/ Pernas Interla\u00e7adas \u2014 Empurrar para Fora",
+            nameEn: "3.2 Partner Interlocked ISO Abductor \u2014 Outward Push (Abductors/Glute)",
+            seriesRepsPt: "3x 10-15s isometria / perna",
+            seriesRepsEn: "3x 10-15s isometric hold / leg",
             restPt: "45s entre s\u00e9ries",
             restEn: "45s between sets",
-            descriptionPt: "Sentadas no solo de frente para a colega. Invers\u00e3o dos apoios: perna direita fletida no solo e perna esquerda estendida \u00e0 frente contra o p\u00e9 da colega. Contra\u00e7\u00e3o isom\u00e9trica m\u00e1xima cont\u00ednua dos adutores e estabilizadores p\u00e9lvicos durante todo o intervalo prescrito com tronco r\u00edgido.",
-            descriptionEn: "Seated facing partner on floor. Switch legs: right leg bent on floor and left leg extended forward against partner's foot. Sustained maximal isometric squeeze through adductors and pelvic stabilizers throughout work interval with rigid torso.",
-            imageSrc: "/exercises/partner_iso_adductor_exercise_pro.svg"
+            descriptionPt: "Sentadas de frente no solo em V-sit com invers\u00e3o de posi\u00e7\u00f5es. Perna posicionada por dentro empurrando com for\u00e7a m\u00e1xima para fora (abdu\u00e7\u00e3o pura contra a perna da colega, ativando gl\u00fateo m\u00e9dio e estabilizadores laterais da bacia). A colega resiste firmemente por fora mantendo a isometria.",
+            descriptionEn: "Seated facing partner on floor in V-sit with reversed leg positions. Position leg on the inside and press with maximal force outward (pure abduction against partner's leg, firing gluteus medius and lateral pelvic stabilizers). Partner firmly resists from the outside, sustaining rigid isometric tension.",
+            imageSrc: "/exercises/partner_iso_adductor_outward_pro.svg"
           },
         ]
       },
