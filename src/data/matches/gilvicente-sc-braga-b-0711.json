@@ -40,8 +40,8 @@
       "posName": "Médio",
       "min": 98,
       "dist": 11291.0,
-      "sprint": 85.0,
-      "sprint23": 22.3,
+      "sprint": 526.0,
+      "sprint23": 85.0,
       "running": 7789.0,
       "topSpeed": 24.42,
       "acc": 36,
@@ -49,8 +49,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 5600.0,
-      "prevSprint": 32.0,
-      "prevSprint23": 13.2
+      "prevSprint": 197.0,
+      "prevSprint23": 32.0
     },
     {
       "name": "Simães",
@@ -59,8 +59,8 @@
       "posName": "Lateral",
       "min": 98,
       "dist": 10595.0,
-      "sprint": 143.0,
-      "sprint23": 68.7,
+      "sprint": 635.0,
+      "sprint23": 143.0,
       "running": 7255.0,
       "topSpeed": 26.7,
       "acc": 43,
@@ -68,8 +68,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 8280.0,
-      "prevSprint": 82.0,
-      "prevSprint23": 37.7
+      "prevSprint": 412.0,
+      "prevSprint23": 82.0
     },
     {
       "name": "Serena",
@@ -78,8 +78,8 @@
       "posName": "Extremo",
       "min": 98,
       "dist": 10295.0,
-      "sprint": 275.0,
-      "sprint23": 133.2,
+      "sprint": 919.0,
+      "sprint23": 275.0,
       "running": 6321.0,
       "topSpeed": 26.76,
       "acc": 72,
@@ -87,8 +87,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 6250.0,
-      "prevSprint": 165.0,
-      "prevSprint23": 86.6
+      "prevSprint": 510.0,
+      "prevSprint23": 165.0
     },
     {
       "name": "Meriva",
@@ -97,8 +97,8 @@
       "posName": "Avançado",
       "min": 98,
       "dist": 10242.0,
-      "sprint": 280.0,
-      "sprint23": 168.0,
+      "sprint": 870.0,
+      "sprint23": 280.0,
       "running": 6127.0,
       "topSpeed": 29.15,
       "acc": 81,
@@ -106,8 +106,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 8250.0,
-      "prevSprint": 145.0,
-      "prevSprint23": 74.3
+      "prevSprint": 555.0,
+      "prevSprint23": 145.0
     },
     {
       "name": "Sara T.",
@@ -116,8 +116,8 @@
       "posName": "Defesa Central",
       "min": 98,
       "dist": 9788.0,
-      "sprint": 173.0,
-      "sprint23": 96.3,
+      "sprint": 523.0,
+      "sprint23": 173.0,
       "running": 6126.0,
       "topSpeed": 28.02,
       "acc": 63,
@@ -125,8 +125,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 9450.0,
-      "prevSprint": 48.0,
-      "prevSprint23": 19.0
+      "prevSprint": 263.0,
+      "prevSprint23": 48.0
     },
     {
       "name": "Nicole",
@@ -135,8 +135,8 @@
       "posName": "Lateral",
       "min": 98,
       "dist": 9234.0,
-      "sprint": 155.0,
-      "sprint23": 64.2,
+      "sprint": 535.0,
+      "sprint23": 155.0,
       "running": 5185.0,
       "topSpeed": 25.83,
       "acc": 36,
@@ -144,8 +144,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 8650.0,
-      "prevSprint": 52.0,
-      "prevSprint23": 20.1
+      "prevSprint": 297.0,
+      "prevSprint23": 52.0
     },
     {
       "name": "Carlota",
@@ -154,8 +154,8 @@
       "posName": "Avançado",
       "min": 83,
       "dist": 8763.0,
-      "sprint": 54.0,
-      "sprint23": 22.9,
+      "sprint": 289.0,
+      "sprint23": 54.0,
       "running": 4973.0,
       "topSpeed": 25.95,
       "acc": 36,
@@ -163,8 +163,8 @@
       "rpe": 8,
       "fatigue": 3,
       "prevDist": 6420.0,
-      "prevSprint": 22.0,
-      "prevSprint23": 7.1
+      "prevSprint": 287.0,
+      "prevSprint23": 22.0
     },
     {
       "name": "Marthe",
@@ -173,8 +173,8 @@
       "posName": "Defesa Central",
       "min": 98,
       "dist": 8646.0,
-      "sprint": 72.0,
-      "sprint23": 36.9,
+      "sprint": 314.0,
+      "sprint23": 72.0,
       "running": 4187.0,
       "topSpeed": 27.2,
       "acc": 30,
@@ -182,8 +182,8 @@
       "rpe": 7,
       "fatigue": 3,
       "prevDist": 8350.0,
-      "prevSprint": 45.0,
-      "prevSprint23": 18.7
+      "prevSprint": 200.0,
+      "prevSprint23": 45.0
     },
     {
       "name": "Malta",
@@ -192,8 +192,8 @@
       "posName": "Extremo",
       "min": 68,
       "dist": 7815.0,
-      "sprint": 116.0,
-      "sprint23": 66.5,
+      "sprint": 474.0,
+      "sprint23": 116.0,
       "running": 5232.0,
       "topSpeed": 28.37,
       "acc": 27,
@@ -211,8 +211,8 @@
       "posName": "Médio",
       "min": 58,
       "dist": 6623.0,
-      "sprint": 1.0,
-      "sprint23": 0.0,
+      "sprint": 185.0,
+      "sprint23": 1.0,
       "running": 4214.0,
       "topSpeed": 22.25,
       "acc": 29,
@@ -220,8 +220,8 @@
       "rpe": 7,
       "fatigue": 2,
       "prevDist": 9380.0,
-      "prevSprint": 6.0,
-      "prevSprint23": 0.0
+      "prevSprint": 101.0,
+      "prevSprint23": 6.0
     },
     {
       "name": "Ticha",
@@ -230,8 +230,8 @@
       "posName": "Médio",
       "min": 40,
       "dist": 4626.0,
-      "sprint": 9.0,
-      "sprint23": 1.9,
+      "sprint": 201.0,
+      "sprint23": 9.0,
       "running": 2968.0,
       "topSpeed": 24.05,
       "acc": 20,
@@ -239,8 +239,8 @@
       "rpe": 6,
       "fatigue": 2,
       "prevDist": 5695.0,
-      "prevSprint": 93.0,
-      "prevSprint23": 32.0
+      "prevSprint": 708.0,
+      "prevSprint23": 93.0
     },
     {
       "name": "Chelsea",
@@ -249,8 +249,8 @@
       "posName": "Extremo",
       "min": 30,
       "dist": 4036.0,
-      "sprint": 22.0,
-      "sprint23": 6.3,
+      "sprint": 178.0,
+      "sprint23": 22.0,
       "running": 2956.0,
       "topSpeed": 24.59,
       "acc": 34,
@@ -265,8 +265,8 @@
       "posName": "Avançado",
       "min": 15,
       "dist": 3071.0,
-      "sprint": 2.0,
-      "sprint23": 0.0,
+      "sprint": 57.0,
+      "sprint23": 2.0,
       "running": 1950.0,
       "topSpeed": 22.73,
       "acc": 21,
@@ -274,8 +274,8 @@
       "rpe": 6,
       "fatigue": 2,
       "prevDist": 5825.0,
-      "prevSprint": 123.0,
-      "prevSprint23": 57.4
+      "prevSprint": 773.0,
+      "prevSprint23": 123.0
     }
   ]
 }
