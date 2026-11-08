@@ -222,14 +222,26 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
 
       // MatchDayOffset badge or Day Type tag
       if (offset) {
-        ctx.fillStyle = dayType === 'match' ? '#10b981' : isDark ? '#3b82f6' : '#2563eb';
+        const badgeW = 50;
+        const badgeH = 20;
+        const badgeX = colX + colW - badgeW - 10;
+        const badgeY = gridY + 12;
+        ctx.fillStyle = dayType === 'match' ? '#10b981' : isDark ? '#1e3a8a' : '#2563eb';
         ctx.beginPath();
-        ctx.roundRect(colX + 12, gridY + 36, 60, 18, 6);
+        ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 5);
         ctx.fill();
 
-        ctx.font = '900 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(offset, colX + 22, gridY + 49);
+        if (dayType !== 'match') {
+          ctx.strokeStyle = isDark ? '#3b82f6' : '#93c5fd';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+
+        ctx.font = '900 10.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillStyle = dayType === 'match' ? '#022c22' : '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText(offset, badgeX + badgeW / 2, badgeY + 14);
+        ctx.textAlign = 'left';
       }
 
       let contentY = gridY + 80;
@@ -279,14 +291,6 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
           const timeText = s.endTime ? `${s.startTime} - ${s.endTime}` : s.startTime;
           ctx.fillText(`🕒 ${timeText}`, colX + 12, contentY);
           contentY += 20;
-        }
-
-        if (s?.locationTime) {
-          ctx.font = '500 10px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-          ctx.fillStyle = isDark ? '#94a3b8' : '#64748b';
-          const shortLoc = s.locationTime.split('-')[0].trim().slice(0, 18);
-          ctx.fillText(`📍 ${shortLoc}`, colX + 12, contentY);
-          contentY += 18;
         }
       }
 
@@ -819,23 +823,41 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                   >
                     {/* Day Card Header */}
                     <div>
-                      <div className="flex items-center justify-between border-b pb-1.5 border-slate-700/30">
-                        <div>
-                          <span className="text-[12px] font-black uppercase">
+                      <div className="flex items-center justify-between border-b pb-1.5 border-slate-700/30 gap-1">
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="text-[12px] font-black uppercase tracking-tight">
                             {shortDay}
                           </span>
-                          <span className="ml-1 text-[11px] font-bold text-slate-400">
+                          <span className="text-[10.5px] font-bold text-slate-400 shrink-0">
                             {dateFmt}
                           </span>
                         </div>
 
                         {offset && (
-                          <span className={`text-[10px] font-black px-1.5 py-0.2 rounded ${
-                            dayType === 'match'
-                              ? 'bg-emerald-500 text-slate-950 font-black'
-                              : 'bg-blue-900/80 text-blue-200 border border-blue-500/40'
-                          }`}>
-                            {offset}
+                          <span
+                            className={`shrink-0 min-w-[28px] px-1 py-0.5 rounded text-center leading-none flex flex-col items-center justify-center font-black ${
+                              dayType === 'match'
+                                ? 'bg-emerald-500 text-slate-950 text-[10px] py-1 shadow-sm'
+                                : 'bg-blue-900/90 text-blue-200 border border-blue-500/40 text-[9px] shadow-sm'
+                            }`}
+                          >
+                            {offset.includes('+') ? (
+                              <>
+                                <span className="text-[8px] font-bold leading-none">MD+</span>
+                                <span className="text-[10px] font-black leading-none mt-0.5">
+                                  {offset.split('+')[1]}
+                                </span>
+                              </>
+                            ) : offset.includes('-') ? (
+                              <>
+                                <span className="text-[8px] font-bold leading-none">MD-</span>
+                                <span className="text-[10px] font-black leading-none mt-0.5">
+                                  {offset.split('-')[1]}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-[10px] font-black leading-none">{offset}</span>
+                            )}
                           </span>
                         )}
                       </div>
@@ -883,11 +905,6 @@ export const WeeklyPlanExportModal: React.FC<WeeklyPlanExportModalProps> = ({
                                 <Clock className="h-3 w-3 text-cyan-400" />
                                 <span>{s.startTime}{s.endTime ? ` - ${s.endTime}` : ''}</span>
                               </div>
-                            )}
-                            {s?.locationTime && (
-                              <p className="text-[9px] text-slate-400 truncate" title={s.locationTime}>
-                                📍 {s.locationTime.split('-')[0].trim()}
-                              </p>
                             )}
                           </div>
                         )}

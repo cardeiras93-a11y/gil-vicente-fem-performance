@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v70-high-intensity-calibration-20261108';
+const CACHE_NAME = 'femperf-v71-weekly-paper-fix-20261108';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
