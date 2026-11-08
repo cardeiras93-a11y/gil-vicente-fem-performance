@@ -112,10 +112,13 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
       const params = new URLSearchParams(window.location.search);
       const matchParam = params.get('match');
       const viewParam = params.get('view');
+      const tabParam = params.get('tab');
       if (matchParam && allMatches.some((m) => m.id === matchParam)) {
         setSelectedMatchId(matchParam);
       }
-      if (viewParam === 'compare' || viewParam === 'table' || viewParam === 'visual' || viewParam === 'minutes') {
+      if (tabParam === 'minutes' || viewParam === 'minutes') {
+        setViewMode('minutes');
+      } else if (viewParam === 'compare' || viewParam === 'table' || viewParam === 'visual') {
         setViewMode(viewParam as any);
       }
     }
@@ -332,20 +335,18 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
               <span>Comparar Jogos</span>
             </button>
 
-            {!isAthlete && (
-              <button
-                type="button"
-                onClick={() => setViewMode('minutes')}
-                className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                  viewMode === 'minutes'
-                    ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white font-black shadow-md'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Clock className="h-3.5 w-3.5 text-rose-400" />
-                <span>Minutos de Jogo</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setViewMode('minutes')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                viewMode === 'minutes'
+                  ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white font-black shadow-md'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              <Clock className="h-3.5 w-3.5 text-rose-400" />
+              <span>Minutos de Jogo</span>
+            </button>
           </div>
         </div>
 
@@ -377,7 +378,11 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
           onBack={() => setViewMode('visual')}
         />
       ) : viewMode === 'minutes' ? (
-        <MatchMinutesDashboard />
+        <MatchMinutesDashboard
+          userRole={activeRole}
+          athleteName={effectiveAthleteName}
+          onBack={() => setViewMode('visual')}
+        />
       ) : (
         <>
           {/* HERO HEADER */}

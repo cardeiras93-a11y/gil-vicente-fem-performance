@@ -771,7 +771,17 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center space-x-2.5">
-              <div className="p-2.5 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30">
+              {onBack && (
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="flex items-center space-x-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition-all shadow-sm shrink-0 mr-1"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  <span>Voltar</span>
+                </button>
+              )}
+              <div className="p-2.5 rounded-xl bg-red-600/20 text-red-400 border border-red-500/30 shrink-0">
                 <Timer className="h-6 w-6" />
               </div>
               <div>
@@ -782,7 +792,7 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
                   </span>
                   <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1">
                     <Cloud className="h-3 w-3" />
-                    {isCloudSyncing ? 'A sincronizar...' : 'Sincronizado (Multi-Dispositivo)'}
+                    {isCloudSyncing ? 'A sincronizar...' : 'Sincronizado'}
                   </span>
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400">
@@ -793,6 +803,20 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
+            {/* Quick Role Switcher */}
+            <button
+              type="button"
+              onClick={() => setOverrideRole(isAthlete ? 'admin' : 'athlete')}
+              className={`flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border ${
+                isAthlete
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/20'
+                  : 'bg-indigo-500/10 border-indigo-500/30 text-indigo-300 hover:bg-indigo-500/20'
+              }`}
+              title="Alternar entre modo atleta e modo equipa técnica (edição)"
+            >
+              {isAthlete ? <Lock className="h-3.5 w-3.5 text-emerald-400" /> : <Eye className="h-3.5 w-3.5 text-indigo-400" />}
+              <span>{isAthlete ? (effectiveAthleteName ? `Modo Atleta (${effectiveAthleteName})` : 'Modo Atleta') : 'Modo Staff / Treinador'}</span>
+            </button>
             <button
               type="button"
               onClick={() => {
@@ -963,6 +987,80 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
           </div>
         )}
       </div>
+
+      {/* Personal Athlete Hero Card (Highlighted for the active athlete) */}
+      {activeAthleteStats && (
+        <div className="rounded-2xl border-2 border-amber-500/40 bg-gradient-to-r from-amber-950/30 via-slate-900 to-slate-900 p-4 sm:p-5 shadow-xl relative overflow-hidden animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              {activeAthleteStats.avatarUrl ? (
+                <img
+                  src={activeAthleteStats.avatarUrl}
+                  alt={activeAthleteStats.displayName}
+                  className="h-14 w-14 rounded-2xl object-cover border-2 border-amber-400/60 shadow-md shrink-0"
+                />
+              ) : (
+                <div className="h-14 w-14 rounded-2xl bg-amber-500/20 border-2 border-amber-400/60 flex items-center justify-center font-black text-amber-300 text-lg shrink-0">
+                  {activeAthleteStats.displayName.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 uppercase tracking-wider flex items-center gap-1">
+                    <Star className="h-3 w-3 fill-slate-950 text-slate-950" /> O Teu Desempenho
+                  </span>
+                  <span className={`text-[10px] font-black px-2 py-0.5 rounded border ${activeAthleteStats.posBadge.bg} ${activeAthleteStats.posBadge.text} ${activeAthleteStats.posBadge.border}`}>
+                    {activeAthleteStats.pos}
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-white mt-1">
+                  {activeAthleteStats.displayName}
+                </h2>
+                <p className="text-xs text-slate-400">
+                  {activeAthleteStats.filteredMatches} jogos disputados • Média de {activeAthleteStats.avgMinPerMatch} min/jogo
+                </p>
+              </div>
+            </div>
+
+            {/* Stats badges */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="rounded-xl bg-slate-950/60 border border-slate-800 p-2 text-center">
+                <div className="text-[10px] text-slate-400 font-bold uppercase">Total Geral</div>
+                <div className="text-base sm:text-lg font-black text-white">
+                  {activeAthleteStats.minutesTotal} <span className="text-xs font-normal text-slate-400">min</span>
+                </div>
+              </div>
+              <div className="rounded-xl bg-sky-950/40 border border-sky-800/50 p-2 text-center">
+                <div className="text-[10px] text-sky-400 font-bold uppercase">Campeonato</div>
+                <div className="text-base sm:text-lg font-black text-sky-300">
+                  {activeAthleteStats.minutesChampionship} <span className="text-xs font-normal text-sky-500">m</span>
+                </div>
+              </div>
+              <div className="rounded-xl bg-amber-950/40 border border-amber-800/50 p-2 text-center">
+                <div className="text-[10px] text-amber-400 font-bold uppercase">Taça Portugal</div>
+                <div className="text-base sm:text-lg font-black text-amber-300">
+                  {activeAthleteStats.minutesCup} <span className="text-xs font-normal text-amber-500">m</span>
+                </div>
+              </div>
+              <div className="rounded-xl bg-emerald-950/40 border border-emerald-800/50 p-2 text-center">
+                <div className="text-[10px] text-emerald-400 font-bold uppercase">Jogos Treino</div>
+                <div className="text-base sm:text-lg font-black text-emerald-300">
+                  {activeAthleteStats.minutesFriendly} <span className="text-xs font-normal text-emerald-500">m</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSelectedPlayerForDetail(activeAthleteStats)}
+              className="self-stretch sm:self-center flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 hover:from-amber-400 hover:to-amber-500 transition-all active:scale-95 shrink-0 cursor-pointer"
+            >
+              <Calendar className="h-4 w-4" />
+              <span>Ver os Meus Jogos</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* FILTER CONTROL BAR */}
       <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4 shadow-lg">
@@ -1335,18 +1433,33 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
               {displayedStats.map((player, index) => {
                 const isSelected = selectedPlayerForDetail?.name === player.name;
                 const hasMinutes = player.filteredMinutes > 0;
+                const isCurrentAthlete = Boolean(
+                  effectiveAthleteName &&
+                  normalizeAthleteName(player.name).toLowerCase() === normalizeAthleteName(effectiveAthleteName).toLowerCase()
+                );
 
                 return (
                   <tr
                     key={player.id}
                     onClick={() => setSelectedPlayerForDetail(player)}
                     className={`hover:bg-slate-800/60 transition-colors cursor-pointer ${
-                      isSelected ? 'bg-red-950/30 ring-1 ring-inset ring-red-500/50' : ''
-                    } ${!hasMinutes ? 'opacity-50' : ''}`}
+                      isCurrentAthlete
+                        ? 'bg-amber-500/15 ring-2 ring-inset ring-amber-500/60 shadow-sm'
+                        : isSelected
+                        ? 'bg-red-950/30 ring-1 ring-inset ring-red-500/50'
+                        : ''
+                    } ${!hasMinutes && !isCurrentAthlete ? 'opacity-50' : ''}`}
                   >
                     {/* Rank */}
                     <td className="py-3 px-3 text-center text-slate-500 font-bold text-xs">
-                      {index + 1}
+                      {isCurrentAthlete ? (
+                        <span className="text-amber-400 font-black flex items-center justify-center gap-0.5">
+                          <Star className="h-3 w-3 fill-amber-400" />
+                          {index + 1}
+                        </span>
+                      ) : (
+                        index + 1
+                      )}
                     </td>
 
                     {/* Athlete Name + Avatar */}
@@ -1356,16 +1469,25 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
                           <img
                             src={player.avatarUrl}
                             alt={player.displayName}
-                            className="h-8 w-8 rounded-full object-cover border border-slate-700 shrink-0"
+                            className={`h-8 w-8 rounded-full object-cover shrink-0 ${
+                              isCurrentAthlete ? 'border-2 border-amber-400 shadow-sm' : 'border border-slate-700'
+                            }`}
                           />
                         ) : (
-                          <div className="h-8 w-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 shrink-0">
+                          <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                            isCurrentAthlete ? 'bg-amber-500/20 text-amber-300 border-2 border-amber-400' : 'bg-slate-800 text-slate-300 border border-slate-700'
+                          }`}>
                             {player.displayName.slice(0, 2).toUpperCase()}
                           </div>
                         )}
                         <div>
-                          <div className="font-extrabold text-white text-xs sm:text-sm hover:text-red-400 transition-colors">
-                            {player.displayName}
+                          <div className="font-extrabold text-white text-xs sm:text-sm hover:text-red-400 transition-colors flex items-center gap-1.5">
+                            <span>{player.displayName}</span>
+                            {isCurrentAthlete && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-400 text-slate-950 font-black uppercase tracking-wider">
+                                Tu
+                              </span>
+                            )}
                           </div>
                           {player.name !== player.displayName && (
                             <div className="text-[10px] text-slate-400">{player.name}</div>
@@ -1658,64 +1780,77 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
                           </div>
                         </div>
 
-                        {/* Editable Minute Stepper / Buttons */}
-                        <div className="flex items-center space-x-1.5 self-end sm:self-center flex-wrap gap-y-1">
-                          <div className="flex items-center space-x-1 bg-slate-900 border border-slate-700 rounded-lg p-1">
-                            <input
-                              type="number"
-                              min="0"
-                              max="130"
-                              value={h.min === 0 ? '' : h.min}
-                              placeholder="0"
-                              onChange={(e) => {
-                                const raw = e.target.value;
-                                const val = raw === '' ? 0 : Math.max(0, parseInt(raw) || 0);
-                                handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, val);
-                              }}
-                              className="w-14 bg-slate-950 text-white font-black text-center text-xs px-1 py-1 rounded border border-slate-800 focus:outline-none focus:border-red-500"
-                            />
-                            <span className="text-[10px] text-slate-400 pr-1">min</span>
+                        {/* Editable Minute Stepper / Buttons (or read-only for athlete) */}
+                        {isAthlete ? (
+                          <div className="flex items-center space-x-2 self-end sm:self-center shrink-0">
+                            <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 font-black text-xs sm:text-sm text-white">
+                              {h.min} <span className="text-[10px] text-slate-400 font-normal">min</span>
+                            </div>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                              h.min === 0 ? 'text-slate-500 bg-slate-900' : h.min >= h.durationMin ? 'text-emerald-400 bg-emerald-500/10' : 'text-amber-400 bg-amber-500/10'
+                            }`}>
+                              {h.min === 0 ? 'Não jogou' : h.min >= h.durationMin ? 'Total' : 'Parcial'}
+                            </span>
                           </div>
+                        ) : (
+                          <div className="flex items-center space-x-1.5 self-end sm:self-center flex-wrap gap-y-1">
+                            <div className="flex items-center space-x-1 bg-slate-900 border border-slate-700 rounded-lg p-1">
+                              <input
+                                type="number"
+                                min="0"
+                                max="130"
+                                value={h.min === 0 ? '' : h.min}
+                                placeholder="0"
+                                onChange={(e) => {
+                                  const raw = e.target.value;
+                                  const val = raw === '' ? 0 : Math.max(0, parseInt(raw) || 0);
+                                  handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, val);
+                                }}
+                                className="w-14 bg-slate-950 text-white font-black text-center text-xs px-1 py-1 rounded border border-slate-800 focus:outline-none focus:border-red-500"
+                              />
+                              <span className="text-[10px] text-slate-400 pr-1">min</span>
+                            </div>
 
-                          {/* Quick Set Presets */}
-                          <div className="flex items-center space-x-1">
-                            <button
-                              type="button"
-                              onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, 0)}
-                              className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-400 transition-all active:scale-95"
-                              title="0 min (Não jogou / Banco)"
-                            >
-                              0m
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, 45)}
-                              className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all active:scale-95"
-                              title="45 min (1 parte)"
-                            >
-                              45m
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, h.durationMin)}
-                              className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all active:scale-95"
-                              title={`Jogo completo (${h.durationMin} min)`}
-                            >
-                              {h.durationMin}m
-                            </button>
-
-                            {h.isOverridden && (
+                            {/* Quick Set Presets */}
+                            <div className="flex items-center space-x-1">
                               <button
                                 type="button"
-                                onClick={() => handleResetMatchMinute(h.matchId, selectedPlayerForDetail.name)}
-                                className="p-1 rounded bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 transition-all ml-0.5"
-                                title="Remover ajuste manual deste jogo"
+                                onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, 0)}
+                                className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-400 transition-all active:scale-95"
+                                title="0 min (Não jogou / Banco)"
                               >
-                                <RotateCcw className="h-3 w-3" />
+                                0m
                               </button>
-                            )}
+                              <button
+                                type="button"
+                                onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, 45)}
+                                className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition-all active:scale-95"
+                                title="45 min (1 parte)"
+                              >
+                                45m
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleSavePlayerMinute(h.matchId, selectedPlayerForDetail.name, h.durationMin)}
+                                className="px-2 py-1 text-[10px] font-bold rounded bg-slate-800 hover:bg-slate-700 text-slate-200 transition-all active:scale-95"
+                                title={`Jogo completo (${h.durationMin} min)`}
+                              >
+                                {h.durationMin}m
+                              </button>
+
+                              {h.isOverridden && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleResetMatchMinute(h.matchId, selectedPlayerForDetail.name)}
+                                  className="p-1 rounded bg-slate-800 hover:bg-rose-950/60 text-slate-400 hover:text-rose-400 border border-slate-700 transition-all ml-0.5"
+                                  title="Remover ajuste manual deste jogo"
+                                >
+                                  <RotateCcw className="h-3 w-3" />
+                                </button>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     );
                   })

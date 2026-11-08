@@ -18,8 +18,9 @@ import { AthleteComplementaryWorkCard } from '@/components/AthleteComplementaryW
 import { AthleteMobilityPlanCard } from '@/components/AthleteMobilityPlanCard';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
+import { MatchMinutesDashboard } from '@/components/MatchMinutesDashboard';
 import { isGoalkeeper } from '@/lib/data';
-import { HeartPulse, Dumbbell, Droplet, Scale, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap } from 'lucide-react';
+import { HeartPulse, Dumbbell, Droplet, Scale, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap, Clock } from 'lucide-react';
 
 const VIEW_MODE_KEY = 'femperf_active_view_mode';
 
@@ -70,15 +71,15 @@ function MainAppContent() {
     return true;
   });
 
-  const [activeTab, setActiveTabState] = useState<'wellness' | 'rpe' | 'hydration' | 'matchday'>(() => {
+  const [activeTab, setActiveTabState] = useState<'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes'>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('femperf_athlete_active_tab') as any;
-      if (stored === 'wellness' || stored === 'rpe' || stored === 'hydration' || stored === 'matchday') return stored;
+      if (stored === 'wellness' || stored === 'rpe' || stored === 'hydration' || stored === 'matchday' || stored === 'matchMinutes') return stored;
     }
     return 'wellness';
   });
 
-  const setActiveTab = (tab: 'wellness' | 'rpe' | 'hydration' | 'matchday') => {
+  const setActiveTab = (tab: 'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_athlete_active_tab', tab);
@@ -284,7 +285,7 @@ function MainAppContent() {
       />
 
       {/* Main Content Area */}
-      <main className={`flex-1 px-3 sm:px-4 py-4 ${!isAthleteGoalkeeper && activeTab === 'matchday' ? 'max-w-5xl' : 'max-w-lg md:max-w-xl lg:max-w-2xl'} mx-auto w-full space-y-4`}>
+      <main className={`flex-1 px-3 sm:px-4 py-4 ${(activeTab === 'matchday' || activeTab === 'matchMinutes') ? 'max-w-5xl' : 'max-w-lg md:max-w-xl lg:max-w-2xl'} mx-auto w-full space-y-4`}>
         {/* Home Screen Quick Actions Bar: Limpar Cache */}
         <div className="flex justify-end">
           <button
@@ -381,7 +382,7 @@ function MainAppContent() {
             <AthleteComplementaryWorkCard />
 
             {/* Top Navigation Tabs */}
-            <div className={`grid ${isAthleteGoalkeeper ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-4'} gap-1.5 rounded-2xl bg-dark-card p-1.5 border border-slate-800 shadow-md`}>
+            <div className={`grid ${isAthleteGoalkeeper ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-5'} gap-1.5 rounded-2xl bg-dark-card p-1.5 border border-slate-800 shadow-md`}>
               <button
                 type="button"
                 onClick={() => setActiveTab('wellness')}
@@ -443,6 +444,22 @@ function MainAppContent() {
                   </span>
                 </button>
               )}
+
+              {/* Tempos de Jogo (Disponível para todas as jogadoras, incluindo GRs) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('matchMinutes')}
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-extrabold transition-all space-y-1 ${
+                  activeTab === 'matchMinutes'
+                    ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-md shadow-red-600/30 scale-102'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Clock className="h-4 w-4 shrink-0 text-rose-400" />
+                <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
+                  {isAthleteGoalkeeper ? '4. ⏱️ Tempos Jogo' : '5. ⏱️ Tempos Jogo'}
+                </span>
+              </button>
             </div>
 
             {/* Active Tab Content */}
@@ -468,6 +485,15 @@ function MainAppContent() {
               {!isAthleteGoalkeeper && activeTab === 'matchday' && (
                 <div className="w-full pt-1 animate-fade-in">
                   <MatchDashboard
+                    userRole="athlete"
+                    athleteName={activeAthlete.name}
+                  />
+                </div>
+              )}
+
+              {activeTab === 'matchMinutes' && (
+                <div className="w-full pt-1 animate-fade-in">
+                  <MatchMinutesDashboard
                     userRole="athlete"
                     athleteName={activeAthlete.name}
                   />

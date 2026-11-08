@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Athlete } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { isGoalkeeper } from '@/lib/data';
-import { User, RefreshCw, Shield, Stethoscope, Trophy } from 'lucide-react';
+import { User, RefreshCw, Shield, Stethoscope, Trophy, Clock } from 'lucide-react';
 
 interface HeaderProps {
   activeAthlete: Athlete | null;
@@ -72,12 +72,21 @@ export const Header: React.FC<HeaderProps> = ({
             {!isGr && (
               <Link
                 href="/dashboard/jogos"
-                title="Dashboard Jogos"
+                title="Dashboard Jogos (GPS)"
                 className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-sky-500/50 bg-sky-500/10 text-sky-400 hover:bg-sky-500/20 transition-all active:scale-95 shadow-sm"
               >
                 <Trophy className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-300" />
               </Link>
             )}
+
+            {/* Match Minutes Hub Button (Available to all athletes, including Goalkeepers) */}
+            <Link
+              href="/dashboard/jogos?tab=minutes"
+              title="Tempos de Jogo (Minutos Disputados)"
+              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all active:scale-95 shadow-sm"
+            >
+              <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-400" />
+            </Link>
 
             {/* Physiotherapist Button */}
             <button
