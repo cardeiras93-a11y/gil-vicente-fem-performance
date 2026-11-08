@@ -2107,4 +2107,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "competitivo_ginasio_potencia_v3",
+    titlePt: "Plano de Treino \u2014 Competitivo (Vers\u00e3o 3)",
+    titleEn: "Competitive Training Plan \u2014 Version 3",
+    categoryPt: "Gin\u00e1sio \u2022 Competitivo & Pot\u00eancia (Vers\u00e3o 3)",
+    categoryEn: "Gym \u2022 Competitive & Power (Version 3)",
+    group: "inferiores",
+    groupBadgePt: "\u26a1 Competitivo V3 \u2022 Pot\u00eancia, Medball & Flexores da Anca",
+    groupBadgeEn: "\u26a1 Competitive V3 \u2022 Power, Medball & Hip Flexors",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 CAMPEONATO NACIONAL II DIVIS\u00c3O FEMININA",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 WOMEN'S NATIONAL II DIVISION",
+    targetPosition: "all",
+    durationMinutes: 40,
+    durationTextPt: "40 MIN",
+    durationTextEn: "40 MIN",
+    warmupPt: "2 S\u00e9ries: 20\" Jumping Jacks + 20\" Lunge Alternado + 20\" Squat (Diferentes Profundidades)",
+    warmupEn: "2 Sets: 20\" Jumping Jacks + 20\" Alternating Lunges + 20\" Squats (Different Depths)",
+    finisherPt: "10 Flex\u00f5es de Bra\u00e7os no t\u00e9rmino do treino (Push-Ups)",
+    finisherEn: "10 Push-Ups upon completing workout",
+    blocks: [
+      {
+        id: "competitivo_ginasio_potencia_v3_block_01",
+        number: "01",
+        titlePt: "Agachamento & Pot\u00eancia Rotacional",
+        titleEn: "Squat & Rotational Power",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_potencia_v3_b01_ex1",
+            namePt: "1.1 Squat c/ Passo em Frente & Rota\u00e7\u00e3o (Banda)",
+            nameEn: "1.1 Squat to Forward Step & Rotation (Band)",
+            seriesRepsPt: "3x 6-8 reps / lado",
+            seriesRepsEn: "3x 6-8 reps / side",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "P\u00e9s \u00e0 largura dos ombros com banda ancorada. Flete em agachamento, d\u00e1 um passo firme em frente mantendo a tens\u00e3o e rota\u00e7\u00e3o do tronco, e regressa de forma controlada ao agachamento.",
+            descriptionEn: "Shoulder-width stance with anchored band. Squat down, take a firm step forward maintaining tension and trunk rotation, and return under control into the squat.",
+            imageSrc: "/exercises/squat_band_trunk_rotation_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_potencia_v3_b01_ex2",
+            namePt: "1.2 Landmine Squat c/ Press de Ombros",
+            nameEn: "1.2 Landmine Squat to Overhead Press",
+            seriesRepsPt: "3x 6-8 reps",
+            seriesRepsEn: "3x 6-8 reps",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "P\u00e9s \u00e0 largura dos ombros segurando a ponta da barra ao peito com ambas as m\u00e3os. Agacha com controlo e sobe de forma explosiva transferindo a for\u00e7a das pernas para um press diagonal de ombros no topo.",
+            descriptionEn: "Shoulder-width stance holding barbell sleeve at chest with both hands. Squat under control and drive up explosively, transferring leg drive into a diagonal overhead press at lockout.",
+            imageSrc: "/exercises/landmine_squat_to_press_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_potencia_v3_block_02",
+        number: "02",
+        titlePt: "Domin\u00e2ncia de Anca & Subida Unipodal",
+        titleEn: "Hip Dominance & Single-Leg Step Up",
+        durationMinutes: 11,
+        durationTextPt: "11 MIN",
+        durationTextEn: "11 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_potencia_v3_b02_ex1",
+            namePt: "2.1 Eleva\u00e7\u00e3o P\u00e9lvica com Barra (Hip Thrust)",
+            nameEn: "2.1 Barbell Hip Thrust",
+            seriesRepsPt: "3x 8-10 reps",
+            seriesRepsEn: "3x 8-10 reps",
+            restPt: "75s entre s\u00e9ries",
+            restEn: "75s between sets",
+            descriptionPt: "Omoplatas no banco, barra na anca com prote\u00e7\u00e3o. Eleva a bacia pelos calcanhares at\u00e9 \u00e0 linha neutra, pausa 2s no topo e descida lenta.",
+            descriptionEn: "Upper back on bench, padded barbell on hips. Drive through heels to full hip extension, hold 2s at the top, controlled eccentric lower.",
+            imageSrc: "/exercises/gym_hip_thrust_barbell_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_potencia_v3_b02_ex2",
+            namePt: "2.2 Step Up c/ Rota\u00e7\u00e3o de Medball",
+            nameEn: "2.2 Step Up w/ Medball Rotation",
+            seriesRepsPt: "3x 6-8 reps / lado",
+            seriesRepsEn: "3x 6-8 reps / side",
+            restPt: "60s cada perna",
+            restEn: "60s each leg",
+            descriptionPt: "P\u00e9 firme na caixa e medball ao peito. Sobe em extens\u00e3o potente de anca rodando suavemente o tronco para o lado do apoio.",
+            descriptionEn: "Plant lead foot on box holding medball at chest. Drive up to full hip extension rotating torso smoothly toward the lead leg.",
+            imageSrc: "/exercises/step_up_medball_rotation_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_potencia_v3_block_03",
+        number: "03",
+        titlePt: "Estabilidade P\u00e9lvica & For\u00e7a Adutora",
+        titleEn: "Pelvic Stability & Adductor Strength",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_potencia_v3_b03_ex1",
+            namePt: "3.1 Copenhagen c/ Adu\u00e7\u00e3o Din\u00e2mica",
+            nameEn: "3.1 Dynamic Copenhagen Adduction",
+            seriesRepsPt: "3x 8-10 reps / lado",
+            seriesRepsEn: "3x 8-10 reps / side",
+            restPt: "45s cada lado",
+            restEn: "45s each side",
+            descriptionPt: "Prancha lateral com a perna de cima no banco. Eleva dinamicamente a perna inferior em adu\u00e7\u00e3o at\u00e9 junto ao banco e desce com controlo.",
+            descriptionEn: "Side plank with top leg supported on bench. Dynamically adduct bottom leg upwards to meet the bench/top leg, lowering under control.",
+            imageSrc: "/exercises/copenhagen_adduction_dynamic_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_potencia_v3_b03_ex2",
+            namePt: "3.2 Adu\u00e7\u00e3o de Anca em Dec\u00fabito Lateral",
+            nameEn: "3.2 Side-Lying Hip Adduction",
+            seriesRepsPt: "3x 8-10 reps / lado",
+            seriesRepsEn: "3x 8-10 reps / side",
+            restPt: "45s cada lado",
+            restEn: "45s each side",
+            descriptionPt: "Deitada de lado no tapete. Perna superior cruzada \u00e0 frente com o p\u00e9 no solo. Eleva a perna de baixo estendida contra a gravidade, pausa 1s e desce devagar.",
+            descriptionEn: "Lie on your side on mat. Cross top leg over with foot planted in front. Lift straight bottom leg against gravity, pause 1s at top, lower slowly.",
+            imageSrc: "/exercises/side_lying_hip_adduction_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_potencia_v3_block_04",
+        number: "04",
+        titlePt: "Flexores da Anca & Pot\u00eancia de Tronco",
+        titleEn: "Hip Flexor Stiffness & Torso Power",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_potencia_v3_b04_ex1",
+            namePt: "4.1 Oscila\u00e7\u00f5es de Flexores da Anca com Banda (Banded Hip Flexor Oscillations)",
+            nameEn: "4.1 Banded Hip Flexor Oscillations",
+            seriesRepsPt: "3x 15-20s oscila\u00e7\u00f5es / perna",
+            seriesRepsEn: "3x 15-20s oscillations / leg",
+            restPt: "45s cada perna",
+            restEn: "45s each leg",
+            descriptionPt: "De p\u00e9 em apoio unipodal em postura atl\u00e9tica alta. Banda el\u00e1stica ancorada atr\u00e1s e la\u00e7ada no tornozelo da perna de ataque. Eleva o joelho a 90\u00b0 (postura de sprint / tripla flex\u00e3o) e executa oscila\u00e7\u00f5es e micro-pulsos r\u00e1pidos e r\u00edtmicos contra a tens\u00e3o el\u00e1stica, promovendo rigidez reativa e for\u00e7a dos flexores da anca em amplitude terminal com m\u00e1xima estabilidade p\u00e9lvica.",
+            descriptionEn: "Standing tall in athletic single-leg stance. Elastic band anchored behind and looped around ankle of working leg. Drive knee to 90\u00b0 (sprint triple-flexion) and execute rapid, rhythmic micro-oscillations against elastic resistance, building end-range hip flexor reactive stiffness and reciprocal glute stabilization.",
+            imageSrc: "/exercises/banded_hip_flexor_oscillations_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_potencia_v3_b04_ex2",
+            namePt: "4.2 Passe / Lan\u00e7amento de Peito no Solo com Medicine Ball",
+            nameEn: "4.2 Supine Medicine Ball Chest Pass",
+            seriesRepsPt: "3x 6-8 lan\u00e7amentos explosivos",
+            seriesRepsEn: "3x 6-8 explosive throws",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Deitada de costas no solo com joelhos fletidos e p\u00e9s apoiados. Segura a medicine ball ao peito com as duas m\u00e3os. Projeta a bola verticalmente com m\u00e1xima acelera\u00e7\u00e3o e explos\u00e3o de bra\u00e7os e peitoral, controlando a rece\u00e7\u00e3o com o core ativo.",
+            descriptionEn: "Lying on back on mat with knees bent and feet flat. Hold medicine ball with both hands at chest level. Explosively launch ball vertically into air with maximum velocity from chest and arms, controlling catch with active core.",
+            imageSrc: "/exercises/supine_medball_chest_pass_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];
