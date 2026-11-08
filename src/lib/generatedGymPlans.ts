@@ -2269,4 +2269,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "competitivo_ginasio_maquinas",
+    titlePt: "Plano de Treino \u2014 Competitivo (M\u00e1quinas de Gin\u00e1sio)",
+    titleEn: "Competitive Training Plan \u2014 Gym Machines",
+    categoryPt: "Gin\u00e1sio \u2022 Competitivo (M\u00e1quinas)",
+    categoryEn: "Gym \u2022 Competitive (Machines)",
+    group: "inferiores",
+    groupBadgePt: "\u26a1 Competitivo \u2022 M\u00e1quinas de Gin\u00e1sio (Substitui\u00e7\u00e3o V3)",
+    groupBadgeEn: "\u26a1 Competitive \u2022 Gym Machines (V3 Equivalent)",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 CAMPEONATO NACIONAL II DIVIS\u00c3O FEMININA",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 WOMEN'S NATIONAL II DIVISION",
+    targetPosition: "all",
+    durationMinutes: 40,
+    durationTextPt: "40 MIN",
+    durationTextEn: "40 MIN",
+    warmupPt: "2 S\u00e9ries: 20\" Jumping Jacks + 20\" Lunge Alternado + 20\" Squat Livre",
+    warmupEn: "2 Sets: 20\" Jumping Jacks + 20\" Alternating Lunges + 20\" Bodyweight Squats",
+    finisherPt: "10 Flex\u00f5es de Bra\u00e7os no t\u00e9rmino do treino (Push-Ups)",
+    finisherEn: "10 Push-Ups upon completing workout",
+    blocks: [
+      {
+        id: "competitivo_ginasio_maquinas_block_01",
+        number: "01",
+        titlePt: "Prensa Unilateral & Press de Ombros Guiado",
+        titleEn: "Unilateral Leg Press & Guided Shoulder Press",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_maquinas_b01_ex1",
+            namePt: "1.1 Prensa de Pernas 45\u00b0 Unilateral (Leg Press 45\u00b0)",
+            nameEn: "1.1 45\u00b0 Unilateral Leg Press",
+            seriesRepsPt: "3x 6-8 reps / perna",
+            seriesRepsEn: "3x 6-8 reps / leg",
+            restPt: "60s cada perna",
+            restEn: "60s each leg",
+            descriptionPt: "Costas apoiadas no encosto. Um p\u00e9 no centro da plataforma e o outro em repouso. Flete o joelho com controlo at\u00e9 aos 90\u00b0 em 2s mantendo a bacia firme no assento e empurra pelo calcanhar de forma potente sem bloquear o joelho no topo.",
+            descriptionEn: "Back firmly against pad. One foot centered on platform, opposite leg resting. Lower sled under control to 90\u00b0 knee flexion in 2s keeping pelvis glued to seat, then drive powerfully through heel without knee hyperextension.",
+            imageSrc: "/exercises/leg_press_45_unilateral_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_maquinas_b01_ex2",
+            namePt: "1.2 M\u00e1quina de Press de Ombros Guiada (Shoulder Press)",
+            nameEn: "1.2 Seated Machine Shoulder Press",
+            seriesRepsPt: "3x 6-8 reps explosivas",
+            seriesRepsEn: "3x 6-8 explosive reps",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Sentada com as costas bem firmes no encosto e p\u00e9s assentes no solo. Segura as pegas neutras ou pronadas. Empurra de forma explosiva para cima estendendo os bra\u00e7os com controlo e desce em 2s at\u00e9 \u00e0 linha dos ombros mantendo o core ativado.",
+            descriptionEn: "Seated upright with back firmly against pad and feet flat on floor. Grip handles firmly. Drive overhead with explosive intent, extending arms under control, then lower in 2s down to shoulder height with locked core.",
+            imageSrc: "/exercises/shoulder_press_machine_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_maquinas_block_02",
+        number: "02",
+        titlePt: "Glute Drive & Subida Guiada na Smith Machine",
+        titleEn: "Glute Drive & Smith Machine Split Squat",
+        durationMinutes: 11,
+        durationTextPt: "11 MIN",
+        durationTextEn: "11 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_maquinas_b02_ex1",
+            namePt: "2.1 M\u00e1quina de Eleva\u00e7\u00e3o P\u00e9lvica (Glute Drive / Hip Thrust)",
+            nameEn: "2.1 Glute Drive / Hip Thrust Machine",
+            seriesRepsPt: "3x 6-8 reps (Pausa 2s)",
+            seriesRepsEn: "3x 6-8 reps (2s hold)",
+            restPt: "75s entre s\u00e9ries",
+            restEn: "75s between sets",
+            descriptionPt: "Omoplatas apoiadas na almofada dorsal com cinto acolchoado fixo na bacia e p\u00e9s firmes na plataforma. Eleva a bacia pela for\u00e7a dos gl\u00fateos at\u00e9 \u00e0 extens\u00e3o terminal neutra, sustenta 2s de contra\u00e7\u00e3o m\u00e1xima no topo e desce com controlo.",
+            descriptionEn: "Upper back positioned against pivot pad with padded belt secured across hips and feet flat on platform. Drive hips up forcefully via glute activation into full neutral lockout, hold 2s peak contraction, and lower smoothly.",
+            imageSrc: "/exercises/glute_drive_machine_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_maquinas_b02_ex2",
+            namePt: "2.2 Agachamento B\u00falgaro / Afundo na Smith Machine",
+            nameEn: "2.2 Smith Machine Split Squat / Lunge",
+            seriesRepsPt: "2-3x 6-8 reps / perna",
+            seriesRepsEn: "2-3x 6-8 reps / leg",
+            restPt: "60s cada perna",
+            restEn: "60s each leg",
+            descriptionPt: "Barra guiada apoiada nos trap\u00e9zios em postura de split squat com p\u00e9 da frente est\u00e1vel. Destrava a calha, desce o joelho traseiro em linha reta at\u00e9 pr\u00f3ximo do solo com controlo vertical e sobe com pot\u00eancia pela perna da frente mantendo estabilidade p\u00e9lvica.",
+            descriptionEn: "Guided bar resting across upper traps in split-stance with front foot planted. Unrack bar, lower rear knee vertically toward floor under strict eccentric control, and drive powerfully through front heel maintaining pelvic stability.",
+            imageSrc: "/exercises/smith_split_squat_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_maquinas_block_03",
+        number: "03",
+        titlePt: "For\u00e7a Adutora & Abdutora em M\u00e1quina",
+        titleEn: "Machine Adduction & Abduction (Groin & Glute)",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_maquinas_b03_ex1",
+            namePt: "3.1 M\u00e1quina de Adu\u00e7\u00e3o Sentada (Adductor Machine)",
+            nameEn: "3.1 Seated Adductor Machine",
+            seriesRepsPt: "3x 6-8 reps (Pausa 3-5s)",
+            seriesRepsEn: "3x 6-8 reps (3-5s hold)",
+            restPt: "45-60s entre s\u00e9ries",
+            restEn: "45-60s between sets",
+            descriptionPt: "Sentada na m\u00e1quina com almofadas na face interna dos joelhos e m\u00e3os nas pegas. Fecha as pernas com for\u00e7a medial at\u00e9 ao aperto total, bloqueia uma contra\u00e7\u00e3o isom\u00e9trica m\u00e1xima de 3s a 5s no centro e abre com 2s de controlo exc\u00eantrico.",
+            descriptionEn: "Seated with pads on inner knees and hands gripping side handles. Drive legs inward with maximal adductor force to full contact, hold rigid 3-5s isometric squeeze at peak contraction, and open with 2s eccentric control.",
+            imageSrc: "/exercises/seated_adductor_machine_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_maquinas_b03_ex2",
+            namePt: "3.2 M\u00e1quina de Abdu\u00e7\u00e3o Sentada (Abductor Machine)",
+            nameEn: "3.2 Seated Abductor Machine",
+            seriesRepsPt: "3x 6-8 reps (Pausa 3s)",
+            seriesRepsEn: "3x 6-8 reps (3s hold)",
+            restPt: "45-60s entre s\u00e9ries",
+            restEn: "45-60s between sets",
+            descriptionPt: "Sentada com almofadas na face externa das coxas/joelhos e tronco ligeiramente inclinado \u00e0 frente para focar no gl\u00fateo m\u00e9dio. Afasta as pernas com m\u00e1xima for\u00e7a para fora contra as placas, segura 3s de isometria no pico de abertura e regressa controladamente.",
+            descriptionEn: "Seated with pads on outer thighs and torso slightly hinged forward to optimize gluteus medius recruitment. Drive thighs outward with maximal force against stack, sustain 3s isometric hold at peak abduction, and control return.",
+            imageSrc: "/exercises/seated_abductor_machine_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "competitivo_ginasio_maquinas_block_04",
+        number: "04",
+        titlePt: "Flexores da Anca em Cabo & Prensa de Peito",
+        titleEn: "Cable Knee Drive & Machine Chest Press",
+        durationMinutes: 10,
+        durationTextPt: "10 MIN",
+        durationTextEn: "10 MIN",
+        exercises: [
+          {
+            id: "competitivo_ginasio_maquinas_b04_ex1",
+            namePt: "4.1 Flex\u00e3o de Anca em Polia Baixa c/ Tornozeleira (Knee Drive Sprint)",
+            nameEn: "4.1 Low Cable Knee Drive (Sprint Specific)",
+            seriesRepsPt: "3x 8-10 reps explosivas / perna",
+            seriesRepsEn: "3x 8-10 explosive reps / leg",
+            restPt: "45s cada perna",
+            restEn: "45s each leg",
+            descriptionPt: "De p\u00e9 de costas para a torre de cabos com tornozeleira na perna de ataque e apoio unipodal firme. Puxa o joelho para a frente e para cima at\u00e9 aos 90\u00b0 com acelera\u00e7\u00e3o r\u00e1pida e dorsiflex\u00e3o do p\u00e9 (postura de sprint), travando no topo com rigidez e descendo com controlo.",
+            descriptionEn: "Standing tall facing away from low pulley with ankle strap secured and solid single-leg base. Drive knee explosively forward and up to 90\u00b0 with sharp foot dorsiflexion (sprint mechanics), lock at apex with reactive stiffness, and lower controlled.",
+            imageSrc: "/exercises/cable_knee_drive_sprint_pro.svg"
+          },
+          {
+            id: "competitivo_ginasio_maquinas_b04_ex2",
+            namePt: "4.2 Prensa de Peito Guiada (Chest Press Machine)",
+            nameEn: "4.2 Seated Chest Press Machine",
+            seriesRepsPt: "3x 6-8 reps explosivas",
+            seriesRepsEn: "3x 6-8 explosive reps",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Sentada com costas e omoplatas coladas ao encosto e pegas \u00e0 altura do meio do peitoral. Empurra as pegas para a frente com a m\u00e1xima inten\u00e7\u00e3o de acelera\u00e7\u00e3o conc\u00eantrica (explos\u00e3o horizontal de peito e bra\u00e7os) e controla o retorno em 2s sem deixar bater as placas.",
+            descriptionEn: "Seated with back and scapulae pinned to pad, handles at mid-chest height. Press forward with maximum concentric acceleration intent (horizontal explosive push from chest and arms), controlling 2s eccentric return without plates clanging.",
+            imageSrc: "/exercises/chest_press_machine_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];

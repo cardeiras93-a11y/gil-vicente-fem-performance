@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="frameGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(170, 10)">
+    <rect x="0" y="0" width="142" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="78" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" text-anchor="middle">CHEST PRESS MACHINE</text>
+  </g>
+
+  <!-- Sombra no solo -->
+  <ellipse cx="145" cy="154" rx="60" ry="7" fill="#0f172a" opacity="0.22" />
+
+  <!-- Torre de Carga Posterior -->
+  <rect x="45" y="35" width="28" height="115" rx="3" fill="url(#frameGrad)" filter="url(#dropShadow)" />
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -12; 0 -12; 0 0" keyTimes="0; 0.45; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    <rect x="49" y="65" width="20" height="5" fill="#ef4444" rx="1.5" />
+    <rect x="49" y="72" width="20" height="5" fill="#38bdf8" rx="1.5" />
+  </g>
+
+  <!-- Banco com Encosto Vertical da Prensa de Peito -->
+  <rect x="98" y="65" width="10" height="55" rx="2.5" fill="#0284c7" filter="url(#dropShadow)" />
+  <rect x="98" y="115" width="38" height="10" rx="2.5" fill="#0284c7" filter="url(#dropShadow)" />
+  <line x1="112" y1="125" x2="112" y2="150" stroke="#475569" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Atleta Sentada -->
+  <!-- Pernas -->
+  <line x1="130" y1="118" x2="155" y2="118" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  <line x1="155" y1="118" x2="155" y2="150" stroke="#d97706" stroke-width="7.5" stroke-linecap="round" />
+  <rect x="150" y="146" width="16" height="5" rx="2.5" fill="#ffffff" />
+  <!-- Tronco e Cabeça -->
+  <ellipse cx="115" cy="116" rx="9" ry="7" fill="#0f172a" />
+  <path d="M110,72 L128,72 L125,114 L108,114 Z" fill="url(#kitGrad)" />
+  <circle cx="118" cy="58" r="7.5" fill="#d97706" />
+
+  <!-- Alavanca Mecânica e Punhos em Empurrão Horizontal Explosivo -->
+  <g>
+    <!-- Translação para a frente (fase concêntrica explosiva de peito) -->
+    <animateTransform attributeName="transform" type="translate" values="0 0; 24 0; 24 0; 0 0" keyTimes="0; 0.40; 0.65; 1" dur="2.6s" repeatCount="indefinite" />
+    
+    <!-- Alavanca da Máquina -->
+    <line x1="105" y1="42" x2="148" y2="82" stroke="#334155" stroke-width="5" stroke-linecap="round" />
+    <!-- Pega Vertical da Prensa de Peito -->
+    <rect x="146" y="75" width="5" height="18" rx="2" fill="#ef4444" />
+    
+    <!-- Braços da Atleta em Empurrão Horizontal -->
+    <path d="M124,78 L148,84" stroke="#d97706" stroke-width="6" stroke-linecap="round" />
+  </g>
+</svg>

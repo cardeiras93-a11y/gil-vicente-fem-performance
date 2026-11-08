@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="machGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <!-- Fundo Ginásio & Linha de Solo -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(180, 10)">
+    <rect x="0" y="0" width="132" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="73" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" text-anchor="middle">LEG PRESS 45° UNILATERAL</text>
+  </g>
+
+  <!-- Sombra no solo -->
+  <ellipse cx="160" cy="154" rx="80" ry="7" fill="#0f172a" opacity="0.22" />
+
+  <!-- Calha e Estrutura Fixa da Máquina -->
+  <line x1="85" y1="142" x2="255" y2="32" stroke="#334155" stroke-width="8" stroke-linecap="round" />
+  <rect x="68" y="92" width="46" height="14" rx="4" transform="rotate(-35 68 92)" fill="#0284c7" filter="url(#dropShadow)" />
+  <circle cx="66" cy="86" r="8" fill="#d97706" />
+  <path d="M80,94 L116,116" stroke="url(#kitGrad)" stroke-width="14" stroke-linecap="round" />
+  <ellipse cx="120" cy="118" rx="9" ry="8" fill="#0f172a" />
+
+  <!-- Perna Passiva (fletida/descanso) -->
+  <path d="M120,118 L142,135 L135,148" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6" />
+
+  <!-- Carrinho Móvel da Prensa (com animação de descida e empurrão unilateral) -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="-26 18; 0 0; 0 0; -26 18" keyTimes="0; 0.45; 0.65; 1" dur="2.8s" repeatCount="indefinite" />
+    <!-- Plataforma e Discos de Carga -->
+    <rect x="195" y="46" width="10" height="38" rx="2" transform="rotate(-45 195 46)" fill="#1e293b" />
+    <circle cx="218" cy="44" r="14" fill="#0f172a" stroke="#ef4444" stroke-width="3" />
+    <circle cx="218" cy="44" r="5" fill="#e2e8f0" />
+    
+    <!-- Perna Ativa Unilateral em Empurrão -->
+    <line x1="122" y1="116" x2="160" y2="88" stroke="#d97706" stroke-width="8.5" stroke-linecap="round" />
+    <line x1="160" y1="88" x2="198" y2="58" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <ellipse cx="198" cy="56" rx="8" ry="4" transform="rotate(-45 198 56)" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+    
+    <!-- Vetor de Força Concentrada Unilateral -->
+    <path d="M190,44 L208,30" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,3" />
+  </g>
+</svg>

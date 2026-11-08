@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="frameGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e293b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(180, 10)">
+    <rect x="0" y="0" width="132" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="73" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" text-anchor="middle">SMITH MACHINE LUNGE</text>
+  </g>
+
+  <!-- Sombra no solo -->
+  <ellipse cx="160" cy="154" rx="65" ry="7" fill="#0f172a" opacity="0.22" />
+
+  <!-- Calhas Verticais da Smith Machine -->
+  <line x1="120" y1="20" x2="120" y2="150" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+  <line x1="200" y1="20" x2="200" y2="150" stroke="#475569" stroke-width="5" stroke-linecap="round" />
+  <rect x="115" y="18" width="90" height="6" rx="2" fill="url(#frameGrad)" />
+  <rect x="110" y="146" width="100" height="6" rx="2" fill="url(#frameGrad)" />
+
+  <!-- Pés da Atleta em Split Stance -->
+  <!-- Pé da Frente Fixo -->
+  <rect x="140" y="145" width="18" height="5" rx="2.5" fill="#ffffff" stroke="#0284c7" stroke-width="1" />
+  <!-- Pé de Trás em Ponta dos Pés -->
+  <ellipse cx="85" cy="146" rx="7" ry="4" fill="#ffffff" stroke="#0284c7" stroke-width="1" />
+
+  <!-- Grupo com Movimento Vertical da Barra e Corpo (Split Squat / Afundo Guiado) -->
+  <g>
+    <animateTransform attributeName="transform" type="translate" values="0 18; 0 0; 0 0; 0 18" keyTimes="0; 0.45; 0.65; 1" dur="2.8s" repeatCount="indefinite" />
+
+    <!-- Barra da Smith Machine com Discos -->
+    <line x1="105" y1="62" x2="215" y2="62" stroke="#e2e8f0" stroke-width="4.5" stroke-linecap="round" />
+    <circle cx="112" cy="62" r="11" fill="#0f172a" stroke="#ef4444" stroke-width="2.5" />
+    <circle cx="208" cy="62" r="11" fill="#0f172a" stroke="#ef4444" stroke-width="2.5" />
+    <!-- Ganchos de Segurança da Barra na Calha -->
+    <rect x="118" y="58" width="5" height="8" rx="1" fill="#ef4444" />
+    <rect x="197" y="58" width="5" height="8" rx="1" fill="#ef4444" />
+
+    <!-- Atleta em Split Squat -->
+    <!-- Cabeça e Tronco Ereto -->
+    <circle cx="160" cy="50" r="7.5" fill="#d97706" />
+    <path d="M154,46 C154,40 166,40 166,46 Z" fill="#78350f" />
+    <path d="M154,62 L166,62 L163,94 L157,94 Z" fill="url(#kitGrad)" />
+    <!-- Bacia -->
+    <ellipse cx="160" cy="95" rx="9" ry="6" fill="#0f172a" />
+
+    <!-- Mãos a Segurar a Barra -->
+    <circle cx="138" cy="62" r="3.5" fill="#d97706" />
+    <circle cx="182" cy="62" r="3.5" fill="#d97706" />
+
+    <!-- Perna da Frente (Ativa) -->
+    <path d="M160,95 L156,122 L150,146" stroke="#d97706" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    
+    <!-- Perna de Trás (Descida controlada) -->
+    <path d="M160,95 L115,124 L85,146" stroke="#b45309" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+  </g>
+</svg>
