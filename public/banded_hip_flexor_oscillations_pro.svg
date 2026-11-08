@@ -5,13 +5,9 @@
       <stop offset="60%" stop-color="#090d16" />
       <stop offset="100%" stop-color="#030712" />
     </linearGradient>
-    <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1e3a8a" />
-      <stop offset="100%" stop-color="#0284c7" />
-    </linearGradient>
     <linearGradient id="purpleBand" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#7c3aed" />
-      <stop offset="50%" stop-color="#a855f7" />
+      <stop offset="0%" stop-color="#6d28d9" />
+      <stop offset="50%" stop-color="#9333ea" />
       <stop offset="100%" stop-color="#c084fc" />
     </linearGradient>
     <filter id="glowPurple" x="-20%" y="-20%" width="140%" height="140%">
@@ -22,148 +18,165 @@
       </feMerge>
     </filter>
     <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.4" />
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.5" />
     </filter>
   </defs>
 
   <!-- Background / Solo Pavilhão -->
   <rect width="320" height="180" fill="url(#gymFloor)" />
-  <!-- Linha de Chão com marcação amarela de ginásio GVFC -->
+  
+  <!-- Linha de Chão e marcas de agilidade amarelas (como na foto de treino) -->
   <line x1="0" y1="152" x2="320" y2="152" stroke="#1e293b" stroke-width="2" />
   <rect x="0" y="152" width="320" height="28" fill="#0b1120" />
-  <!-- Marcações amarelas de agilidade no chão (como na foto) -->
-  <rect x="110" y="156" width="35" height="16" fill="none" stroke="#eab308" stroke-width="2.5" opacity="0.85" rx="1" />
-  <rect x="155" y="156" width="35" height="16" fill="none" stroke="#eab308" stroke-width="2.5" opacity="0.85" rx="1" />
-  <rect x="200" y="156" width="35" height="16" fill="none" stroke="#eab308" stroke-width="2.5" opacity="0.85" rx="1" />
+  <rect x="110" y="156" width="34" height="15" fill="none" stroke="#eab308" stroke-width="2" opacity="0.8" rx="1" />
+  <rect x="152" y="156" width="34" height="15" fill="none" stroke="#eab308" stroke-width="2" opacity="0.8" rx="1" />
+  <rect x="194" y="156" width="34" height="15" fill="none" stroke="#eab308" stroke-width="2" opacity="0.8" rx="1" />
 
-  <!-- Badge LIVE ANIMADO -->
-  <g transform="translate(202, 10)">
-    <rect x="0" y="0" width="108" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#8b5cf6" stroke-width="1.2" />
-    <circle cx="12" cy="10" r="4" fill="#a855f7">
+  <!-- Badge LIVE ANIMADO (Canto Superior Direito) -->
+  <g transform="translate(204, 10)">
+    <rect x="0" y="0" width="104" height="19" rx="9.5" fill="#0f172a" fill-opacity="0.9" stroke="#8b5cf6" stroke-width="1.2" />
+    <circle cx="12" cy="9.5" r="4" fill="#a855f7">
       <animate attributeName="opacity" values="1;0.3;1" dur="1.2s" repeatCount="indefinite" />
-      <animate attributeName="r" values="4;5.5;4" dur="1.2s" repeatCount="indefinite" />
+      <animate attributeName="r" values="4;5.2;4" dur="1.2s" repeatCount="indefinite" />
     </circle>
-    <text x="60" y="14" fill="#c084fc" font-size="9" font-weight="900" font-family="Inter, system-ui, sans-serif" text-anchor="middle" letter-spacing="0.5">LIVE LOOP • 60fps</text>
+    <text x="58" y="13" fill="#c084fc" font-size="8.5" font-weight="900" font-family="Inter, system-ui, sans-serif" text-anchor="middle" letter-spacing="0.5">LIVE LOOP • 60fps</text>
   </g>
 
-  <!-- Title indicator -->
-  <g transform="translate(14, 18)">
+  <!-- Title indicator (Canto Superior Esquerdo) -->
+  <g transform="translate(14, 16)">
     <rect x="0" y="0" width="8" height="8" rx="2" fill="#8b5cf6" />
-    <text x="14" y="8" fill="#e2e8f0" font-size="9" font-weight="800" font-family="Inter, system-ui, sans-serif">OSCILAÇÕES DE FLEXORES DA ANCA C/ BANDA</text>
+    <text x="14" y="8" fill="#f1f5f9" font-size="8.5" font-weight="800" font-family="Inter, system-ui, sans-serif">OSCILAÇÕES DE FLEXORES DA ANCA (FRENTE / TRÁS)</text>
   </g>
 
-  <!-- Ponto de ancoragem fixo atrás (Banco de Ginásio / Rack) -->
-  <g id="bench-anchor" opacity="0.9">
-    <!-- Estrutura metálica branca/cinza -->
-    <rect x="15" y="105" width="40" height="8" rx="2" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1" />
-    <line x1="22" y1="113" x2="16" y2="152" stroke="#cbd5e1" stroke-width="4.5" stroke-linecap="round" />
-    <line x1="48" y1="113" x2="54" y2="152" stroke="#cbd5e1" stroke-width="4.5" stroke-linecap="round" />
-    <!-- Almofada do banco -->
-    <rect x="10" y="98" width="50" height="8" rx="3" fill="#1e293b" />
-    <!-- Ponto de fixação da banda -->
-    <circle cx="36" cy="116" r="4.5" fill="#334155" stroke="#64748b" stroke-width="1.5" />
+  <!-- PONTO DE ANCORAGEM POSTERIOR (Banco de Ginásio Atrás / À Esquerda) -->
+  <g id="bench-anchor" opacity="0.95">
+    <!-- Almofada do banco horizontal -->
+    <rect x="14" y="96" width="46" height="8" rx="2" fill="#1e293b" stroke="#334155" stroke-width="1" />
+    <!-- Estrutura metálica de suporte -->
+    <rect x="18" y="104" width="38" height="6" fill="#cbd5e1" />
+    <line x1="24" y1="110" x2="18" y2="152" stroke="#94a3b8" stroke-width="4.5" stroke-linecap="round" />
+    <line x1="50" y1="110" x2="56" y2="152" stroke="#94a3b8" stroke-width="4.5" stroke-linecap="round" />
+    <!-- Ponto de fixação sólido da banda na barra do banco -->
+    <circle cx="36" cy="118" r="5" fill="#0f172a" stroke="#8b5cf6" stroke-width="2" />
+    <!-- Micro-badge Ancoragem -->
+    <rect x="12" y="132" width="60" height="15" rx="4" fill="#0f172a" stroke="#475569" stroke-width="0.8" />
+    <text x="42" y="143" fill="#94a3b8" font-size="6.5" font-weight="800" font-family="Inter, sans-serif" text-anchor="middle">ANCORAGEM</text>
   </g>
 
-  <!-- Sombra no chão do atleta -->
-  <ellipse cx="205" cy="152" rx="22" ry="4.5" fill="#000000" opacity="0.6" />
+  <!-- Sombra do pé de apoio no chão -->
+  <ellipse cx="145" cy="152" rx="16" ry="4" fill="#000000" opacity="0.6" />
 
-  <!-- ATLETA (Postura de Sprint e Estabilidade Unipodal) -->
-  <!-- Perna de Apoio (Direita - Base sólida no solo) -->
-  <g id="support-leg">
-    <!-- Pé com sapatilha verde/vermelha (como na foto oficial GVFC) -->
-    <ellipse cx="205" cy="151" rx="12" ry="4.5" fill="#059669" />
-    <path d="M198 147 L214 148 L217 152 L196 152 Z" fill="#10b981" />
-    <path d="M208 149 L213 151" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />
-    <!-- Meia branca -->
-    <rect x="200" y="137" width="9" height="11" rx="2" fill="#f8fafc" />
-    <!-- Gémeo e tíbia sólida -->
-    <path d="M204 140 L203 115" stroke="#f6ad55" stroke-width="8.5" stroke-linecap="round" />
-    <!-- Joelho ligeiramente fletido / travado em estabilidade -->
-    <circle cx="203" cy="113" r="5" fill="#ed8936" />
-    <!-- Coxa / Quadricípete em tensão isométrica anti-gravitacional -->
-    <path d="M203 113 L198 78" stroke="#0f172a" stroke-width="11" stroke-linecap="round" />
-  </g>
+  <!-- BANDA ELÁSTICA ROXA DINÂMICA (Estica do Banco até ao Calcanhar da Perna Elevada) -->
+  <!-- A banda estica em sincronia com o movimento frente e para trás -->
+  <path stroke="url(#purpleBand)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#glowPurple)">
+    <animate attributeName="d" 
+      values="M36 118 Q95 120 188 118; M36 118 Q100 120 197 118; M36 118 Q94 120 186 118; M36 118 Q99 120 195 118; M36 118 Q95 120 188 118" 
+      keyTimes="0; 0.25; 0.5; 0.75; 1" 
+      dur="0.55s" 
+      repeatCount="indefinite" 
+      calcMode="spline" 
+      keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1" />
+  </path>
 
-  <!-- Calções Pretos de Treino e Tronco -->
-  <path d="M185 75 L206 75 L202 96 L182 94 Z" fill="#020617" stroke="#1e293b" stroke-width="1.5" />
-  <!-- T-shirt de treino (Preta GVFC) -->
-  <path d="M178 40 L204 42 L202 76 L180 75 Z" fill="#0f172a" stroke="#1e293b" stroke-width="1" />
+  <!-- ATLETA (Virada para a DIREITA / FRENTE em Postura Atlética Unipodal de Sprint) -->
   
-  <!-- Cabeça e Pescoço (Olhar focado horizontal) -->
-  <circle cx="192" cy="27" r="8.5" fill="#f6ad55" />
-  <path d="M186 23 C186 18, 198 18, 198 24 C195 23, 190 23, 186 23 Z" fill="#1e293b" />
-  <path d="M190 35 L191 41" stroke="#f6ad55" stroke-width="4.5" />
+  <!-- 1. Perna de Apoio Estável (Base no chão sem mexer) -->
+  <g id="support-leg">
+    <!-- Pé de apoio (sapatilha verde/vermelha voltada para a frente/direita) -->
+    <ellipse cx="145" cy="151" rx="11" ry="4" fill="#059669" />
+    <path d="M138 147 L154 148 L156 152 L136 152 Z" fill="#10b981" />
+    <path d="M148 149 L153 151" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" />
+    <!-- Meia branca -->
+    <rect x="140" y="137" width="9" height="11" rx="2" fill="#f8fafc" />
+    <!-- Gémeo e tíbia -->
+    <path d="M144 140 L145 114" stroke="#f6ad55" stroke-width="8" stroke-linecap="round" />
+    <!-- Joelho estável -->
+    <circle cx="145" cy="112" r="5" fill="#ed8936" />
+    <!-- Coxa / Quadricípete vertical sustentando o corpo -->
+    <path d="M145 112 L146 76" stroke="#0f172a" stroke-width="11" stroke-linecap="round" />
+  </g>
 
-  <!-- Braços em Mecânica de Corrida / Equilíbrio -->
-  <!-- Braço Posterior -->
-  <path d="M198 44 L212 58 L218 52" stroke="#f6ad55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-  <!-- Braço Anterior (fletido a 90° ao peito) -->
-  <path d="M182 44 L170 56 L175 42" stroke="#f6ad55" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- 2. Tronco, Bacia e Cabeça (Estabilidade pélvica pura) -->
+  <!-- Calções pretos -->
+  <path d="M136 74 L156 74 L154 94 L138 94 Z" fill="#020617" stroke="#1e293b" stroke-width="1.5" />
+  <!-- T-shirt preta GVFC -->
+  <path d="M136 38 L158 39 L156 75 L138 74 Z" fill="#0f172a" stroke="#1e293b" stroke-width="1" />
+  
+  <!-- Pescoço e Cabeça virada para a DIREITA (olhar fixo à frente) -->
+  <path d="M147 34 L148 39" stroke="#f6ad55" stroke-width="4.5" />
+  <circle cx="150" cy="26" r="8" fill="#f6ad55" />
+  <!-- Cabelo / fita de treino -->
+  <path d="M144 22 C144 17, 156 17, 156 23 C153 22, 148 22, 144 22 Z" fill="#1e293b" />
+  <!-- Perfil do rosto olhando para a direita -->
+  <circle cx="153" cy="25" r="1.5" fill="#0f172a" />
 
-  <!-- GRUPO ANIMADO: PERNA ELEVADA + BANDA ELÁSTICA EM OSCILAÇÃO RÁPIDA -->
-  <!-- As oscilações rápidas (pulsos a 60fps) caracterizam as Banded Hip Flexor Oscillations -->
-  <g id="oscillating-hip-complex">
-    <!-- Animação de micro-oscilações rítmicas e velozes (subida/descida em 0.5s de alta frequência) -->
+  <!-- Braços em Mecânica de Sprint (Braço esquerdo à frente, direito atrás) -->
+  <path d="M138 42 L128 54 L132 46" stroke="#f6ad55" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.8" />
+  <path d="M152 42 L164 52 L158 60" stroke="#f6ad55" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- 3. PERNA DE TRABALHO ELEVADA: MOVIMENTO PURO DE FRENTE E PARA TRÁS -->
+  <!-- Animação no EIXO X (dx de avanço para a frente e retorno elástico contra a banda) -->
+  <g id="oscillating-leg-horizontal">
+    <!-- MOVIMENTO EXCLUSIVAMENTE HORIZONTAL (FRENTE E PARA TRÁS): 
+         Avança +9px para a frente (direita) e recua de volta sob tensão elástica -->
     <animateTransform attributeName="transform" type="translate" 
-      values="0,0; 0,-7; 0,1.5; 0,-6.5; 0,0" 
+      values="0,0; 9,0; -2,0; 8,0; 0,0" 
       keyTimes="0; 0.25; 0.5; 0.75; 1" 
       dur="0.55s" 
       repeatCount="indefinite" 
       calcMode="spline" 
       keySplines="0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1; 0.4 0 0.2 1" />
 
-    <!-- Banda Elástica Roxa ancorada no banco e laçada no tornozelo -->
-    <!-- Faixa inferior da banda que vem do banco -->
-    <path d="M36 116 Q85 119 148 126" stroke="url(#purpleBand)" stroke-width="5" fill="none" stroke-linecap="round" filter="url(#glowPurple)" />
-    <!-- Faixa superior que passa no tornozelo e estica à frente -->
-    <path d="M148 126 L164 127" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
-    <path d="M164 127 Q220 134 300 140" stroke="url(#purpleBand)" stroke-width="4.5" fill="none" stroke-linecap="round" opacity="0.85" filter="url(#glowPurple)" />
-
-    <!-- Coxa Elevada (Hip Flexion a 90° - Posição de Ataque de Sprint) -->
-    <path d="M185 78 L142 80" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
-    <path d="M180 80 L145 81" stroke="#1e293b" stroke-width="8" stroke-linecap="round" />
+    <!-- Coxa Elevada a 90° projetada PARA A FRENTE (DIREITA) -->
+    <!-- Do quadril (146, 76) até ao joelho dianteiro (192, 74) -->
+    <path d="M146 76 L192 74" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+    <path d="M148 76 L188 75" stroke="#1e293b" stroke-width="8" stroke-linecap="round" />
     
-    <!-- Joelho Fletido a 90° -->
-    <circle cx="140" cy="80" r="6" fill="#f6ad55" />
-    <circle cx="140" cy="80" r="3" fill="#ed8936" />
+    <!-- Joelho Dianteiro Fletido a 90° -->
+    <circle cx="192" cy="74" r="6" fill="#f6ad55" />
+    <circle cx="192" cy="74" r="3" fill="#ed8936" />
 
-    <!-- Tíbia descendo em 90° (Vertical) -->
-    <path d="M140 82 L146 122" stroke="#f6ad55" stroke-width="8.5" stroke-linecap="round" />
-    <!-- Meia Branca com dobra -->
-    <rect x="142" y="114" width="8" height="12" rx="2" fill="#f8fafc" />
+    <!-- Tíbia vertical descendo do joelho (192, 74) até ao tornozelo (190, 116) -->
+    <path d="M192 74 L190 116" stroke="#f6ad55" stroke-width="8" stroke-linecap="round" />
+    <!-- Meia Branca -->
+    <rect x="186" y="108" width="8" height="11" rx="2" fill="#f8fafc" />
 
-    <!-- Pé e Sapatilha Verde (Dorsiflexão ativa - pé armado para sprint) -->
-    <path d="M140 126 L158 124 L162 131 L138 132 Z" fill="#059669" />
-    <circle cx="144" cy="128" r="3.5" fill="#10b981" />
-    <path d="M152 126 L157 129" stroke="#ef4444" stroke-width="2" stroke-linecap="round" />
+    <!-- Pé Dianteiro em Dorsiflexão (Calcanhar a 188, ponta dos dedos a 206) -->
+    <path d="M186 118 L204 116 L207 122 L185 123 Z" fill="#059669" />
+    <circle cx="190" cy="120" r="3" fill="#10b981" />
+    <path d="M198 118 L203 121" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" />
 
-    <!-- Laço da banda roxa no tornozelo (visível sobre a meia/sapatilha) -->
-    <ellipse cx="148" cy="126" rx="5" ry="3.5" fill="#8b5cf6" stroke="#c084fc" stroke-width="1.2" />
+    <!-- Laço da Banda Roxa no Tornozelo / Calcanhar (fixação da resistência traseira) -->
+    <ellipse cx="188" cy="118" rx="4.5" ry="3.5" fill="#7c3aed" stroke="#c084fc" stroke-width="1.5" />
 
-    <!-- Setas de Oscilação Rápida no Joelho (Pulsos Verticais) -->
-    <g transform="translate(118, 64)">
-      <!-- Seta superior (impulso para cima) -->
-      <path d="M6 8 L10 2 L14 8" stroke="#a855f7" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-      <line x1="10" y1="2" x2="10" y2="18" stroke="#a855f7" stroke-width="2" stroke-linecap="round" />
-      <!-- Seta inferior (retorno elástico) -->
-      <path d="M6 12 L10 18 L14 12" stroke="#a855f7" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-    </g>
-
-    <!-- Indicador de Tensão Muscular no Psoas / Flexores da Anca -->
-    <circle cx="172" cy="74" r="5" fill="#ef4444" opacity="0.8">
-      <animate attributeName="r" values="3.5;6.5;3.5" dur="0.55s" repeatCount="indefinite" />
+    <!-- Ponto de Ativação Neuromuscular no Psoas / Flexores da Anca -->
+    <circle cx="152" cy="72" r="4.5" fill="#ef4444" opacity="0.9">
+      <animate attributeName="r" values="3.5;6;3.5" dur="0.55s" repeatCount="indefinite" />
       <animate attributeName="opacity" values="0.9;0.3;0.9" dur="0.55s" repeatCount="indefinite" />
     </circle>
+
+    <!-- SETAS DE MOVIMENTO HORIZONTAL FRENTE / TRÁS (Directamente sobre o joelho) -->
+    <g transform="translate(162, 50)">
+      <!-- Fundo de destaque para as setas -->
+      <rect x="0" y="0" width="70" height="16" rx="8" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1" />
+      <!-- Seta esquerda (Trás) -->
+      <path d="M11 8 L16 5 L16 11 Z" fill="#38bdf8" />
+      <!-- Linha horizontal de oscilação -->
+      <line x1="14" y1="8" x2="56" y2="8" stroke="#38bdf8" stroke-width="1.8" />
+      <!-- Seta direita (Frente) -->
+      <path d="M59 8 L54 5 L54 11 Z" fill="#38bdf8" />
+      <text x="35" y="11.5" fill="#f8fafc" font-size="6.5" font-weight="900" font-family="Inter, sans-serif" text-anchor="middle">FRENTE ◄► TRÁS</text>
+    </g>
   </g>
 
-  <!-- Box de Informação Técnica no Rodapé -->
-  <g transform="translate(14, 134)">
-    <rect x="0" y="0" width="128" height="18" rx="5" fill="#0f172a" fill-opacity="0.9" stroke="#8b5cf6" stroke-width="1" />
-    <text x="64" y="12" fill="#c084fc" font-size="7.5" font-weight="800" font-family="Inter, sans-serif" text-anchor="middle">POTÊNCIA & RIGIDEZ EM 90° (SPRINT)</text>
+  <!-- BADGES TÉCNICAS INFORMATIVAS (Posicionamento limpo sem sobreposição) -->
+  <g transform="translate(196, 134)">
+    <rect x="0" y="0" width="112" height="18" rx="5" fill="#0f172a" fill-opacity="0.9" stroke="#8b5cf6" stroke-width="1" />
+    <text x="56" y="12" fill="#c084fc" font-size="7.5" font-weight="800" font-family="Inter, sans-serif" text-anchor="middle">OSCILAÇÃO RÁPIDA DE ANCA</text>
   </g>
 
-  <g transform="translate(196, 44)">
-    <rect x="0" y="0" width="112" height="17" rx="5" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1" />
-    <text x="56" y="11.5" fill="#38bdf8" font-size="7" font-weight="800" font-family="Inter, sans-serif" text-anchor="middle">ESTABILIDADE PÉLVICA PURA</text>
+  <g transform="translate(196, 156)">
+    <rect x="0" y="0" width="112" height="16" rx="4" fill="#0f172a" fill-opacity="0.9" stroke="#334155" stroke-width="0.8" />
+    <text x="56" y="11" fill="#94a3b8" font-size="7" font-weight="700" font-family="Inter, sans-serif" text-anchor="middle">RESISTÊNCIA ELÁSTICA POSTERIOR</text>
   </g>
 </svg>
