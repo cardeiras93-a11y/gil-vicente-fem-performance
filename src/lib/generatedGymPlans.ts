@@ -2144,8 +2144,8 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
             seriesRepsEn: "3x 6-8 reps / side",
             restPt: "60s entre s\u00e9ries",
             restEn: "60s between sets",
-            descriptionPt: "P\u00e9s \u00e0 largura dos ombros com banda ancorada. Flete em agachamento, d\u00e1 um passo firme em frente mantendo a tens\u00e3o e rota\u00e7\u00e3o do tronco, e regressa de forma controlada ao agachamento.",
-            descriptionEn: "Shoulder-width stance with anchored band. Squat down, take a firm step forward maintaining tension and trunk rotation, and return under control into the squat.",
+            descriptionPt: "P\u00e9s \u00e0 largura dos ombros com banda el\u00e1stica ancorada. Flete em agachamento profundo, d\u00e1 um passo firme em frente mantendo a tens\u00e3o el\u00e1stica e rota\u00e7\u00e3o controlada do tronco, e regressa de forma est\u00e1vel com o core ativado.",
+            descriptionEn: "Shoulder-width stance with anchored elastic band. Squat deep, step firmly forward maintaining elastic tension and controlled trunk rotation, returning under control with active core.",
             imageSrc: "/exercises/squat_band_trunk_rotation_pro.svg"
           },
           {
@@ -2156,7 +2156,7 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
             seriesRepsEn: "3x 6-8 reps",
             restPt: "60s entre s\u00e9ries",
             restEn: "60s between sets",
-            descriptionPt: "P\u00e9s \u00e0 largura dos ombros segurando a ponta da barra ao peito com ambas as m\u00e3os. Agacha com controlo e sobe de forma explosiva transferindo a for\u00e7a das pernas para um press diagonal de ombros no topo.",
+            descriptionPt: "P\u00e9s \u00e0 largura dos ombros segurando a ponta da barra ao peito com ambas as m\u00e3os. Agacha com controlo e sobe de forma explosiva transferindo a for\u00e7a das pernas para um press diagonal de ombros no topo com bloqueio terminal.",
             descriptionEn: "Shoulder-width stance holding barbell sleeve at chest with both hands. Squat under control and drive up explosively, transferring leg drive into a diagonal overhead press at lockout.",
             imageSrc: "/exercises/landmine_squat_to_press_pro.svg"
           },
@@ -2179,8 +2179,8 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
             seriesRepsEn: "3x 8-10 reps",
             restPt: "75s entre s\u00e9ries",
             restEn: "75s between sets",
-            descriptionPt: "Omoplatas no banco, barra na anca com prote\u00e7\u00e3o. Eleva a bacia pelos calcanhares at\u00e9 \u00e0 linha neutra, pausa 2s no topo e descida lenta.",
-            descriptionEn: "Upper back on bench, padded barbell on hips. Drive through heels to full hip extension, hold 2s at the top, controlled eccentric lower.",
+            descriptionPt: "Omoplatas apoiadas no banco, barra na anca com prote\u00e7\u00e3o. Eleva a bacia pela for\u00e7a dos calcanhares at\u00e9 \u00e0 extens\u00e3o neutra completa, pausa 2s de contra\u00e7\u00e3o m\u00e1xima no topo e descida lenta e controlada.",
+            descriptionEn: "Upper back on bench, padded barbell on hips. Drive through heels to full neutral hip extension, hold 2s peak contraction at the top, controlled eccentric lower.",
             imageSrc: "/exercises/gym_hip_thrust_barbell_pro.svg"
           },
           {
@@ -2191,8 +2191,8 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
             seriesRepsEn: "3x 6-8 reps / side",
             restPt: "60s cada perna",
             restEn: "60s each leg",
-            descriptionPt: "P\u00e9 firme na caixa e medball ao peito. Sobe em extens\u00e3o potente de anca rodando suavemente o tronco para o lado do apoio.",
-            descriptionEn: "Plant lead foot on box holding medball at chest. Drive up to full hip extension rotating torso smoothly toward the lead leg.",
+            descriptionPt: "P\u00e9 de ataque firme na caixa com a medicine ball segura ao peito. Sobe em extens\u00e3o potente e explosiva de anca e joelho, rodando suavemente o tronco para o lado do apoio com total estabilidade p\u00e9lvica.",
+            descriptionEn: "Plant lead foot on box holding medball at chest. Drive up to explosive hip extension rotating torso smoothly toward the lead leg with complete pelvic stability.",
             imageSrc: "/exercises/step_up_medball_rotation_pro.svg"
           },
         ]
