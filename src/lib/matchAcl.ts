@@ -26,7 +26,7 @@ export function normalizeAthleteName(name: string): string {
   if (upper === 'SERENA') return 'Serena';
   if (upper === 'MERIVA') return 'Meriva';
   if (upper === 'VERÓNICA' || upper === 'VERONICA') return 'Verónica';
-  if (upper === 'TITA') return 'Tita';
+  if (upper === 'TITA' || upper === 'PATRICIA DIAS') return 'Tita';
   if (upper === 'CHELSEA') return 'Chelsea';
   if (upper === 'EVA') return 'Eva';
   if (upper === 'FAITH') return 'Faith';

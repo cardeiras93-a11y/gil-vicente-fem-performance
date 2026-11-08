@@ -18,7 +18,8 @@ import {
   Timer, Clock, Trophy, Shield, Search, Filter, CheckCircle2,
   Edit3, Save, RotateCcw, Download, Copy, Check, ChevronRight, X,
   Flame, TrendingUp, AlertCircle, Calendar, Users, SlidersHorizontal,
-  Layers, BarChart3, HelpCircle, ArrowUpDown, ChevronDown, Plus, Trash2, Cloud, RefreshCw
+  Layers, BarChart3, HelpCircle, ArrowUpDown, ChevronDown, Plus, Trash2, Cloud, RefreshCw,
+  ArrowLeft, Eye, Lock, Star, Sparkles, UserCheck
 } from 'lucide-react';
 
 export type MatchCategory = 'friendly' | 'championship' | 'cup';
@@ -71,7 +72,44 @@ interface PlayerMinutesStats {
   matchHistory: PlayerMatchDetail[];
 }
 
-export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ isStandalone = false }) => {
+export interface MatchMinutesDashboardProps {
+  isStandalone?: boolean;
+  userRole?: 'admin' | 'coach' | 'athlete';
+  athleteName?: string;
+  onBack?: () => void;
+}
+
+export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
+  isStandalone = false,
+  userRole: propUserRole,
+  athleteName: propAthleteName,
+  onBack,
+}) => {
+  const [overrideRole, setOverrideRole] = useState<'admin' | 'athlete' | null>(null);
+  const activeRole: 'admin' | 'coach' | 'athlete' = useMemo(() => {
+    if (overrideRole) return overrideRole;
+    if (propUserRole) return propUserRole;
+    if (typeof window !== 'undefined') {
+      const mode = localStorage.getItem('femperf_active_view_mode');
+      if (mode === 'admin') return 'admin';
+    }
+    return 'athlete';
+  }, [overrideRole, propUserRole]);
+
+  const isAthlete = activeRole === 'athlete';
+
+  const effectiveAthleteName = useMemo(() => {
+    if (propAthleteName) return normalizeAthleteName(propAthleteName);
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('femperf_active_athlete_id');
+        const aths = getDynamicAthletes(true);
+        const found = aths.find((a) => a.id === stored);
+        if (found) return normalizeAthleteName(found.name);
+      } catch {}
+    }
+    return '';
+  }, [propAthleteName]);
   const [customMatches, setCustomMatches] = useState<MatchInfo[]>([]);
   const [athletes, setAthletes] = useState<Athlete[]>([]);
 
@@ -640,6 +678,13 @@ export const MatchMinutesDashboard: React.FC<{ isStandalone?: boolean }> = ({ is
         return 0;
       });
   }, [statsList, positionFilter, searchTerm, sortBy]);
+
+  // Dedicated stats for the logged-in athlete
+  const activeAthleteStats = useMemo(() => {
+    if (!effectiveAthleteName) return null;
+    const target = normalizeAthleteName(effectiveAthleteName).toLowerCase();
+    return statsList.find((p) => normalizeAthleteName(p.name).toLowerCase() === target) || null;
+  }, [effectiveAthleteName, statsList]);
 
   // Team KPIs for Current Filter
   const teamKpis = useMemo(() => {
