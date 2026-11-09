@@ -27,7 +27,9 @@ import {
   Video,
   X,
   Radio,
-  Maximize2
+  Maximize2,
+  Scale,
+  Droplet
 } from 'lucide-react';
 
 // Fictional mock squad data for privacy and demonstration
@@ -47,7 +49,7 @@ export default function ShowcasePage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [currentScene, setCurrentScene] = useState<number>(0);
   const [aspectRatio, setAspectRatio] = useState<'9-16' | '1-1' | '16-9'>('9-16');
-  const [activeTab, setActiveTab] = useState<'wellness' | 'rpe' | 'gps' | 'minutes' | 'plan'>('wellness');
+  const [activeTab, setActiveTab] = useState<'wellness' | 'hydration' | 'rpe' | 'gps' | 'minutes' | 'plan'>('wellness');
   const [recordFeedback, setRecordFeedback] = useState<string | null>(null);
 
   // Video recording states
@@ -66,13 +68,14 @@ export default function ShowcasePage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Scenes list for auto-walkthrough (approx 31s total cycle)
+  // 6 Scenes list for full 30s auto-walkthrough (5000ms each = 30 seconds total)
   const SCENES = [
-    { id: 0, tab: 'wellness' as const, label: '1. Wellness Matinal', duration: 6000 },
-    { id: 1, tab: 'rpe' as const, label: '2. PSE & Carga Interna', duration: 6000 },
-    { id: 2, tab: 'gps' as const, label: '3. Rendimento GPS em Jogo', duration: 7000 },
-    { id: 3, tab: 'minutes' as const, label: '4. Minutos Competitivos', duration: 6000 },
-    { id: 4, tab: 'plan' as const, label: '5. Planeamento Semanal', duration: 6000 },
+    { id: 0, tab: 'wellness' as const, label: '1. Wellness Matinal', duration: 5000 },
+    { id: 1, tab: 'hydration' as const, label: '2. Pesagem & Hidratação', duration: 5000 },
+    { id: 2, tab: 'rpe' as const, label: '3. PSE & Carga Interna', duration: 5000 },
+    { id: 3, tab: 'gps' as const, label: '4. Rendimento GPS em Jogo', duration: 5000 },
+    { id: 4, tab: 'minutes' as const, label: '5. Minutos Competitivos', duration: 5000 },
+    { id: 5, tab: 'plan' as const, label: '6. Planeamento Semanal', duration: 5000 },
   ];
 
   // Auto-play timer
@@ -350,17 +353,17 @@ export default function ShowcasePage() {
         ctx.font = '900 14px system-ui, sans-serif';
         ctx.fillText('EX', width - 78, 110);
 
-        // Tab navigation buttons
-        const tabs = ['Wellness', 'PSE Treino', 'GPS Jogo', 'Minutos', 'Microciclo'];
-        const tabWidth = (width - 80) / 5;
+        // Tab navigation buttons (6 tabs)
+        const tabs = ['Wellness', 'Pesagem', 'PSE', 'GPS', 'Minutos', 'Plano'];
+        const tabWidth = (width - 80) / 6;
         tabs.forEach((tab, i) => {
           const tx = 40 + i * tabWidth;
           const isActive = i === sceneIdx;
-          const fill = isActive ? (i === 0 ? '#f43f5e' : i === 1 ? '#f59e0b' : i === 2 ? '#0284c7' : i === 3 ? '#10b981' : '#a855f7') : '#111827';
+          const fill = isActive ? (i === 0 ? '#f43f5e' : i === 1 ? '#06b6d4' : i === 2 ? '#f59e0b' : i === 3 ? '#0284c7' : i === 4 ? '#10b981' : '#a855f7') : '#111827';
           const stroke = isActive ? 'rgba(255,255,255,0.4)' : '#1f2937';
-          drawRoundRect(tx + 4, 155, tabWidth - 8, 48, 14, fill, stroke);
-          ctx.fillStyle = isActive ? (i === 1 ? '#020617' : '#ffffff') : '#94a3b8';
-          ctx.font = '900 15px system-ui, sans-serif';
+          drawRoundRect(tx + 3, 155, tabWidth - 6, 48, 14, fill, stroke);
+          ctx.fillStyle = isActive ? (i === 1 || i === 2 ? '#020617' : '#ffffff') : '#94a3b8';
+          ctx.font = '900 14px system-ui, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(tab, tx + tabWidth / 2, 185);
           ctx.textAlign = 'left';
@@ -417,8 +420,80 @@ export default function ShowcasePage() {
           ctx.fillText('✓ Atleta 100% pronta para a intensidade planeada (MD-3)', 70, 928);
         }
 
-        // SCENE 1: PSE TREINO
+        // SCENE 1: PESAGEM & CONTROLO PONDERAL
         else if (sceneIdx === 1) {
+          ctx.fillStyle = '#22d3ee';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('CONTROLO PONDERAL • BALANÇA', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Pesagem & Hidratação Diária', 40, 285);
+
+          drawRoundRect(width - 270, 245, 230, 44, 22, 'rgba(6,182,212,0.2)', '#06b6d4');
+          ctx.fillStyle = '#22d3ee';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('Status: Hidratação Ótima ✓', width - 255, 274);
+
+          // Grid: Peso Pré vs Peso Pós
+          drawRoundRect(40, 320, 305, 175, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('PESO PRÉ-TREINO', 65, 360);
+          ctx.fillStyle = '#22d3ee';
+          ctx.font = '900 48px system-ui, sans-serif';
+          ctx.fillText('58.4 kg', 65, 430);
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 16px system-ui, sans-serif';
+          ctx.fillText('Registado às 09:40', 65, 470);
+
+          drawRoundRect(375, 320, 305, 175, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('PESO PÓS-TREINO', 400, 360);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 48px system-ui, sans-serif';
+          ctx.fillText('57.8 kg', 400, 430);
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('-0.60 kg (-1.03%)', 400, 470);
+
+          // Hydration Stats Box
+          drawRoundRect(40, 520, width - 80, 220, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 22px system-ui, sans-serif';
+          ctx.fillText('💧 Líquidos Ingeridos no Treino', 65, 570);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 24px system-ui, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('500 ml', width - 65, 570);
+          ctx.textAlign = 'left';
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 22px system-ui, sans-serif';
+          ctx.fillText('⚡ Nível de Preservação Hídrica', 65, 630);
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 24px system-ui, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('92% (Excelente)', width - 65, 630);
+          ctx.textAlign = 'left';
+
+          drawRoundRect(65, 665, width - 130, 18, 9, '#1e293b');
+          const curHyd = Math.min(0.92, 0.92 * Math.min(1, sceneProgress * 2));
+          drawRoundRect(65, 665, (width - 130) * curHyd, 18, 9, '#06b6d4');
+
+          // Protocol card
+          drawRoundRect(40, 765, width - 80, 120, 22, 'rgba(6,182,212,0.15)', 'rgba(6,182,212,0.3)');
+          ctx.fillStyle = '#22d3ee';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('💧 RECOMENDAÇÃO NUTRICIONAL & HÍDRICA', 65, 810);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = 'bold 18px system-ui, sans-serif';
+          ctx.fillText('Ingerir ~900 ml de água com eletrólitos nas próximas 2 horas.', 65, 850);
+        }
+
+        // SCENE 2: PSE TREINO
+        else if (sceneIdx === 2) {
           ctx.fillStyle = '#fbbf24';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('PÓS-TREINO • BORG CR-10', 40, 245);
@@ -469,8 +544,8 @@ export default function ShowcasePage() {
           ctx.fillText('Sem queixas articulares (Fadiga normal nos isquios: 2/10) 🦵', 70, 800);
         }
 
-        // SCENE 2: GPS JOGO
-        else if (sceneIdx === 2) {
+        // SCENE 3: GPS JOGO
+        else if (sceneIdx === 3) {
           ctx.fillStyle = '#38bdf8';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('JOGO DEMONSTRATIVO • JORNADA EXEMPLO', 40, 245);
@@ -528,8 +603,8 @@ export default function ShowcasePage() {
           ctx.fillText('138 ações', 400, 850);
         }
 
-        // SCENE 3: MINUTOS
-        else if (sceneIdx === 3) {
+        // SCENE 4: MINUTOS
+        else if (sceneIdx === 4) {
           ctx.fillStyle = '#34d399';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('HISTÓRICO DE ÉPOCA', 40, 245);
@@ -595,8 +670,8 @@ export default function ShowcasePage() {
           });
         }
 
-        // SCENE 4: MICROCICLO
-        else if (sceneIdx === 4) {
+        // SCENE 5: MICROCICLO
+        else if (sceneIdx === 5) {
           ctx.fillStyle = '#c084fc';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('MICROCICLO 21 • 18/03 A 24/03', 40, 245);
@@ -658,9 +733,9 @@ export default function ShowcasePage() {
         ctx.textAlign = 'left';
       };
 
-      // 5 scenes x 60 frames = 300 frames (10 seconds total at 30fps)
-      const framesPerScene = 60;
-      const totalScenes = 5;
+      // 6 scenes x 150 frames = 900 frames (30 seconds total at 30fps)
+      const framesPerScene = 150;
+      const totalScenes = 6;
       const totalFrames = totalScenes * framesPerScene;
 
       let currentFrame = 0;
@@ -680,7 +755,7 @@ export default function ShowcasePage() {
         setGeneratorProgress(Math.round((currentFrame / totalFrames) * 100));
 
         // Use fast frame dispatching
-        setTimeout(renderNextFrame, 16);
+        setTimeout(renderNextFrame, 10);
       };
 
       renderNextFrame();
@@ -796,17 +871,17 @@ export default function ShowcasePage() {
                   ? 'bg-amber-500 text-slate-950 animate-pulse'
                   : 'bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-500 hover:to-indigo-500 text-white shadow-[0_0_25px_rgba(225,29,72,0.45)] ring-2 ring-white/30 hover:scale-[1.02]'
               }`}
-              title="Descarregar vídeo MP4 já pronto contendo apenas o ecrã do telemóvel"
+              title="Descarregar vídeo MP4 de 30s contendo apenas o ecrã do telemóvel (6 cenas com Pesagem)"
             >
               {isGeneratingPhoneVideo ? (
                 <>
                   <Radio className="h-4 w-4 animate-spin text-slate-950" />
-                  <span>A Gerar Vídeo ({generatorProgress}%)...</span>
+                  <span>A Gerar Vídeo 30s ({generatorProgress}%)...</span>
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  <span>Descarregar Vídeo (Apenas Telemóvel)</span>
+                  <span>Descarregar Vídeo 30s (Apenas Telemóvel)</span>
                 </>
               )}
             </button>
@@ -866,8 +941,8 @@ export default function ShowcasePage() {
               <Download className="h-7 w-7" />
             </div>
             <div>
-              <h3 className="text-base font-black text-white">A Renderizar Vídeo MP4</h3>
-              <p className="text-xs text-slate-400 mt-1">Apenas o ecrã do telemóvel a 720x1280 (Stories &amp; Reels)</p>
+              <h3 className="text-base font-black text-white">A Renderizar Vídeo MP4 (30s)</h3>
+              <p className="text-xs text-slate-400 mt-1">Apenas o ecrã do telemóvel &bull; 6 Cenas (com Pesagem)</p>
             </div>
             <div className="space-y-2">
               <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
@@ -878,11 +953,11 @@ export default function ShowcasePage() {
               </div>
               <div className="flex justify-between text-xs font-bold text-slate-400">
                 <span>Progresso: {generatorProgress}%</span>
-                <span>30 FPS &bull; MP4</span>
+                <span>30 Segundos &bull; 30 FPS MP4</span>
               </div>
             </div>
             <p className="text-[11px] text-slate-400">
-              O ficheiro <strong className="text-white">gil-vicente-performance-app-mobile.mp4</strong> será descarregado automaticamente dentro de momentos!
+              O ficheiro <strong className="text-white">gil-vicente-performance-app-mobile-stories.mp4</strong> será descarregado automaticamente dentro de momentos!
             </p>
           </div>
         </div>
@@ -964,6 +1039,14 @@ export default function ShowcasePage() {
                 }`}
               >
                 <HeartPulse className="h-3 w-3" /> Wellness
+              </button>
+              <button
+                onClick={() => setActiveTab('hydration')}
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
+                  activeTab === 'hydration' ? 'bg-cyan-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Scale className="h-3 w-3" /> Pesagem
               </button>
               <button
                 onClick={() => setActiveTab('rpe')}
@@ -1066,7 +1149,58 @@ export default function ShowcasePage() {
                 </div>
               )}
 
-              {/* SCENE 2: PSE & RPE */}
+              {/* SCENE 2: PESAGEM & HIDRATAÇÃO */}
+              {activeTab === 'hydration' && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-cyan-400 tracking-wider">Controlo Ponderal &bull; Balança</span>
+                      <h2 className="text-sm font-black text-white">Pesagem &amp; Hidratação Diária</h2>
+                    </div>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+                      Status: Hidratação Ótima ✓
+                    </span>
+                  </div>
+
+                  {/* Dual Weight Cards: Pré vs Pós Treino */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 text-left space-y-1">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">Peso Pré-Treino</span>
+                      <div className="text-xl font-black text-cyan-400">58.4 <span className="text-xs text-slate-400 font-normal">kg</span></div>
+                      <span className="text-[9px] text-slate-500 block">Registado às 09:40</span>
+                    </div>
+
+                    <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 text-left space-y-1">
+                      <span className="text-[9px] text-slate-400 font-bold block uppercase">Peso Pós-Treino</span>
+                      <div className="text-xl font-black text-white">57.8 <span className="text-xs text-slate-400 font-normal">kg</span></div>
+                      <span className="text-[9px] text-emerald-400 font-bold block">-0.60 kg (-1.03%)</span>
+                    </div>
+                  </div>
+
+                  {/* Hydration Stats Box */}
+                  <div className="bg-slate-900/70 p-3 rounded-2xl border border-slate-800 space-y-2">
+                    <div className="flex justify-between text-[11px] font-bold">
+                      <span className="text-slate-400">💧 Líquidos Ingeridos no Treino</span>
+                      <span className="text-white font-black">500 ml</span>
+                    </div>
+                    <div className="flex justify-between text-[11px] font-bold">
+                      <span className="text-slate-400">⚡ Nível de Preservação Hídrica</span>
+                      <span className="text-emerald-400 font-black">92% (Excelente)</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+                      <div className="h-full bg-cyan-400 rounded-full w-[92%]" />
+                    </div>
+                  </div>
+
+                  {/* Recovery Protocol Recommendation */}
+                  <div className="p-2.5 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex items-center space-x-2 text-cyan-300 text-xs font-bold">
+                    <span className="text-base">💧</span>
+                    <span>Recomendação: Ingerir ~900 ml de água com eletrólitos nas próximas 2 horas.</span>
+                  </div>
+                </div>
+              )}
+
+              {/* SCENE 3: PSE & RPE */}
               {activeTab === 'rpe' && (
                 <div className="space-y-3 animate-fade-in">
                   <div className="flex items-center justify-between">
