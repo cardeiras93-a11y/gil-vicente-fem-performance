@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Athlete } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import { isGoalkeeper } from '@/lib/data';
-import { User, RefreshCw, Shield, Stethoscope, Trophy, Clock } from 'lucide-react';
+import { User, RefreshCw, Shield, Stethoscope, Trophy, Clock, Video } from 'lucide-react';
 
 interface HeaderProps {
   activeAthlete: Athlete | null;
@@ -86,6 +86,15 @@ export const Header: React.FC<HeaderProps> = ({
               className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-rose-500/50 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all active:scale-95 shadow-sm"
             >
               <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-400" />
+            </Link>
+
+            {/* Showcase / Video Recording Demo Link */}
+            <Link
+              href="/showcase"
+              title="Modo Demonstração / Vídeo para Redes Sociais (100% Anónimo)"
+              className="flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full border border-purple-500/50 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all active:scale-95 shadow-sm"
+            >
+              <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-400" />
             </Link>
 
             {/* Physiotherapist Button */}
