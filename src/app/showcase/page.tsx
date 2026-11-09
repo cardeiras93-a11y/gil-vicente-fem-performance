@@ -49,7 +49,7 @@ export default function ShowcasePage() {
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
   const [currentScene, setCurrentScene] = useState<number>(0);
   const [aspectRatio, setAspectRatio] = useState<'9-16' | '1-1' | '16-9'>('9-16');
-  const [activeTab, setActiveTab] = useState<'wellness' | 'hydration' | 'rpe' | 'gps' | 'minutes' | 'plan'>('wellness');
+  const [activeTab, setActiveTab] = useState<'wellness' | 'hydration' | 'gym' | 'rpe' | 'gps' | 'minutes' | 'plan'>('wellness');
   const [recordFeedback, setRecordFeedback] = useState<string | null>(null);
 
   // Video recording states
@@ -68,14 +68,15 @@ export default function ShowcasePage() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 6 Scenes list for full 30s auto-walkthrough (5000ms each = 30 seconds total)
+  // 7 Scenes list for full 30s auto-walkthrough (4300ms each = 30.1 seconds total)
   const SCENES = [
-    { id: 0, tab: 'wellness' as const, label: '1. Wellness Matinal', duration: 5000 },
-    { id: 1, tab: 'hydration' as const, label: '2. Pesagem & Hidratação', duration: 5000 },
-    { id: 2, tab: 'rpe' as const, label: '3. PSE & Carga Interna', duration: 5000 },
-    { id: 3, tab: 'gps' as const, label: '4. Rendimento GPS em Jogo', duration: 5000 },
-    { id: 4, tab: 'minutes' as const, label: '5. Minutos Competitivos', duration: 5000 },
-    { id: 5, tab: 'plan' as const, label: '6. Planeamento Semanal', duration: 5000 },
+    { id: 0, tab: 'wellness' as const, label: '1. Wellness Matinal', duration: 4300 },
+    { id: 1, tab: 'hydration' as const, label: '2. Pesagem & Hidratação', duration: 4300 },
+    { id: 2, tab: 'gym' as const, label: '3. Plano de Ginásio', duration: 4300 },
+    { id: 3, tab: 'rpe' as const, label: '4. PSE & Carga Interna', duration: 4300 },
+    { id: 4, tab: 'gps' as const, label: '5. Rendimento GPS', duration: 4300 },
+    { id: 5, tab: 'minutes' as const, label: '6. Minutos Competitivos', duration: 4300 },
+    { id: 6, tab: 'plan' as const, label: '7. Planeamento Semanal', duration: 4300 },
   ];
 
   // Auto-play timer
@@ -353,17 +354,17 @@ export default function ShowcasePage() {
         ctx.font = '900 14px system-ui, sans-serif';
         ctx.fillText('EX', width - 78, 110);
 
-        // Tab navigation buttons (6 tabs)
-        const tabs = ['Wellness', 'Pesagem', 'PSE', 'GPS', 'Minutos', 'Plano'];
-        const tabWidth = (width - 80) / 6;
+        // Tab navigation buttons (7 tabs)
+        const tabs = ['Wellness', 'Peso', 'Ginásio', 'PSE', 'GPS', 'Minutos', 'Plano'];
+        const tabWidth = (width - 80) / 7;
         tabs.forEach((tab, i) => {
           const tx = 40 + i * tabWidth;
           const isActive = i === sceneIdx;
-          const fill = isActive ? (i === 0 ? '#f43f5e' : i === 1 ? '#06b6d4' : i === 2 ? '#f59e0b' : i === 3 ? '#0284c7' : i === 4 ? '#10b981' : '#a855f7') : '#111827';
+          const fill = isActive ? (i === 0 ? '#f43f5e' : i === 1 ? '#06b6d4' : i === 2 ? '#8b5cf6' : i === 3 ? '#f59e0b' : i === 4 ? '#0284c7' : i === 5 ? '#10b981' : '#a855f7') : '#111827';
           const stroke = isActive ? 'rgba(255,255,255,0.4)' : '#1f2937';
-          drawRoundRect(tx + 3, 155, tabWidth - 6, 48, 14, fill, stroke);
-          ctx.fillStyle = isActive ? (i === 1 || i === 2 ? '#020617' : '#ffffff') : '#94a3b8';
-          ctx.font = '900 14px system-ui, sans-serif';
+          drawRoundRect(tx + 2, 155, tabWidth - 4, 48, 12, fill, stroke);
+          ctx.fillStyle = isActive ? (i === 1 || i === 3 ? '#020617' : '#ffffff') : '#94a3b8';
+          ctx.font = '900 13px system-ui, sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(tab, tx + tabWidth / 2, 185);
           ctx.textAlign = 'left';
@@ -492,8 +493,81 @@ export default function ShowcasePage() {
           ctx.fillText('Ingerir ~900 ml de água com eletrólitos nas próximas 2 horas.', 65, 850);
         }
 
-        // SCENE 2: PSE TREINO
+        // SCENE 2: PLANO DE GINÁSIO & FORÇA
         else if (sceneIdx === 2) {
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('TREINO DE GINÁSIO • FORÇA & MÁQUINAS', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Membros Inferiores & Core', 40, 285);
+
+          drawRoundRect(width - 250, 245, 210, 44, 22, 'rgba(139,92,246,0.2)', '#8b5cf6');
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('40 Min • 2 Blocos ✓', width - 235, 274);
+
+          // Bloco 01 Container
+          drawRoundRect(40, 320, width - 80, 255, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#a855f7';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('BLOCO 01 • AGACHAMENTO & CARGA GUIADA', 65, 355);
+
+          // Ex 1
+          drawRoundRect(65, 370, width - 130, 85, 16, '#020617', '#1e293b');
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('1.1 Prensa 45° (Leg Press)', 85, 405);
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = 'bold 16px system-ui, sans-serif';
+          ctx.fillText('3x 8-10 reps (Descida 3s) • 75s repouso', 85, 435);
+
+          // Ex 2
+          drawRoundRect(65, 465, width - 130, 85, 16, '#020617', '#1e293b');
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('1.2 Cadeira Extensora (Leg Extension)', 85, 500);
+          ctx.fillStyle = '#34d399';
+          ctx.font = 'bold 16px system-ui, sans-serif';
+          ctx.fillText('3x 10-12 reps • 60s repouso', 85, 530);
+
+          // Bloco 02 Container
+          drawRoundRect(40, 595, width - 80, 255, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('BLOCO 02 • CADEIA POSTERIOR & PÉLVICA', 65, 630);
+
+          // Ex 3
+          drawRoundRect(65, 645, width - 130, 85, 16, '#020617', '#1e293b');
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('2.1 Cadeira Flexora (Leg Curl)', 85, 680);
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = 'bold 16px system-ui, sans-serif';
+          ctx.fillText('3x 10 reps • 60s repouso', 85, 710);
+
+          // Ex 4
+          drawRoundRect(65, 740, width - 130, 85, 16, '#020617', '#1e293b');
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('2.2 Elevação Pélvica (Hip Thrust)', 85, 775);
+          ctx.fillStyle = '#c084fc';
+          ctx.font = 'bold 16px system-ui, sans-serif';
+          ctx.fillText('3x 10-12 reps • 60s repouso', 85, 805);
+
+          // Status Badge
+          drawRoundRect(40, 875, width - 80, 90, 22, 'rgba(139,92,246,0.15)', 'rgba(139,92,246,0.4)');
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('🏋️ PLANO OFICIAL ATRIBUÍDO', 65, 915);
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = 'bold 18px system-ui, sans-serif';
+          ctx.fillText('Execução técnica validada • 100% das séries completadas ✓', 65, 947);
+        }
+
+        // SCENE 3: PSE TREINO
+        else if (sceneIdx === 3) {
           ctx.fillStyle = '#fbbf24';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('PÓS-TREINO • BORG CR-10', 40, 245);
@@ -544,8 +618,8 @@ export default function ShowcasePage() {
           ctx.fillText('Sem queixas articulares (Fadiga normal nos isquios: 2/10) 🦵', 70, 800);
         }
 
-        // SCENE 3: GPS JOGO
-        else if (sceneIdx === 3) {
+        // SCENE 4: GPS JOGO
+        else if (sceneIdx === 4) {
           ctx.fillStyle = '#38bdf8';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('JOGO DEMONSTRATIVO • JORNADA EXEMPLO', 40, 245);
@@ -603,8 +677,8 @@ export default function ShowcasePage() {
           ctx.fillText('138 ações', 400, 850);
         }
 
-        // SCENE 4: MINUTOS
-        else if (sceneIdx === 4) {
+        // SCENE 5: MINUTOS
+        else if (sceneIdx === 5) {
           ctx.fillStyle = '#34d399';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('HISTÓRICO DE ÉPOCA', 40, 245);
@@ -670,8 +744,8 @@ export default function ShowcasePage() {
           });
         }
 
-        // SCENE 5: MICROCICLO
-        else if (sceneIdx === 5) {
+        // SCENE 6: MICROCICLO
+        else if (sceneIdx === 6) {
           ctx.fillStyle = '#c084fc';
           ctx.font = '900 18px system-ui, sans-serif';
           ctx.fillText('MICROCICLO 21 • 18/03 A 24/03', 40, 245);
@@ -733,9 +807,9 @@ export default function ShowcasePage() {
         ctx.textAlign = 'left';
       };
 
-      // 6 scenes x 150 frames = 900 frames (30 seconds total at 30fps)
-      const framesPerScene = 150;
-      const totalScenes = 6;
+      // 7 scenes x 130 frames = 910 frames (~30 seconds total at 30fps)
+      const framesPerScene = 130;
+      const totalScenes = 7;
       const totalFrames = totalScenes * framesPerScene;
 
       let currentFrame = 0;
@@ -942,7 +1016,7 @@ export default function ShowcasePage() {
             </div>
             <div>
               <h3 className="text-base font-black text-white">A Renderizar Vídeo MP4 (30s)</h3>
-              <p className="text-xs text-slate-400 mt-1">Apenas o ecrã do telemóvel &bull; 6 Cenas (com Pesagem)</p>
+              <p className="text-xs text-slate-400 mt-1">Apenas o ecrã do telemóvel &bull; 7 Cenas (com Pesagem e Ginásio)</p>
             </div>
             <div className="space-y-2">
               <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
@@ -1049,12 +1123,20 @@ export default function ShowcasePage() {
                 <Scale className="h-3 w-3" /> Pesagem
               </button>
               <button
+                onClick={() => setActiveTab('gym')}
+                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
+                  activeTab === 'gym' ? 'bg-purple-600 text-white font-black' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Dumbbell className="h-3 w-3" /> Ginásio
+              </button>
+              <button
                 onClick={() => setActiveTab('rpe')}
                 className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 ${
                   activeTab === 'rpe' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <Dumbbell className="h-3 w-3" /> PSE Treino
+                <Activity className="h-3 w-3" /> PSE Treino
               </button>
               <button
                 onClick={() => setActiveTab('gps')}
@@ -1200,7 +1282,92 @@ export default function ShowcasePage() {
                 </div>
               )}
 
-              {/* SCENE 3: PSE & RPE */}
+              {/* SCENE 3: GINÁSIO & FORÇA */}
+              {activeTab === 'gym' && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">Treino de Ginásio &bull; Força &amp; Máquinas</span>
+                      <h2 className="text-sm font-black text-white">Membros Inferiores &amp; Core</h2>
+                    </div>
+                    <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      40 Min &bull; 2 Blocos ✓
+                    </span>
+                  </div>
+
+                  {/* Bloco 01: Força & Hipertrofia */}
+                  <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 space-y-2 text-left">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                      <span className="text-[10px] font-black text-purple-400 uppercase tracking-wide">Bloco 01 &bull; Prensa &amp; Quadríceps</span>
+                      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">2/2 Feito</span>
+                    </div>
+
+                    <div className="space-y-2 pt-0.5">
+                      <div className="bg-slate-950/70 p-2 rounded-xl flex items-center justify-between border border-slate-800/80">
+                        <div>
+                          <div className="text-xs font-bold text-white">Prensa 45° (Leg Press)</div>
+                          <div className="text-[10px] text-slate-400">3 séries &bull; 8-10 reps (Descida 3s)</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-purple-300">140 kg</span>
+                          <span className="text-[9px] text-emerald-400 block font-bold">✓ Concluído</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-950/70 p-2 rounded-xl flex items-center justify-between border border-slate-800/80">
+                        <div>
+                          <div className="text-xs font-bold text-white">Cadeira Extensora (Leg Ext.)</div>
+                          <div className="text-[10px] text-slate-400">3 séries &bull; 10-12 reps (Pausa 1s)</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-purple-300">45 kg</span>
+                          <span className="text-[9px] text-emerald-400 block font-bold">✓ Concluído</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bloco 02: Posterior & Glúteo */}
+                  <div className="bg-slate-900/80 p-3 rounded-2xl border border-slate-800 space-y-2 text-left">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                      <span className="text-[10px] font-black text-purple-400 uppercase tracking-wide">Bloco 02 &bull; Posterior &amp; Pélvica</span>
+                      <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">2/2 Feito</span>
+                    </div>
+
+                    <div className="space-y-2 pt-0.5">
+                      <div className="bg-slate-950/70 p-2 rounded-xl flex items-center justify-between border border-slate-800/80">
+                        <div>
+                          <div className="text-xs font-bold text-white">Cadeira Flexora (Leg Curl)</div>
+                          <div className="text-[10px] text-slate-400">3 séries &bull; 10 reps (Excêntrico)</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-purple-300">35 kg</span>
+                          <span className="text-[9px] text-emerald-400 block font-bold">✓ Concluído</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-950/70 p-2 rounded-xl flex items-center justify-between border border-slate-800/80">
+                        <div>
+                          <div className="text-xs font-bold text-white">Elevação Pélvica (Hip Thrust)</div>
+                          <div className="text-[10px] text-slate-400">3 séries &bull; 10-12 reps (Isometria 2s)</div>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-xs font-black text-purple-300">60 kg</span>
+                          <span className="text-[9px] text-emerald-400 block font-bold">✓ Concluído</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status Banner */}
+                  <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 flex items-center space-x-2 text-purple-300 text-xs font-bold">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                    <span>Plano Validado &bull; 100% dos Exercícios Prescritos Concluídos</span>
+                  </div>
+                </div>
+              )}
+
+              {/* SCENE 4: PSE & RPE */}
               {activeTab === 'rpe' && (
                 <div className="space-y-3 animate-fade-in">
                   <div className="flex items-center justify-between">
@@ -1240,7 +1407,7 @@ export default function ShowcasePage() {
                 </div>
               )}
 
-              {/* SCENE 3: GPS JOGO */}
+              {/* SCENE 5: GPS JOGO */}
               {activeTab === 'gps' && (
                 <div className="space-y-3 animate-fade-in">
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
@@ -1299,7 +1466,7 @@ export default function ShowcasePage() {
                 </div>
               )}
 
-              {/* SCENE 4: MINUTOS */}
+              {/* SCENE 6: MINUTOS */}
               {activeTab === 'minutes' && (
                 <div className="space-y-3 animate-fade-in">
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
@@ -1352,7 +1519,7 @@ export default function ShowcasePage() {
                 </div>
               )}
 
-              {/* SCENE 5: PLANO MICROCICLO */}
+              {/* SCENE 7: PLANO MICROCICLO */}
               {activeTab === 'plan' && (
                 <div className="space-y-3 animate-fade-in">
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
@@ -1465,7 +1632,7 @@ export default function ShowcasePage() {
                   <span>💻 No Computador (Mac / Windows):</span>
                 </div>
                 <p className="text-slate-300 pl-4">
-                  Basta clicar no botão <strong className="text-white">"Descarregar Vídeo MP4"</strong> no topo e escolher este separador. O sistema grava os 31 segundos de todas as 5 cenas e inicia o download automático do ficheiro <strong>.mp4</strong>!
+                  Basta clicar no botão <strong className="text-white">"Descarregar Vídeo 30s (Apenas Telemóvel)"</strong> no topo. O sistema renderiza diretamente em alta definição todas as 7 cenas (Wellness, Pesagem, Ginásio, PSE, GPS, Minutos, Plano Semanal) e inicia o download automático do ficheiro <strong>.mp4</strong>!
                 </p>
               </div>
 
@@ -1476,7 +1643,7 @@ export default function ShowcasePage() {
                 <p className="text-slate-300 pl-4">
                   1. Desliza para abrir a <strong className="text-white">Central de Controlo</strong> e ativa a <strong className="text-white">Gravação de Ecrã</strong> (ícone circular).<br />
                   2. Clica no botão <strong className="text-white">"Ativar Modo Ecrã Limpo"</strong> abaixo.<br />
-                  3. O showreel corre sozinho com as 5 cenas em alta definição.<br />
+                  3. O showreel corre sozinho com as 7 cenas em alta definição.<br />
                   4. Quando terminar, pára a gravação: o vídeo fica <strong>guardado na Galeria em MP4 1080p/4K</strong>, pronto a publicar no Instagram Stories, LinkedIn ou X!
                 </p>
               </div>
