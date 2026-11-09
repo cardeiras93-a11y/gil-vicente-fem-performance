@@ -57,7 +57,12 @@ export default function ShowcasePage() {
   const [showMobileModal, setShowMobileModal] = useState<boolean>(false);
   const [cleanMode, setCleanMode] = useState<boolean>(false);
 
+  // Direct phone-only canvas MP4 generator states
+  const [isGeneratingPhoneVideo, setIsGeneratingPhoneVideo] = useState<boolean>(false);
+  const [generatorProgress, setGeneratorProgress] = useState<number>(0);
+
   const phoneRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -215,6 +220,477 @@ export default function ShowcasePage() {
     }
   };
 
+  // Direct canvas-based video generator (Captures ONLY the mobile phone screen, zero popups/screen capture)
+  const generateDirectPhoneVideo = async () => {
+    try {
+      setIsGeneratingPhoneVideo(true);
+      setGeneratorProgress(0);
+
+      // Create internal canvas
+      const width = 720;
+      const height = 1280;
+      const canvas = canvasRef.current || document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // Load Crest
+      const crestImg = new Image();
+      crestImg.crossOrigin = 'anonymous';
+      crestImg.src = '/gil-vicente-crest.png';
+      await new Promise((resolve) => {
+        crestImg.onload = resolve;
+        crestImg.onerror = resolve;
+      });
+
+      // Capture stream directly from canvas (NO screen selection prompt!)
+      const stream = canvas.captureStream(30);
+
+      const possibleTypes = [
+        'video/mp4;codecs=avc1',
+        'video/mp4',
+        'video/webm;codecs=h264',
+        'video/webm;codecs=vp9',
+        'video/webm',
+      ];
+      let mimeType = possibleTypes.find((t) => MediaRecorder.isTypeSupported(t)) || '';
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        if (chunks.length > 0) {
+          const blob = new Blob(chunks, { type: mimeType || 'video/mp4' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `gil-vicente-performance-app-mobile-${aspectRatio === '9-16' ? 'stories' : 'feed'}.mp4`;
+          document.body.appendChild(a);
+          a.click();
+          setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+          }, 1500);
+
+          setRecordFeedback('🎉 Vídeo MP4 (apenas tela do telemóvel) descarregado com sucesso!');
+          setTimeout(() => setRecordFeedback(null), 8000);
+        }
+        setIsGeneratingPhoneVideo(false);
+        setGeneratorProgress(0);
+      };
+
+      recorder.start(200);
+
+      // Draw helper: rounded rectangle
+      const drawRoundRect = (x: number, y: number, w: number, h: number, r: number, fillColor: string, strokeColor?: string) => {
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+        if (strokeColor) {
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        ctx.restore();
+      };
+
+      // Draw static mobile phone frame contents
+      const renderPhoneFrame = (sceneIdx: number, sceneProgress: number) => {
+        // Background
+        ctx.fillStyle = '#090d16';
+        ctx.fillRect(0, 0, width, height);
+
+        // Subtle gradient background
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
+        bgGrad.addColorStop(0, '#090d16');
+        bgGrad.addColorStop(1, '#0e1628');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // Mobile Status Bar (Time & battery)
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = 'bold 22px system-ui, -apple-system, sans-serif';
+        ctx.fillText('09:41', 40, 50);
+        ctx.fillText('5G  ● 100%', width - 150, 50);
+
+        // App Mobile Header
+        ctx.drawImage(crestImg, 40, 75, 60, 60);
+
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '900 18px system-ui, -apple-system, sans-serif';
+        ctx.fillText('GIL VICENTE FC', 115, 98);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 24px system-ui, -apple-system, sans-serif';
+        ctx.fillText('Performance Hub', 115, 126);
+
+        // Athlete Pill (Top Right)
+        drawRoundRect(width - 230, 80, 190, 50, 25, '#111827', '#1f2937');
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = '900 18px system-ui, sans-serif';
+        ctx.fillText('#7 Atleta #07', width - 215, 112);
+        drawRoundRect(width - 90, 90, 38, 28, 8, 'rgba(244,63,94,0.2)', 'rgba(244,63,94,0.4)');
+        ctx.fillStyle = '#fda4af';
+        ctx.font = '900 14px system-ui, sans-serif';
+        ctx.fillText('EX', width - 78, 110);
+
+        // Tab navigation buttons
+        const tabs = ['Wellness', 'PSE Treino', 'GPS Jogo', 'Minutos', 'Microciclo'];
+        const tabWidth = (width - 80) / 5;
+        tabs.forEach((tab, i) => {
+          const tx = 40 + i * tabWidth;
+          const isActive = i === sceneIdx;
+          const fill = isActive ? (i === 0 ? '#f43f5e' : i === 1 ? '#f59e0b' : i === 2 ? '#0284c7' : i === 3 ? '#10b981' : '#a855f7') : '#111827';
+          const stroke = isActive ? 'rgba(255,255,255,0.4)' : '#1f2937';
+          drawRoundRect(tx + 4, 155, tabWidth - 8, 48, 14, fill, stroke);
+          ctx.fillStyle = isActive ? (i === 1 ? '#020617' : '#ffffff') : '#94a3b8';
+          ctx.font = '900 15px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(tab, tx + tabWidth / 2, 185);
+          ctx.textAlign = 'left';
+        });
+
+        // SCENE 0: WELLNESS
+        if (sceneIdx === 0) {
+          ctx.fillStyle = '#fb7185';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('QUESTIONÁRIO MATINAL', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Estado de Prontidão Diária', 40, 285);
+
+          drawRoundRect(width - 240, 245, 200, 48, 24, 'rgba(16,185,129,0.2)', '#10b981');
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('Score: 21 / 25 ★', width - 215, 277);
+
+          // Sliders container
+          drawRoundRect(40, 320, width - 80, 520, 28, '#0f172a', '#1e293b');
+
+          const items = [
+            { icon: '😴', label: 'Qualidade do Sono', val: '4 / 5 (Bom)', pct: 0.8, color: '#34d399' },
+            { icon: '⚡', label: 'Nível de Energia', val: '4 / 5 (Elevado)', pct: 0.8, color: '#34d399' },
+            { icon: '🦵', label: 'Fadiga Muscular', val: '2 / 5 (Ligeira)', pct: 0.4, color: '#38bdf8' },
+            { icon: '🧘', label: 'Nível de Stress', val: '2 / 5 (Baixo)', pct: 0.4, color: '#34d399' },
+          ];
+
+          items.forEach((it, idx) => {
+            const iy = 370 + idx * 115;
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 22px system-ui, sans-serif';
+            ctx.fillText(`${it.icon} ${it.label}`, 70, iy);
+
+            ctx.fillStyle = it.color;
+            ctx.font = '900 22px system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(it.val, width - 70, iy);
+            ctx.textAlign = 'left';
+
+            // Bar background
+            drawRoundRect(70, iy + 16, width - 140, 16, 8, '#1e293b');
+            // Progress Bar (animated)
+            const curPct = Math.min(it.pct, it.pct * Math.min(1, sceneProgress * 2));
+            drawRoundRect(70, iy + 16, (width - 140) * curPct, 16, 8, it.color);
+          });
+
+          // Ready Status Banner
+          drawRoundRect(40, 870, width - 80, 95, 24, 'rgba(6,78,59,0.5)', '#059669');
+          ctx.fillStyle = '#6ee7b7';
+          ctx.font = '900 22px system-ui, sans-serif';
+          ctx.fillText('✓ Atleta 100% pronta para a intensidade planeada (MD-3)', 70, 928);
+        }
+
+        // SCENE 1: PSE TREINO
+        else if (sceneIdx === 1) {
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('PÓS-TREINO • BORG CR-10', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Perceção Subjetiva de Esforço', 40, 285);
+
+          drawRoundRect(width - 220, 245, 180, 48, 24, '#f59e0b', '#fbbf24');
+          ctx.fillStyle = '#020617';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('PSE: 6.5 / 10', width - 195, 277);
+
+          // Card Main
+          drawRoundRect(40, 320, width - 80, 360, 28, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = '900 48px system-ui, sans-serif';
+          ctx.fillText('6.5 • Moderado / Difícil', 70, 400);
+
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 22px system-ui, sans-serif';
+          ctx.fillText('Sessão com estímulo de acelerações repetidas e transições.', 70, 450);
+
+          // Grid
+          drawRoundRect(70, 500, 270, 140, 20, '#020617', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('CARGA DE SESSÃO', 95, 540);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 36px system-ui, sans-serif';
+          ctx.fillText('455 u.a.', 95, 600);
+
+          drawRoundRect(380, 500, 270, 140, 20, '#020617', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('GINÁSIO PÓS-TREINO', 405, 540);
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 32px system-ui, sans-serif';
+          ctx.fillText('Inferiores ✓', 405, 600);
+
+          // Complaints Card
+          drawRoundRect(40, 710, width - 80, 130, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.fillText('QUEIXAS MUSCULARES', 70, 755);
+          ctx.fillStyle = '#34d399';
+          ctx.font = 'bold 20px system-ui, sans-serif';
+          ctx.fillText('Sem queixas articulares (Fadiga normal nos isquios: 2/10) 🦵', 70, 800);
+        }
+
+        // SCENE 2: GPS JOGO
+        else if (sceneIdx === 2) {
+          ctx.fillStyle = '#38bdf8';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('JOGO DEMONSTRATIVO • JORNADA EXEMPLO', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Análise de Rendimento Individual', 40, 285);
+
+          drawRoundRect(width - 250, 245, 210, 44, 22, 'rgba(16,185,129,0.2)', '#10b981');
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('+65m HI vs Jogo Ant. ⚡', width - 235, 274);
+
+          // Metrics cards
+          const metrics = [
+            { icon: '🏃', label: 'Distância Total', val: '9 340 m', pct: 0.85, color: '#38bdf8' },
+            { icon: '⚡', label: 'Alta Intensidade (>19 km/h)', val: '715 m', pct: 0.78, color: '#34d399' },
+            { icon: '🔥', label: 'Sprint Puro (>23 km/h)', val: '192.0 m', pct: 0.72, color: '#fb7185' },
+          ];
+
+          metrics.forEach((m, idx) => {
+            const my = 330 + idx * 135;
+            drawRoundRect(40, my, width - 80, 115, 22, '#0f172a', '#1e293b');
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'bold 22px system-ui, sans-serif';
+            ctx.fillText(`${m.icon} ${m.label}`, 65, my + 45);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 28px system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(m.val, width - 65, my + 45);
+            ctx.textAlign = 'left';
+
+            drawRoundRect(65, my + 68, width - 130, 16, 8, '#1e293b');
+            const curPct = Math.min(m.pct, m.pct * Math.min(1, sceneProgress * 2));
+            drawRoundRect(65, my + 68, (width - 130) * curPct, 16, 8, m.color);
+          });
+
+          // Bottom Grid
+          drawRoundRect(40, 755, 305, 130, 22, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('VELOCIDADE MÁXIMA', 65, 795);
+          ctx.fillStyle = '#fbbf24';
+          ctx.font = '900 36px system-ui, sans-serif';
+          ctx.fillText('27.4 km/h', 65, 850);
+
+          drawRoundRect(375, 755, 305, 130, 22, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 16px system-ui, sans-serif';
+          ctx.fillText('AÇÕES (>3m/s²)', 400, 795);
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('138 ações', 400, 850);
+        }
+
+        // SCENE 3: MINUTOS
+        else if (sceneIdx === 3) {
+          ctx.fillStyle = '#34d399';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('HISTÓRICO DE ÉPOCA', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Minutos Oficiais do Plantel', 40, 285);
+
+          drawRoundRect(width - 240, 245, 200, 44, 22, '#1e3a8a', '#3b82f6');
+          ctx.fillStyle = '#93c5fd';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('13 Jogos Registados', width - 225, 274);
+
+          // Top Player Card
+          drawRoundRect(40, 330, width - 80, 140, 24, '#0f172a', '#1e293b');
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('ATLETA #07 • MINUTOS TOTAIS', 70, 375);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 44px system-ui, sans-serif';
+          ctx.fillText('915 min', 70, 435);
+
+          ctx.fillStyle = '#34d399';
+          ctx.font = 'bold 20px system-ui, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText('640 min Liga', width - 70, 390);
+          ctx.fillStyle = '#fbbf24';
+          ctx.fillText('135 min Taça', width - 70, 430);
+          ctx.textAlign = 'left';
+
+          // Squad list
+          const squad = [
+            { pos: 'DC', num: '#1', code: 'Atleta #04', min: '985 min' },
+            { pos: 'EX', num: '#2', code: 'Atleta #07', min: '915 min', highlight: true },
+            { pos: 'MC', num: '#3', code: 'Atleta #10', min: '840 min' },
+            { pos: 'MC', num: '#4', code: 'Atleta #08', min: '795 min' },
+            { pos: 'LAT', num: '#5', code: 'Atleta #02', min: '760 min' },
+            { pos: 'MC', num: '#6', code: 'Atleta #06', min: '690 min' },
+          ];
+
+          squad.forEach((s, idx) => {
+            const sy = 500 + idx * 72;
+            drawRoundRect(40, sy, width - 80, 60, 16, s.highlight ? 'rgba(30,58,138,0.4)' : '#0f172a', s.highlight ? '#3b82f6' : '#1e293b');
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '900 18px system-ui, sans-serif';
+            ctx.fillText(s.num, 65, sy + 38);
+
+            drawRoundRect(100, sy + 14, 52, 32, 8, '#1e293b');
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '900 15px system-ui, sans-serif';
+            ctx.fillText(s.pos, 112, sy + 36);
+
+            ctx.fillStyle = s.highlight ? '#ffffff' : '#cbd5e1';
+            ctx.font = 'bold 20px system-ui, sans-serif';
+            ctx.fillText(s.code, 175, sy + 38);
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 20px system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(s.min, width - 65, sy + 38);
+            ctx.textAlign = 'left';
+          });
+        }
+
+        // SCENE 4: MICROCICLO
+        else if (sceneIdx === 4) {
+          ctx.fillStyle = '#c084fc';
+          ctx.font = '900 18px system-ui, sans-serif';
+          ctx.fillText('MICROCICLO 21 • 18/03 A 24/03', 40, 245);
+
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 30px system-ui, sans-serif';
+          ctx.fillText('Planeamento Semanal de Cargas', 40, 285);
+
+          drawRoundRect(width - 240, 245, 200, 44, 22, '#f59e0b', '#fbbf24');
+          ctx.fillStyle = '#020617';
+          ctx.font = '900 17px system-ui, sans-serif';
+          ctx.fillText('⚡ SEMPRE PÓS-TREINO', width - 230, 273);
+
+          // Week days
+          const days = [
+            { day: 'TER 19/03 • MD-5', act: '⚽ Treino de Campo (10:00 - 11:30)', gym: '🏋️ Ginásio Inferiores', color: '#38bdf8' },
+            { day: 'QUA 20/03 • MD-4', act: '⚽ Treino de Campo (10:00 - 11:30)', gym: '🏋️ Ginásio Superiores', color: '#c084fc' },
+            { day: 'QUI 21/03 • MD-3', act: '⚽ Treino de Campo (10:00 - 11:15)', gym: '⚡ Alta Velocidade', color: '#38bdf8' },
+            { day: 'DOM 24/03 • MD', act: '🏆 JORNADA COMPETITIVA (15:00)', gym: 'JOGO OFICIAL', color: '#34d399', isMatch: true },
+          ];
+
+          days.forEach((d, idx) => {
+            const dy = 340 + idx * 135;
+            drawRoundRect(40, dy, width - 80, 115, 22, d.isMatch ? 'rgba(6,78,59,0.3)' : '#0f172a', d.isMatch ? '#10b981' : '#1e293b');
+
+            ctx.fillStyle = d.color;
+            ctx.font = '900 22px system-ui, sans-serif';
+            ctx.fillText(d.day, 65, dy + 42);
+
+            ctx.fillStyle = d.isMatch ? '#ffffff' : '#cbd5e1';
+            ctx.font = 'bold 20px system-ui, sans-serif';
+            ctx.fillText(d.act, 65, dy + 82);
+
+            drawRoundRect(width - 250, dy + 22, 190, 40, 12, '#1e293b');
+            ctx.fillStyle = d.color;
+            ctx.font = '900 15px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(d.gym, width - 155, dy + 47);
+            ctx.textAlign = 'left';
+          });
+
+          // Club Moto
+          ctx.fillStyle = '#ef4444';
+          ctx.font = '900 24px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('💪 #NinguémPáraEstaCorrente • Gil Vicente FC', width / 2, 950);
+          ctx.textAlign = 'left';
+        }
+
+        // Bottom Safe Area / PWA bar
+        drawRoundRect(40, height - 90, width - 80, 55, 18, '#0b1120', '#1e293b');
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 18px system-ui, sans-serif';
+        ctx.fillText('Gil Vicente FC Performance Hub', 65, height - 55);
+        ctx.fillStyle = '#34d399';
+        ctx.font = '900 18px system-ui, sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('● Online • PWA', width - 65, height - 55);
+        ctx.textAlign = 'left';
+      };
+
+      // 5 scenes x 60 frames = 300 frames (10 seconds total at 30fps)
+      const framesPerScene = 60;
+      const totalScenes = 5;
+      const totalFrames = totalScenes * framesPerScene;
+
+      let currentFrame = 0;
+
+      const renderNextFrame = () => {
+        if (currentFrame >= totalFrames) {
+          recorder.stop();
+          return;
+        }
+
+        const sceneIdx = Math.floor(currentFrame / framesPerScene);
+        const progressInScene = (currentFrame % framesPerScene) / framesPerScene;
+
+        renderPhoneFrame(sceneIdx, progressInScene);
+
+        currentFrame += 1;
+        setGeneratorProgress(Math.round((currentFrame / totalFrames) * 100));
+
+        // Use fast frame dispatching
+        setTimeout(renderNextFrame, 16);
+      };
+
+      renderNextFrame();
+
+    } catch (err) {
+      console.error('Error generating direct canvas phone video:', err);
+      setIsGeneratingPhoneVideo(false);
+    }
+  };
+
   return (
     <div className={`min-h-screen bg-[#070b12] text-slate-100 flex flex-col items-center justify-start ${cleanMode ? 'p-1 justify-center' : 'p-3 sm:p-6'} antialiased selection:bg-brand-lime selection:text-slate-950 transition-all`}>
       
@@ -311,25 +787,49 @@ export default function ShowcasePage() {
               <RotateCcw className="h-4 w-4" />
             </button>
 
-            {/* DIRECT MP4 RECORD & DOWNLOAD BUTTON */}
+            {/* MAIN ACTION: DIRECT PHONE-ONLY MP4 DOWNLOAD (Zero permissions needed) */}
             <button
-              onClick={isCapturing ? stopRecordingMP4 : startRecordingMP4}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-black shadow-lg flex items-center gap-1.5 transition-all ${
-                isCapturing
-                  ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse ring-2 ring-red-400'
-                  : 'bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-500 hover:to-indigo-500 text-white shadow-[0_0_20px_rgba(225,29,72,0.35)] ring-1 ring-white/20'
+              onClick={generateDirectPhoneVideo}
+              disabled={isGeneratingPhoneVideo}
+              className={`px-4 py-2 rounded-xl text-xs font-black shadow-lg flex items-center gap-2 transition-all ${
+                isGeneratingPhoneVideo
+                  ? 'bg-amber-500 text-slate-950 animate-pulse'
+                  : 'bg-gradient-to-r from-red-600 via-rose-600 to-indigo-600 hover:from-red-500 hover:to-indigo-500 text-white shadow-[0_0_25px_rgba(225,29,72,0.45)] ring-2 ring-white/30 hover:scale-[1.02]'
               }`}
-              title="Gravar a apresentação e descarregar automaticamente o ficheiro MP4"
+              title="Descarregar vídeo MP4 já pronto contendo apenas o ecrã do telemóvel"
             >
-              {isCapturing ? (
+              {isGeneratingPhoneVideo ? (
                 <>
-                  <Radio className="h-4 w-4 animate-spin text-white" />
-                  <span>A Gravar ({recordingSeconds}s) &bull; Parar</span>
+                  <Radio className="h-4 w-4 animate-spin text-slate-950" />
+                  <span>A Gerar Vídeo ({generatorProgress}%)...</span>
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  <span>Descarregar Vídeo MP4</span>
+                  <span>Descarregar Vídeo (Apenas Telemóvel)</span>
+                </>
+              )}
+            </button>
+
+            {/* SECONDARY ACTION: BROWSER SCREEN RECORDER */}
+            <button
+              onClick={isCapturing ? stopRecordingMP4 : startRecordingMP4}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                isCapturing
+                  ? 'bg-red-600 hover:bg-red-500 text-white animate-pulse ring-2 ring-red-400'
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700'
+              }`}
+              title="Gravar a janela completa do navegador"
+            >
+              {isCapturing ? (
+                <>
+                  <Radio className="h-3.5 w-3.5 animate-spin text-white" />
+                  <span>Parar ({recordingSeconds}s)</span>
+                </>
+              ) : (
+                <>
+                  <Video className="h-3.5 w-3.5" />
+                  <span>Gravar Ecrã</span>
                 </>
               )}
             </button>
@@ -353,6 +853,39 @@ export default function ShowcasePage() {
             </button>
           </div>
         </header>
+      )}
+
+      {/* Hidden Rendering Canvas for direct phone-only export */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} width={720} height={1280} />
+
+      {/* Generation Progress Modal */}
+      {isGeneratingPhoneVideo && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-4">
+            <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-red-600 to-indigo-600 flex items-center justify-center text-white mx-auto shadow-lg animate-pulse">
+              <Download className="h-7 w-7" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-white">A Renderizar Vídeo MP4</h3>
+              <p className="text-xs text-slate-400 mt-1">Apenas o ecrã do telemóvel a 720x1280 (Stories &amp; Reels)</p>
+            </div>
+            <div className="space-y-2">
+              <div className="h-3 w-full bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
+                <div
+                  className="h-full bg-gradient-to-r from-red-500 via-rose-500 to-emerald-400 rounded-full transition-all duration-150"
+                  style={{ width: `${generatorProgress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs font-bold text-slate-400">
+                <span>Progresso: {generatorProgress}%</span>
+                <span>30 FPS &bull; MP4</span>
+              </div>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              O ficheiro <strong className="text-white">gil-vicente-performance-app-mobile.mp4</strong> será descarregado automaticamente dentro de momentos!
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Toast Notice */}

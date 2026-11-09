@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v74-mp4-download-20261109';
+const CACHE_NAME = 'femperf-v75-phone-canvas-mp4-20261109';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
