@@ -27,17 +27,17 @@ import {
   Video
 } from 'lucide-react';
 
-// Anonymized mock squad data for privacy
+// Fictional mock squad data for privacy and demonstration
 const DEMO_SQUAD = [
-  { id: 'ath-04', code: 'Atleta #04', pos: 'DC', badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', totalMin: 1471, campMin: 473, tacaMin: 90, matches: 16, avgMin: 91.9, status: '100% Apta' },
-  { id: 'ath-07', code: 'Atleta #07', pos: 'EX', badgeBg: 'bg-rose-500/20 text-rose-400 border-rose-500/30', totalMin: 1302, campMin: 418, tacaMin: 60, matches: 16, avgMin: 81.4, status: '100% Apta' },
-  { id: 'ath-10', code: 'Atleta #10', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 1276, campMin: 404, tacaMin: 91, matches: 17, avgMin: 75.1, status: '100% Apta' },
-  { id: 'ath-08', code: 'Atleta #08', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 1270, campMin: 278, tacaMin: 182, matches: 15, avgMin: 84.7, status: 'Recuperação' },
-  { id: 'ath-02', code: 'Atleta #02', pos: 'LAT', badgeBg: 'bg-sky-500/20 text-sky-400 border-sky-500/30', totalMin: 1267, campMin: 441, tacaMin: 0, matches: 15, avgMin: 84.5, status: '100% Apta' },
-  { id: 'ath-06', code: 'Atleta #06', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 1244, campMin: 356, tacaMin: 91, matches: 17, avgMin: 73.2, status: '100% Apta' },
-  { id: 'ath-03', code: 'Atleta #03', pos: 'LAT', badgeBg: 'bg-sky-500/20 text-sky-400 border-sky-500/30', totalMin: 1211, campMin: 296, tacaMin: 136, matches: 16, avgMin: 75.7, status: '100% Apta' },
-  { id: 'ath-09', code: 'Atleta #09', pos: 'AV', badgeBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30', totalMin: 1110, campMin: 303, tacaMin: 137, matches: 15, avgMin: 74.0, status: '100% Apta' },
-  { id: 'ath-01', code: 'Atleta #01 (GR)', pos: 'GR', badgeBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30', totalMin: 278, campMin: 188, tacaMin: 90, matches: 3, avgMin: 92.7, status: '100% Apta' },
+  { id: 'ath-04', code: 'Atleta #04', pos: 'DC', badgeBg: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30', totalMin: 985, campMin: 720, tacaMin: 180, matches: 12, avgMin: 82.1, status: '100% Apta' },
+  { id: 'ath-07', code: 'Atleta #07', pos: 'EX', badgeBg: 'bg-rose-500/20 text-rose-400 border-rose-500/30', totalMin: 915, campMin: 640, tacaMin: 135, matches: 11, avgMin: 83.2, status: '100% Apta' },
+  { id: 'ath-10', code: 'Atleta #10', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 840, campMin: 590, tacaMin: 120, matches: 12, avgMin: 70.0, status: '100% Apta' },
+  { id: 'ath-08', code: 'Atleta #08', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 795, campMin: 520, tacaMin: 90, matches: 10, avgMin: 79.5, status: 'Recuperação' },
+  { id: 'ath-02', code: 'Atleta #02', pos: 'LAT', badgeBg: 'bg-sky-500/20 text-sky-400 border-sky-500/30', totalMin: 760, campMin: 510, tacaMin: 80, matches: 10, avgMin: 76.0, status: '100% Apta' },
+  { id: 'ath-06', code: 'Atleta #06', pos: 'MC', badgeBg: 'bg-amber-500/20 text-amber-400 border-amber-500/30', totalMin: 690, campMin: 480, tacaMin: 60, matches: 9, avgMin: 76.7, status: '100% Apta' },
+  { id: 'ath-03', code: 'Atleta #03', pos: 'LAT', badgeBg: 'bg-sky-500/20 text-sky-400 border-sky-500/30', totalMin: 620, campMin: 410, tacaMin: 45, matches: 8, avgMin: 77.5, status: '100% Apta' },
+  { id: 'ath-09', code: 'Atleta #09', pos: 'AV', badgeBg: 'bg-purple-500/20 text-purple-400 border-purple-500/30', totalMin: 540, campMin: 360, tacaMin: 90, matches: 7, avgMin: 77.1, status: '100% Apta' },
+  { id: 'ath-01', code: 'Atleta #01 (GR)', pos: 'GR', badgeBg: 'bg-teal-500/20 text-teal-400 border-teal-500/30', totalMin: 360, campMin: 270, tacaMin: 90, matches: 4, avgMin: 90.0, status: '100% Apta' },
 ];
 
 export default function ShowcasePage() {
@@ -304,7 +304,7 @@ export default function ShowcasePage() {
                       <h2 className="text-sm font-black text-white">Estado de Prontidão Diária</h2>
                     </div>
                     <span className="text-xs font-black px-2 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      Score: 23 / 25 ★
+                      Score: 21 / 25 ★
                     </span>
                   </div>
 
@@ -313,10 +313,10 @@ export default function ShowcasePage() {
                     <div>
                       <div className="flex justify-between text-[11px] font-bold">
                         <span className="text-slate-400">😴 Qualidade do Sono</span>
-                        <span className="text-emerald-400 font-black">5 / 5 (Muito Bom)</span>
+                        <span className="text-emerald-400 font-black">4 / 5 (Bom)</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-800 rounded-full mt-1 overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full w-full" />
+                        <div className="h-full bg-emerald-400 rounded-full w-[80%]" />
                       </div>
                     </div>
 
@@ -343,10 +343,10 @@ export default function ShowcasePage() {
                     <div>
                       <div className="flex justify-between text-[11px] font-bold">
                         <span className="text-slate-400">🧘 Nível de Stress</span>
-                        <span className="text-emerald-400 font-black">1 / 5 (Mínimo)</span>
+                        <span className="text-emerald-400 font-black">2 / 5 (Baixo)</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-800 rounded-full mt-1 overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full w-[20%]" />
+                        <div className="h-full bg-emerald-400 rounded-full w-[40%]" />
                       </div>
                     </div>
                   </div>
@@ -368,22 +368,22 @@ export default function ShowcasePage() {
                       <h2 className="text-sm font-black text-white">Perceção Subjetiva de Esforço</h2>
                     </div>
                     <span className="text-xs font-black px-2 py-1 rounded-full bg-amber-400 text-slate-950">
-                      PSE: 7 / 10
+                      PSE: 6.5 / 10
                     </span>
                   </div>
 
                   <div className="bg-slate-900/70 p-3.5 rounded-2xl border border-slate-800 text-center space-y-2">
-                    <div className="text-2xl font-black text-amber-400">7.0 &bull; Muito Difícil</div>
-                    <p className="text-[10px] text-slate-400">Sessão com elevada carga mecânica excêntrica e sprints de alta velocidade.</p>
+                    <div className="text-2xl font-black text-amber-400">6.5 &bull; Moderado / Difícil</div>
+                    <p className="text-[10px] text-slate-400">Sessão com estímulo de acelerações repetidas e transições rápidas.</p>
                     
                     <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800 text-left">
                       <div className="bg-slate-950/60 p-2 rounded-xl">
                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Carga de Sessão</span>
-                        <span className="text-xs font-black text-white">630 u.a.</span>
+                        <span className="text-xs font-black text-white">455 u.a.</span>
                       </div>
                       <div className="bg-slate-950/60 p-2 rounded-xl">
                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Ginásio Pós-Treino</span>
-                        <span className="text-xs font-black text-purple-400">Realizado ✓</span>
+                        <span className="text-xs font-black text-purple-400">Inferiores ✓</span>
                       </div>
                     </div>
                   </div>
@@ -392,7 +392,7 @@ export default function ShowcasePage() {
                   <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
                     <div className="space-y-0.5">
                       <span className="text-[10px] font-black uppercase text-slate-300">Queixas Musculares</span>
-                      <p className="text-[10px] text-emerald-400 font-bold">Sem queixas articulares (Apenas fadiga normal)</p>
+                      <p className="text-[10px] text-emerald-400 font-bold">Sem queixas articulares (Fadiga normal nos isquiotibiais: 2/10)</p>
                     </div>
                     <span className="text-xl">🦵</span>
                   </div>
@@ -404,11 +404,11 @@ export default function ShowcasePage() {
                 <div className="space-y-3 animate-fade-in">
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black uppercase text-sky-400 tracking-wider">Jogo Oficial &bull; II Divisão</span>
+                      <span className="text-[10px] font-black uppercase text-sky-400 tracking-wider">Jogo Demonstrativo &bull; Jornada Exemplo</span>
                       <h2 className="text-sm font-black text-white">Análise de Rendimento Individual</h2>
                     </div>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      +409m HI vs Jogo Ant. ⚡
+                      +65m HI vs Jogo Ant. ⚡
                     </span>
                   </div>
 
@@ -417,41 +417,41 @@ export default function ShowcasePage() {
                     <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
                       <div className="flex justify-between text-[11px] font-bold">
                         <span className="text-slate-400">🏃 Distância Total</span>
-                        <span className="text-white font-black">10 295 m</span>
+                        <span className="text-white font-black">9 340 m</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-                        <div className="h-full bg-sky-400 rounded-full w-[94%]" />
+                        <div className="h-full bg-sky-400 rounded-full w-[85%]" />
                       </div>
                     </div>
 
                     <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
                       <div className="flex justify-between text-[11px] font-bold">
                         <span className="text-slate-400">⚡ Alta Intensidade (&gt;19 km/h)</span>
-                        <span className="text-emerald-400 font-black">919 m</span>
+                        <span className="text-emerald-400 font-black">715 m</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-                        <div className="h-full bg-emerald-400 rounded-full w-[92%]" />
+                        <div className="h-full bg-emerald-400 rounded-full w-[78%]" />
                       </div>
                     </div>
 
                     <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
                       <div className="flex justify-between text-[11px] font-bold">
                         <span className="text-slate-400">🔥 Sprint Puro (&gt;23 km/h)</span>
-                        <span className="text-rose-400 font-black">275.0 m</span>
+                        <span className="text-rose-400 font-black">192.0 m</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-800 rounded-full mt-1.5 overflow-hidden">
-                        <div className="h-full bg-rose-500 rounded-full w-[85%]" />
+                        <div className="h-full bg-rose-500 rounded-full w-[72%]" />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 pt-1">
                       <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Velocidade Máx.</span>
-                        <span className="text-xs font-black text-amber-400">26.8 km/h</span>
+                        <span className="text-xs font-black text-amber-400">27.4 km/h</span>
                       </div>
                       <div className="bg-slate-900/80 p-2 rounded-xl border border-slate-800">
                         <span className="text-[9px] text-slate-400 font-bold block uppercase">Ações (&gt;3m/s²)</span>
-                        <span className="text-xs font-black text-purple-400">171 ações</span>
+                        <span className="text-xs font-black text-purple-400">138 ações (61 ACC + 77 DEC)</span>
                       </div>
                     </div>
                   </div>
@@ -464,10 +464,10 @@ export default function ShowcasePage() {
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
                     <div>
                       <span className="text-[10px] font-black uppercase text-emerald-400 tracking-wider">Histórico de Época</span>
-                      <h2 className="text-sm font-black text-white">Minutos de Jogo Oficiais</h2>
+                      <h2 className="text-sm font-black text-white">Minutos de Jogo Fictícios</h2>
                     </div>
                     <span className="text-[10px] font-black px-2 py-0.5 rounded bg-blue-900/60 text-blue-300">
-                      17 Jogos Registados
+                      13 Jogos Registados
                     </span>
                   </div>
 
@@ -475,11 +475,11 @@ export default function ShowcasePage() {
                   <div className="bg-gradient-to-br from-slate-900 to-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between">
                     <div>
                       <div className="text-[10px] text-slate-400 uppercase font-bold">Atleta #07 &bull; Minutos Totais</div>
-                      <div className="text-xl font-black text-white">1 302 <span className="text-xs text-slate-400 font-normal">min</span></div>
+                      <div className="text-xl font-black text-white">915 <span className="text-xs text-slate-400 font-normal">min</span></div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[9px] text-emerald-400 font-bold">418 min Liga</div>
-                      <div className="text-[9px] text-amber-400 font-bold">60 min Taça</div>
+                      <div className="text-[9px] text-emerald-400 font-bold">640 min Liga</div>
+                      <div className="text-[9px] text-amber-400 font-bold">135 min Taça</div>
                     </div>
                   </div>
 
@@ -516,7 +516,7 @@ export default function ShowcasePage() {
                 <div className="space-y-3 animate-fade-in">
                   <div className="border-b border-slate-800 pb-2 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">Microciclo 14</span>
+                      <span className="text-[10px] font-black uppercase text-purple-400 tracking-wider">Microciclo 21 &bull; 18/03 a 24/03</span>
                       <h2 className="text-sm font-black text-white">Planeamento Semanal de Cargas</h2>
                     </div>
                     <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950">
@@ -528,8 +528,8 @@ export default function ShowcasePage() {
                   <div className="space-y-1.5">
                     <div className="p-2.5 rounded-xl border border-blue-500/30 bg-blue-950/20 flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-black text-white">TER 10/11 &bull; MD-5</div>
-                        <div className="text-[10px] text-slate-300 font-bold">⚽ Treino de Campo (09:00 - 10:30)</div>
+                        <div className="text-[11px] font-black text-white">TER 19/03 &bull; MD-5</div>
+                        <div className="text-[10px] text-slate-300 font-bold">⚽ Treino de Campo (10:00 - 11:30)</div>
                       </div>
                       <span className="text-[9px] font-black px-2 py-0.5 rounded bg-blue-900/80 text-blue-200">
                         🏋️ Ginásio Inferiores
@@ -538,18 +538,28 @@ export default function ShowcasePage() {
 
                     <div className="p-2.5 rounded-xl border border-purple-500/30 bg-purple-950/20 flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-black text-white">QUA 11/11 &bull; MD-4</div>
-                        <div className="text-[10px] text-slate-300 font-bold">⚽ Treino de Campo (09:00 - 10:30)</div>
+                        <div className="text-[11px] font-black text-white">QUA 20/03 &bull; MD-4</div>
+                        <div className="text-[10px] text-slate-300 font-bold">⚽ Treino de Campo (10:00 - 11:30)</div>
                       </div>
                       <span className="text-[9px] font-black px-2 py-0.5 rounded bg-purple-900/80 text-purple-200">
                         🏋️ Ginásio Superiores
                       </span>
                     </div>
 
+                    <div className="p-2.5 rounded-xl border border-sky-500/30 bg-sky-950/20 flex items-center justify-between">
+                      <div>
+                        <div className="text-[11px] font-black text-white">QUI 21/03 &bull; MD-3</div>
+                        <div className="text-[10px] text-slate-300 font-bold">⚽ Treino de Campo (10:00 - 11:15)</div>
+                      </div>
+                      <span className="text-[9px] font-black px-2 py-0.5 rounded bg-sky-900/80 text-sky-200">
+                        ⚡ Alta Velocidade
+                      </span>
+                    </div>
+
                     <div className="p-2.5 rounded-xl border border-emerald-500/40 bg-emerald-950/30 flex items-center justify-between">
                       <div>
-                        <div className="text-[11px] font-black text-emerald-300">DOM 15/11 &bull; MD</div>
-                        <div className="text-[10px] text-white font-black">🏆 TAÇA DE PORTUGAL (15:00)</div>
+                        <div className="text-[11px] font-black text-emerald-300">DOM 24/03 &bull; MD</div>
+                        <div className="text-[10px] text-white font-black">🏆 JORNADA COMPETITIVA (15:00)</div>
                       </div>
                       <span className="text-[9px] font-black px-2 py-0.5 rounded bg-emerald-500 text-slate-950">
                         JOGO OFICIAL

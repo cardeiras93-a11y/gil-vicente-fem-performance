@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v72-showcase-mode-20261109';
+const CACHE_NAME = 'femperf-v73-fictional-showcase-20261109';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',
