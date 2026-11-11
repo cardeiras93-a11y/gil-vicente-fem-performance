@@ -133,7 +133,7 @@ export async function GET(request: Request) {
           const initialIds = new Set([
             'ath-1','ath-2','ath-3','ath-4','ath-5','ath-6','ath-7','ath-8','ath-9','ath-10',
             'ath-11','ath-12','ath-13','ath-14','ath-15','ath-16','ath-17','ath-18','ath-19','ath-20',
-            'ath-21','ath-22','ath-23','ath-24','ath-25','ath-26','ath-27'
+            'ath-21','ath-22','ath-23','ath-24','ath-25','ath-26','ath-27','ath-28'
           ]);
           const deletedSet = new Set(result.deletedAthletes || []);
           const existingMap = new Map<string, any>();
