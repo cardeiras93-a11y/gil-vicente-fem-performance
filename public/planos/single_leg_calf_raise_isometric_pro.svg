@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(160, 10)">
+    <rect x="0" y="0" width="152" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="83" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" text-anchor="middle">ISOMETRIA GASTROCNÉMIO</text>
+  </g>
+
+  <!-- Parede / Apoio de Mãos -->
+  <line x1="85" y1="25" x2="85" y2="150" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="145" cy="154" rx="45" ry="6" fill="#0f172a" opacity="0.22" />
+
+  <!-- Atleta em Apoio Unipodal Ereto (Joelho Estendido) -->
+  <!-- Mãos apoiadas na parede para estabilidade pura -->
+  <path d="M125,58 L102,62 L85,62" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" fill="none" />
+
+  <!-- Tronco e Cabeça -->
+  <circle cx="132" cy="38" r="7.5" fill="#d97706" />
+  <path d="M126,34 C126,28 138,28 138,34 Z" fill="#78350f" />
+  <path d="M126,50 L138,50 L135,88 L123,88 Z" fill="url(#kitGrad)" />
+  <ellipse cx="129" cy="89" rx="8" ry="6" fill="#0f172a" />
+
+  <!-- Perna Passiva (fletida atrás em repouso) -->
+  <path d="M126,89 L112,112 L116,130" stroke="#94a3b8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6" />
+
+  <!-- Perna Ativa (Joelho estendido, calcanhar elevado em isometria estática a 60%) -->
+  <line x1="132" y1="89" x2="135" y2="128" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+  
+  <!-- Ventre Muscular dos Gastrocnémios em Contração Ativa (Vermelho vivo com brilho) -->
+  <ellipse cx="134" cy="108" rx="6" ry="12" fill="#ef4444">
+    <animate attributeName="opacity" values="0.7; 1; 0.7" dur="1.6s" repeatCount="indefinite" />
+  </ellipse>
+  <!-- Tendão de Aquiles Tenso sem Encurtamento Rápido -->
+  <line x1="135" y1="120" x2="137" y2="138" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+
+  <!-- Pé com Calcanhar Alto em Isometria Rígida -->
+  <ellipse cx="140" cy="148" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  <line x1="135" y1="128" x2="139" y2="144" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+
+  <!-- Badge de Analgesia / Inibição Cortical -->
+  <g transform="translate(170, 75)">
+    <rect x="0" y="0" width="95" height="32" rx="5" fill="#0f172a" fill-opacity="0.9" stroke="#22c55e" stroke-width="1.2" />
+    <text x="47" y="14" fill="#22c55e" font-size="7.5" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">⚡ ANALGESIA CORTICAL</text>
+    <text x="47" y="25" fill="#ffffff" font-size="7" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">3x 35-40s HOLD</text>
+  </g>
+</svg>

@@ -4362,6 +4362,136 @@ export const ANAMNESE_PREVENTION_PLANS: MobilityPlan[] = [
         ]
       }
     ]
+  },
+  {
+    "id": "plan_indiv_ath-28_izzy",
+    "titlePt": "Plano Individual: IZZY (Reabilitação & Profilaxia do Tendão de Aquiles)",
+    "titleEn": "Individual Plan: IZZY (Achilles Tendinopathy Protocol & Activation)",
+    "categoryPt": "Individual • Tendinopatia de Aquiles (2 Secções • 14 Min)",
+    "categoryEn": "Individual • Achilles Tendinopathy (2 Sections • 14 Min)",
+    "group": "inferiores",
+    "groupBadgePt": "👤 IZZY • 14 MIN",
+    "groupBadgeEn": "👤 IZZY • 14 MIN",
+    "seasonLinePt": "GIL VICENTE FUTEBOL CLUBE • ÉPOCA 2026/2027 • PLANO INDIVIDUALIZADO ANAMNESE",
+    "seasonLineEn": "GIL VICENTE FOOTBALL CLUB • 2026/2027 SEASON • INDIVIDUAL CLINICAL PLAN",
+    "targetPosition": "all",
+    "durationMinutes": 14,
+    "durationTextPt": "14 MIN (Máx. 15 Min)",
+    "durationTextEn": "14 MIN (Max 15 Min)",
+    "warmupPt": "Mobilização articular do tornozelo em descarga e analgesia isométrica de carga pesada.",
+    "warmupEn": "Unloaded ankle joint mobilization and heavy isometric tendon analgesia.",
+    "finisherPt": "Descarga tendinosa, analgesia cortical e retorno à calma sem alongamento agressivo.",
+    "finisherEn": "Tendon unloading, cortical analgesia and calm recovery without aggressive stretching.",
+    "blocks": [
+      {
+        "id": "plan_indiv_ath-28_izzy_sec01",
+        "number": "01",
+        "titlePt": "SECÇÃO 1: MOBILIDADE TALOCRURAL & ANALGESIA ISOMÉTRICA",
+        "titleEn": "SECTION 1: TALOCRURAL MOBILITY & ISOMETRIC ANALGESIA",
+        "durationMinutes": 6,
+        "durationTextPt": "6 MIN",
+        "durationTextEn": "6 MIN",
+        "exercises": [
+          {
+            "id": "ex_ankle_band_mob_izzy",
+            "namePt": "1.1 Mobilização Articular do Tornozelo com Banda (Deslize Posterior do Astrágalo)",
+            "nameEn": "1.1 Banded Ankle Joint Mobilization (Posterior Talus Glide)",
+            "seriesRepsPt": "2x 10 oscilações / tornozelo",
+            "seriesRepsEn": "2x 10 oscillations / ankle",
+            "restPt": "20s",
+            "restEn": "20s",
+            "descriptionPt": "Pé de apoio firme no solo com banda elástica presa abaixo dos maléolos (no astrágalo), exercendo tração posterior contínua. Avança suavemente o joelho sobre o 2º dedo do pé sem descolar o calcanhar, restaurando o glide articular sem comprimir o tendão de Aquiles.",
+            "descriptionEn": "Foot flat on ground with heavy band looped beneath malleoli over talus bone, providing posterior glide. Oscillate knee forward smoothly over 2nd toe keeping heel glued, restoring dorsiflexion without tendon compression.",
+            "imageSrc": "/exercises/ankle_dorsiflexion_band_pro.svg"
+          },
+          {
+            "id": "ex_soleus_iso_izzy",
+            "namePt": "1.2 Isometria de Sóleo com Joelho Fletido a 90° (Isolamento do Sóleo)",
+            "nameEn": "1.2 Bent-Knee Soleus Isometric Hold (Soleus Isolation)",
+            "seriesRepsPt": "3x 40s isometria / perna",
+            "seriesRepsEn": "3x 40s isometric hold / leg",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Sentada em banco com joelho a 90° e carga sobre a coxa. Eleva o calcanhar até meia amplitude (posição neutra) e sustenta uma contração isométrica rígida durante 40 segundos. Isola o sóleo (o maior amortecedor do tendão) e induz analgesia imediata pré-treino.",
+            "descriptionEn": "Seated with knee bent at 90° and load over thigh. Elevate heel to mid-range and lock rigid isometric hold for 40 seconds. Isolates soleus (primary shock absorber of Achilles) providing immediate pain relief.",
+            "imageSrc": "/exercises/soleus_bent_knee_isometric_pro.svg"
+          }
+        ]
+      },
+      {
+        "id": "plan_indiv_ath-28_izzy_sec02",
+        "number": "02",
+        "titlePt": "SECÇÃO 2: CARGA EXCÊNTRICA LENTA & ESTABILIDADE MECÂNICA",
+        "titleEn": "SECTION 2: SLOW ECCENTRIC LOADING & MECHANICAL STABILITY",
+        "durationMinutes": 8,
+        "durationTextPt": "8 MIN",
+        "durationTextEn": "8 MIN",
+        "exercises": [
+          {
+            "id": "ex_gastroc_iso_izzy",
+            "namePt": "2.1 Isometria Unipodal em Extensão de Joelho (Inibição Cortical da Dor)",
+            "nameEn": "2.1 Single-Leg Standing Heel Raise Isometric (Cortical Inhibition)",
+            "seriesRepsPt": "3x 35-40s isometria / perna",
+            "seriesRepsEn": "3x 35-40s isometric hold / leg",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "De pé em apoio unipodal com joelho em extensão completa junto a uma parede ou barra. Eleva o calcanhar a 60% da amplitude máxima e bloqueia o tornozelo firme no ar sem oscilar, ativando gastrocnémios e promovendo inibição cortical da dor.",
+            "descriptionEn": "Standing on single leg with knee locked in extension holding wall for balance. Elevate heel to 60% height and hold static contraction for 35-40s, firing gastrocnemius and reducing tendon pain via cortical inhibition.",
+            "imageSrc": "/exercises/single_leg_calf_raise_isometric_pro.svg"
+          },
+          {
+            "id": "ex_flat_eccentric_drop_izzy",
+            "namePt": "2.2 Descida Excêntrica Lenta no Solo Plano (Solo Plano & Zero Compressão)",
+            "nameEn": "2.2 Flat-Surface Eccentric Heel Drop (Zero Compression)",
+            "seriesRepsPt": "3x 8-10 reps lentas / perna",
+            "seriesRepsEn": "3x 8-10 slow reps / leg",
+            "restPt": "35s",
+            "restEn": "35s",
+            "descriptionPt": "Sobe na ponta dos pés com as duas pernas (concêntrico bilateral para poupar o tendão), retira a perna sã e desce apenas na perna afetada em 3 a 4 segundos lentos e controlados no solo plano (sem degrau, eliminando risco de compressão insercional).",
+            "descriptionEn": "Rise up on balls of both feet, lift uninjured leg, and lower slowly on symptomatic leg over 3-4 seconds down to flat floor. Avoids deep deficit to eliminate insertional compression against calcaneus.",
+            "imageSrc": "/exercises/flat_ground_eccentric_calf_pro.svg"
+          },
+          {
+            "id": "ex_mw_izzy",
+            "namePt": "2.3 Monster Walk com Mini-Banda nos Joelhos (Estabilidade Pélvica & Anti-Pronação)",
+            "nameEn": "2.3 Monster Walk w/ Knee Miniband (Pelvic Stability & Anti-Pronation)",
+            "seriesRepsPt": "2x 10 passos / direção",
+            "seriesRepsEn": "2x 10 steps / direction",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em semi-agachamento com mini-banda logo acima dos joelhos. Passos curtos mantendo o alinhamento da anca, joelho e tornozelo, prevenindo o colapso medial e pronação subtalar excessiva que torce o tendão de Aquiles.",
+            "descriptionEn": "Athletic stance with miniband above knees. Short lateral steps preventing knee valgus and excessive subtalar pronation that creates rotational torque on the Achilles tendon.",
+            "imageSrc": "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            "id": "ex_db_izzy",
+            "namePt": "2.4 Dead-Bug com Mini-Banda nos Pés (Anti-Extensão Lombar & Psoas)",
+            "nameEn": "2.4 Miniband Dead-Bug (Lumbo-Pelvic Control & Core)",
+            "seriesRepsPt": "3x 8 reps / lado",
+            "seriesRepsEn": "3x 8 reps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Deitada de costas com mini-banda nos antepés. Mantém um joelho fletido a 90° segurando a tensão elástica enquanto estende a perna oposta e braço contralateral, pressionando a lombar ao solo com core bloqueado.",
+            "descriptionEn": "Supine with miniband around forefeet. Anchor one knee at 90° against band tension while extending opposite leg and contralateral arm, pinning lumbar spine flat to mat with braced core.",
+            "imageSrc": "/exercises/deadbug_miniband_pro.svg",
+            "daysOfWeek": [1, 3]
+          },
+          {
+            "id": "ex_ptap_izzy",
+            "namePt": "2.5 Prancha Alta com Toque nos Ombros & Mini-Banda nos Pulsos",
+            "nameEn": "2.5 Miniband High Plank Shoulder Taps (Anti-Rotation & Core)",
+            "seriesRepsPt": "3x 8 toques / lado",
+            "seriesRepsEn": "3x 8 taps / side",
+            "restPt": "30s",
+            "restEn": "30s",
+            "descriptionPt": "Em prancha alta com mini-banda nos pulsos. Afasta ligeiramente as mãos para manter tensão elástica constante e toca no ombro oposto com controlo deliberado, sem rodar a bacia ou oscilar o tronco.",
+            "descriptionEn": "High plank with miniband around wrists. Keep outward tension on band and slowly tap opposite shoulder without allowing hips to sway or rotate, building anti-rotational stiffness.",
+            "imageSrc": "/exercises/plank_shoulder_tap_band_pro.svg",
+            "daysOfWeek": [1, 3]
+          }
+        ]
+      }
+    ]
   }
 ];
 
@@ -4816,6 +4946,17 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
     "notes": "Prioridade Clínica: Proteção bilateral de LCA e alinhamento axial fémoro-tibial + Core Seg & Qua."
+  },
+  "athlete_ath-28_plan_indiv_ath-28_izzy": {
+    "id": "athlete_ath-28_plan_indiv_ath-28_izzy",
+    "targetType": "athlete",
+    "targetId": "ath-28",
+    "targetName": "IZZY",
+    "planId": "plan_indiv_ath-28_izzy",
+    "assignedAt": "2026-11-11T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Protocolo Clínico Tendinopatia de Aquiles: Isometria de Sóleo a 90° (analgesia), isometria de gastrocnémio, excêntrico lento no solo plano e mobilidade talocrural + Core Seg & Qua."
   }
 };
 

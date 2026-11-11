@@ -36,6 +36,7 @@ export const INITIAL_ATHLETES: Athlete[] = [
   { id: 'ath-25', name: 'VERÓNICA', position: 'Campo' },
   { id: 'ath-26', name: 'PAYTON', position: 'GR' },
   { id: 'ath-27', name: 'CHELSEA', position: 'Campo' },
+  { id: 'ath-28', name: 'IZZY', position: 'Campo' },
 ];
 
 export const ROSTER_NAMES: string[] = INITIAL_ATHLETES.map((a) => a.name);

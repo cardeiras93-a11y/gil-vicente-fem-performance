@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.16" />
+    </filter>
+  </defs>
+
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <line x1="0" y1="150" x2="320" y2="150" stroke="#cbd5e1" stroke-width="1.5" />
+
+  <!-- Badge LIVE ANIMADO -->
+  <g transform="translate(150, 10)">
+    <rect x="0" y="0" width="162" height="20" rx="10" fill="#0f172a" fill-opacity="0.9" stroke="#38bdf8" stroke-width="1.2" />
+    <circle cx="14" cy="10" r="4" fill="#22c55e">
+      <animate attributeName="opacity" values="1; 0.2; 1" dur="0.9s" repeatCount="indefinite" />
+      <animate attributeName="r" values="3.5; 5; 3.5" dur="0.9s" repeatCount="indefinite" />
+    </circle>
+    <text x="88" y="14" fill="#38bdf8" font-size="8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-weight="900" text-anchor="middle">DESCIDA EXCÊNTRICA (SOLO PLANO)</text>
+  </g>
+
+  <!-- Parede de apoio à frente -->
+  <line x1="75" y1="25" x2="75" y2="150" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+
+  <!-- Sombra no solo -->
+  <ellipse cx="140" cy="154" rx="45" ry="6" fill="#0f172a" opacity="0.22" />
+
+  <!-- Tronco da Atleta com Movimento Excêntrico Lento (3s descida) -->
+  <g>
+    <!-- Sobe rápido em 0.6s e desce lentamente em 3.2s -->
+    <animateTransform attributeName="transform" type="translate" values="0 0; 0 -16; 0 -16; 0 0" keyTimes="0; 0.18; 0.35; 1" dur="3.8s" repeatCount="indefinite" />
+
+    <!-- Apoio na parede -->
+    <path d="M120,62 L95,65 L75,65" stroke="#d97706" stroke-width="4.5" stroke-linecap="round" fill="none" />
+
+    <!-- Cabeça e Tronco -->
+    <circle cx="128" cy="42" r="7.5" fill="#d97706" />
+    <path d="M122,38 C122,32 134,32 134,38 Z" fill="#78350f" />
+    <path d="M122,54 L134,54 L131,90 L120,90 Z" fill="url(#kitGrad)" />
+    <ellipse cx="125" cy="91" rx="8" ry="6" fill="#0f172a" />
+
+    <!-- Perna Ativa em Carga Excêntrica Unipodal -->
+    <line x1="128" y1="91" x2="132" y2="130" stroke="#d97706" stroke-width="8" stroke-linecap="round" />
+    <ellipse cx="131" cy="110" rx="6" ry="12" fill="#ef4444" />
+    <line x1="132" y1="130" x2="135" y2="145" stroke="#d97706" stroke-width="6.5" stroke-linecap="round" />
+    <ellipse cx="137" cy="148" rx="7" ry="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5" />
+  </g>
+
+  <!-- Perna Oposta (Apenas sobe no concêntrico bilateral e recolhe no excêntrico) -->
+  <path d="M123,91 L110,115 L106,128" stroke="#94a3b8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.6" />
+
+  <!-- Seta e Guia Visual de Descida Lenta em 3 Segundos -->
+  <g transform="translate(165, 80)">
+    <rect x="0" y="0" width="105" height="42" rx="6" fill="#0f172a" fill-opacity="0.92" stroke="#38bdf8" stroke-width="1.2" />
+    <text x="52" y="16" fill="#38bdf8" font-size="8" font-family="-apple-system, sans-serif" font-weight="900" text-anchor="middle">DESCIDA LENTA (3-4s)</text>
+    <text x="52" y="28" fill="#e2e8f0" font-size="7" font-family="-apple-system, sans-serif" font-weight="700" text-anchor="middle">2 Pés Sobe ➔ 1 Pé Desce</text>
+    <text x="52" y="38" fill="#ef4444" font-size="6.5" font-family="-apple-system, sans-serif" font-weight="800" text-anchor="middle">Zero Compressão Insercional</text>
+  </g>
+</svg>

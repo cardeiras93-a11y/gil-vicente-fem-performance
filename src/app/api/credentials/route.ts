@@ -24,6 +24,7 @@ const KNOWN_BASELINE_ATHLETE_PINS: Record<string, string> = {
   'ath-23': '0000',
   'ath-24': '1230',
   'ath-26': '7656',
+  'ath-28': '1234',
   'ath-custom-1790842877064': '1234',
   'ath-custom-1789036116210': '0000',
   'ath-custom-test-123': '9999',
