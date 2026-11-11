@@ -2431,4 +2431,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "ativacao_maria_malta_bandas",
+    titlePt: "Plano de Ativa\u00e7\u00e3o \u2014 MARIA MALTA (100% Bandas & Mini-Bandas)",
+    titleEn: "Activation Plan \u2014 MARIA MALTA (100% Banded & Mini-Band)",
+    categoryPt: "Individual \u2022 Ativa\u00e7\u00e3o Pr\u00e9-Treino (100% Bandas)",
+    categoryEn: "Individual \u2022 Pre-Training Activation (100% Bands)",
+    group: "inferiores",
+    groupBadgePt: "\ud83d\udc64 MALTA \u2022 Ativa\u00e7\u00e3o 100% Bandas & Mini-Bandas",
+    groupBadgeEn: "\ud83d\udc64 MALTA \u2022 100% Banded & Mini-Band Activation",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 PLANO INDIVIDUALIZADO DE ATIVA\u00c7\u00c3O",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 INDIVIDUAL ACTIVATION PLAN",
+    targetPosition: "all",
+    durationMinutes: 14,
+    durationTextPt: "14 MIN",
+    durationTextEn: "14 MIN",
+    warmupPt: "Descompress\u00e3o articular e tecidular com banda el\u00e1stica.",
+    warmupEn: "Joint decompression and tissue specific release with elastic band.",
+    finisherPt: "Alongamento din\u00e2mico em descarga e ativa\u00e7\u00e3o el\u00e1stica terminal.",
+    finisherEn: "Dynamic unloaded stretch and terminal elastic activation.",
+    blocks: [
+      {
+        id: "ativacao_maria_malta_bandas_block_01",
+        number: "01",
+        titlePt: "Mobilidade Articular & Descompress\u00e3o com Banda",
+        titleEn: "Joint Mobility & Banded Decompression",
+        durationMinutes: 4,
+        durationTextPt: "4 MIN",
+        durationTextEn: "4 MIN",
+        exercises: [
+          {
+            id: "ativacao_maria_malta_bandas_b01_ex1",
+            namePt: "1.1 Rota\u00e7\u00e3o Tor\u00e1cica & Alcance Superior em Meio-Ajoelhado c/ Banda",
+            nameEn: "1.1 Half-Kneeling Banded Thoracic Rotation & High Reach",
+            seriesRepsPt: "2x 8 reps / lado",
+            seriesRepsEn: "2x 8 reps / side",
+            restPt: "20s cada lado",
+            restEn: "20s each side",
+            descriptionPt: "Meio-ajoelhada segurando banda ancorada. Roda o tronco para o lado da perna dianteira estendendo o bra\u00e7o ao teto com tra\u00e7\u00e3o el\u00e1stica constante, restaurando a mobilidade tor\u00e1cica e escapular.",
+            descriptionEn: "Half-kneeling holding anchored band. Rotate ribcage against elastic tension, opening chest and reaching straight to ceiling to restore full thoracic mobility and shoulder rhythm.",
+            imageSrc: "/exercises/half_kneeling_band_thoracic_reach_pro.svg"
+          },
+          {
+            id: "ativacao_maria_malta_bandas_b01_ex2",
+            namePt: "1.2 Alongamento Din\u00e2mico de Isquiotibiais & Cadeia Posterior c/ Banda",
+            nameEn: "1.2 Supine Banded Hamstring & Posterior Chain Floss",
+            seriesRepsPt: "2x 8 reps din\u00e2micas / perna",
+            seriesRepsEn: "2x 8 dynamic reps / leg",
+            restPt: "20s cada perna",
+            restEn: "20s each leg",
+            descriptionPt: "Deitada de costas com banda el\u00e1stica presa no antep\u00e9. Eleva a perna esticada contra a tens\u00e3o el\u00e1stica, bombeando flex\u00e3o dorsal do tornozelo no topo para descompress\u00e3o neural e complac\u00eancia dos isquiotibiais.",
+            descriptionEn: "Supine with long elastic band looped around midfoot. Rhythmically raise straight leg to end range against band tension, pumping gentle active dorsiflexion for neural decompression.",
+            imageSrc: "/exercises/supine_hamstring_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "ativacao_maria_malta_bandas_block_02",
+        number: "02",
+        titlePt: "Ativa\u00e7\u00e3o de Gl\u00fateos & Anti-Valgo com Mini-Banda",
+        titleEn: "Glute Activation & Anti-Valgus w/ Mini-Band",
+        durationMinutes: 3,
+        durationTextPt: "3 MIN",
+        durationTextEn: "3 MIN",
+        exercises: [
+          {
+            id: "ativacao_maria_malta_bandas_b02_ex1",
+            namePt: "2.1 Ponte de Gl\u00fateos com Abdu\u00e7\u00e3o Din\u00e2mica c/ Mini-Banda",
+            nameEn: "2.1 Glute Bridge w/ Dynamic Miniband Abduction",
+            seriesRepsPt: "2x 10-12 reps (Pausa 2s)",
+            seriesRepsEn: "2x 10-12 reps (2s hold)",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Deitada de costas com mini-banda logo acima dos joelhos. Eleva a bacia contraindo gl\u00fateos e abrindo ligeiramente os joelhos contra a tens\u00e3o lateral da banda, fixando 2s de extens\u00e3o pura de anca no topo.",
+            descriptionEn: "Supine with miniband placed above knees and feet hip-width apart. Drive hips up into full extension while pressing outward against lateral band resistance, locking a 2s peak glute contraction.",
+            imageSrc: "/exercises/glute_bridge_band_pro.svg"
+          },
+          {
+            id: "ativacao_maria_malta_bandas_b02_ex2",
+            namePt: "2.2 Monster Walk com Mini-Banda nos Joelhos (Anti-Valgo)",
+            nameEn: "2.2 Monster Walk w/ Knee Miniband (Anti-Valgus)",
+            seriesRepsPt: "2x 10 passos / dire\u00e7\u00e3o",
+            seriesRepsEn: "2x 10 steps / direction",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Em semi-agachamento atl\u00e9tico com mini-banda logo acima dos joelhos. Passos diagonais controlados mantendo alinhamento joelho-2\u00ba dedo do p\u00e9. Ativa\u00e7\u00e3o pura de gl\u00fateo m\u00e9dio e rotadores externos para impedir o valgo din\u00e2mico.",
+            descriptionEn: "Athletic semi-squat with band above knees. Diagonal short steps tracking knees over 2nd toe. Recruits gluteus medius and external rotators to eradicate dynamic valgus collapse.",
+            imageSrc: "/exercises/monster_walk_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "ativacao_maria_malta_bandas_block_03",
+        number: "03",
+        titlePt: "Rigidez Reativa & Flexores da Anca (Sprint)",
+        titleEn: "Reactive Stiffness & Hip Flexors (Sprint)",
+        durationMinutes: 4,
+        durationTextPt: "4 MIN",
+        durationTextEn: "4 MIN",
+        exercises: [
+          {
+            id: "ativacao_maria_malta_bandas_b03_ex1",
+            namePt: "3.1 Oscila\u00e7\u00f5es R\u00e1pidas de Flexores da Anca com Banda (Postura de Sprint)",
+            nameEn: "3.1 Banded Hip Flexor Oscillations (Sprint Mechanics)",
+            seriesRepsPt: "2x 15s oscila\u00e7\u00f5es / perna",
+            seriesRepsEn: "2x 15s oscillations / leg",
+            restPt: "30s cada perna",
+            restEn: "30s each leg",
+            descriptionPt: "Em apoio unipodal atl\u00e9tico com banda ancorada atr\u00e1s e presa no tornozelo de ataque. Eleva o joelho a 90\u00b0 e executa micro-pulsos r\u00e1pidos e reativos contra a banda, gerando rigidez el\u00e1stica dos flexores da anca para sprint.",
+            descriptionEn: "Tall single-leg stance with band anchored behind ankle. Drive knee to 90\u00b0 and pump rapid reactive micro-oscillations against band tension, building end-range hip flexor reactive stiffness for sprint acceleration.",
+            imageSrc: "/exercises/banded_hip_flexor_oscillations_pro.svg"
+          },
+          {
+            id: "ativacao_maria_malta_bandas_b03_ex2",
+            namePt: "3.2 Dead-Bug com Mini-Banda nos P\u00e9s (Anti-Extens\u00e3o Lombar & Psoas)",
+            nameEn: "3.2 Miniband Dead-Bug (Lumbo-Pelvic Control & Core)",
+            seriesRepsPt: "3x 8 reps / lado",
+            seriesRepsEn: "3x 8 reps / side",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Deitada de costas com mini-banda nos antep\u00e9s. Mant\u00e9m um joelho fletido a 90\u00b0 segurando a tens\u00e3o el\u00e1stica enquanto estende a perna oposta e bra\u00e7o contralateral, pressionando a lombar ao solo com core bloqueado.",
+            descriptionEn: "Supine with miniband around forefeet. Anchor one knee at 90\u00b0 against band tension while extending opposite leg and contralateral arm, pinning lumbar spine flat to mat with braced core.",
+            imageSrc: "/exercises/deadbug_miniband_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "ativacao_maria_malta_bandas_block_04",
+        number: "04",
+        titlePt: "Estabilidade Escapular & Abdutores com Mini-Banda",
+        titleEn: "Scapular Stability & Abductors w/ Mini-Band",
+        durationMinutes: 3,
+        durationTextPt: "3 MIN",
+        durationTextEn: "3 MIN",
+        exercises: [
+          {
+            id: "ativacao_maria_malta_bandas_b04_ex1",
+            namePt: "4.1 Prancha Alta com Toque nos Ombros & Mini-Banda nos Pulsos",
+            nameEn: "4.1 Miniband High Plank Shoulder Taps (Anti-Rotation)",
+            seriesRepsPt: "3x 8 toques / lado",
+            seriesRepsEn: "3x 8 taps / side",
+            restPt: "30s entre s\u00e9ries",
+            restEn: "30s between sets",
+            descriptionPt: "Em prancha alta com mini-banda nos pulsos. Afasta ligeiramente as m\u00e3os para manter tens\u00e3o el\u00e1stica constante e toca no ombro oposto com controlo deliberado, sem rodar a bacia ou oscilar o tronco.",
+            descriptionEn: "High plank with miniband around wrists. Keep outward tension on band and slowly tap opposite shoulder without allowing hips to sway or rotate, building anti-rotational stiffness.",
+            imageSrc: "/exercises/plank_shoulder_tap_band_pro.svg"
+          },
+          {
+            id: "ativacao_maria_malta_bandas_b04_ex2",
+            namePt: "4.2 Abdu\u00e7\u00e3o de Anca Unipodal com Mini-Banda nos Tornozelos",
+            nameEn: "4.2 Standing Unilateral Miniband Hip Abduction",
+            seriesRepsPt: "2x 10 reps / lado",
+            seriesRepsEn: "2x 10 reps / side",
+            restPt: "25s cada lado",
+            restEn: "25s each side",
+            descriptionPt: "Em apoio unipodal ereto com mini-banda nos tornozelos e m\u00e3os na cintura. Afasta a perna lateralmente contra a banda mantendo a bacia nivelada e o tronco direito, ativando gl\u00fateo m\u00e9dio e estabilizadores em cadeia aberta.",
+            descriptionEn: "Standing tall in single-leg stance with miniband around ankles and hands on hips. Abduct working leg laterally against band maintaining level pelvis, firing gluteus medius and lateral stabilizers.",
+            imageSrc: "/exercises/standing_leg_abduction_band_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];
