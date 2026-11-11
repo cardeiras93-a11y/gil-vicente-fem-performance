@@ -2,8 +2,8 @@ import { MobilityPlan, AthletePlanAssignment, Athlete } from './types';
 import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
-export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v3';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v3';
+export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v4';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v4';
 export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v3';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
@@ -240,7 +240,7 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
       parsed.forEach((p: MobilityPlan) => {
         if (p && p.id && p.id !== 'mobility-gk-pre-training') {
           const existing = planMap.get(p.id);
-          planMap.set(p.id, existing ? { ...existing, ...p } : p);
+          planMap.set(p.id, existing ? { ...p, ...existing } : p);
         }
       });
       return Array.from(planMap.values());
@@ -284,7 +284,10 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
 export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAssignment> {
   if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
-    const raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
+    let raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
+    if (!raw) {
+      raw = localStorage.getItem('femperf_athlete_plan_assignments_v3');
+    }
     if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
