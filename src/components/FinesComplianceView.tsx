@@ -1,7 +1,15 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { WellnessEntry, RPEEntry, HydrationEntry, AthleteComplianceReport, Athlete, IndividualFineExemption } from '@/lib/types';
+import {
+  WellnessEntry,
+  RPEEntry,
+  HydrationEntry,
+  AthleteComplianceReport,
+  Athlete,
+  IndividualFineExemption,
+  TrainingSessionInfo,
+} from '@/lib/types';
 import { getDynamicAthletes } from '@/lib/storage';
 import { useLanguage } from '@/context/LanguageContext';
 import {
@@ -100,6 +108,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
   // Saved manual calendar schedule overrides (dateStr -> 'training' | 'match' | 'rest')
   const [manualDayTypes, setManualDayTypes] = useState<Record<string, CalendarDayType>>({});
+  const [sessionsMap, setSessionsMap] = useState<Record<string, TrainingSessionInfo>>(() => getStoredTrainingSessions());
 
   // Fine enabled status per date (dateStr -> boolean | DayFineConfig)
   const [finesEnabledDays, setFinesEnabledDays] = useState<Record<string, boolean | DayFineConfig>>({});
@@ -107,6 +116,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const [modalFineConfig, setModalFineConfig] = useState<DayFineConfig>({
     wellness: true,
     rpe: true,
+    rpeGym: true,
     hydration: true,
   });
   const [modalWellnessTime, setModalWellnessTime] = useState<string>('08:15');
@@ -119,7 +129,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Squad-wide Fine Waiver Modal State (retirar multa a todas as jogadoras)
   const [showWaiveModal, setShowWaiveModal] = useState<boolean>(false);
   const [waiveDate, setWaiveDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
-  const [waiveQuestionnaire, setWaiveQuestionnaire] = useState<'wellness' | 'rpe' | 'hydration' | 'all'>('all');
+  const [waiveQuestionnaire, setWaiveQuestionnaire] = useState<'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all'>('all');
   const [isWaivingSquadFine, setIsWaivingSquadFine] = useState<boolean>(false);
 
   // Quick helper dates
@@ -138,7 +148,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Remove fine for all athletes on a specific date and questionnaire
   const handleWaiveFineForAll = async (
     targetDate: string = waiveDate,
-    targetType: 'wellness' | 'rpe' | 'hydration' | 'all' = waiveQuestionnaire
+    targetType: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all' = waiveQuestionnaire
   ) => {
     if (!targetDate) return;
     setIsWaivingSquadFine(true);
@@ -151,7 +161,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         targetType === 'wellness'
           ? 'Wellness (Manhã)'
           : targetType === 'rpe'
-          ? 'PSE / RPE'
+          ? 'PSE / RPE Campo'
+          : targetType === 'rpe_gym'
+          ? 'PSE Ginásio (Inferiores)'
           : targetType === 'hydration'
           ? 'Pesagem (Hidratação)'
           : 'Todos os Questionários';
@@ -172,11 +184,13 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     setManualDayTypes(getStoredCalendarSchedule());
     setFinesEnabledDays(getStoredFinesEnabledDays());
     setFineExemptions(getStoredFineExemptions());
+    setSessionsMap(getStoredTrainingSessions());
 
     const handleDataUpdate = () => {
       setManualDayTypes(getStoredCalendarSchedule());
       setFinesEnabledDays(getStoredFinesEnabledDays());
       setFineExemptions(getStoredFineExemptions());
+      setSessionsMap(getStoredTrainingSessions());
     };
 
     window.addEventListener('femperf_credentials_updated', handleDataUpdate);
@@ -189,6 +203,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         const remoteSchedule = data?.schedule || data?.data?.schedule;
         if (remoteSchedule) {
           setManualDayTypes((prev) => ({ ...prev, ...remoteSchedule }));
+        }
+        const remoteSessions = data?.sessions || data?.data?.sessions;
+        if (remoteSessions) {
+          setSessionsMap((prev) => ({ ...prev, ...remoteSessions }));
         }
       })
       .catch(() => {});
@@ -205,7 +223,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     athleteId: string,
     athleteName: string,
     date: string,
-    type: 'wellness' | 'rpe' | 'hydration' | 'all'
+    type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all'
   ) => {
     // If an approved submission exists with keepFine, also set keepFine to false
     if (type === 'wellness' || type === 'all') {
@@ -218,10 +236,18 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     }
     if (type === 'rpe' || type === 'all') {
       const rEntry = rpeList.find(
-        (r) => r.date === date && (r.athleteId === athleteId || r.athleteName === athleteName)
+        (r) => r.date === date && (r.athleteId === athleteId || r.athleteName === athleteName) && (r.sessionType || 'field') === 'field'
       );
       if (rEntry && rEntry.keepFine) {
         approveRPESubmission(rEntry.id, 'Treinador', false);
+      }
+    }
+    if (type === 'rpe_gym' || type === 'all') {
+      const rGymEntry = rpeList.find(
+        (r) => r.date === date && (r.athleteId === athleteId || r.athleteName === athleteName) && r.sessionType === 'gym_lower'
+      );
+      if (rGymEntry && rGymEntry.keepFine) {
+        approveRPESubmission(rGymEntry.id, 'Treinador', false);
       }
     }
 
@@ -242,7 +268,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       type === 'wellness'
         ? 'Falta Wellness'
         : type === 'rpe'
-        ? 'Falta PSE'
+        ? 'Falta PSE Campo'
+        : type === 'rpe_gym'
+        ? 'Falta PSE Ginásio 🏋️'
         : type === 'hydration'
         ? 'Falta Pesagem'
         : 'Multa';
@@ -267,12 +295,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       if (wEntry && wEntry.keepFine) {
         approveWellnessSubmission(wEntry.id, 'Treinador', false);
       }
-      const rEntry = rpeList.find(
+      const rEntries = rpeList.filter(
         (r) => r.date === fd.date && (r.athleteId === athleteId || r.athleteName === athleteName)
       );
-      if (rEntry && rEntry.keepFine) {
-        approveRPESubmission(rEntry.id, 'Treinador', false);
-      }
+      rEntries.forEach((rEntry) => {
+        if (rEntry.keepFine) {
+          approveRPESubmission(rEntry.id, 'Treinador', false);
+        }
+      });
     });
 
     // 2. Build exemptions list for all dates
@@ -298,7 +328,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     athleteId: string,
     athleteName: string,
     date: string,
-    type: 'wellness' | 'rpe' | 'hydration' | 'all'
+    type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all'
   ) => {
     await removeFineExemption(athleteId, date, type);
     setFineExemptions(getStoredFineExemptions());
@@ -307,7 +337,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       type === 'wellness'
         ? 'Falta Wellness'
         : type === 'rpe'
-        ? 'Falta PSE'
+        ? 'Falta PSE Campo'
+        : type === 'rpe_gym'
+        ? 'Falta PSE Ginásio 🏋️'
         : type === 'hydration'
         ? 'Falta Pesagem'
         : 'Multa';
@@ -396,10 +428,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const finesEnabledMap = useMemo(() => {
     const map: Record<string, boolean> = {};
     datesInMonth.forEach((dateStr) => {
-      map[dateStr] = isDayAnyFineActive(finesConfigMap[dateStr]);
+      const sess = sessionsMap[dateStr];
+      const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
+      map[dateStr] = isDayAnyFineActive(finesConfigMap[dateStr], hasGymLower);
     });
     return map;
-  }, [datesInMonth, finesConfigMap]);
+  }, [datesInMonth, finesConfigMap, sessionsMap]);
 
   // All dates where at least one fine is active in month
   const fineActiveDates = useMemo(() => {
@@ -444,7 +478,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const handleOpenConfigModal = (dateStr: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     const currentCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
-    setModalFineConfig({ ...currentCfg });
+    setModalFineConfig({
+      ...currentCfg,
+      rpeGym: currentCfg.rpeGym ?? currentCfg.rpe ?? true,
+    });
 
     const dCfg = getStoredDeadlineConfig();
     const sessions = getStoredTrainingSessions();
@@ -500,6 +537,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       if (!modalFineConfig.rpe) {
         await waiveFineForAllAthletes(d, 'rpe');
       }
+      if (!modalFineConfig.rpeGym) {
+        await waiveFineForAllAthletes(d, 'rpe_gym');
+      }
       if (!modalFineConfig.hydration) {
         await waiveFineForAllAthletes(d, 'hydration');
       }
@@ -551,14 +591,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     setConfiguringDate(null);
   };
 
-  // Bulk action: Enable fines for all training and match days in month (all 3 questionnaires)
+  // Bulk action: Enable fines for all training and match days in month (all questionnaires)
   const enableAllFinesForActivityDays = () => {
     const updated = { ...finesEnabledDays };
     datesInMonth.forEach((dateStr) => {
       if (dayTypesMap[dateStr] === 'training' || dayTypesMap[dateStr] === 'match') {
-        updated[dateStr] = { wellness: true, rpe: true, hydration: true };
+        updated[dateStr] = { wellness: true, rpe: true, rpeGym: true, hydration: true };
       } else {
-        updated[dateStr] = { wellness: false, rpe: false, hydration: false };
+        updated[dateStr] = { wellness: false, rpe: false, rpeGym: false, hydration: false };
       }
     });
     setFinesEnabledDays(updated);
@@ -570,7 +610,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     const updated = { ...finesEnabledDays };
     datesInMonth.forEach((dateStr) => {
       if (dayTypesMap[dateStr] === 'rest') {
-        updated[dateStr] = { wellness: true, rpe: false, hydration: false };
+        updated[dateStr] = { wellness: true, rpe: false, rpeGym: false, hydration: false };
       }
     });
     setFinesEnabledDays(updated);
@@ -581,7 +621,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const exemptAllFinesInMonth = () => {
     const updated = { ...finesEnabledDays };
     datesInMonth.forEach((dateStr) => {
-      updated[dateStr] = { wellness: false, rpe: false, hydration: false };
+      updated[dateStr] = { wellness: false, rpe: false, rpeGym: false, hydration: false };
     });
     setFinesEnabledDays(updated);
     saveFinesEnabledDays(updated);
@@ -592,11 +632,14 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
     return athletes.map((ath) => {
       let missingWellnessCount = 0;
       let missingRpeCount = 0;
+      let missingRpeGymCount = 0;
       let missingHydrationCount = 0;
       const failedDates: AthleteComplianceReport['failedDates'] = [];
 
       pastAndTodayFineActiveDates.forEach((dateStr) => {
         const fineCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+        const sess = sessionsMap[dateStr];
+        const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
 
         const athleteWellness = wellnessList.find(
           (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name)
@@ -607,13 +650,22 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           (!athleteWellness.isLate && athleteWellness.approvalStatus !== 'rejected')
         ) : false;
 
-        const athleteRpe = rpeList.find(
-          (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name)
+        const athleteRpeField = rpeList.find(
+          (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && (r.sessionType || 'field') === 'field'
         );
-        const hasRpe = athleteRpe ? (
-          athleteRpe.isAuthorizedLate ||
-          (athleteRpe.approvalStatus === 'approved' && !athleteRpe.keepFine) ||
-          (!athleteRpe.isLate && athleteRpe.approvalStatus !== 'rejected')
+        const hasRpeField = athleteRpeField ? (
+          athleteRpeField.isAuthorizedLate ||
+          (athleteRpeField.approvalStatus === 'approved' && !athleteRpeField.keepFine) ||
+          (!athleteRpeField.isLate && athleteRpeField.approvalStatus !== 'rejected')
+        ) : false;
+
+        const athleteRpeGym = rpeList.find(
+          (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && r.sessionType === 'gym_lower'
+        );
+        const hasRpeGym = athleteRpeGym ? (
+          athleteRpeGym.isAuthorizedLate ||
+          (athleteRpeGym.approvalStatus === 'approved' && !athleteRpeGym.keepFine) ||
+          (!athleteRpeGym.isLate && athleteRpeGym.approvalStatus !== 'rejected')
         ) : false;
 
         const hasHydration = hydrationList.some(
@@ -623,16 +675,19 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         // Check if fine is waived individually for this athlete on this date
         const isWellnessWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'wellness');
         const isRpeWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'rpe');
+        const isRpeGymWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'rpe_gym');
         const isHydrationWaived = isFineExempt(fineExemptions, ath.id, ath.name, dateStr, 'hydration');
 
         // Only count as missing if that questionnaire is enabled for fines on this date AND NOT WAIVED!
         const missingW = fineCfg.wellness && !hasWellness && !isWellnessWaived;
-        const missingR = fineCfg.rpe && !hasRpe && !isRpeWaived;
+        const missingR = fineCfg.rpe && !hasRpeField && !isRpeWaived;
+        const missingRGym = hasGymLower && Boolean(fineCfg.rpeGym ?? fineCfg.rpe) && !hasRpeGym && !isRpeGymWaived;
         const missingH = fineCfg.hydration && !hasHydration && !isHydrationWaived;
 
-        if (missingW || missingR || missingH) {
+        if (missingW || missingR || missingRGym || missingH) {
           if (missingW) missingWellnessCount++;
           if (missingR) missingRpeCount++;
+          if (missingRGym) missingRpeGymCount++;
           if (missingH) missingHydrationCount++;
 
           let wellnessReason: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined' | undefined;
@@ -645,19 +700,29 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
           let rpeReason: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined' | undefined;
           if (missingR) {
-            if (!athleteRpe) rpeReason = 'not_submitted';
-            else if (athleteRpe.approvalStatus === 'rejected') rpeReason = 'late_rejected';
-            else if (athleteRpe.approvalStatus === 'approved' && athleteRpe.keepFine) rpeReason = 'late_approved_fined';
+            if (!athleteRpeField) rpeReason = 'not_submitted';
+            else if (athleteRpeField.approvalStatus === 'rejected') rpeReason = 'late_rejected';
+            else if (athleteRpeField.approvalStatus === 'approved' && athleteRpeField.keepFine) rpeReason = 'late_approved_fined';
             else rpeReason = 'late_pending';
           }
 
-          const failsOnDate = (missingW ? 1 : 0) + (missingR ? 1 : 0) + (missingH ? 1 : 0);
+          let rpeGymReason: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined' | undefined;
+          if (missingRGym) {
+            if (!athleteRpeGym) rpeGymReason = 'not_submitted';
+            else if (athleteRpeGym.approvalStatus === 'rejected') rpeGymReason = 'late_rejected';
+            else if (athleteRpeGym.approvalStatus === 'approved' && athleteRpeGym.keepFine) rpeGymReason = 'late_approved_fined';
+            else rpeGymReason = 'late_pending';
+          }
+
+          const failsOnDate = (missingW ? 1 : 0) + (missingR ? 1 : 0) + (missingRGym ? 1 : 0) + (missingH ? 1 : 0);
           failedDates.push({
             date: dateStr,
             missingWellness: missingW,
             wellnessReason,
             missingRpe: missingR,
             rpeReason,
+            missingRpeGym: missingRGym,
+            rpeGymReason,
             missingHydration: missingH,
             subtotalFines: failsOnDate * finePerFault,
           });
@@ -682,7 +747,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         return true;
       });
 
-      const totalFails = missingWellnessCount + missingRpeCount + missingHydrationCount;
+      const totalFails = missingWellnessCount + missingRpeCount + missingRpeGymCount + missingHydrationCount;
       const totalFineEuros = totalFails * finePerFault;
 
       return {
@@ -690,6 +755,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         athleteName: ath.name,
         missingWellnessCount,
         missingRpeCount,
+        missingRpeGymCount,
         missingHydrationCount,
         totalFails,
         totalFineEuros,
@@ -697,7 +763,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         waivedFines,
       };
     }).sort((a, b) => b.totalFineEuros - a.totalFineEuros);
-  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault, finesConfigMap, finesEnabledDays, dayTypesMap, fineExemptions, selectedMonth]);
+  }, [athletes, pastAndTodayFineActiveDates, wellnessList, rpeList, hydrationList, finePerFault, finesConfigMap, finesEnabledDays, dayTypesMap, sessionsMap, fineExemptions, selectedMonth]);
 
   // Overall KPIs
   const totalSquadFinesEuros = useMemo(
@@ -708,10 +774,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const totalPossibleSubmissions = useMemo(() => {
     return pastAndTodayFineActiveDates.reduce((sum, dateStr) => {
       const cfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
-      const activeCount = (cfg.wellness ? 1 : 0) + (cfg.rpe ? 1 : 0) + (cfg.hydration ? 1 : 0);
+      const sess = sessionsMap[dateStr];
+      const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
+      const activeCount = (cfg.wellness ? 1 : 0) + (cfg.rpe ? 1 : 0) + (hasGymLower && (cfg.rpeGym ?? cfg.rpe) ? 1 : 0) + (cfg.hydration ? 1 : 0);
       return sum + (activeCount * athletes.length);
     }, 0);
-  }, [pastAndTodayFineActiveDates, finesConfigMap, finesEnabledDays, dayTypesMap, athletes.length]);
+  }, [pastAndTodayFineActiveDates, finesConfigMap, finesEnabledDays, dayTypesMap, sessionsMap, athletes.length]);
 
   const totalActualFails = useMemo(
     () => complianceReports.reduce((acc, curr) => acc + curr.totalFails, 0),
@@ -749,6 +817,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         const breakdown = [];
         if (rep.missingWellnessCount) breakdown.push(`${rep.missingWellnessCount}x Wellness`);
         if (rep.missingRpeCount) breakdown.push(`${rep.missingRpeCount}x PSE`);
+        if (rep.missingRpeGymCount) breakdown.push(`${rep.missingRpeGymCount}x PSE Ginásio`);
         if (rep.missingHydrationCount) breakdown.push(`${rep.missingHydrationCount}x Pesagem`);
         text += `${breakdown.join(', ')})\n`;
       });
@@ -1085,8 +1154,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               {datesInMonth.map((dStr) => {
                 const dayType = dayTypesMap[dStr] || 'rest';
                 const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
-                const hasFine = isDayAnyFineActive(cfg);
-                const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
+                const sess = sessionsMap[dStr];
+                const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
+                const hasFine = isDayAnyFineActive(cfg, hasGymLower);
+                const allActive = cfg.wellness && cfg.rpe && (!hasGymLower || (cfg.rpeGym ?? cfg.rpe)) && cfg.hydration;
                 const dayNum = dStr.split('-')[2];
                 const isToday = dStr === todayStr;
 
@@ -1114,12 +1185,13 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
                 if (allActive) {
                   badgeText = '💶 TODAS';
-                  badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
+                  badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE${hasGymLower ? ', PSE Ginásio' : ''}). Clica para personalizar.`;
                   badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30 font-bold';
                 } else if (hasFine) {
                   const activeLabels: string[] = [];
                   if (cfg.wellness) activeLabels.push('W');
                   if (cfg.rpe) activeLabels.push('PSE');
+                  if (hasGymLower && (cfg.rpeGym ?? cfg.rpe)) activeLabels.push('GIN');
                   if (cfg.hydration) activeLabels.push('PES');
                   badgeText = `💶 ${activeLabels.join('·')}`;
                   badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
@@ -1177,8 +1249,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
             {datesInMonth.map((dStr) => {
               const dayType = dayTypesMap[dStr] || 'rest';
               const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
-              const hasFine = isDayAnyFineActive(cfg);
-              const allActive = cfg.wellness && cfg.rpe && cfg.hydration;
+              const sess = sessionsMap[dStr];
+              const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
+              const hasFine = isDayAnyFineActive(cfg, hasGymLower);
+              const allActive = cfg.wellness && cfg.rpe && (!hasGymLower || (cfg.rpeGym ?? cfg.rpe)) && cfg.hydration;
               const dayNum = dStr.split('-')[2];
               const isToday = dStr === todayStr;
 
@@ -1206,12 +1280,13 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
               if (allActive) {
                 badgeText = '💶 TODAS';
-                badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE). Clica para personalizar.`;
+                badgeTitle = `${dStr}: Todas as multas ativas (Wellness, Pesagem, PSE${hasGymLower ? ', PSE Ginásio' : ''}). Clica para personalizar.`;
                 badgeStyle = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 hover:bg-emerald-500/30';
               } else if (hasFine) {
                 const activeLabels: string[] = [];
                 if (cfg.wellness) activeLabels.push('W');
                 if (cfg.rpe) activeLabels.push('PSE');
+                if (hasGymLower && (cfg.rpeGym ?? cfg.rpe)) activeLabels.push('GIN');
                 if (cfg.hydration) activeLabels.push('PES');
                 badgeText = `💶 ${activeLabels.join('·')}`;
                 badgeTitle = `${dStr}: Multas ativas em ${activeLabels.join(', ')}. Clica para personalizar.`;
@@ -1285,6 +1360,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                 <th className="py-3 px-3">Atleta</th>
                 <th className="py-3 px-3 text-center">Falta Wellness</th>
                 <th className="py-3 px-3 text-center">Falta PSE</th>
+                <th className="py-3 px-3 text-center">Falta PSE Ginásio 🏋️</th>
                 <th className="py-3 px-3 text-center">Falta Pesagem</th>
                 <th className="py-3 px-3 text-center">Total Falhas</th>
                 <th className="py-3 px-3 text-right">Multa Acumulada (€)</th>
@@ -1320,6 +1396,16 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                         {report.missingRpeCount > 0 ? (
                           <span className="inline-block bg-rose-500/20 text-rose-300 font-extrabold px-2 py-0.5 rounded-full border border-rose-500/30">
                             {report.missingRpeCount}
+                          </span>
+                        ) : (
+                          <span className="text-slate-600">&bull;</span>
+                        )}
+                      </td>
+
+                      <td className="py-3 px-3 text-center">
+                        {report.missingRpeGymCount > 0 ? (
+                          <span className="inline-block bg-purple-500/20 text-purple-300 font-extrabold px-2 py-0.5 rounded-full border border-purple-500/30">
+                            {report.missingRpeGymCount}
                           </span>
                         ) : (
                           <span className="text-slate-600">&bull;</span>
@@ -1371,7 +1457,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                     {/* Expandable Breakdown of Failed Dates & Waived Fines */}
                     {isExpanded && (report.failedDates.length > 0 || (report.waivedFines && report.waivedFines.length > 0)) && (
                       <tr className="bg-slate-900/90">
-                        <td colSpan={7} className="p-4 border-b border-slate-800">
+                        <td colSpan={8} className="p-4 border-b border-slate-800">
                           <div className="space-y-4">
                             {report.failedDates.length > 0 && (
                               <div className="space-y-2">
@@ -1394,112 +1480,152 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                                   )}
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                                  {report.failedDates.map((fd) => (
-                                    <div
-                                      key={fd.date}
-                                      className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-2.5 text-xs space-y-2"
-                                    >
-                                      <div className="flex justify-between items-center font-bold text-slate-200">
-                                        <span>📅 {fd.date}</span>
-                                        <div className="flex items-center space-x-1.5">
-                                          <span className="text-rose-400 font-black">+{fd.subtotalFines.toFixed(2)} €</span>
-                                          <button
-                                            type="button"
-                                            onClick={() => handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'all')}
-                                            className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 text-[10px] font-black transition-all cursor-pointer active:scale-95 shadow-sm"
-                                            title="Eliminar multa desta data"
-                                          >
-                                            <Trash2 className="h-3 w-3" />
-                                            <span>Eliminar</span>
-                                          </button>
+                                  {report.failedDates.map((fd) => {
+                                    const activeFaultsCount =
+                                      (fd.missingWellness ? 1 : 0) +
+                                      (fd.missingRpe ? 1 : 0) +
+                                      (fd.missingRpeGym ? 1 : 0) +
+                                      (fd.missingHydration ? 1 : 0);
+
+                                    return (
+                                      <div
+                                        key={fd.date}
+                                        className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-2.5 text-xs space-y-2"
+                                      >
+                                        <div className="flex justify-between items-center font-bold text-slate-200">
+                                          <span>📅 {fd.date}</span>
+                                          <div className="flex items-center space-x-1.5">
+                                            <span className="text-rose-400 font-black">+{fd.subtotalFines.toFixed(2)} €</span>
+                                            <button
+                                              type="button"
+                                              onClick={() => handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'all')}
+                                              className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 text-[10px] font-black transition-all cursor-pointer active:scale-95 shadow-sm"
+                                              title="Eliminar multa desta data"
+                                            >
+                                              <Trash2 className="h-3 w-3" />
+                                              <span>Eliminar</span>
+                                            </button>
+                                          </div>
+                                        </div>
+                                        <div className="flex flex-wrap gap-1 text-[10px]">
+                                          {fd.missingWellness && (
+                                            <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
+                                              fd.wellnessReason === 'late_pending'
+                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                                : fd.wellnessReason === 'late_approved_fined'
+                                                ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
+                                                : 'bg-rose-500/20 text-rose-300'
+                                            }`}>
+                                              <span>
+                                                {fd.wellnessReason === 'late_pending'
+                                                  ? 'Wellness Fora de Horas (Pendente de Validação)'
+                                                  : fd.wellnessReason === 'late_approved_fined'
+                                                  ? 'Wellness Aceite c/ Multa (Atraso)'
+                                                  : fd.wellnessReason === 'late_rejected'
+                                                  ? 'Wellness Recusado (Não Aceite)'
+                                                  : 'Falta Wellness'}
+                                              </span>
+                                              {activeFaultsCount > 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'wellness');
+                                                  }}
+                                                  className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
+                                                  title="Eliminar apenas multa de Wellness"
+                                                >
+                                                  <X className="h-2.5 w-2.5" />
+                                                </button>
+                                              )}
+                                            </span>
+                                          )}
+                                          {fd.missingRpe && (
+                                            <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
+                                              fd.rpeReason === 'late_pending'
+                                                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                                : fd.rpeReason === 'late_approved_fined'
+                                                ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
+                                                : 'bg-amber-500/20 text-amber-300'
+                                            }`}>
+                                              <span>
+                                                {fd.rpeReason === 'late_pending'
+                                                  ? 'PSE Fora de Horas (Pendente de Validação)'
+                                                  : fd.rpeReason === 'late_approved_fined'
+                                                  ? 'PSE Aceite c/ Multa (Atraso)'
+                                                  : fd.rpeReason === 'late_rejected'
+                                                  ? 'PSE Recusado (Não Aceite)'
+                                                  : 'Falta PSE'}
+                                              </span>
+                                              {activeFaultsCount > 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'rpe');
+                                                  }}
+                                                  className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
+                                                  title="Eliminar apenas multa de PSE"
+                                                >
+                                                  <X className="h-2.5 w-2.5" />
+                                                </button>
+                                              )}
+                                            </span>
+                                          )}
+                                          {fd.missingRpeGym && (
+                                            <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
+                                              fd.rpeGymReason === 'late_pending'
+                                                ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                                : fd.rpeGymReason === 'late_approved_fined'
+                                                ? 'bg-purple-500/25 text-purple-200 border border-purple-500/40'
+                                                : 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                                            }`}>
+                                              <span>
+                                                {fd.rpeGymReason === 'late_pending'
+                                                  ? 'PSE Ginásio Fora de Horas (Pendente)'
+                                                  : fd.rpeGymReason === 'late_approved_fined'
+                                                  ? 'PSE Ginásio Aceite c/ Multa (Atraso)'
+                                                  : fd.rpeGymReason === 'late_rejected'
+                                                  ? 'PSE Ginásio Recusado (Não Aceite)'
+                                                  : 'Falta PSE Ginásio 🏋️'}
+                                              </span>
+                                              {activeFaultsCount > 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'rpe_gym');
+                                                  }}
+                                                  className="ml-1 p-0.5 rounded hover:bg-purple-500/40 text-slate-300 hover:text-white"
+                                                  title="Eliminar apenas multa de PSE de Ginásio"
+                                                >
+                                                  <X className="h-2.5 w-2.5" />
+                                                </button>
+                                              )}
+                                            </span>
+                                          )}
+                                          {fd.missingHydration && (
+                                            <span className="inline-flex items-center space-x-1 bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-bold">
+                                              <span>Falta Pesagem</span>
+                                              {activeFaultsCount > 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'hydration');
+                                                  }}
+                                                  className="ml-1 p-0.5 rounded hover:bg-blue-500/40 text-slate-300 hover:text-white"
+                                                  title="Eliminar apenas multa de Pesagem"
+                                                >
+                                                  <X className="h-2.5 w-2.5" />
+                                                </button>
+                                              )}
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
-                                      <div className="flex flex-wrap gap-1 text-[10px]">
-                                        {fd.missingWellness && (
-                                          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
-                                            fd.wellnessReason === 'late_pending'
-                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                              : fd.wellnessReason === 'late_approved_fined'
-                                              ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
-                                              : 'bg-rose-500/20 text-rose-300'
-                                          }`}>
-                                            <span>
-                                              {fd.wellnessReason === 'late_pending'
-                                                ? 'Wellness Fora de Horas (Pendente de Validação)'
-                                                : fd.wellnessReason === 'late_approved_fined'
-                                                ? 'Wellness Aceite c/ Multa (Atraso)'
-                                                : fd.wellnessReason === 'late_rejected'
-                                                ? 'Wellness Recusado (Não Aceite)'
-                                                : 'Falta Wellness'}
-                                            </span>
-                                            {(fd.missingRpe || fd.missingHydration) && (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'wellness');
-                                                }}
-                                                className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
-                                                title="Eliminar apenas multa de Wellness"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </button>
-                                            )}
-                                          </span>
-                                        )}
-                                        {fd.missingRpe && (
-                                          <span className={`inline-flex items-center space-x-1 px-2 py-0.5 rounded-full font-bold ${
-                                            fd.rpeReason === 'late_pending'
-                                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                              : fd.rpeReason === 'late_approved_fined'
-                                              ? 'bg-amber-500/25 text-amber-200 border border-amber-500/40'
-                                              : 'bg-amber-500/20 text-amber-300'
-                                          }`}>
-                                            <span>
-                                              {fd.rpeReason === 'late_pending'
-                                                ? 'PSE Fora de Horas (Pendente de Validação)'
-                                                : fd.rpeReason === 'late_approved_fined'
-                                                ? 'PSE Aceite c/ Multa (Atraso)'
-                                                : fd.rpeReason === 'late_rejected'
-                                                ? 'PSE Recusado (Não Aceite)'
-                                                : 'Falta PSE'}
-                                            </span>
-                                            {(fd.missingWellness || fd.missingHydration) && (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'rpe');
-                                                }}
-                                                className="ml-1 p-0.5 rounded hover:bg-rose-500/40 text-slate-300 hover:text-white"
-                                                title="Eliminar apenas multa de PSE"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </button>
-                                            )}
-                                          </span>
-                                        )}
-                                        {fd.missingHydration && (
-                                          <span className="inline-flex items-center space-x-1 bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-full font-bold">
-                                            <span>Falta Pesagem</span>
-                                            {(fd.missingWellness || fd.missingRpe) && (
-                                              <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleEliminateFine(report.athleteId, report.athleteName, fd.date, 'hydration');
-                                                }}
-                                                className="ml-1 p-0.5 rounded hover:bg-blue-500/40 text-slate-300 hover:text-white"
-                                                title="Eliminar apenas multa de Pesagem"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </button>
-                                            )}
-                                          </span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               </div>
                             )}
@@ -1538,7 +1664,15 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                                           </span>
                                         </div>
                                         <p className="text-[10px] text-slate-400">
-                                          {wf.type === 'wellness' ? 'Falta Wellness' : wf.type === 'rpe' ? 'Falta PSE' : wf.type === 'hydration' ? 'Falta Pesagem' : 'Todas as Faltas'}
+                                          {wf.type === 'wellness'
+                                            ? 'Falta Wellness'
+                                            : wf.type === 'rpe'
+                                            ? 'Falta PSE'
+                                            : wf.type === 'rpe_gym'
+                                            ? 'Falta PSE Ginásio 🏋️'
+                                            : wf.type === 'hydration'
+                                            ? 'Falta Pesagem'
+                                            : 'Todas as Faltas'}
                                         </p>
                                       </div>
                                       <button
@@ -1751,28 +1885,28 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   type="button"
-                  onClick={() => setModalFineConfig({ wellness: false, rpe: false, hydration: false })}
+                  onClick={() => setModalFineConfig({ wellness: false, rpe: false, rpeGym: false, hydration: false })}
                   className="px-2.5 py-2 text-xs font-black rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-all text-center"
                 >
                   🚫 Isentar Dia
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, hydration: true })}
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, rpeGym: true, hydration: true })}
                   className="px-2.5 py-2 text-xs font-black rounded-xl border border-emerald-500/50 bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 transition-all text-center"
                 >
                   💶 Todas Multas
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalFineConfig({ wellness: true, rpe: false, hydration: false })}
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: false, rpeGym: false, hydration: false })}
                   className="px-2.5 py-2 text-xs font-black rounded-xl border border-cyan-500/50 bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 transition-all text-center"
                 >
                   🏖️ Só Wellness
                 </button>
                 <button
                   type="button"
-                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, hydration: false })}
+                  onClick={() => setModalFineConfig({ wellness: true, rpe: true, rpeGym: false, hydration: false })}
                   className="px-2.5 py-2 text-xs font-black rounded-xl border border-amber-500/50 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 transition-all text-center"
                 >
                   🏆 Jogo (W+PSE)
@@ -1860,7 +1994,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                 </span>
               </div>
 
-              {/* 3. PSE / RPE Toggle */}
+              {/* 3. PSE / RPE Campo Toggle */}
               <div
                 onClick={() => setModalFineConfig((prev) => ({ ...prev, rpe: !prev.rpe }))}
                 className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
@@ -1880,9 +2014,9 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                     <Dumbbell className="h-5 w-5" />
                   </div>
                   <div>
-                    <h4 className="text-xs font-black text-slate-100">PSE / RPE (Perceção de Esforço Pós-Treino)</h4>
+                    <h4 className="text-xs font-black text-slate-100">PSE / RPE Campo (Treino / Jogo)</h4>
                     <p className="text-[11px] text-slate-400">
-                      Escala de Borg (0 a 10) e cansaço pós-treino / jogo.
+                      Escala de Borg (0 a 10) e cansaço pós-treino de campo / jogo.
                     </p>
                   </div>
                 </div>
@@ -1896,6 +2030,53 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                   {modalFineConfig.rpe ? '💶 Dá Multa' : '🚫 Isento'}
                 </span>
               </div>
+
+              {/* 4. PSE Ginásio (Inferiores) Toggle - apenas se houver ginásio agendado */}
+              {(() => {
+                const s = configuringDate ? sessionsMap[configuringDate] : null;
+                const hasGymLowerConfiguring = Boolean(s && s.dayType !== 'rest' && s.complementaryWork?.lowerBody === true);
+                if (!hasGymLowerConfiguring) return null;
+
+                const isGymFineActive = Boolean(modalFineConfig.rpeGym ?? modalFineConfig.rpe);
+
+                return (
+                  <div
+                    onClick={() => setModalFineConfig((prev) => ({ ...prev, rpeGym: !isGymFineActive }))}
+                    className={`flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer select-none ${
+                      isGymFineActive
+                        ? 'border-purple-500/60 bg-purple-950/20 shadow-sm shadow-purple-500/10'
+                        : 'border-slate-800 bg-dark-surface/50 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-xl font-bold ${
+                          isGymFineActive
+                            ? 'bg-purple-500/20 text-purple-400'
+                            : 'bg-slate-800 text-slate-500'
+                        }`}
+                      >
+                        <Dumbbell className="h-5 w-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-100">PSE Ginásio 🏋️ (Membros Inferiores)</h4>
+                        <p className="text-[11px] text-slate-400">
+                          Questionário PSE após a sessão de força / ginásio de inferiores.
+                        </p>
+                      </div>
+                    </div>
+                    <span
+                      className={`px-2.5 py-1 text-[10px] font-black rounded-full border uppercase ${
+                        isGymFineActive
+                          ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                          : 'bg-slate-800 text-slate-400 border-slate-700'
+                      }`}
+                    >
+                      {isGymFineActive ? '💶 Dá Multa' : '🚫 Isento'}
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Quick Action: Waive all for squad on this specific date */}
@@ -2067,7 +2248,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                   </div>
                 </div>
 
-                {/* Option 2: PSE */}
+                {/* Option 2: PSE Campo */}
                 <div
                   onClick={() => setWaiveQuestionnaire('rpe')}
                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
@@ -2080,12 +2261,30 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                     <Dumbbell className="h-4 w-4" />
                   </div>
                   <div className="truncate">
-                    <p className="text-xs font-black text-slate-100">PSE / RPE</p>
-                    <p className="text-[10px] text-slate-400 truncate">Perceção Pós-Treino/Jogo</p>
+                    <p className="text-xs font-black text-slate-100">PSE Campo</p>
+                    <p className="text-[10px] text-slate-400 truncate">Perceção Treino/Jogo</p>
                   </div>
                 </div>
 
-                {/* Option 3: Hydration */}
+                {/* Option 3: PSE Ginásio */}
+                <div
+                  onClick={() => setWaiveQuestionnaire('rpe_gym')}
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                    waiveQuestionnaire === 'rpe_gym'
+                      ? 'border-purple-500 bg-purple-950/40 text-purple-200 shadow-md ring-1 ring-purple-500/50'
+                      : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                  }`}
+                >
+                  <div className={`p-2 rounded-lg ${waiveQuestionnaire === 'rpe_gym' ? 'bg-purple-500/20 text-purple-400' : 'bg-slate-800 text-slate-500'}`}>
+                    <Dumbbell className="h-4 w-4 text-purple-400" />
+                  </div>
+                  <div className="truncate">
+                    <p className="text-xs font-black text-slate-100">PSE Ginásio 🏋️</p>
+                    <p className="text-[10px] text-slate-400 truncate">Membros Inferiores</p>
+                  </div>
+                </div>
+
+                {/* Option 4: Hydration */}
                 <div
                   onClick={() => setWaiveQuestionnaire('hydration')}
                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
@@ -2103,10 +2302,10 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                   </div>
                 </div>
 
-                {/* Option 4: All */}
+                {/* Option 5: All */}
                 <div
                   onClick={() => setWaiveQuestionnaire('all')}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 ${
+                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center space-x-3 sm:col-span-2 ${
                     waiveQuestionnaire === 'all'
                       ? 'border-amber-500 bg-amber-950/40 text-amber-200 shadow-md ring-1 ring-amber-500/50'
                       : 'border-slate-800 bg-dark-surface/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
@@ -2117,7 +2316,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
                   </div>
                   <div className="truncate">
                     <p className="text-xs font-black text-slate-100">Todos os Questionários</p>
-                    <p className="text-[10px] text-slate-400 truncate">Isenção 100% integral</p>
+                    <p className="text-[10px] text-slate-400 truncate">Isenção 100% integral deste dia</p>
                   </div>
                 </div>
               </div>

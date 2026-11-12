@@ -951,7 +951,8 @@ const FINES_ENABLED_DAYS_KEY = 'femperf_fines_enabled_days';
 
 export interface DayFineConfig {
   wellness: boolean;   // Aplica multa por falta de Wellness
-  rpe: boolean;        // Aplica multa por falta de PSE (RPE)
+  rpe: boolean;        // Aplica multa por falta de PSE (Campo)
+  rpeGym?: boolean;    // Aplica multa por falta de PSE (Ginásio Inferiores)
   hydration: boolean;  // Aplica multa por falta de Pesagem (Pré/Pós)
 }
 
@@ -963,6 +964,7 @@ export function normalizeDayFineConfig(
     return {
       wellness: rawVal,
       rpe: rawVal,
+      rpeGym: rawVal,
       hydration: rawVal,
     };
   }
@@ -970,6 +972,7 @@ export function normalizeDayFineConfig(
     return {
       wellness: rawVal.wellness ?? true,
       rpe: rawVal.rpe ?? true,
+      rpeGym: rawVal.rpeGym ?? rawVal.rpe ?? true,
       hydration: rawVal.hydration ?? true,
     };
   }
@@ -977,12 +980,13 @@ export function normalizeDayFineConfig(
   return {
     wellness: isActivity,
     rpe: isActivity,
+    rpeGym: isActivity,
     hydration: isActivity,
   };
 }
 
-export function isDayAnyFineActive(config: DayFineConfig): boolean {
-  return !!(config.wellness || config.rpe || config.hydration);
+export function isDayAnyFineActive(config: DayFineConfig, hasGymLower?: boolean): boolean {
+  return !!(config.wellness || config.rpe || (hasGymLower ? config.rpeGym : false) || config.hydration);
 }
 
 export function getStoredFinesEnabledDays(): Record<string, boolean | DayFineConfig> {
@@ -1050,14 +1054,17 @@ export async function saveFineExemptions(exemptions: IndividualFineExemption[]):
       if (ex.type === 'all') {
         current[`${cleanAthId}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
         current[`${cleanAthId}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+        current[`${cleanAthId}_${ex.date}_rpe_gym`] = { ...ex, type: 'rpe_gym' };
         current[`${cleanAthId}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
         if (cleanAthName) {
           current[`${cleanAthName}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
           current[`${cleanAthName}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+          current[`${cleanAthName}_${ex.date}_rpe_gym`] = { ...ex, type: 'rpe_gym' };
           current[`${cleanAthName}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
           if (slug) {
             current[`${slug}_${ex.date}_wellness`] = { ...ex, type: 'wellness' };
             current[`${slug}_${ex.date}_rpe`] = { ...ex, type: 'rpe' };
+            current[`${slug}_${ex.date}_rpe_gym`] = { ...ex, type: 'rpe_gym' };
             current[`${slug}_${ex.date}_hydration`] = { ...ex, type: 'hydration' };
           }
         }
@@ -1094,7 +1101,7 @@ export function saveFineExemption(exemption: IndividualFineExemption): Promise<b
  */
 export async function waiveFineForAllAthletes(
   date: string,
-  type: 'wellness' | 'rpe' | 'hydration' | 'all'
+  type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all'
 ): Promise<{ success: boolean; athletesCount: number; date: string; type: string }> {
   if (typeof window === 'undefined') return { success: false, athletesCount: 0, date, type };
   try {
@@ -1110,6 +1117,7 @@ export async function waiveFineForAllAthletes(
     const updatedCfg: DayFineConfig = {
       wellness: (type === 'wellness' || type === 'all') ? false : currentCfg.wellness,
       rpe: (type === 'rpe' || type === 'all') ? false : currentCfg.rpe,
+      rpeGym: (type === 'rpe_gym' || type === 'all') ? false : (currentCfg.rpeGym ?? currentCfg.rpe),
       hydration: (type === 'hydration' || type === 'all') ? false : currentCfg.hydration,
     };
     currentDays[date] = updatedCfg;
@@ -1128,7 +1136,16 @@ export async function waiveFineForAllAthletes(
     if (type === 'rpe' || type === 'all') {
       const rList = getRPELocally();
       rList.forEach((r) => {
-        if (r.date === date && r.keepFine) {
+        if (r.date === date && r.keepFine && (r.sessionType || 'field') === 'field') {
+          r.keepFine = false;
+          saveRPELocally(r);
+        }
+      });
+    }
+    if (type === 'rpe_gym' || type === 'all') {
+      const rList = getRPELocally();
+      rList.forEach((r) => {
+        if (r.date === date && r.keepFine && r.sessionType === 'gym_lower') {
           r.keepFine = false;
           saveRPELocally(r);
         }
@@ -1143,7 +1160,7 @@ export async function waiveFineForAllAthletes(
       const slug = cleanName.toLowerCase().replace(/\s+/g, '-');
 
       const typesToSet = type === 'all'
-        ? (['wellness', 'rpe', 'hydration', 'all'] as const)
+        ? (['wellness', 'rpe', 'rpe_gym', 'hydration', 'all'] as const)
         : ([type] as const);
 
       typesToSet.forEach((t) => {
@@ -1194,7 +1211,7 @@ export async function waiveFineForAllAthletes(
   }
 }
 
-export async function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'hydration' | 'all'): Promise<boolean> {
+export async function removeFineExemption(athleteId: string, date: string, type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all'): Promise<boolean> {
   if (typeof window === 'undefined') return false;
   try {
     const current = getStoredFineExemptions();
@@ -1243,7 +1260,7 @@ export function isFineExempt(
   athleteId: string,
   athleteName: string,
   date: string,
-  type: 'wellness' | 'rpe' | 'hydration'
+  type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration'
 ): boolean {
   if (!exemptions || typeof exemptions !== 'object') return false;
 

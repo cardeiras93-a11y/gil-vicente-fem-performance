@@ -112,7 +112,7 @@ export interface IndividualFineExemption {
   athleteId: string;
   athleteName: string;
   date: string; // YYYY-MM-DD
-  type: 'wellness' | 'rpe' | 'hydration' | 'all';
+  type: 'wellness' | 'rpe' | 'rpe_gym' | 'hydration' | 'all';
   reason?: string;
   waivedAt: string; // ISO date
 }
@@ -123,6 +123,8 @@ export interface FailedDateDetail {
   wellnessReason?: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined';
   missingRpe: boolean;
   rpeReason?: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined';
+  missingRpeGym?: boolean;
+  rpeGymReason?: 'not_submitted' | 'late_pending' | 'late_rejected' | 'late_approved_fined';
   missingHydration: boolean;
   subtotalFines: number;
 }
@@ -132,6 +134,7 @@ export interface AthleteComplianceReport {
   athleteName: string;
   missingWellnessCount: number;
   missingRpeCount: number;
+  missingRpeGymCount: number;
   missingHydrationCount: number;
   totalFails: number;
   totalFineEuros: number;
