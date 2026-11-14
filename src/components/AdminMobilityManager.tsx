@@ -84,8 +84,8 @@ export const AdminMobilityManager: React.FC = () => {
 
   const filteredPlans = useMemo(() => {
     if (groupFilter === 'all') return plans;
-    if (groupFilter === 'anamnese') return plans.filter((p) => p.id.startsWith('prev_'));
-    if (groupFilter === 'ginasio') return plans.filter((p) => !p.id.startsWith('prev_'));
+    if (groupFilter === 'anamnese') return plans.filter((p) => p.id.startsWith('prev_') || p.id.startsWith('plan_indiv_'));
+    if (groupFilter === 'ginasio') return plans.filter((p) => !p.id.startsWith('prev_') && !p.id.startsWith('plan_indiv_'));
     if (groupFilter === 'rolo') return plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
     return plans.filter((p) => p.group === groupFilter);
   }, [plans, groupFilter]);
@@ -100,8 +100,8 @@ export const AdminMobilityManager: React.FC = () => {
 
   // Counts for filter pills
   const allCount = plans.length;
-  const anamneseCount = plans.filter((p) => p.id.startsWith('prev_')).length;
-  const ginasioCount = plans.filter((p) => !p.id.startsWith('prev_')).length;
+  const anamneseCount = plans.filter((p) => p.id.startsWith('prev_') || p.id.startsWith('plan_indiv_')).length;
+  const ginasioCount = plans.filter((p) => !p.id.startsWith('prev_') && !p.id.startsWith('plan_indiv_')).length;
   const roloCount = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo')).length;
   const supCount = plans.filter((p) => p.group === 'superiores').length;
   const infCount = plans.filter((p) => p.group === 'inferiores').length;
@@ -117,6 +117,25 @@ export const AdminMobilityManager: React.FC = () => {
     if (directAsgn !== undefined) {
       return Boolean(directAsgn.active);
     }
+
+    const cleanName = (ath.name || '').trim().toUpperCase();
+    const isIzzy = cleanName.includes('IZZY') || ath.id === 'ath-28' || ath.id === 'ath-custom-1790842877064';
+
+    if (isIzzy) {
+      const alt1 = assignments[`athlete_ath-28_${activePlan.id}`];
+      if (alt1 !== undefined) return Boolean(alt1.active);
+      const alt2 = assignments[`athlete_ath-custom-1790842877064_${activePlan.id}`];
+      if (alt2 !== undefined) return Boolean(alt2.active);
+    }
+
+    // Check if dedicated individual plan
+    if (isIzzy && (activePlan.id === 'plan_indiv_ath-28_izzy' || activePlan.id === 'ativacao_izzy_tendao_aquiles')) {
+      return true;
+    }
+    if (activePlan.id.startsWith('plan_indiv_') && activePlan.id.includes(ath.id)) {
+      return true;
+    }
+
     // 2. Position assignment
     const isGk = ath.position === 'GR' || isGoalkeeper(ath.name);
     if (isGk && isGkPositionAssigned) return true;
@@ -154,7 +173,14 @@ export const AdminMobilityManager: React.FC = () => {
   const handleToggleAthlete = (ath: Athlete) => {
     const currentlyAssigned = isAthleteAssigned(ath);
     const nextState = !currentlyAssigned;
-    const updated = toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id, nextState);
+    let updated = toggleAthletePlanAssignment(ath.id, ath.name, activePlan.id, nextState);
+
+    const cleanName = (ath.name || '').trim().toUpperCase();
+    if (cleanName.includes('IZZY') || ath.id === 'ath-28' || ath.id === 'ath-custom-1790842877064') {
+      const altId = ath.id === 'ath-28' ? 'ath-custom-1790842877064' : 'ath-28';
+      updated = toggleAthletePlanAssignment(altId, ath.name, activePlan.id, nextState);
+    }
+
     setAssignments({ ...updated });
     setFeedback(
       nextState

@@ -267,6 +267,8 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
     }
 
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(updatedList));
+    localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(updatedList));
+    localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(updatedList));
 
     secureFetch('/api/credentials', {
       method: 'POST',
@@ -288,6 +290,9 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
     if (!raw) {
       raw = localStorage.getItem('femperf_athlete_plan_assignments_v3');
     }
+    if (!raw) {
+      raw = localStorage.getItem('femperf_athlete_plan_assignments_v1');
+    }
     if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
@@ -308,6 +313,8 @@ export function saveAthletePlanAssignments(assignments: Record<string, AthletePl
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(assignments));
 
     secureFetch('/api/credentials', {
       method: 'POST',
@@ -473,6 +480,23 @@ export function toggleAllSquadPlanAssignment(
   return current;
 }
 
+export function getCandidateAthleteIds(athlete: Athlete | null): string[] {
+  if (!athlete) return [];
+  const ids = new Set<string>();
+  if (athlete.id) {
+    ids.add(athlete.id);
+    ids.add(athlete.id.toLowerCase());
+  }
+  const cleanName = (athlete.name || '').trim().toUpperCase();
+  if (cleanName === 'IZZY' || cleanName.includes('IZZY') || athlete.id === 'ath-28' || athlete.id === 'ath-custom-1790842877064') {
+    ids.add('ath-28');
+    ids.add('ath-custom-1790842877064');
+    ids.add('IZZY');
+    ids.add('izzy');
+  }
+  return Array.from(ids);
+}
+
 /**
  * Returns all active plans assigned to an athlete (direct athlete match, position match, or 'all').
  * For Goalkeepers (GR), the baseline GK mobility plan is always included unless explicitly disabled.
@@ -484,14 +508,40 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
 
   const isGk = athlete.position === 'GR' || (athlete.name ? isGoalkeeper(athlete.name) : false);
   const position = isGk ? 'GR' : 'Campo';
+  const cleanName = (athlete.name || '').trim().toUpperCase();
+  const candidateIds = getCandidateAthleteIds(athlete);
+  const isIzzy = cleanName.includes('IZZY') || candidateIds.includes('ath-28') || candidateIds.includes('ath-custom-1790842877064');
 
   const seenIds = new Set<string>();
 
   const assignedPlans = allPlans.filter((plan) => {
     if (plan.id === 'mobility-gk-pre-training') return false;
 
-    // 1. Direct explicit athlete assignment takes priority
-    const direct = assignments[`athlete_${athlete.id}_${plan.id}`];
+    // 1. Direct explicit athlete assignment across candidate IDs & targetName
+    let direct: AthletePlanAssignment | undefined;
+    for (const candId of candidateIds) {
+      const match = assignments[`athlete_${candId}_${plan.id}`];
+      if (match !== undefined) {
+        direct = match;
+        if (match.active) break;
+      }
+    }
+
+    if (!direct && cleanName) {
+      for (const asgn of Object.values(assignments)) {
+        if (
+          asgn &&
+          asgn.planId === plan.id &&
+          asgn.targetType === 'athlete' &&
+          asgn.targetName &&
+          asgn.targetName.trim().toUpperCase() === cleanName
+        ) {
+          direct = asgn;
+          if (asgn.active) break;
+        }
+      }
+    }
+
     if (direct !== undefined) {
       if (direct.active && !seenIds.has(plan.id)) {
         seenIds.add(plan.id);
@@ -520,13 +570,32 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
       return false;
     }
 
+    // 4. Dedicated individual plans: automatic fallback if not explicitly disabled
+    const isIzzyDedicatedPlan = isIzzy && (plan.id === 'plan_indiv_ath-28_izzy' || plan.id === 'ativacao_izzy_tendao_aquiles' || plan.id.includes('izzy'));
+    const isNamedDedicatedPlan = plan.id.startsWith('plan_indiv_') && candidateIds.some((cid) => plan.id.includes(cid));
+    const isTitleDedicatedPlan = cleanName.length > 2 && plan.titlePt.toUpperCase().includes(cleanName);
+
+    if (isIzzyDedicatedPlan || isNamedDedicatedPlan || isTitleDedicatedPlan) {
+      if (!seenIds.has(plan.id)) {
+        seenIds.add(plan.id);
+        return true;
+      }
+    }
+
     return false;
   });
 
   // Fallback for Goalkeepers: Always ensure the GK mobility plan is included if not explicitly disabled
   if (isGk && !seenIds.has('mobilidade_pre_treino_gr')) {
-    const direct = assignments[`athlete_${athlete.id}_mobilidade_pre_treino_gr`];
-    if (!direct || direct.active !== false) {
+    let directGkDisabled = false;
+    for (const candId of candidateIds) {
+      const direct = assignments[`athlete_${candId}_mobilidade_pre_treino_gr`];
+      if (direct && direct.active === false) {
+        directGkDisabled = true;
+        break;
+      }
+    }
+    if (!directGkDisabled) {
       const gkPlan = allPlans.find((p) => p.id === 'mobilidade_pre_treino_gr');
       if (gkPlan) {
         assignedPlans.unshift(gkPlan);
@@ -535,10 +604,15 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
     }
   }
 
-  // Prioritize individual dedicated plans (e.g. plan_indiv_ath-10_magui) so they always appear first as default!
+  // Prioritize dedicated individual plans so they always appear first and default selected!
   assignedPlans.sort((a, b) => {
-    const aIsIndiv = (a.id.startsWith('plan_indiv_') || (athlete && a.id.includes(athlete.id))) ? 1 : 0;
-    const bIsIndiv = (b.id.startsWith('plan_indiv_') || (athlete && b.id.includes(athlete.id))) ? 1 : 0;
+    const aIsIzzy = isIzzy && (a.id === 'plan_indiv_ath-28_izzy' || a.id === 'ativacao_izzy_tendao_aquiles' || a.id.includes('izzy'));
+    const bIsIzzy = isIzzy && (b.id === 'plan_indiv_ath-28_izzy' || b.id === 'ativacao_izzy_tendao_aquiles' || b.id.includes('izzy'));
+    if (aIsIzzy && !bIsIzzy) return -1;
+    if (!aIsIzzy && bIsIzzy) return 1;
+
+    const aIsIndiv = a.id.startsWith('plan_indiv_') || candidateIds.some((cid) => a.id.includes(cid)) ? 1 : 0;
+    const bIsIndiv = b.id.startsWith('plan_indiv_') || candidateIds.some((cid) => b.id.includes(cid)) ? 1 : 0;
     return bIsIndiv - aIsIndiv;
   });
 
@@ -555,7 +629,10 @@ export function isMobilityCompletedToday(athleteId: string, planId: string, date
     const raw = localStorage.getItem(MOBILITY_DAILY_COMPLETIONS_KEY);
     if (!raw) return false;
     const parsed: Record<string, boolean> = JSON.parse(raw);
-    return Boolean(parsed[`${athleteId}_${planId}_${dStr}`]);
+    if (parsed[`${athleteId}_${planId}_${dStr}`]) return true;
+    if (athleteId === 'ath-28' && parsed[`ath-custom-1790842877064_${planId}_${dStr}`]) return true;
+    if (athleteId === 'ath-custom-1790842877064' && parsed[`ath-28_${planId}_${dStr}`]) return true;
+    return false;
   } catch {
     return false;
   }
@@ -571,8 +648,12 @@ export function toggleMobilityCompletedToday(athleteId: string, planId: string, 
     const nextState = !parsed[key];
     if (nextState) {
       parsed[key] = true;
+      if (athleteId === 'ath-28') parsed[`ath-custom-1790842877064_${planId}_${dStr}`] = true;
+      if (athleteId === 'ath-custom-1790842877064') parsed[`ath-28_${planId}_${dStr}`] = true;
     } else {
       delete parsed[key];
+      if (athleteId === 'ath-28') delete parsed[`ath-custom-1790842877064_${planId}_${dStr}`];
+      if (athleteId === 'ath-custom-1790842877064') delete parsed[`ath-28_${planId}_${dStr}`];
     }
     localStorage.setItem(MOBILITY_DAILY_COMPLETIONS_KEY, JSON.stringify(parsed));
     window.dispatchEvent(new Event('femperf_mobility_completed'));

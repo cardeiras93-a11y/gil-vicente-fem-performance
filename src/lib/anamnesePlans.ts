@@ -4957,6 +4957,39 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
     "notes": "Protocolo Clínico Tendinopatia de Aquiles: Isometria de Sóleo a 90° (analgesia), isometria de gastrocnémio, excêntrico lento no solo plano e mobilidade talocrural + Core Seg & Qua."
+  },
+  "athlete_ath-custom-1790842877064_plan_indiv_ath-28_izzy": {
+    "id": "athlete_ath-custom-1790842877064_plan_indiv_ath-28_izzy",
+    "targetType": "athlete",
+    "targetId": "ath-custom-1790842877064",
+    "targetName": "IZZY",
+    "planId": "plan_indiv_ath-28_izzy",
+    "assignedAt": "2026-11-11T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Protocolo Clínico Tendinopatia de Aquiles: Isometria de Sóleo a 90° (analgesia), isometria de gastrocnémio, excêntrico lento no solo plano e mobilidade talocrural + Core Seg & Qua."
+  },
+  "athlete_ath-28_ativacao_izzy_tendao_aquiles": {
+    "id": "athlete_ath-28_ativacao_izzy_tendao_aquiles",
+    "targetType": "athlete",
+    "targetId": "ath-28",
+    "targetName": "IZZY",
+    "planId": "ativacao_izzy_tendao_aquiles",
+    "assignedAt": "2026-11-11T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Plano de Ativação — IZZY (Tendão de Aquiles & Analgesia Isométrica)."
+  },
+  "athlete_ath-custom-1790842877064_ativacao_izzy_tendao_aquiles": {
+    "id": "athlete_ath-custom-1790842877064_ativacao_izzy_tendao_aquiles",
+    "targetType": "athlete",
+    "targetId": "ath-custom-1790842877064",
+    "targetName": "IZZY",
+    "planId": "ativacao_izzy_tendao_aquiles",
+    "assignedAt": "2026-11-11T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Plano de Ativação — IZZY (Tendão de Aquiles & Analgesia Isométrica)."
   }
 };
 
