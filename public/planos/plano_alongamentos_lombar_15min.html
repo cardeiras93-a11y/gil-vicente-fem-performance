@@ -439,28 +439,30 @@
       </div>
     </div>
 
-    <!-- BANNER DE INDIVIDUALIZAÇÃO DE VOLUME & DOSAGEM POR ATLETA (PT) -->
-    <div id="planIndividualizationBannerPT" class="plan-individualization-banner flex items-center justify-between gap-2 bg-gradient-to-r from-emerald-50/90 via-slate-50 to-rose-50/90 border border-emerald-300/80 rounded-lg py-1 px-3 text-[10px] shadow-2xs">
-      <div class="flex items-center gap-1.5 shrink-0">
-        <span class="px-1.5 py-0.5 rounded bg-emerald-800 text-white font-black text-[8.5px] uppercase tracking-wider flex items-center gap-1">
-          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-          Individualização
+    <!-- SELETOR DINÂMICO DE PERFIL DE VOLUME / CARGA (PT) -->
+    <div id="loadProfileSwitcherPT" class="load-profile-switcher flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-slate-50 border border-slate-200/90 rounded-lg py-1 px-2.5 text-[10px] shadow-2xs">
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1 shrink-0 mr-1">
+          <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          Séries & Volume por Atleta:
         </span>
+        <button type="button" onclick="setPlanVolumeMode('standard')" id="btnVolStandardPT" class="vol-btn px-2.5 py-0.5 rounded-full font-extrabold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700">
+          <span>● Padrão (Base)</span>
+        </button>
+        <button type="button" onclick="setPlanVolumeMode('overload')" id="btnVolOverloadPT" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50">
+          <span>▲ Sobrecarga (+1 Série)</span>
+          <span class="text-[8.5px] opacity-75 font-semibold">• &lt;45 min (Verónica, Nicole, Tita)</span>
+        </button>
+        <button type="button" onclick="setPlanVolumeMode('deload')" id="btnVolDeloadPT" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50">
+          <span>▼ Gestão (-1 Série)</span>
+          <span class="text-[8.5px] opacity-75 font-semibold">• &gt;70 min (Izzy, Sara T.)</span>
+        </button>
       </div>
-      <div class="flex items-center gap-2.5 text-[9.5px] leading-tight flex-1 justify-between overflow-hidden">
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-emerald-950 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-300/80 shrink-0">▲ +1 Série (Sobrecarga):</span>
-          <span id="planOverloadTextPT" class="text-slate-800 font-bold truncate"></span>
-        </div>
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-blue-950 bg-blue-100/90 px-1.5 py-0.5 rounded border border-blue-300/80 shrink-0">● Padrão:</span>
-          <span id="planStandardTextPT" class="text-slate-800 font-bold truncate"></span>
-        </div>
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-rose-950 bg-rose-100/90 px-1.5 py-0.5 rounded border border-rose-300/80 shrink-0">▼ -1 Série (Gestão):</span>
-          <span id="planDeloadTextPT" class="text-slate-800 font-bold truncate"></span>
-        </div>
+      <div id="volumeStatusPillPT" class="hidden sm:inline-flex items-center gap-1 text-[9px] font-black text-slate-500 uppercase tracking-wider shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        <span>Modo Padrão Ativo</span>
       </div>
+    </div>
     </div>
 
     <!-- GRELHA PRINCIPAL 2x2 HORIZONTAL (PT) -->
@@ -548,28 +550,30 @@
       </div>
     </div>
 
-    <!-- BANNER DE INDIVIDUALIZAÇÃO DE VOLUME & DOSAGEM POR ATLETA (ENG) -->
-    <div id="planIndividualizationBannerENG" class="plan-individualization-banner flex items-center justify-between gap-2 bg-gradient-to-r from-emerald-50/90 via-slate-50 to-rose-50/90 border border-emerald-300/80 rounded-lg py-1 px-3 text-[10px] shadow-2xs">
-      <div class="flex items-center gap-1.5 shrink-0">
-        <span class="px-1.5 py-0.5 rounded bg-emerald-800 text-white font-black text-[8.5px] uppercase tracking-wider flex items-center gap-1">
-          <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-          Individualization
+    <!-- DYNAMIC VOLUME PROFILE SWITCHER (ENG) -->
+    <div id="loadProfileSwitcherENG" class="load-profile-switcher flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-slate-50 border border-slate-200/90 rounded-lg py-1 px-2.5 text-[10px] shadow-2xs">
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <span class="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1 shrink-0 mr-1">
+          <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          Sets & Volume by Player:
         </span>
+        <button type="button" onclick="setPlanVolumeMode('standard')" id="btnVolStandardENG" class="vol-btn px-2.5 py-0.5 rounded-full font-extrabold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700">
+          <span>● Baseline Volume</span>
+        </button>
+        <button type="button" onclick="setPlanVolumeMode('overload')" id="btnVolOverloadENG" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50">
+          <span>▲ Overload (+1 Set)</span>
+          <span class="text-[8.5px] opacity-75 font-semibold">• &lt;45 min (Verónica, Nicole, Tita)</span>
+        </button>
+        <button type="button" onclick="setPlanVolumeMode('deload')" id="btnVolDeloadENG" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50">
+          <span>▼ Deload (-1 Set)</span>
+          <span class="text-[8.5px] opacity-75 font-semibold">• &gt;70 min (Izzy, Sara T.)</span>
+        </button>
       </div>
-      <div class="flex items-center gap-2.5 text-[9.5px] leading-tight flex-1 justify-between overflow-hidden">
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-emerald-950 bg-emerald-100/90 px-1.5 py-0.5 rounded border border-emerald-300/80 shrink-0">▲ +1 Set (Overload):</span>
-          <span id="planOverloadTextENG" class="text-slate-800 font-bold truncate"></span>
-        </div>
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-blue-950 bg-blue-100/90 px-1.5 py-0.5 rounded border border-blue-300/80 shrink-0">● Baseline:</span>
-          <span id="planStandardTextENG" class="text-slate-800 font-bold truncate"></span>
-        </div>
-        <div class="flex items-center gap-1 min-w-0">
-          <span class="font-black text-rose-950 bg-rose-100/90 px-1.5 py-0.5 rounded border border-rose-300/80 shrink-0">▼ -1 Set (Deload):</span>
-          <span id="planDeloadTextENG" class="text-slate-800 font-bold truncate"></span>
-        </div>
+      <div id="volumeStatusPillENG" class="hidden sm:inline-flex items-center gap-1 text-[9px] font-black text-slate-500 uppercase tracking-wider shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+        <span>Baseline Mode Active</span>
       </div>
+    </div>
     </div>
 
     <!-- GRELHA PRINCIPAL 2x2 HORIZONTAL (ENG) -->
@@ -643,6 +647,91 @@
     const DEFAULT_PAGE_PLAN_ID = 'alongamentos_lombar_15min';
 
     let currentFilter = 'all';
+    let currentVolumeMode = 'standard'; // 'standard' | 'overload' | 'deload'
+
+    function computeBadgeForMode(badgeText, mode) {
+      if (!badgeText || mode === 'standard') return { text: badgeText, mode: 'standard' };
+      const m = badgeText.match(/^(\d+)x(.*)$/i);
+      if (m) {
+        const sets = parseInt(m[1], 10);
+        const remainder = m[2];
+        if (mode === 'overload') {
+          return { text: `${sets + 1}x${remainder} (+1)`, mode: 'overload' };
+        } else if (mode === 'deload') {
+          const newSets = Math.max(1, sets - 1);
+          return { text: `${newSets}x${remainder} (-1)`, mode: 'deload' };
+        }
+      }
+      return { text: badgeText, mode: 'standard' };
+    }
+
+    function setPlanVolumeMode(mode) {
+      currentVolumeMode = mode;
+
+      const btnStdPT = document.getElementById('btnVolStandardPT');
+      const btnOvrPT = document.getElementById('btnVolOverloadPT');
+      const btnDelPT = document.getElementById('btnVolDeloadPT');
+      const pillPT = document.getElementById('volumeStatusPillPT');
+
+      const btnStdENG = document.getElementById('btnVolStandardENG');
+      const btnOvrENG = document.getElementById('btnVolOverloadENG');
+      const btnDelENG = document.getElementById('btnVolDeloadENG');
+      const pillENG = document.getElementById('volumeStatusPillENG');
+
+      const activeClassStd = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700';
+      const inactiveClassStd = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
+
+      const activeClassOvr = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-emerald-600 text-white border border-emerald-700 ring-2 ring-emerald-400/50';
+      const inactiveClassOvr = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50';
+
+      const activeClassDel = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-rose-600 text-white border border-rose-700 ring-2 ring-rose-400/50';
+      const inactiveClassDel = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50';
+
+      if (btnStdPT) btnStdPT.className = (mode === 'standard') ? activeClassStd : inactiveClassStd;
+      if (btnOvrPT) btnOvrPT.className = (mode === 'overload') ? activeClassOvr : inactiveClassOvr;
+      if (btnDelPT) btnDelPT.className = (mode === 'deload') ? activeClassDel : inactiveClassDel;
+
+      if (btnStdENG) btnStdENG.className = (mode === 'standard') ? activeClassStd : inactiveClassStd;
+      if (btnOvrENG) btnOvrENG.className = (mode === 'overload') ? activeClassOvr : inactiveClassOvr;
+      if (btnDelENG) btnDelENG.className = (mode === 'deload') ? activeClassDel : inactiveClassDel;
+
+      if (pillPT) {
+        if (mode === 'standard') {
+          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Volume Padrão</span>';
+        } else if (mode === 'overload') {
+          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-700">▲ Sobrecarga (+1 Série)</span>';
+        } else if (mode === 'deload') {
+          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span><span class="text-rose-700">▼ Gestão (-1 Série)</span>';
+        }
+      }
+
+      if (pillENG) {
+        if (mode === 'standard') {
+          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Baseline Volume</span>';
+        } else if (mode === 'overload') {
+          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-700">▲ Overload (+1 Set)</span>';
+        } else if (mode === 'deload') {
+          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span><span class="text-rose-700">▼ Deload (-1 Set)</span>';
+        }
+      }
+
+      const plan = PLANS_LIBRARY.find(p => p.id === window.selectedPlanId) || PLANS_LIBRARY[0];
+      if (plan) {
+        document.getElementById('leftColPT').innerHTML = renderBlock(plan.blocks[0], 'pt', 0, plan.id) + renderBlock(plan.blocks[1], 'pt', 1, plan.id);
+        document.getElementById('rightColPT').innerHTML = renderBlock(plan.blocks[2], 'pt', 2, plan.id) + renderBlock(plan.blocks[3], 'pt', 3, plan.id);
+        document.getElementById('leftColENG').innerHTML = renderBlock(plan.blocks[0], 'en', 0, plan.id) + renderBlock(plan.blocks[1], 'en', 1, plan.id);
+        document.getElementById('rightColENG').innerHTML = renderBlock(plan.blocks[2], 'en', 2, plan.id) + renderBlock(plan.blocks[3], 'en', 3, plan.id);
+      }
+
+      if (mode === 'overload') {
+        showToast('⚡ Modo Sobrecarga (+1 Série) ativado!');
+      } else if (mode === 'deload') {
+        showToast('⚡ Modo Gestão (-1 Série) ativado!');
+      } else {
+        showToast('● Modo Padrão (Volume Base) restaurado.');
+      }
+    }
+
     let currentLang = 'pt';
     window.selectedPlanId = DEFAULT_PAGE_PLAN_ID;
 
@@ -1321,11 +1410,19 @@
         const defaultRest = (isEn && c.rest_en) ? c.rest_en : c.rest;
 
         const title = customCards[keyTitle] !== undefined ? customCards[keyTitle] : defaultTitle;
-        const badge = customCards[keyBadge] !== undefined ? customCards[keyBadge] : defaultBadge;
+        const rawBadge = customCards[keyBadge] !== undefined ? customCards[keyBadge] : defaultBadge;
+        const computed = (typeof computeBadgeForMode === 'function') ? computeBadgeForMode(rawBadge, currentVolumeMode) : { text: rawBadge, mode: 'standard' };
+        const badge = computed.text;
         const desc = customCards[keyDesc] !== undefined ? customCards[keyDesc] : defaultDesc;
         const rest = customCards[keyRest] !== undefined ? customCards[keyRest] : defaultRest;
 
-        return `
+        let badgeClass = "card-badge text-blue-700 bg-blue-50 hover:bg-blue-100/90 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-blue-500 border border-blue-200 rounded px-1.5 py-0.5 font-extrabold text-[10px] shrink-0 transition cursor-text selection:bg-blue-200";
+        if (computed.mode === 'overload') {
+          badgeClass = "card-badge text-emerald-800 bg-emerald-100 hover:bg-emerald-200 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-emerald-500 border border-emerald-400 rounded px-1.5 py-0.5 font-black text-[10px] shrink-0 transition shadow-xs ring-1 ring-emerald-400/40";
+        } else if (computed.mode === 'deload') {
+          badgeClass = "card-badge text-rose-800 bg-rose-100 hover:bg-rose-200 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-rose-500 border border-rose-400 rounded px-1.5 py-0.5 font-black text-[10px] shrink-0 transition shadow-xs ring-1 ring-rose-400/40";
+        }
+return `
           <div class="card-item flex items-center gap-3 bg-white p-2 sm:p-2.5 rounded-lg border border-slate-200 overflow-hidden shadow-2xs">
             <div class="card-img-box w-36 sm:w-38 h-[80px] shrink-0 rounded-md overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center p-1">
               ${(typeof SVG_DICT !== 'undefined' && SVG_DICT[(c.img || '').split('/').pop()]) 
@@ -1352,7 +1449,7 @@
                       oninput="onCardFieldInput(this)"
                       onblur="onCardFieldBlur(this)"
                       title="Clica para editar as séries / repetições"
-                      class="card-badge text-blue-700 bg-blue-50 hover:bg-blue-100/90 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-blue-500 border border-blue-200 rounded px-1.5 py-0.5 font-extrabold text-[10px] shrink-0 transition cursor-text selection:bg-blue-200">${badge}</span>
+                      class="${badgeClass}">${badge}</span>
               </div>
               <p contenteditable="true"
                  spellcheck="false"
