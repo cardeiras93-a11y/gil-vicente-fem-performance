@@ -1411,12 +1411,25 @@
 
         const title = customCards[keyTitle] !== undefined ? customCards[keyTitle] : defaultTitle;
         const rawBadge = customCards[keyBadge] !== undefined ? customCards[keyBadge] : defaultBadge;
-        const computed = (typeof computeBadgeForMode === 'function') ? computeBadgeForMode(rawBadge, currentVolumeMode) : { text: rawBadge, mode: 'standard' };
-        const badge = computed.text;
+        const rawBadge = customCards[keyBadge] !== undefined ? customCards[keyBadge] : defaultBadge;
+        const badge = rawBadge;
         const desc = customCards[keyDesc] !== undefined ? customCards[keyDesc] : defaultDesc;
         const rest = customCards[keyRest] !== undefined ? customCards[keyRest] : defaultRest;
 
-        let badgeClass = "card-badge text-blue-700 bg-blue-50 hover:bg-blue-100/90 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-blue-500 border border-blue-200 rounded px-1.5 py-0.5 font-extrabold text-[10px] shrink-0 transition cursor-text selection:bg-blue-200";
+        let baseSets = 3;
+        let repsText = rawBadge;
+        const badgeMatch = rawBadge.match(/^(\d+)x\s*(.*)$/i);
+        if (badgeMatch) {
+          baseSets = parseInt(badgeMatch[1], 10);
+          repsText = badgeMatch[2].trim();
+        }
+        const overloadSets = baseSets + 1;
+        const deloadSets = Math.max(1, baseSets - 1);
+
+        const labelBase = isEn ? 'Baseline' : 'Geral';
+        const labelOverload = `${overloadSets}x (Verónica, Nicole, Tita)`;
+        const labelDeload = `${deloadSets}x (Izzy, Sara T.)`;
+let badgeClass = "card-badge text-blue-700 bg-blue-50 hover:bg-blue-100/90 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-blue-500 border border-blue-200 rounded px-1.5 py-0.5 font-extrabold text-[10px] shrink-0 transition cursor-text selection:bg-blue-200";
         if (computed.mode === 'overload') {
           badgeClass = "card-badge text-emerald-800 bg-emerald-100 hover:bg-emerald-200 focus:bg-white focus:outline-none focus:ring-1.5 focus:ring-emerald-500 border border-emerald-400 rounded px-1.5 py-0.5 font-black text-[10px] shrink-0 transition shadow-xs ring-1 ring-emerald-400/40";
         } else if (computed.mode === 'deload') {
