@@ -1,3 +1,4 @@
+import braga1511Match from './matches/gilvicente-sc-braga-1511.json';
 import bragaB0711Match from './matches/gilvicente-sc-braga-b-0711.json';
 import rioTinto3110Match from './matches/gilvicente-rio-tinto-3110.json';
 import cruz2510Match from './matches/gilvicente-cruz-2510.json';
@@ -23,6 +24,7 @@ export interface MatchPlayerGps {
   posName: string;
   min?: number | null;
   dist: number;
+  hsr?: number; // 19-23 km/h (m)
   sprint: number; // >19 km/h (m)
   sprint23: number; // >23 km/h (m)
   running?: number; // >7 km/h (m)
@@ -99,6 +101,7 @@ export const posColorClassMap: Record<string, { badge: string; text: string; bg:
 };
 
 export const ALL_MATCHES: MatchInfo[] = [
+  braga1511Match as unknown as MatchInfo,
   bragaB0711Match as unknown as MatchInfo,
   rioTinto3110Match as unknown as MatchInfo,
   cruz2510Match as unknown as MatchInfo,

@@ -70,6 +70,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   });
   const [adminLoginPin, setAdminLoginPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   const [wellnessList, setWellnessList] = useState<WellnessEntry[]>([]);
   const [rpeList, setRpeList] = useState<RPEEntry[]>([]);
@@ -641,26 +643,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
-      syncAllDataFromCloud().then(() => {
-        loadAllData(selectedDate);
-        loadAllPins();
-      });
+      setIsSyncingCloud(true);
+      syncAllDataFromCloud()
+        .then(() => {
+          loadAllData(selectedDate);
+          loadAllPins();
+          setLastSyncTime(new Date());
+        })
+        .finally(() => {
+          setIsSyncingCloud(false);
+        });
 
       // Auto-poll cloud every 8 seconds to synchronize any updates made from other devices
       const intervalId = setInterval(() => {
         syncAllDataFromCloud().then(() => {
           loadAllData(selectedDate);
           loadAllPins();
+          setLastSyncTime(new Date());
         });
       }, 8000);
 
-      const onFocus = () => {
-        syncAllDataFromCloud().then(() => {
-          loadAllData(selectedDate);
-          loadAllPins();
-        });
+      const onFocusOrResume = () => {
+        setIsSyncingCloud(true);
+        syncAllDataFromCloud()
+          .then(() => {
+            loadAllData(selectedDate);
+            loadAllPins();
+            setLastSyncTime(new Date());
+          })
+          .finally(() => {
+            setIsSyncingCloud(false);
+          });
       };
-      window.addEventListener('focus', onFocus);
+      window.addEventListener('focus', onFocusOrResume);
+      window.addEventListener('pageshow', onFocusOrResume);
 
       const handleDataUpdate = () => {
         loadAllData(selectedDate);
@@ -676,7 +692,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       window.addEventListener('femperf_credentials_updated', handleCredsUpdate);
       return () => {
         clearInterval(intervalId);
-        window.removeEventListener('focus', onFocus);
+        window.removeEventListener('focus', onFocusOrResume);
+        window.removeEventListener('pageshow', onFocusOrResume);
         window.removeEventListener('femperf_data_updated', handleDataUpdate);
         window.removeEventListener('femperf_credentials_updated', handleCredsUpdate);
       };
@@ -945,6 +962,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const handleAdminPinSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
+    setPinError('');
     try {
       await syncCredentialsFromCloud();
     } catch {}
@@ -955,10 +974,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
       setPinError('O Código de Ativação da App não é válido para aceder à Administração. Introduza a Palavra-passe de Administrador.');
       setAdminLoginPin('');
+      setIsLoggingIn(false);
       return;
     }
 
     if (cleanInput === storedPin.trim()) {
+      try {
+        await syncAllDataFromCloud();
+      } catch {}
+      loadAllData(selectedDate);
+      loadAllPins();
+      setLastSyncTime(new Date());
       setIsAuthenticated(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem('femperf_admin_auth', 'true');
@@ -968,6 +994,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       setPinError('Palavra-passe / PIN de Administrador incorreto. Tente novamente.');
       setAdminLoginPin('');
     }
+    setIsLoggingIn(false);
   };
 
   const handleLogout = () => {
@@ -1078,9 +1105,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-red-600 py-3 text-xs font-extrabold text-white shadow-lg shadow-red-600/30 hover:bg-red-500 transition-all"
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-red-600 py-3 text-xs font-extrabold text-white shadow-lg shadow-red-600/30 hover:bg-red-500 transition-all disabled:opacity-60 cursor-pointer"
             >
-              Entrar como Administrador
+              {isLoggingIn ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                  <span>A sincronizar dados da nuvem...</span>
+                </>
+              ) : (
+                <span>Entrar como Administrador</span>
+              )}
             </button>
           </form>
         </div>
@@ -1341,16 +1376,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               <span>📱 Modo Quiosque</span>
             </button>
 
-            {/* Sync Cloud Data Button */}
+            {/* Sync Cloud Data Button & Status */}
             <button
               type="button"
               onClick={handleManualSyncCloudData}
               disabled={isSyncingCloud}
-              className="flex items-center space-x-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 px-3 py-2 text-xs font-black text-sky-300 hover:bg-sky-500/20 transition-all disabled:opacity-50"
-              title="Sincronizar dados em tempo real com o servidor da nuvem"
+              className={`flex items-center space-x-1.5 rounded-xl border px-3 py-2 text-xs font-black transition-all disabled:opacity-60 cursor-pointer ${
+                isSyncingCloud
+                  ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
+                  : 'border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20'
+              }`}
+              title="Sincronizar dados em tempo real com a nuvem (computadores, telemóveis e tablets)"
             >
               <RefreshCw className={`h-3.5 w-3.5 text-sky-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
-              <span>{isSyncingCloud ? 'A Sincronizar...' : 'Sincronizar Nuvem'}</span>
+              <span>
+                {isSyncingCloud
+                  ? 'A Sincronizar Nuvem...'
+                  : lastSyncTime
+                  ? `Nuvem OK (${lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
+                  : 'Sincronizar Nuvem'}
+              </span>
             </button>
 
             {/* Clear Data Button */}

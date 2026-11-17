@@ -24,7 +24,7 @@ import { translateTextToPortuguese, normalizeMenstrualCycleToPortuguese } from '
 import {
   Stethoscope, Shield, CheckCircle2, Clock, AlertTriangle, Search,
   Calendar, User, Droplets, HeartPulse, Dumbbell, Pencil, Trash2, X, Lock,
-  ChevronLeft, ChevronRight, Check, Activity, Scale, Plus, Sparkles
+  ChevronLeft, ChevronRight, Check, Activity, Scale, Plus, Sparkles, RefreshCw
 } from 'lucide-react';
 import { SquadMuscleHeatmap } from './SquadMuscleHeatmap';
 
@@ -55,6 +55,9 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   });
   const [physioPin, setPhysioPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
 
   const [isEditingPinModalOpen, setIsEditingPinModalOpen] = useState<boolean>(false);
   const [newPhysioPinValue, setNewPhysioPinValue] = useState<string>('');
@@ -268,33 +271,54 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
 
   useEffect(() => {
     if (isOpen && isAuthenticated) {
-      syncAllDataFromCloud().then(() => {
-        loadData();
-      });
+      setIsSyncingCloud(true);
+      syncAllDataFromCloud()
+        .then(() => {
+          loadData();
+          setLastSyncTime(new Date());
+        })
+        .finally(() => {
+          setIsSyncingCloud(false);
+        });
 
       // Auto-poll cloud every 8 seconds to synchronize any updates made from other devices
       const intervalId = setInterval(() => {
         syncAllDataFromCloud().then(() => {
           loadData();
+          setLastSyncTime(new Date());
         });
       }, 8000);
 
-      const onFocus = () => {
-        syncAllDataFromCloud().then(() => {
-          loadData();
-        });
+      const onFocusOrResume = () => {
+        setIsSyncingCloud(true);
+        syncAllDataFromCloud()
+          .then(() => {
+            loadData();
+            setLastSyncTime(new Date());
+          })
+          .finally(() => {
+            setIsSyncingCloud(false);
+          });
       };
-      window.addEventListener('focus', onFocus);
+      window.addEventListener('focus', onFocusOrResume);
+      window.addEventListener('pageshow', onFocusOrResume);
 
       const handleDataUpdate = () => {
         loadData();
       };
 
+      const handleCredsUpdate = () => {
+        loadData();
+      };
+
       window.addEventListener('femperf_data_updated', handleDataUpdate);
+      window.addEventListener('femperf_credentials_updated', handleCredsUpdate);
       return () => {
         clearInterval(intervalId);
-        window.removeEventListener('focus', onFocus);
+        window.removeEventListener('focus', onFocusOrResume);
+        window.removeEventListener('pageshow', onFocusOrResume);
         window.removeEventListener('femperf_data_updated', handleDataUpdate);
+        window.removeEventListener('femperf_credentials_updated', handleCredsUpdate);
       };
     }
   }, [isOpen, isAuthenticated, selectedDate]);
@@ -306,8 +330,21 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     }
   }, [isOpen]);
 
+  const handleManualSyncCloudData = async () => {
+    setIsSyncingCloud(true);
+    try {
+      await syncAllDataFromCloud();
+      loadData();
+      setLastSyncTime(new Date());
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoggingIn(true);
+    setPinError('');
     try {
       await syncCredentialsFromCloud();
     } catch {}
@@ -318,19 +355,25 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
       setPinError('O Código de Ativação da App não é válido para aceder ao Gabinete Médico. Introduza a Palavra-passe da Fisioterapia.');
       setPhysioPin('');
+      setIsLoggingIn(false);
       return;
     }
 
     if (cleanInput === storedPin.trim()) {
+      try {
+        await syncAllDataFromCloud();
+      } catch {}
+      loadData();
+      setLastSyncTime(new Date());
       setIsAuthenticated(true);
       if (typeof window !== 'undefined') {
         localStorage.setItem('femperf_physio_auth', 'true');
       }
       setPinError('');
-      loadData();
     } else {
       setPinError('PIN da Fisioterapia incorreto. Tente novamente.');
     }
+    setIsLoggingIn(false);
   };
 
   const handleLogout = () => {
@@ -455,9 +498,17 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
 
             <button
               type="submit"
-              className="w-full rounded-xl bg-teal-600 py-3 text-xs font-extrabold text-white shadow-lg shadow-teal-600/30 hover:bg-teal-500 transition-all"
+              disabled={isLoggingIn}
+              className="w-full flex items-center justify-center space-x-2 rounded-xl bg-teal-600 py-3 text-xs font-extrabold text-white shadow-lg shadow-teal-600/30 hover:bg-teal-500 transition-all disabled:opacity-60 cursor-pointer"
             >
-              Entrar no Gabinete Médico
+              {isLoggingIn ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin text-white" />
+                  <span>A sincronizar dados clínicos da nuvem...</span>
+                </>
+              ) : (
+                <span>Entrar no Gabinete Médico</span>
+              )}
             </button>
           </form>
         </div>
@@ -546,6 +597,28 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
                 className="rounded-lg border-0 bg-transparent px-2 py-1 text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
               />
             </div>
+
+            {/* Sync Cloud Data Button & Status */}
+            <button
+              type="button"
+              onClick={handleManualSyncCloudData}
+              disabled={isSyncingCloud}
+              className={`flex items-center space-x-1.5 rounded-xl border px-3 py-2 text-xs font-black transition-all disabled:opacity-60 cursor-pointer ${
+                isSyncingCloud
+                  ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
+                  : 'border-teal-500/40 bg-teal-500/10 text-teal-300 hover:bg-teal-500/20'
+              }`}
+              title="Sincronizar dados clínicos em tempo real com a nuvem (computadores, telemóveis e tablets)"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-teal-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+              <span>
+                {isSyncingCloud
+                  ? 'A Sincronizar Nuvem...'
+                  : lastSyncTime
+                  ? `Nuvem OK (${lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
+                  : 'Sincronizar Nuvem'}
+              </span>
+            </button>
 
             {/* Quick Weighing Station Button */}
             <button

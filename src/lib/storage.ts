@@ -473,51 +473,23 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
         }).catch(() => {});
       }
 
-      // 4. Fines Enabled Days: Safe two-way merge (never wipe user waivers)
-      const localDays = getStoredFinesEnabledDays();
-      const mergedDays: Record<string, boolean | DayFineConfig> = { ...localDays };
-      if (cloudFinesEnabledDays && typeof cloudFinesEnabledDays === 'object') {
-        Object.entries(cloudFinesEnabledDays).forEach(([d, cfg]) => {
-          if (mergedDays[d] === undefined) {
-            mergedDays[d] = cfg as any;
-          } else {
-            // Both exist: if either local or cloud has a waived questionnaire (false), honor the waiver!
-            const localCfg = normalizeDayFineConfig(mergedDays[d]);
-            const cloudCfg = normalizeDayFineConfig(cfg as any);
-            mergedDays[d] = {
-              wellness: localCfg.wellness && cloudCfg.wellness,
-              rpe: localCfg.rpe && cloudCfg.rpe,
-              hydration: localCfg.hydration && cloudCfg.hydration,
-            };
-          }
-        });
+      // 4. Fines Enabled Days: Cloud is authoritative across all devices
+      if (cloudFinesEnabledDays && typeof cloudFinesEnabledDays === 'object' && Object.keys(cloudFinesEnabledDays).length > 0) {
+        localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(cloudFinesEnabledDays));
+      } else {
+        const localDays = getStoredFinesEnabledDays();
+        if (Object.keys(localDays).length > 0) {
+          secureFetch('/api/credentials', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ finesEnabledDays: localDays, replaceFinesEnabledDays: localDays }),
+          }).catch(() => {});
+        }
       }
-      localStorage.setItem('femperf_fines_enabled_days', JSON.stringify(mergedDays));
 
-      // 4b. Individual Fine Exemptions: Safe merge (exemptions are never lost)
-      const localExemptions = getStoredFineExemptions();
-      const mergedExemptions = {
-        ...(cloudIndividualFineExemptions || {}),
-        ...localExemptions, // Preserve all local exemptions
-      };
-      localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(mergedExemptions));
-
-      // If local had dates or exemptions missing in cloud, heal cloud immediately
-      const missingInCloud =
-        Object.keys(mergedDays).some((k) => !cloudFinesEnabledDays || cloudFinesEnabledDays[k] === undefined) ||
-        Object.keys(mergedExemptions).some((k) => !cloudIndividualFineExemptions || cloudIndividualFineExemptions[k] === undefined);
-
-      if (missingInCloud) {
-        secureFetch('/api/credentials', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            finesEnabledDays: mergedDays,
-            replaceFinesEnabledDays: mergedDays,
-            individualFineExemptions: mergedExemptions,
-            replaceIndividualFineExemptions: mergedExemptions,
-          }),
-        }).catch(() => {});
+      // 4b. Individual Fine Exemptions: Cloud is authoritative across all devices
+      if (cloudIndividualFineExemptions && typeof cloudIndividualFineExemptions === 'object') {
+        localStorage.setItem(FINE_EXEMPTIONS_KEY, JSON.stringify(cloudIndividualFineExemptions));
       }
 
       // 5. Edited Profiles: Cloud is authoritative
@@ -572,6 +544,7 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
       window.dispatchEvent(new Event('femperf_credentials_updated'));
+      window.dispatchEvent(new Event('femperf_fines_updated'));
       dispatchDataUpdatedEvent();
       return true;
     }
@@ -646,231 +619,206 @@ export async function saveMatchCustomizationsToCloud(updates: {
   }
 }
 
-export async function syncAllDataFromCloud(): Promise<void> {
-  if (typeof window === 'undefined') return;
+export async function syncAllDataFromCloud(): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
 
-  // 1. Sync credentials / PINs first
-  await syncCredentialsFromCloud();
-
-  // 1b. Sync matches customizations (minutes, categories, custom matches across all devices)
-  await syncMatchDataFromCloud();
-
-  // 2. Sync training sessions & calendar schedule
   try {
-    const res = await secureFetch(`/api/training-sessions?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    const remoteSessions = data?.sessions || data?.data?.sessions;
-    const remoteSchedule = data?.schedule || data?.data?.schedule;
-    if (remoteSessions || remoteSchedule) {
-      const localSessions = getStoredTrainingSessions();
-      const localSched = getStoredCalendarSchedule();
-      const mergedSessions: Record<string, TrainingSessionInfo> = { ...localSessions };
-      if (remoteSessions) {
-        Object.keys(remoteSessions).forEach((d) => {
-          const loc = localSessions[d];
-          const rem = remoteSessions[d];
-          if (!loc) {
-            mergedSessions[d] = rem;
-            return;
-          }
-          if (!rem) {
-            mergedSessions[d] = loc;
-            return;
-          }
+    // 1. Sync credentials / PINs first
+    await syncCredentialsFromCloud();
 
-          const locTime = loc.updatedAt || 0;
-          const remTime = rem.updatedAt || 0;
+    // 1b. Sync matches customizations (minutes, categories, custom matches across all devices)
+    await syncMatchDataFromCloud();
 
-          // Always respect manual/local matchDayOffset unless remote has an explicitly newer timestamp
-          const chosenOffset = (locTime >= remTime ? loc.matchDayOffset : rem.matchDayOffset) || loc.matchDayOffset || rem.matchDayOffset;
+    // 2. Sync training sessions & calendar schedule
+    try {
+      const res = await secureFetch(`/api/training-sessions?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      const remoteSessions = data?.sessions || data?.data?.sessions;
+      const remoteSchedule = data?.schedule || data?.data?.schedule;
+      if (remoteSessions || remoteSchedule) {
+        const localSessions = getStoredTrainingSessions();
+        const localSched = getStoredCalendarSchedule();
+        const mergedSessions: Record<string, TrainingSessionInfo> = { ...localSessions };
+        if (remoteSessions) {
+          Object.keys(remoteSessions).forEach((d) => {
+            const loc = localSessions[d];
+            const rem = remoteSessions[d];
+            if (!loc) {
+              mergedSessions[d] = rem;
+              return;
+            }
+            if (!rem) {
+              mergedSessions[d] = loc;
+              return;
+            }
 
-          if (remTime > locTime || (!locTime && remTime)) {
-            // Remote is newer or local has no timestamp: remote is authoritative
-            mergedSessions[d] = {
-              ...loc,
-              ...rem,
-              matchDayOffset: chosenOffset,
-              gymStartTime: rem.gymStartTime || loc.gymStartTime || undefined,
-              gymEndTime: rem.gymEndTime || loc.gymEndTime || undefined,
-              gymDurationMin: rem.gymDurationMin || loc.gymDurationMin || undefined,
-            };
-          } else if (locTime > remTime) {
-            // Local is newer: preserve local customizations
-            mergedSessions[d] = {
-              ...rem,
-              ...loc,
-              matchDayOffset: chosenOffset,
-              gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
-              gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
-              gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
-            };
-          } else {
-            // Timestamps equal or not set: preserve local user times and tags
-            mergedSessions[d] = {
-              ...rem,
-              ...loc,
-              matchDayOffset: chosenOffset,
-              dayType: loc.dayType || rem.dayType,
-              matchCategory: loc.matchCategory || rem.matchCategory || undefined,
-              startTime: loc.startTime || rem.startTime || (loc.dayType === 'match' ? '10:00' : '09:00'),
-              endTime: loc.endTime || rem.endTime || (loc.dayType === 'match' ? '11:30' : '10:30'),
-              gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
-              gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
-              gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
-              customDeadlineWellness: loc.customDeadlineWellness || rem.customDeadlineWellness || undefined,
-              customDeadlineRpe: loc.customDeadlineRpe || rem.customDeadlineRpe || undefined,
-            };
+            const locTime = loc.updatedAt || 0;
+            const remTime = rem.updatedAt || 0;
+
+            const chosenOffset = (locTime > remTime ? loc.matchDayOffset : rem.matchDayOffset) || rem.matchDayOffset || loc.matchDayOffset;
+
+            // If remote is newer, equal, or local has no timestamp: remote is authoritative
+            if (remTime >= locTime || (!locTime && remTime)) {
+              mergedSessions[d] = {
+                ...loc,
+                ...rem,
+                matchDayOffset: chosenOffset,
+                gymStartTime: rem.gymStartTime || loc.gymStartTime || undefined,
+                gymEndTime: rem.gymEndTime || loc.gymEndTime || undefined,
+                gymDurationMin: rem.gymDurationMin || loc.gymDurationMin || undefined,
+              };
+            } else {
+              // Local is genuinely newer: preserve local customizations
+              mergedSessions[d] = {
+                ...rem,
+                ...loc,
+                matchDayOffset: chosenOffset,
+                gymStartTime: loc.gymStartTime || rem.gymStartTime || undefined,
+                gymEndTime: loc.gymEndTime || rem.gymEndTime || undefined,
+                gymDurationMin: loc.gymDurationMin || rem.gymDurationMin || undefined,
+              };
+            }
+          });
+        }
+        const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
+        localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
+        localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
+
+        const remoteWeeklyPlan = data?.weeklyPlan || data?.data?.weeklyPlan;
+        if (remoteWeeklyPlan && typeof remoteWeeklyPlan === 'object') {
+          const localPlanRaw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
+          const localPlan = localPlanRaw ? JSON.parse(localPlanRaw) : {};
+          const mergedPlan = { ...remoteWeeklyPlan, ...localPlan };
+          localStorage.setItem(WEEKLY_PLAN_METADATA_KEY, JSON.stringify(mergedPlan));
+        }
+
+        let hasLocalChangesToPush = false;
+        if (localSessions) {
+          Object.keys(localSessions).forEach((d) => {
+            const loc = localSessions[d];
+            const rem = remoteSessions?.[d];
+            if (loc?.updatedAt && rem?.updatedAt && loc.updatedAt > rem.updatedAt) {
+              hasLocalChangesToPush = true;
+            }
+          });
+        }
+
+        if (hasLocalChangesToPush) {
+          syncTrainingSessionsToCloud(mergedSessions).catch(() => {});
+        }
+
+        dispatchDataUpdatedEvent();
+      }
+    } catch {}
+
+    // 3. Sync Wellness Entries: Cloud is authoritative
+    try {
+      const res = await secureFetch(`/api/wellness?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      const items = data?.entries || data?.data;
+      if (Array.isArray(items)) {
+        const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
+        const map = new Map<string, WellnessEntry>();
+        const getKey = (item: WellnessEntry) => {
+          if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+          if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+          return item.id || `wel_${Math.random()}`;
+        };
+        // 1. Cloud is authoritative for all existing records
+        items.forEach((item) => {
+          map.set(getKey(item), item);
+        });
+        // 2. Preserve only recent local unpushed offline entries (<24h old) not yet in cloud
+        local.forEach((localItem) => {
+          const key = getKey(localItem);
+          if (!map.has(key)) {
+            const itemTime = new Date(localItem.submittedAt || localItem.date).getTime();
+            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
+              map.set(key, localItem);
+            }
           }
         });
+        const merged = Array.from(map.values());
+        localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
+        dispatchDataUpdatedEvent();
       }
-      const mergedSched = { ...localSched, ...(remoteSchedule || {}) };
-      localStorage.setItem(TRAINING_SESSIONS_INFO_KEY, JSON.stringify(mergedSessions));
-      localStorage.setItem(TRAINING_CALENDAR_KEY, JSON.stringify(mergedSched));
+    } catch {}
 
-      const remoteWeeklyPlan = data?.weeklyPlan || data?.data?.weeklyPlan;
-      if (remoteWeeklyPlan && typeof remoteWeeklyPlan === 'object') {
-        const localPlanRaw = localStorage.getItem(WEEKLY_PLAN_METADATA_KEY);
-        const localPlan = localPlanRaw ? JSON.parse(localPlanRaw) : {};
-        const mergedPlan = { ...remoteWeeklyPlan, ...localPlan };
-        localStorage.setItem(WEEKLY_PLAN_METADATA_KEY, JSON.stringify(mergedPlan));
-      }
-
-      let hasLocalChangesToPush = false;
-      if (localSessions) {
-        Object.keys(localSessions).forEach((d) => {
-          const loc = localSessions[d];
-          const rem = remoteSessions?.[d];
-          if (!rem && loc) {
-            hasLocalChangesToPush = true;
-          } else if (loc?.complementaryWork && Object.keys(loc.complementaryWork).length > 0 && (!rem?.complementaryWork || Object.keys(rem.complementaryWork).length === 0)) {
-            hasLocalChangesToPush = true;
-          } else if ((loc?.updatedAt || 0) > (rem?.updatedAt || 0)) {
-            hasLocalChangesToPush = true;
+    // 4. Sync RPE Entries: Cloud is authoritative
+    try {
+      const res = await secureFetch(`/api/rpe?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      const items = data?.entries || data?.data;
+      if (Array.isArray(items)) {
+        const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
+        const map = new Map<string, RPEEntry>();
+        const getKey = (item: RPEEntry) => {
+          const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
+          if (item.id) return item.id;
+          if (item.athleteId && item.date) return `${item.athleteId}_${item.date}_${sType}`;
+          if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}_${sType}`;
+          return `rpe_${Math.random()}`;
+        };
+        items.forEach((item) => {
+          if (!item.sessionType && item.id?.includes('gym_lower')) {
+            item.sessionType = 'gym_lower';
+          }
+          map.set(getKey(item), item);
+        });
+        local.forEach((localItem) => {
+          if (!localItem.sessionType && localItem.id?.includes('gym_lower')) {
+            localItem.sessionType = 'gym_lower';
+          }
+          const key = getKey(localItem);
+          if (!map.has(key)) {
+            const itemTime = new Date(localItem.submittedAt || localItem.date).getTime();
+            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
+              map.set(key, localItem);
+            }
           }
         });
+        const merged = Array.from(map.values());
+        localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
+        dispatchDataUpdatedEvent();
       }
+    } catch {}
 
-      if (hasLocalChangesToPush) {
-        syncTrainingSessionsToCloud(mergedSessions).catch(() => {});
+    // 5. Sync Hydration Entries: Cloud is authoritative
+    try {
+      const res = await secureFetch(`/api/hydration?t=${Date.now()}`, { cache: 'no-store' });
+      const data = await res.json();
+      const items = data?.entries || data?.data;
+      if (Array.isArray(items)) {
+        const local: HydrationEntry[] = JSON.parse(localStorage.getItem(HYDRATION_LOCAL_KEY) || '[]');
+        const map = new Map<string, HydrationEntry>();
+        const getKey = (item: HydrationEntry) => {
+          if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+          if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+          return item.id || `hyd_${Math.random()}`;
+        };
+        items.forEach((item) => {
+          map.set(getKey(item), item);
+        });
+        local.forEach((localItem) => {
+          const key = getKey(localItem);
+          if (!map.has(key)) {
+            const itemTime = new Date(localItem.date).getTime();
+            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
+              map.set(key, localItem);
+            }
+          }
+        });
+        const merged = Array.from(map.values());
+        localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
+        dispatchDataUpdatedEvent();
       }
+    } catch {}
 
-      dispatchDataUpdatedEvent();
-    }
-  } catch {}
-
-  // 3. Sync Wellness Entries
-  try {
-    const res = await secureFetch(`/api/wellness?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    const items = data?.entries || data?.data;
-    if (Array.isArray(items) && items.length > 0) {
-      const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
-      const map = new Map<string, WellnessEntry>();
-      const getKey = (item: WellnessEntry) => {
-        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-        return item.id || `wel_${Math.random()}`;
-      };
-      local.forEach((item) => map.set(getKey(item), item));
-      items.forEach((item) => {
-        const key = getKey(item);
-        const existing = map.get(key);
-        if (existing) {
-          map.set(key, {
-            ...existing,
-            ...item,
-            keepFine: (existing.keepFine === false) ? false : (item.keepFine ?? existing.keepFine),
-            approvalStatus: (existing.approvalStatus === 'approved') ? 'approved' : (item.approvalStatus || existing.approvalStatus),
-            morningWeight: Number(item.morningWeight) > 0 ? item.morningWeight : existing.morningWeight,
-          });
-        } else {
-          map.set(key, item);
-        }
-      });
-      const merged = Array.from(map.values());
-      localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
-      dispatchDataUpdatedEvent();
-    }
-  } catch {}
-
-  // 4. Sync RPE Entries
-  try {
-    const res = await secureFetch(`/api/rpe?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    const items = data?.entries || data?.data;
-    if (Array.isArray(items) && items.length > 0) {
-      const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
-      const map = new Map<string, RPEEntry>();
-      const getKey = (item: RPEEntry) => {
-        const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
-        if (item.id) return item.id;
-        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}_${sType}`;
-        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}_${sType}`;
-        return `rpe_${Math.random()}`;
-      };
-      local.forEach((item) => {
-        if (!item.sessionType && item.id?.includes('gym_lower')) {
-          item.sessionType = 'gym_lower';
-        }
-        map.set(getKey(item), item);
-      });
-      items.forEach((item) => {
-        if (!item.sessionType && item.id?.includes('gym_lower')) {
-          item.sessionType = 'gym_lower';
-        }
-        const key = getKey(item);
-        const existing = map.get(key);
-        if (existing) {
-          map.set(key, {
-            ...existing,
-            ...item,
-            keepFine: (existing.keepFine === false) ? false : (item.keepFine ?? existing.keepFine),
-            approvalStatus: (existing.approvalStatus === 'approved') ? 'approved' : (item.approvalStatus || existing.approvalStatus),
-          });
-        } else {
-          map.set(key, item);
-        }
-      });
-      const merged = Array.from(map.values());
-      localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
-      dispatchDataUpdatedEvent();
-    }
-  } catch {}
-
-  // 5. Sync Hydration Entries
-  try {
-    const res = await secureFetch(`/api/hydration?t=${Date.now()}`, { cache: 'no-store' });
-    const data = await res.json();
-    const items = data?.entries || data?.data;
-    if (Array.isArray(items) && items.length > 0) {
-      const local: HydrationEntry[] = JSON.parse(localStorage.getItem(HYDRATION_LOCAL_KEY) || '[]');
-      const map = new Map<string, HydrationEntry>();
-      const getKey = (item: HydrationEntry) => {
-        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-        return item.id || `hyd_${Math.random()}`;
-      };
-      local.forEach((item) => map.set(getKey(item), item));
-      items.forEach((item) => {
-        const key = getKey(item);
-        const existing = map.get(key);
-        if (existing) {
-          map.set(key, {
-            ...existing,
-            ...item,
-            preWeight: Number(item.preWeight) > 0 ? item.preWeight : existing.preWeight,
-            postWeight: Number(item.postWeight) > 0 ? item.postWeight : existing.postWeight,
-            fluidsIntake: Number(item.fluidsIntake) > 0 ? item.fluidsIntake : existing.fluidsIntake,
-          });
-        } else {
-          map.set(key, item);
-        }
-      });
-      const merged = Array.from(map.values());
-      localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
-      dispatchDataUpdatedEvent();
-    }
-  } catch {}
+    return true;
+  } catch (e) {
+    console.warn('Erro ao sincronizar dados da nuvem:', e);
+    return false;
+  }
 }
 
 export function getAthletePin(athleteId: string): string | null {

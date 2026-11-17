@@ -160,7 +160,7 @@ function MainAppContent() {
       }
     }, 3500);
 
-    // 4. Instant sync on tab focus or visibility change
+    // 4. Instant sync on tab focus, visibility change, or device wake/resume (pageshow)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         syncAllDataFromCloud();
@@ -169,8 +169,12 @@ function MainAppContent() {
     const handleFocus = () => {
       syncAllDataFromCloud();
     };
+    const handlePageShow = () => {
+      syncAllDataFromCloud();
+    };
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('focus', handleFocus);
+    window.addEventListener('pageshow', handlePageShow);
 
     // Check if session athlete is stored
     const sessionId = getAthleteSessionId();
@@ -208,6 +212,7 @@ function MainAppContent() {
       clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('pageshow', handlePageShow);
       window.removeEventListener('femperf_credentials_updated', handleCredentialsUpdate);
       window.removeEventListener('online', updateOnlineStatus);
       window.removeEventListener('offline', updateOnlineStatus);
@@ -226,6 +231,7 @@ function MainAppContent() {
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'admin');
     }
+    syncAllDataFromCloud();
   };
 
   const handleCloseAdmin = () => {
@@ -241,6 +247,7 @@ function MainAppContent() {
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'physio');
     }
+    syncAllDataFromCloud();
   };
 
   const handleClosePhysio = () => {
