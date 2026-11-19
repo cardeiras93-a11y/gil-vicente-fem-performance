@@ -36,6 +36,69 @@
       .sheet-hidden {
         display: none !important;
       }
+      .document-sheet {
+        width: 100%;
+        max-width: 1140px;
+        background: #ffffff;
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.45), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .main-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px !important;
+        flex: 1 !important;
+      }
+      .col-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        height: 100% !important;
+      }
+      .block-container {
+        padding: 8px 10px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 8px !important;
+        background-color: #f8fafc !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        flex: 1 !important;
+      }
+      .card-item {
+        padding: 5px 8px !important;
+        gap: 10px !important;
+        border: 1px solid #e2e8f0 !important;
+        border-radius: 6px !important;
+        background: #ffffff !important;
+        display: flex !important;
+        align-items: center !important;
+      }
+      .card-img-box {
+        width: 130px !important;
+        height: 72px !important;
+        flex-shrink: 0 !important;
+        border-radius: 6px !important;
+        padding: 2px !important;
+        background: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+      }
+      .card-img-box svg, .card-img-box img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;
+      }
     }
 
     @media print {
@@ -55,19 +118,20 @@
       /* Ambas as folhas são impressas sequencialmente */
       #sheetPT, #sheetENG {
         display: flex !important;
-        width: 100% !important;
-        height: 100% !important;
-        max-width: 100% !important;
-        max-height: 100% !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        width: 285mm !important;
+        max-width: 285mm !important;
+        height: 202mm !important;
+        max-height: 202mm !important;
         overflow: hidden !important;
         padding: 0 !important;
         margin: 0 !important;
         box-shadow: none !important;
         border: none !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
+        box-sizing: border-box !important;
       }
 
       /* Folha 1 (PT) quebra a página para a Folha 2 (ENG) */
@@ -83,13 +147,13 @@
       }
 
       .header-box {
-        padding: 6px 14px !important;
-        border-radius: 8px !important;
-        margin-bottom: 5px !important;
+        padding: 5px 12px !important;
+        border-radius: 6px !important;
+        margin-bottom: 4px !important;
         flex-shrink: 0 !important;
       }
       .header-logo {
-        height: 36px !important;
+        height: 34px !important;
         width: auto !important;
         object-fit: contain !important;
       }
@@ -98,13 +162,13 @@
         line-height: 1.15 !important;
       }
       .header-season-line {
-        font-size: 9.5px !important;
+        font-size: 9px !important;
       }
       .header-duration {
         font-size: 13px !important;
       }
       .header-duration-label {
-        font-size: 8px !important;
+        font-size: 7.5px !important;
       }
       .header-group-badge {
         font-size: 8px !important;
@@ -121,7 +185,8 @@
         padding: 2px 8px !important;
         margin-bottom: 4px !important;
         font-size: 8.5px !important;
-        border-radius: 6px !important;
+        border-radius: 5px !important;
+        flex-shrink: 0 !important;
       }
       .plan-protocol-banner.hidden {
         display: none !important;
@@ -132,92 +197,98 @@
         gap: 6px !important;
         flex: 1 !important;
         margin-bottom: 0 !important;
+        min-height: 0 !important;
       }
       .col-stack {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
-        gap: 8px !important;
+        justify-content: space-between !important;
+        gap: 6px !important;
         height: 100% !important;
+        min-height: 0 !important;
       }
       .block-container {
-        padding: 6px 8px !important;
+        padding: 5px 8px !important;
         margin: 0 !important;
         border: 1px solid #cbd5e1 !important;
-        border-radius: 8px !important;
+        border-radius: 6px !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
         flex: 1 !important;
+        min-height: 0 !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
       }
       .block-header {
-        padding-bottom: 3px !important;
+        padding-bottom: 2px !important;
         margin-bottom: 2px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
       }
       .block-num-badge {
-        width: 18px !important;
-        height: 18px !important;
+        width: 17px !important;
+        height: 17px !important;
         border-radius: 4px !important;
         font-size: 9px !important;
       }
       .block-title {
-        font-size: 10.5px !important;
+        font-size: 10px !important;
       }
       .time-pill {
         white-space: nowrap !important;
         flex-shrink: 0 !important;
-        font-size: 8.5px !important;
+        font-size: 8px !important;
         padding: 1px 5px !important;
         border-radius: 9999px !important;
       }
       .cards-stack {
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
-        gap: 6px !important;
+        justify-content: space-between !important;
+        gap: 4px !important;
         flex: 1 !important;
+        min-height: 0 !important;
       }
       .card-item {
-        padding: 4px 7px !important;
+        padding: 3px 6px !important;
         gap: 8px !important;
         border: 1px solid #e2e8f0 !important;
-        border-radius: 6px !important;
+        border-radius: 5px !important;
         flex: 1 !important;
+        min-height: 0 !important;
         align-items: center !important;
       }
       .card-img-box {
-        width: 125px !important;
-        height: 70px !important;
+        width: 115px !important;
+        height: 64px !important;
         flex-shrink: 0 !important;
-        border-radius: 5px !important;
+        border-radius: 4px !important;
         padding: 2px !important;
       }
-      .card-img-box img {
+      .card-img-box img, .card-img-box svg {
         width: 100% !important;
         height: 100% !important;
         object-fit: contain !important;
       }
       .card-title {
-        font-size: 10.5px !important;
+        font-size: 10px !important;
         line-height: 1.15 !important;
       }
       .card-badge {
-        font-size: 9px !important;
-        padding: 1px 5px !important;
+        font-size: 8.5px !important;
+        padding: 1px 4px !important;
       }
       .card-desc {
-        font-size: 9.5px !important;
-        line-height: 1.28 !important;
-        margin-top: 2px !important;
+        font-size: 8.8px !important;
+        line-height: 1.22 !important;
+        margin-top: 1px !important;
       }
       .card-rest {
-        margin-top: 2px !important;
+        margin-top: 1px !important;
       }
       .card-rest-pill {
-        font-size: 8.5px !important;
+        font-size: 8px !important;
         padding: 1px 4px !important;
         background-color: #f1f5f9 !important;
         border: 1px solid #cbd5e1 !important;
@@ -439,32 +510,6 @@
       </div>
     </div>
 
-    <!-- SELETOR DINÂMICO DE PERFIL DE VOLUME / CARGA (PT) -->
-    <div id="loadProfileSwitcherPT" class="load-profile-switcher flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-slate-50 border border-slate-200/90 rounded-lg py-1 px-2.5 text-[10px] shadow-2xs">
-      <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1 shrink-0 mr-1">
-          <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-          Séries & Volume por Atleta:
-        </span>
-        <button type="button" onclick="setPlanVolumeMode('standard')" id="btnVolStandardPT" class="vol-btn px-2.5 py-0.5 rounded-full font-extrabold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700">
-          <span>● Padrão (Base)</span>
-        </button>
-        <button type="button" onclick="setPlanVolumeMode('overload')" id="btnVolOverloadPT" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50">
-          <span>▲ Sobrecarga (+1 Série)</span>
-          <span class="text-[8.5px] opacity-75 font-semibold">• &lt;45 min (Verónica, Nicole, Tita)</span>
-        </button>
-        <button type="button" onclick="setPlanVolumeMode('deload')" id="btnVolDeloadPT" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50">
-          <span>▼ Gestão (-1 Série)</span>
-          <span class="text-[8.5px] opacity-75 font-semibold">• &gt;70 min (Izzy, Sara T.)</span>
-        </button>
-      </div>
-      <div id="volumeStatusPillPT" class="hidden sm:inline-flex items-center gap-1 text-[9px] font-black text-slate-500 uppercase tracking-wider shrink-0">
-        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-        <span>Modo Padrão Ativo</span>
-      </div>
-    </div>
-    </div>
-
     <!-- GRELHA PRINCIPAL 2x2 HORIZONTAL (PT) -->
     <div class="main-grid grid grid-cols-1 lg:grid-cols-2 gap-2.5 items-stretch">
       <div id="leftColPT" class="col-stack flex flex-col gap-2.5 justify-start"></div>
@@ -550,32 +595,6 @@
       </div>
     </div>
 
-    <!-- DYNAMIC VOLUME PROFILE SWITCHER (ENG) -->
-    <div id="loadProfileSwitcherENG" class="load-profile-switcher flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 bg-slate-50 border border-slate-200/90 rounded-lg py-1 px-2.5 text-[10px] shadow-2xs">
-      <div class="flex items-center gap-1.5 flex-wrap">
-        <span class="text-[9px] font-black uppercase tracking-wider text-slate-500 flex items-center gap-1 shrink-0 mr-1">
-          <svg class="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-          Sets & Volume by Player:
-        </span>
-        <button type="button" onclick="setPlanVolumeMode('standard')" id="btnVolStandardENG" class="vol-btn px-2.5 py-0.5 rounded-full font-extrabold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700">
-          <span>● Baseline Volume</span>
-        </button>
-        <button type="button" onclick="setPlanVolumeMode('overload')" id="btnVolOverloadENG" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50">
-          <span>▲ Overload (+1 Set)</span>
-          <span class="text-[8.5px] opacity-75 font-semibold">• &lt;45 min (Verónica, Nicole, Tita)</span>
-        </button>
-        <button type="button" onclick="setPlanVolumeMode('deload')" id="btnVolDeloadENG" class="vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50">
-          <span>▼ Deload (-1 Set)</span>
-          <span class="text-[8.5px] opacity-75 font-semibold">• &gt;70 min (Izzy, Sara T.)</span>
-        </button>
-      </div>
-      <div id="volumeStatusPillENG" class="hidden sm:inline-flex items-center gap-1 text-[9px] font-black text-slate-500 uppercase tracking-wider shrink-0">
-        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-        <span>Baseline Mode Active</span>
-      </div>
-    </div>
-    </div>
-
     <!-- GRELHA PRINCIPAL 2x2 HORIZONTAL (ENG) -->
     <div class="main-grid grid grid-cols-1 lg:grid-cols-2 gap-2.5 items-stretch">
       <div id="leftColENG" class="col-stack flex flex-col gap-2.5 justify-start"></div>
@@ -647,91 +666,6 @@
     const DEFAULT_PAGE_PLAN_ID = 'tibiotarsica_banda_pt';
 
     let currentFilter = 'all';
-    let currentVolumeMode = 'standard'; // 'standard' | 'overload' | 'deload'
-
-    function computeBadgeForMode(badgeText, mode) {
-      if (!badgeText || mode === 'standard') return { text: badgeText, mode: 'standard' };
-      const m = badgeText.match(/^(\d+)x(.*)$/i);
-      if (m) {
-        const sets = parseInt(m[1], 10);
-        const remainder = m[2];
-        if (mode === 'overload') {
-          return { text: `${sets + 1}x${remainder} (+1)`, mode: 'overload' };
-        } else if (mode === 'deload') {
-          const newSets = Math.max(1, sets - 1);
-          return { text: `${newSets}x${remainder} (-1)`, mode: 'deload' };
-        }
-      }
-      return { text: badgeText, mode: 'standard' };
-    }
-
-    function setPlanVolumeMode(mode) {
-      currentVolumeMode = mode;
-
-      const btnStdPT = document.getElementById('btnVolStandardPT');
-      const btnOvrPT = document.getElementById('btnVolOverloadPT');
-      const btnDelPT = document.getElementById('btnVolDeloadPT');
-      const pillPT = document.getElementById('volumeStatusPillPT');
-
-      const btnStdENG = document.getElementById('btnVolStandardENG');
-      const btnOvrENG = document.getElementById('btnVolOverloadENG');
-      const btnDelENG = document.getElementById('btnVolDeloadENG');
-      const pillENG = document.getElementById('volumeStatusPillENG');
-
-      const activeClassStd = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-blue-600 text-white border border-blue-700';
-      const inactiveClassStd = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-slate-700 border border-slate-300 hover:bg-slate-100';
-
-      const activeClassOvr = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-emerald-600 text-white border border-emerald-700 ring-2 ring-emerald-400/50';
-      const inactiveClassOvr = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-emerald-800 border border-emerald-300 hover:bg-emerald-50';
-
-      const activeClassDel = 'vol-btn px-2.5 py-0.5 rounded-full font-black text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-rose-600 text-white border border-rose-700 ring-2 ring-rose-400/50';
-      const inactiveClassDel = 'vol-btn px-2.5 py-0.5 rounded-full font-bold text-[9.5px] transition shadow-xs cursor-pointer flex items-center gap-1 bg-white text-rose-800 border border-rose-300 hover:bg-rose-50';
-
-      if (btnStdPT) btnStdPT.className = (mode === 'standard') ? activeClassStd : inactiveClassStd;
-      if (btnOvrPT) btnOvrPT.className = (mode === 'overload') ? activeClassOvr : inactiveClassOvr;
-      if (btnDelPT) btnDelPT.className = (mode === 'deload') ? activeClassDel : inactiveClassDel;
-
-      if (btnStdENG) btnStdENG.className = (mode === 'standard') ? activeClassStd : inactiveClassStd;
-      if (btnOvrENG) btnOvrENG.className = (mode === 'overload') ? activeClassOvr : inactiveClassOvr;
-      if (btnDelENG) btnDelENG.className = (mode === 'deload') ? activeClassDel : inactiveClassDel;
-
-      if (pillPT) {
-        if (mode === 'standard') {
-          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Volume Padrão</span>';
-        } else if (mode === 'overload') {
-          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-700">▲ Sobrecarga (+1 Série)</span>';
-        } else if (mode === 'deload') {
-          pillPT.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span><span class="text-rose-700">▼ Gestão (-1 Série)</span>';
-        }
-      }
-
-      if (pillENG) {
-        if (mode === 'standard') {
-          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Baseline Volume</span>';
-        } else if (mode === 'overload') {
-          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span><span class="text-emerald-700">▲ Overload (+1 Set)</span>';
-        } else if (mode === 'deload') {
-          pillENG.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span><span class="text-rose-700">▼ Deload (-1 Set)</span>';
-        }
-      }
-
-      const plan = PLANS_LIBRARY.find(p => p.id === window.selectedPlanId) || PLANS_LIBRARY[0];
-      if (plan) {
-        document.getElementById('leftColPT').innerHTML = renderBlock(plan.blocks[0], 'pt', 0, plan.id) + renderBlock(plan.blocks[1], 'pt', 1, plan.id);
-        document.getElementById('rightColPT').innerHTML = renderBlock(plan.blocks[2], 'pt', 2, plan.id) + renderBlock(plan.blocks[3], 'pt', 3, plan.id);
-        document.getElementById('leftColENG').innerHTML = renderBlock(plan.blocks[0], 'en', 0, plan.id) + renderBlock(plan.blocks[1], 'en', 1, plan.id);
-        document.getElementById('rightColENG').innerHTML = renderBlock(plan.blocks[2], 'en', 2, plan.id) + renderBlock(plan.blocks[3], 'en', 3, plan.id);
-      }
-
-      if (mode === 'overload') {
-        showToast('⚡ Modo Sobrecarga (+1 Série) ativado!');
-      } else if (mode === 'deload') {
-        showToast('⚡ Modo Gestão (-1 Série) ativado!');
-      } else {
-        showToast('● Modo Padrão (Volume Base) restaurado.');
-      }
-    }
-
     let currentLang = 'pt';
     window.selectedPlanId = DEFAULT_PAGE_PLAN_ID;
 
@@ -1697,53 +1631,6 @@
         }
       }
 
-      // Individualização de Volume (PT)
-      const overloadTextPT = document.getElementById('planOverloadTextPT');
-      const standardTextPT = document.getElementById('planStandardTextPT');
-      const deloadTextPT = document.getElementById('planDeloadTextPT');
-
-      const defOverloadPT = plan.overload || 'Atletas <45 min no último jogo (ex: Verónica, Nicole, Tita) ➔ 3-4 Séries';
-      const defStandardPT = plan.standard || 'Plantel Geral ➔ Volume base do plano (2-3 Séries conforme prescrição)';
-      const defDeloadPT = plan.deload || 'Atletas >70 min ou gestão clínica (ex: Izzy, Sara T.) ➔ Reduzir 1 Série';
-
-      const customOverloadPT = (customCards[plan.id + '_overload_pt'] !== undefined && customCards[plan.id + '_overload_pt'].trim()) ? customCards[plan.id + '_overload_pt'].trim() : defOverloadPT;
-      const customStandardPT = (customCards[plan.id + '_standard_pt'] !== undefined && customCards[plan.id + '_standard_pt'].trim()) ? customCards[plan.id + '_standard_pt'].trim() : defStandardPT;
-      const customDeloadPT = (customCards[plan.id + '_deload_pt'] !== undefined && customCards[plan.id + '_deload_pt'].trim()) ? customCards[plan.id + '_deload_pt'].trim() : defDeloadPT;
-
-      if (overloadTextPT) {
-        overloadTextPT.innerText = customOverloadPT;
-        overloadTextPT.setAttribute('contenteditable', 'true');
-        overloadTextPT.setAttribute('spellcheck', 'false');
-        overloadTextPT.setAttribute('data-card-key', plan.id + '_overload_pt');
-        overloadTextPT.setAttribute('data-default-val', encodeURIComponent(defOverloadPT));
-        overloadTextPT.oninput = function() { onCardFieldInput(this); };
-        overloadTextPT.onblur = function() { onCardFieldBlur(this); };
-        overloadTextPT.title = 'Clica para editar a sobrecarga (+1 série)';
-        overloadTextPT.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded px-1 transition cursor-text selection:bg-emerald-200';
-      }
-      if (standardTextPT) {
-        standardTextPT.innerText = customStandardPT;
-        standardTextPT.setAttribute('contenteditable', 'true');
-        standardTextPT.setAttribute('spellcheck', 'false');
-        standardTextPT.setAttribute('data-card-key', plan.id + '_standard_pt');
-        standardTextPT.setAttribute('data-default-val', encodeURIComponent(defStandardPT));
-        standardTextPT.oninput = function() { onCardFieldInput(this); };
-        standardTextPT.onblur = function() { onCardFieldBlur(this); };
-        standardTextPT.title = 'Clica para editar o volume padrão';
-        standardTextPT.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 transition cursor-text selection:bg-blue-200';
-      }
-      if (deloadTextPT) {
-        deloadTextPT.innerText = customDeloadPT;
-        deloadTextPT.setAttribute('contenteditable', 'true');
-        deloadTextPT.setAttribute('spellcheck', 'false');
-        deloadTextPT.setAttribute('data-card-key', plan.id + '_deload_pt');
-        deloadTextPT.setAttribute('data-default-val', encodeURIComponent(defDeloadPT));
-        deloadTextPT.oninput = function() { onCardFieldInput(this); };
-        deloadTextPT.onblur = function() { onCardFieldBlur(this); };
-        deloadTextPT.title = 'Clica para editar a gestão de carga (-1 série)';
-        deloadTextPT.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 rounded px-1 transition cursor-text selection:bg-rose-200';
-      }
-
       document.getElementById('leftColPT').innerHTML = renderBlock(plan.blocks[0], 'pt', 0, plan.id) + renderBlock(plan.blocks[1], 'pt', 1, plan.id);
       document.getElementById('rightColPT').innerHTML = renderBlock(plan.blocks[2], 'pt', 2, plan.id) + renderBlock(plan.blocks[3], 'pt', 3, plan.id);
 
@@ -1832,53 +1719,6 @@
           protocolBannerENG.classList.add('hidden');
           protocolBannerENG.classList.remove('flex');
         }
-      }
-
-      // Individualization of Volume (ENG)
-      const overloadTextENG = document.getElementById('planOverloadTextENG');
-      const standardTextENG = document.getElementById('planStandardTextENG');
-      const deloadTextENG = document.getElementById('planDeloadTextENG');
-
-      const defOverloadENG = plan.overload_en || 'Players with <45 min in last match (e.g. Verónica, Nicole, Tita) ➔ 3-4 Sets';
-      const defStandardENG = plan.standard_en || 'General Squad ➔ Baseline Plan Volume (2-3 Sets as prescribed)';
-      const defDeloadENG = plan.deload_en || 'Players with >70 min or load management (e.g. Izzy, Sara T.) ➔ Reduce 1 Set';
-
-      const customOverloadENG = (customCards[plan.id + '_overload_en'] !== undefined && customCards[plan.id + '_overload_en'].trim()) ? customCards[plan.id + '_overload_en'].trim() : defOverloadENG;
-      const customStandardENG = (customCards[plan.id + '_standard_en'] !== undefined && customCards[plan.id + '_standard_en'].trim()) ? customCards[plan.id + '_standard_en'].trim() : defStandardENG;
-      const customDeloadENG = (customCards[plan.id + '_deload_en'] !== undefined && customCards[plan.id + '_deload_en'].trim()) ? customCards[plan.id + '_deload_en'].trim() : defDeloadENG;
-
-      if (overloadTextENG) {
-        overloadTextENG.innerText = customOverloadENG;
-        overloadTextENG.setAttribute('contenteditable', 'true');
-        overloadTextENG.setAttribute('spellcheck', 'false');
-        overloadTextENG.setAttribute('data-card-key', plan.id + '_overload_en');
-        overloadTextENG.setAttribute('data-default-val', encodeURIComponent(defOverloadENG));
-        overloadTextENG.oninput = function() { onCardFieldInput(this); };
-        overloadTextENG.onblur = function() { onCardFieldBlur(this); };
-        overloadTextENG.title = 'Click to edit overload (+1 set)';
-        overloadTextENG.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded px-1 transition cursor-text selection:bg-emerald-200';
-      }
-      if (standardTextENG) {
-        standardTextENG.innerText = customStandardENG;
-        standardTextENG.setAttribute('contenteditable', 'true');
-        standardTextENG.setAttribute('spellcheck', 'false');
-        standardTextENG.setAttribute('data-card-key', plan.id + '_standard_en');
-        standardTextENG.setAttribute('data-default-val', encodeURIComponent(defStandardENG));
-        standardTextENG.oninput = function() { onCardFieldInput(this); };
-        standardTextENG.onblur = function() { onCardFieldBlur(this); };
-        standardTextENG.title = 'Click to edit baseline volume';
-        standardTextENG.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 transition cursor-text selection:bg-blue-200';
-      }
-      if (deloadTextENG) {
-        deloadTextENG.innerText = customDeloadENG;
-        deloadTextENG.setAttribute('contenteditable', 'true');
-        deloadTextENG.setAttribute('spellcheck', 'false');
-        deloadTextENG.setAttribute('data-card-key', plan.id + '_deload_en');
-        deloadTextENG.setAttribute('data-default-val', encodeURIComponent(defDeloadENG));
-        deloadTextENG.oninput = function() { onCardFieldInput(this); };
-        deloadTextENG.onblur = function() { onCardFieldBlur(this); };
-        deloadTextENG.title = 'Click to edit deload (-1 set)';
-        deloadTextENG.className = 'font-bold text-slate-800 truncate hover:bg-white focus:bg-white focus:outline-none focus:ring-1 focus:ring-rose-500 rounded px-1 transition cursor-text selection:bg-rose-200';
       }
 
       document.getElementById('leftColENG').innerHTML = renderBlock(plan.blocks[0], 'en', 0, plan.id) + renderBlock(plan.blocks[1], 'en', 1, plan.id);
