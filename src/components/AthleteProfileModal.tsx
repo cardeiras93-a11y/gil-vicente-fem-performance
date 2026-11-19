@@ -7,7 +7,8 @@ import { getPlansForAthlete } from '@/lib/mobilityPlans';
 import { MobilityPlanModal } from './MobilityPlanModal';
 import { secureFetch } from '@/lib/authGuard';
 import { useLanguage } from '@/context/LanguageContext';
-import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert, Dumbbell, ChevronRight } from 'lucide-react';
+import { getNutritionForAthlete, getStatusStyle, AthleteNutritionRecord } from '@/lib/nutritionData';
+import { X, Camera, Lock, KeyRound, CheckCircle, Trash2, UserCheck, ShieldAlert, Dumbbell, ChevronRight, Apple, Scale, Target } from 'lucide-react';
 
 interface AthleteProfileModalProps {
   athlete: Athlete | null;
@@ -32,6 +33,7 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [assignedPlans, setAssignedPlans] = useState<MobilityPlan[]>([]);
   const [selectedMobilityPlan, setSelectedMobilityPlan] = useState<MobilityPlan | null>(null);
+  const [nutritionRecord, setNutritionRecord] = useState<AthleteNutritionRecord | null>(null);
 
   useEffect(() => {
     if (athlete) {
@@ -42,6 +44,7 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
       setPinError('');
       setSuccessMessage(null);
       setAssignedPlans(getPlansForAthlete(athlete));
+      setNutritionRecord(getNutritionForAthlete(athlete.id, athlete.name));
     }
   }, [athlete, isOpen]);
 
@@ -250,6 +253,52 @@ export const AthleteProfileModal: React.FC<AthleteProfileModalProps> = ({
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Nutrition & Anthropometrics Summary */}
+        {nutritionRecord && (
+          <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/20 p-4 space-y-3">
+            <div className="flex items-center justify-between border-b border-emerald-500/20 pb-2">
+              <span className="text-xs font-black uppercase text-emerald-300 flex items-center space-x-1.5">
+                <Apple className="h-4 w-4 text-emerald-400" />
+                <span>Nutrição & Antropometria (Nov 2026)</span>
+              </span>
+              <span
+                className={`text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
+                  getStatusStyle(nutritionRecord.history.november?.status || 'Adequada').bg
+                } ${getStatusStyle(nutritionRecord.history.november?.status || 'Adequada').border} ${
+                  getStatusStyle(nutritionRecord.history.november?.status || 'Adequada').text
+                }`}
+              >
+                {nutritionRecord.history.november?.status || 'Adequada'}
+              </span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2">
+                <span className="text-[10px] text-slate-400 font-bold block">Peso</span>
+                <span className="text-sm font-black font-mono text-white">
+                  {(
+                    nutritionRecord.history.november?.weight ?? nutritionRecord.augustWeightKg
+                  ).toFixed(1)}{' '}
+                  kg
+                </span>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2">
+                <span className="text-[10px] text-slate-400 font-bold block">Alvo</span>
+                <span className="text-sm font-black font-mono text-cyan-300">
+                  {nutritionRecord.targetWeightKg.toFixed(1)} kg
+                </span>
+              </div>
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-2">
+                <span className="text-[10px] text-slate-400 font-bold block">∑8SKF</span>
+                <span className="text-sm font-black font-mono text-emerald-400">
+                  {nutritionRecord.history.november?.skf != null
+                    ? `${nutritionRecord.history.november.skf.toFixed(1)} mm`
+                    : '—'}
+                </span>
+              </div>
             </div>
           </div>
         )}

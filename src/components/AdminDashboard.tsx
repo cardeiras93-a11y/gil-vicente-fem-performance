@@ -18,13 +18,14 @@ import { MatchDashboard } from './MatchDashboard';
 import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import { KioskModeView } from './KioskModeView';
 import { AdminMobilityManager } from './AdminMobilityManager';
+import { AdminNutritionManager } from './AdminNutritionManager';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
   Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Tablet, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
-  Unlock, UserCheck
+  Unlock, UserCheck, Apple
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -126,14 +127,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [rpeSessionFilter, setRpeSessionFilter] = useState<'all' | 'field' | 'gym_lower'>('all');
 
-  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility'>(() => {
+  const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'nutrition' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('femperf_admin_active_tab') as any) || 'schedule';
     }
     return 'schedule';
   });
 
-  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility') => {
+  const setActiveTab = (tab: 'schedule' | 'overview' | 'collective' | 'individual' | 'nutrition' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_active_tab', tab);
@@ -1511,6 +1512,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           >
             <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-rose-400 shrink-0" />
             <span>Tempo de Jogo</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab('nutrition')}
+            className={`flex-1 min-w-[125px] sm:min-w-[135px] flex items-center justify-center space-x-1.5 px-2.5 sm:px-3 py-2 sm:py-2.5 text-xs font-extrabold rounded-xl transition-all text-center leading-tight shadow-sm ${
+              activeTab === 'nutrition'
+                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/30 border border-emerald-400/50'
+                : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
+            }`}
+          >
+            <Apple className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400 shrink-0" />
+            <span>Nutrição & Antropometria</span>
           </button>
 
           <button
@@ -2957,6 +2971,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           <MatchDashboard userRole="admin" />
         ) : activeTab === 'matchMinutes' ? (
           <MatchMinutesDashboard />
+        ) : activeTab === 'nutrition' ? (
+          <AdminNutritionManager />
         ) : activeTab === 'mobility' ? (
           <AdminMobilityManager />
         ) : (

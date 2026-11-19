@@ -19,8 +19,9 @@ import { AthleteMobilityPlanCard } from '@/components/AthleteMobilityPlanCard';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { MatchMinutesDashboard } from '@/components/MatchMinutesDashboard';
+import { AthleteNutritionCard } from '@/components/AthleteNutritionCard';
 import { isGoalkeeper } from '@/lib/data';
-import { HeartPulse, Dumbbell, Droplet, Scale, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap, Clock } from 'lucide-react';
+import { HeartPulse, Dumbbell, Droplet, Scale, User, Smartphone, Shield, Stethoscope, AlertTriangle, Trash2, CheckCircle2, AlertCircle, Zap, Clock, Apple } from 'lucide-react';
 
 const VIEW_MODE_KEY = 'femperf_active_view_mode';
 
@@ -71,15 +72,15 @@ function MainAppContent() {
     return true;
   });
 
-  const [activeTab, setActiveTabState] = useState<'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes'>(() => {
+  const [activeTab, setActiveTabState] = useState<'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes' | 'nutrition'>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('femperf_athlete_active_tab') as any;
-      if (stored === 'wellness' || stored === 'rpe' || stored === 'hydration' || stored === 'matchday' || stored === 'matchMinutes') return stored;
+      if (stored === 'wellness' || stored === 'rpe' || stored === 'hydration' || stored === 'matchday' || stored === 'matchMinutes' || stored === 'nutrition') return stored;
     }
     return 'wellness';
   });
 
-  const setActiveTab = (tab: 'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes') => {
+  const setActiveTab = (tab: 'wellness' | 'rpe' | 'hydration' | 'matchday' | 'matchMinutes' | 'nutrition') => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_athlete_active_tab', tab);
@@ -389,7 +390,7 @@ function MainAppContent() {
             <AthleteComplementaryWorkCard />
 
             {/* Top Navigation Tabs */}
-            <div className={`grid ${isAthleteGoalkeeper ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-5'} gap-1.5 rounded-2xl bg-dark-card p-1.5 border border-slate-800 shadow-md`}>
+            <div className={`grid ${isAthleteGoalkeeper ? 'grid-cols-2 sm:grid-cols-5' : 'grid-cols-3 sm:grid-cols-6'} gap-1.5 rounded-2xl bg-dark-card p-1.5 border border-slate-800 shadow-md`}>
               <button
                 type="button"
                 onClick={() => setActiveTab('wellness')}
@@ -467,6 +468,22 @@ function MainAppContent() {
                   {isAthleteGoalkeeper ? '4. ⏱️ Tempos Jogo' : '5. ⏱️ Tempos Jogo'}
                 </span>
               </button>
+
+              {/* Nutrição & Antropometria (Individual Privada) */}
+              <button
+                type="button"
+                onClick={() => setActiveTab('nutrition')}
+                className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl text-xs font-extrabold transition-all space-y-1 ${
+                  activeTab === 'nutrition'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/20 scale-102'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Apple className="h-4 w-4 shrink-0 text-emerald-400" />
+                <span className="text-[10px] sm:text-[11px] font-black leading-none text-center">
+                  {isAthleteGoalkeeper ? '5. 🥗 Nutrição' : '6. 🥗 Nutrição'}
+                </span>
+              </button>
             </div>
 
             {/* Active Tab Content */}
@@ -504,6 +521,12 @@ function MainAppContent() {
                     userRole="athlete"
                     athleteName={activeAthlete.name}
                   />
+                </div>
+              )}
+
+              {activeTab === 'nutrition' && (
+                <div className="w-full pt-1 animate-fade-in">
+                  <AthleteNutritionCard athlete={activeAthlete} />
                 </div>
               )}
             </div>
