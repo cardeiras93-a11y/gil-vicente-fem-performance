@@ -2,8 +2,8 @@ import { MobilityPlan, AthletePlanAssignment, Athlete } from './types';
 import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
-export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v4';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v4';
+export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v5';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v5';
 export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v3';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
@@ -287,6 +287,9 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
   if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
     let raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
+    if (!raw) {
+      raw = localStorage.getItem('femperf_athlete_plan_assignments_v4');
+    }
     if (!raw) {
       raw = localStorage.getItem('femperf_athlete_plan_assignments_v3');
     }

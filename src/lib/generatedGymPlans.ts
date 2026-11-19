@@ -2755,4 +2755,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "recuperacao_quadricep_casa_carol",
+    titlePt: "Plano de Recupera\u00e7\u00e3o do Quadric\u00edpete \u2014 CAROL (GR) [Casa]",
+    titleEn: "Quadriceps Recovery Plan \u2014 CAROL (GK) [Home Routine]",
+    categoryPt: "Reabilita\u00e7\u00e3o & Fisioterapia \u2022 Recupera\u00e7\u00e3o Muscular em Casa",
+    categoryEn: "Rehab & Physical Therapy \u2022 At-Home Muscle Recovery",
+    group: "inferiores",
+    groupBadgePt: "\ud83e\udde4 Guarda-Redes \u2022 Recupera\u00e7\u00e3o Quadric\u00edpete em Casa",
+    groupBadgeEn: "\ud83e\udde4 Goalkeeper \u2022 Quad Recovery At Home",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 DEPARTAMENTO DE PERFORMANCE & SA\u00daDE",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 PERFORMANCE & HEALTH DEPARTMENT",
+    targetPosition: "all",
+    durationMinutes: 20,
+    durationTextPt: "20 MIN",
+    durationTextEn: "20 MIN",
+    warmupPt: "3 MIN Caminhada Ligeira em Casa ou Rota\u00e7\u00e3o Suave de Tornozelos + 2 S\u00e9ries de 10 Pontes de Gl\u00fateo no Solo (Pausa 2s). Proibido estiramento passivo violento do quadric\u00edpete na fase aguda.",
+    warmupEn: "3 MIN Light Walking at Home or Gentle Ankle CARs + 2 Sets of 10 Glute Bridges (2s peak hold). Avoid aggressive passive stretching of the quadriceps in acute stage.",
+    finisherPt: "Crioterapia Local (Gelo/Compressa Fria) 15-20 MIN com perna elevada a 30\u00b0 + Massagem circulat\u00f3ria ascendente muito suave.",
+    finisherEn: "Local Cryotherapy (Ice pack) 15-20 MIN with leg elevated at 30\u00b0 + Very gentle upward lymphatic stroke.",
+    blocks: [
+      {
+        id: "recuperacao_quadricep_casa_carol_block_01",
+        number: "01",
+        titlePt: "Ativa\u00e7\u00e3o Isom\u00e9trica & Analgesia (Calistenia Pura)",
+        titleEn: "Pain-Free Quad Isometrics & Analgesia (Bodyweight)",
+        durationMinutes: 5,
+        durationTextPt: "5 MIN",
+        durationTextEn: "5 MIN",
+        exercises: [
+          {
+            id: "recuperacao_quadricep_casa_carol_b01_ex1",
+            namePt: "1.1 Wall-Sit Isom\u00e9trico na Parede (Sem Carga Articular)",
+            nameEn: "1.1 Wall-Sit Isometric Hold (Joint-Friendly)",
+            seriesRepsPt: "3x 30-40s isometria",
+            seriesRepsEn: "3x 30-40s isometric hold",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "Costas totalmente apoiadas na parede de casa, p\u00e9s afastados e est\u00e1veis. Desce at\u00e9 aos 60\u00b0-90\u00b0 (\u00e2ngulo confort\u00e1vel e sem dor). Mant\u00e9m contra\u00e7\u00e3o cont\u00ednua e firme do quadric\u00edpete sem mover as articula\u00e7\u00f5es. Analgesia e ativa\u00e7\u00e3o segura.",
+            descriptionEn: "Back flat against wall, feet shoulder-width apart. Lower down to 60\u00b0-90\u00b0 (pain-free depth). Hold steady quadriceps contraction without joint movement for analgesic tendon relief.",
+            imageSrc: "/exercises/wall_sit_isometric_ball_pro.svg"
+          },
+          {
+            id: "recuperacao_quadricep_casa_carol_b01_ex2",
+            namePt: "1.2 Eleva\u00e7\u00e3o da Perna Reta em Supino (Straight Leg Raise)",
+            nameEn: "1.2 Supine Straight Leg Raise (Quad Lock)",
+            seriesRepsPt: "3x 12-15 reps / perna",
+            seriesRepsEn: "3x 12-15 reps / leg",
+            restPt: "45s entre s\u00e9ries",
+            restEn: "45s between sets",
+            descriptionPt: "Deitada de costas no tapete com perna oposta fletida. Contrai o quadric\u00edpete at\u00e9 travar o joelho totalmente em extens\u00e3o e eleva a perna reta at\u00e9 45\u00b0. Pausa 2s no topo e desce devagar (3s). Isolamento puro do vasto medial e reto femoral.",
+            descriptionEn: "Lying on back with non-target leg bent. Contract quad to lock knee completely straight, then raise leg to 45\u00b0. Pause 2s at top and lower slowly over 3s. Isolates VMO and rectus femoris.",
+            imageSrc: "/exercises/straight_leg_raise_quad_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "recuperacao_quadricep_casa_carol_block_02",
+        number: "02",
+        titlePt: "Fortalecimento com Mini-Banda & Estabilidade de Base (GR)",
+        titleEn: "Mini-Band Strength & Goalkeeper Base Stance",
+        durationMinutes: 5,
+        durationTextPt: "5 MIN",
+        durationTextEn: "5 MIN",
+        exercises: [
+          {
+            id: "recuperacao_quadricep_casa_carol_b02_ex1",
+            namePt: "2.1 Extens\u00e3o Terminal de Joelho c/ Mini-Banda (TKE em P\u00e9)",
+            nameEn: "2.1 Standing Terminal Knee Extension with Mini-Band (TKE)",
+            seriesRepsPt: "3x 12-15 reps / perna",
+            seriesRepsEn: "3x 12-15 reps / leg",
+            restPt: "45s entre s\u00e9ries",
+            restEn: "45s between sets",
+            descriptionPt: "Mini-banda fixada \u00e0 perna da mesa ou sof\u00e1 e posicionada na fossa popl\u00edtea (atr\u00e1s do joelho). Inicia com joelho ligeiramente fletido (20\u00b0) e estende ativamente para tr\u00e1s contra a banda at\u00e9 ao bloqueio terminal. Foco no vasto medial obl\u00edquo (VMO).",
+            descriptionEn: "Mini-band anchored around heavy furniture and looped behind knee crease. Start slightly bent (20\u00b0) and actively extend knee back into full lockout against band resistance, targeting VMO.",
+            imageSrc: "/exercises/terminal_knee_extension_band_pro.svg"
+          },
+          {
+            id: "recuperacao_quadricep_casa_carol_b02_ex2",
+            namePt: "2.2 Deslocamento Lateral em Postura Base de GR (Mini-Banda)",
+            nameEn: "2.2 Mini-Band Goalkeeper Lateral Shuffles (Set Stance)",
+            seriesRepsPt: "3x 10 passos / lado",
+            seriesRepsEn: "3x 10 steps / side",
+            restPt: "45s entre s\u00e9ries",
+            restEn: "45s between sets",
+            descriptionPt: "Mini-banda acima dos joelhos em postura atl\u00e9tica base de GR (semiflex\u00e3o de 30\u00b0, tronco firme e m\u00e3os \u00e0 frente). Passos laterais curtos sem deixar os joelhos colapsarem para dentro (valgo). Alinha o vetor f\u00e9moro-patelar e ativa o gl\u00fateo m\u00e9dio.",
+            descriptionEn: "Mini-band above knees in athletic goalkeeper set stance (30\u00b0 knee flexion). Controlled lateral steps maintaining outward knee tension to align patellar tracking and recruit gluteus medius.",
+            imageSrc: "/exercises/miniband_goalkeeper_lateral_step_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "recuperacao_quadricep_casa_carol_block_03",
+        number: "03",
+        titlePt: "Cadeia Cin\u00e9tica Fechada & Controlo Exc\u00eantrico (Calistenia)",
+        titleEn: "Closed Kinetic Chain & Controlled Eccentrics",
+        durationMinutes: 5,
+        durationTextPt: "5 MIN",
+        durationTextEn: "5 MIN",
+        exercises: [
+          {
+            id: "recuperacao_quadricep_casa_carol_b03_ex1",
+            namePt: "3.1 Box Squat / Agachamento \u00e0 Cadeira c/ Mini-Banda",
+            nameEn: "3.1 Box Squat / Chair Squat with Mini-Band (At-Home)",
+            seriesRepsPt: "3x 8-10 reps (Descida 3s)",
+            seriesRepsEn: "3x 8-10 reps (3s eccentric)",
+            restPt: "60s entre s\u00e9ries",
+            restEn: "60s between sets",
+            descriptionPt: "De p\u00e9 em frente a uma cadeira ou sof\u00e1 com mini-banda acima dos joelhos. Inicia o agachamento projetando a bacia para tr\u00e1s com tronco firme. Desce em 3 segundos controlados at\u00e9 tocar suavemente no assento e sobe sem impulsos bruscos.",
+            descriptionEn: "Stand in front of chair/sofa with mini-band above knees. Hinge hips back, maintaining tension outward against band. Lower over 3 slow seconds until lightly tapping seat, then stand up under control.",
+            imageSrc: "/exercises/box_squat_miniband_pro.svg"
+          },
+          {
+            id: "recuperacao_quadricep_casa_carol_b03_ex2",
+            namePt: "3.2 Poliquin Step-Down Controlado no Degrau (Sem Impacto)",
+            nameEn: "3.2 Controlled Poliquin Step-Down on Step",
+            seriesRepsPt: "3x 8-10 reps / perna",
+            seriesRepsEn: "3x 8-10 reps / leg",
+            restPt: "45s cada perna",
+            restEn: "45s each leg",
+            descriptionPt: "Num degrau de casa (ou livro grosso), p\u00e9 de apoio no topo. Desce a perna oposta lentamente em 3s tocando suavemente com o calcanhar no ch\u00e3o \u00e0 frente, sem transferir o peso corporal, e sobe pela for\u00e7a do quadric\u00edpete da perna de apoio.",
+            descriptionEn: "On a home step, support foot on step. Slowly lower opposite heel over 3s to softly tap floor in front without transferring bodyweight, returning using the quad of the standing leg.",
+            imageSrc: "/exercises/poliquin_step_up_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "recuperacao_quadricep_casa_carol_block_04",
+        number: "04",
+        titlePt: "Inibi\u00e7\u00e3o Rec\u00edproca & Descompress\u00e3o Articular",
+        titleEn: "Reciprocal Inhibition & Joint Decompression",
+        durationMinutes: 5,
+        durationTextPt: "5 MIN",
+        durationTextEn: "5 MIN",
+        exercises: [
+          {
+            id: "recuperacao_quadricep_casa_carol_b04_ex1",
+            namePt: "4.1 Ponte de Gl\u00fateo no Solo c/ Mini-Banda (Glute Bridge)",
+            nameEn: "4.1 Glute Bridge with Mini-Band & Isometric Abduction",
+            seriesRepsPt: "3x 12-15 reps (Pausa 2s)",
+            seriesRepsEn: "3x 12-15 reps (2s peak hold)",
+            restPt: "45s entre s\u00e9ries",
+            restEn: "45s between sets",
+            descriptionPt: "Deitada de costas com mini-banda acima dos joelhos e calcanhares firmes no ch\u00e3o. Eleva a bacia contraindo gl\u00fateos e isquiotibiais ao m\u00e1ximo, afastando ligeiramente os joelhos contra a banda. A ativa\u00e7\u00e3o dos extensores da anca inibe e relaxa o t\u00f3nus do quadric\u00edpete.",
+            descriptionEn: "Supine with mini-band above knees and heels flat. Drive hips up, squeezing glutes and hamstrings with slight outward knee pressure. Strong posterior chain recruitment reflexively offloads the quad.",
+            imageSrc: "/exercises/glute_bridge_band_pro.svg"
+          },
+          {
+            id: "recuperacao_quadricep_casa_carol_b04_ex2",
+            namePt: "4.2 B\u00e1scula P\u00e9lvica em Meio-Ajoelhado (Sem Estiramento For\u00e7ado)",
+            nameEn: "4.2 Half-Kneeling Pelvic Tilt & Rectus Femoris Reset",
+            seriesRepsPt: "3x 30s cada lado",
+            seriesRepsEn: "3x 30s each side",
+            restPt: "30s cada lado",
+            restEn: "30s each side",
+            descriptionPt: "Em posi\u00e7\u00e3o de meio-ajoelhado (com almofada sob o joelho traseiro). Executa uma retrovers\u00e3o p\u00e9lvica ativa (aperta o gl\u00fateo e recolhe o umbigo), sentindo a abertura suave da parte anterior da coxa sem puxar o p\u00e9 atr\u00e1s. Ganho de comprimento funcional sem risco muscular.",
+            descriptionEn: "Half-kneeling with cushion under rear knee. Perform active posterior pelvic tilt (engage rear glute, brace abs) to create gentle opening along anterior thigh without forced heel pulling. Restores functional length safely.",
+            imageSrc: "/exercises/kneeling_hip_flexor_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];

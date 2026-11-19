@@ -4990,6 +4990,17 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "assignedBy": "Sistema (Anamnese)",
     "active": true,
     "notes": "Plano de Ativação — IZZY (Tendão de Aquiles & Analgesia Isométrica)."
+  },
+  "athlete_ath-2_recuperacao_quadricep_casa_carol": {
+    "id": "athlete_ath-2_recuperacao_quadricep_casa_carol",
+    "targetType": "athlete",
+    "targetId": "ath-2",
+    "targetName": "CAROL",
+    "planId": "recuperacao_quadricep_casa_carol",
+    "assignedAt": "2026-11-19T00:00:00.000Z",
+    "assignedBy": "Departamento de Performance (Recuperação Casa)",
+    "active": true,
+    "notes": "Recuperação do Quadricípete em Casa (8 Exercícios • Calistenia & Mini-Banda): Wall-Sit, Straight Leg Raise, TKE, Deslocamento Lateral GR, Box Squat, Step-Down, Glute Bridge e Báscula Pélvica."
   }
 };
 
