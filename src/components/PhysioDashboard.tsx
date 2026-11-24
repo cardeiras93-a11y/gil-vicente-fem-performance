@@ -281,13 +281,15 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
           setIsSyncingCloud(false);
         });
 
-      // Auto-poll cloud every 45 seconds to preserve egress quota while syncing updates
+      // Auto-poll cloud every 120 seconds to preserve egress quota while syncing updates
       const intervalId = setInterval(() => {
-        syncAllDataFromCloud().then(() => {
-          loadData();
-          setLastSyncTime(new Date());
-        });
-      }, 45000);
+        if (typeof document !== 'undefined' && !document.hidden) {
+          syncAllDataFromCloud().then(() => {
+            loadData();
+            setLastSyncTime(new Date());
+          });
+        }
+      }, 120000);
 
       const onFocusOrResume = () => {
         setIsSyncingCloud(true);

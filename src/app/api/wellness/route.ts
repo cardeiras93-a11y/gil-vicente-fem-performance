@@ -58,12 +58,17 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const athleteId = searchParams.get('athleteId');
+    const dateParam = searchParams.get('date');
 
     const entryMap = new Map<string, any>();
 
     // 1. Fetch from local file
     const localEntries = getStoredEntries();
-    localEntries.forEach((e) => entryMap.set(e.id || `${e.athleteId}-${e.date}`, e));
+    localEntries.forEach((e) => {
+      if (dateParam && e.date !== dateParam) return;
+      if (athleteId && e.athleteId !== athleteId) return;
+      entryMap.set(e.id || `${e.athleteId}-${e.date}`, e);
+    });
 
     if (isSupabaseConfigured && supabase) {
       // 2. Try primary wellness_entries table
@@ -71,6 +76,12 @@ export async function GET(request: Request) {
         let query = supabase.from('wellness_entries').select('*').order('created_at', { ascending: false });
         if (athleteId) {
           query = query.eq('athlete_id', athleteId);
+        }
+        if (dateParam) {
+          query = query.eq('date', dateParam);
+        } else {
+          // Limit to recent entries to protect egress bandwidth
+          query = query.limit(120);
         }
         const { data, error } = await query;
         if (!error && data) {
@@ -108,33 +119,40 @@ export async function GET(request: Request) {
         console.warn('Erro ao ler tabela wellness_entries:', dbErr);
       }
 
-      // 3. Fallback: read __WELLNESS_ENTRIES__ row in athletes table for guaranteed cross-device persistence
-      try {
-        const { data: athData, error: athError } = await supabase
-          .from('athletes')
-          .select('name')
-          .eq('id', '__WELLNESS_ENTRIES__')
-          .single();
+      // 3. Fallback: only read __WELLNESS_ENTRIES__ if entryMap is still empty (saves massive egress!)
+      if (entryMap.size === 0) {
+        try {
+          const { data: athData, error: athError } = await supabase
+            .from('athletes')
+            .select('name')
+            .eq('id', '__WELLNESS_ENTRIES__')
+            .single();
 
-        if (!athError && athData?.name) {
-          const fallbackList: any[] = JSON.parse(athData.name);
-          if (Array.isArray(fallbackList)) {
-            fallbackList.forEach((e) => {
-              const key = e.id || `${e.athleteId}-${e.date}`;
-              if (!entryMap.has(key)) {
-                entryMap.set(key, e);
-              }
-            });
+          if (!athError && athData?.name) {
+            const fallbackList: any[] = JSON.parse(athData.name);
+            if (Array.isArray(fallbackList)) {
+              fallbackList.forEach((e) => {
+                if (dateParam && e.date !== dateParam) return;
+                if (athleteId && e.athleteId !== athleteId) return;
+                const key = e.id || `${e.athleteId}-${e.date}`;
+                if (!entryMap.has(key)) {
+                  entryMap.set(key, e);
+                }
+              });
+            }
           }
+        } catch (e) {
+          console.warn('Erro ao ler fallback __WELLNESS_ENTRIES__ de athletes:', e);
         }
-      } catch (e) {
-        console.warn('Erro ao ler fallback __WELLNESS_ENTRIES__ de athletes:', e);
       }
     }
 
     let result = Array.from(entryMap.values());
     if (athleteId) {
       result = result.filter((e) => e.athleteId === athleteId);
+    }
+    if (dateParam) {
+      result = result.filter((e) => e.date === dateParam);
     }
 
     // Sort newest first

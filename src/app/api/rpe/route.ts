@@ -58,6 +58,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const athleteId = searchParams.get('athleteId');
+    const dateParam = searchParams.get('date');
 
     const entryMap = new Map<string, any>();
 
@@ -65,6 +66,8 @@ export async function GET(request: Request) {
     const localEntries = getStoredEntries();
     localEntries.forEach((e) => {
       if (e) {
+        if (dateParam && e.date !== dateParam) return;
+        if (athleteId && e.athleteId !== athleteId) return;
         const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
         e.sessionType = sType;
         e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
@@ -78,6 +81,12 @@ export async function GET(request: Request) {
         let query = supabase.from('rpe_entries').select('*').order('created_at', { ascending: false });
         if (athleteId) {
           query = query.eq('athlete_id', athleteId);
+        }
+        if (dateParam) {
+          query = query.eq('date', dateParam);
+        } else {
+          // Limit to recent entries to protect egress bandwidth
+          query = query.limit(120);
         }
         const { data, error } = await query;
         if (!error && data) {
@@ -111,38 +120,45 @@ export async function GET(request: Request) {
         console.warn('Erro ao ler tabela rpe_entries:', dbErr);
       }
 
-      // 3. Fallback: read __RPE_ENTRIES__ row in athletes table for guaranteed cross-device persistence
-      try {
-        const { data: athData, error: athError } = await supabase
-          .from('athletes')
-          .select('name')
-          .eq('id', '__RPE_ENTRIES__')
-          .single();
+      // 3. Fallback: only read __RPE_ENTRIES__ if entryMap is still empty
+      if (entryMap.size === 0) {
+        try {
+          const { data: athData, error: athError } = await supabase
+            .from('athletes')
+            .select('name')
+            .eq('id', '__RPE_ENTRIES__')
+            .single();
 
-        if (!athError && athData?.name) {
-          const fallbackList: any[] = JSON.parse(athData.name);
-          if (Array.isArray(fallbackList)) {
-            fallbackList.forEach((e) => {
-              if (e) {
-                const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
-                e.sessionType = sType;
-                e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
-                const key = e.id || `${e.athleteId}-${e.date}-${sType}`;
-                if (!entryMap.has(key)) {
-                  entryMap.set(key, e);
+          if (!athError && athData?.name) {
+            const fallbackList: any[] = JSON.parse(athData.name);
+            if (Array.isArray(fallbackList)) {
+              fallbackList.forEach((e) => {
+                if (e) {
+                  if (dateParam && e.date !== dateParam) return;
+                  if (athleteId && e.athleteId !== athleteId) return;
+                  const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
+                  e.sessionType = sType;
+                  e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
+                  const key = e.id || `${e.athleteId}-${e.date}-${sType}`;
+                  if (!entryMap.has(key)) {
+                    entryMap.set(key, e);
+                  }
                 }
-              }
-            });
+              });
+            }
           }
+        } catch (e) {
+          console.warn('Erro ao ler fallback __RPE_ENTRIES__ de athletes:', e);
         }
-      } catch (e) {
-        console.warn('Erro ao ler fallback __RPE_ENTRIES__ de athletes:', e);
       }
     }
 
     let result = Array.from(entryMap.values());
     if (athleteId) {
       result = result.filter((e) => e.athleteId === athleteId);
+    }
+    if (dateParam) {
+      result = result.filter((e) => e.date === dateParam);
     }
 
     result.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());

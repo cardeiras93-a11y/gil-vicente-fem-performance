@@ -728,14 +728,11 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         items.forEach((item) => {
           map.set(getKey(item), item);
         });
-        // 2. Preserve only recent local unpushed offline entries (<24h old) not yet in cloud
+        // 2. Preserve local entries not yet in cloud or older historical records
         local.forEach((localItem) => {
           const key = getKey(localItem);
           if (!map.has(key)) {
-            const itemTime = new Date(localItem.submittedAt || localItem.date).getTime();
-            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
-              map.set(key, localItem);
-            }
+            map.set(key, localItem);
           }
         });
         const merged = Array.from(map.values());
@@ -771,10 +768,7 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
           }
           const key = getKey(localItem);
           if (!map.has(key)) {
-            const itemTime = new Date(localItem.submittedAt || localItem.date).getTime();
-            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
-              map.set(key, localItem);
-            }
+            map.set(key, localItem);
           }
         });
         const merged = Array.from(map.values());
@@ -802,10 +796,7 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         local.forEach((localItem) => {
           const key = getKey(localItem);
           if (!map.has(key)) {
-            const itemTime = new Date(localItem.date).getTime();
-            if (!isNaN(itemTime) && Date.now() - itemTime < 24 * 60 * 60 * 1000) {
-              map.set(key, localItem);
-            }
+            map.set(key, localItem);
           }
         });
         const merged = Array.from(map.values());
