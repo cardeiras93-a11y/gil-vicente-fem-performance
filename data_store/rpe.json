@@ -1,5 +1,29 @@
 [
   {
+    "id": "rpe-ath-17-2026-11-24-gym_lower",
+    "athleteId": "ath-17",
+    "athleteName": "RIBEIRO",
+    "date": "2026-11-24",
+    "sessionType": "gym_lower",
+    "physicalDemand": 6,
+    "postFatigue": 7,
+    "sessionDurationMin": 105,
+    "muscleFatigue": {
+      "Adutores (D/E)": 4,
+      "Lombar": 4
+    },
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T15:43:36.362Z",
+    "isLate": true,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": true,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T15:43:36.362Z"
+  },
+  {
     "id": "rpe-ath-5-2026-11-24-gym_lower",
     "athleteId": "ath-5",
     "athleteName": "FAITH",
