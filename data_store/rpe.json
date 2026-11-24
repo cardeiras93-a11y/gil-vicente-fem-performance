@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-14-2026-11-24-field",
+    "athleteId": "ath-14",
+    "athleteName": "MERIVA",
+    "date": "2026-11-24",
+    "sessionType": "field",
+    "physicalDemand": 4,
+    "postFatigue": 4,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T11:09:07.126Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T11:09:07.126Z"
+  },
+  {
     "id": "rpe-ath-28-2026-11-24-field",
     "athleteId": "ath-28",
     "athleteName": "IZZY",
