@@ -1,5 +1,28 @@
 [
   {
+    "id": "rpe-ath-10-2026-11-24-field",
+    "athleteId": "ath-10",
+    "athleteName": "MAGUI",
+    "date": "2026-11-24",
+    "sessionType": "field",
+    "physicalDemand": 4,
+    "postFatigue": 4,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {
+      "Ísquiotibiais Direito": 5
+    },
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T11:18:25.572Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T11:18:25.572Z"
+  },
+  {
     "id": "rpe-ath-3-2026-11-24-field",
     "athleteId": "ath-3",
     "athleteName": "CARTAXO",
