@@ -28280,6 +28280,12 @@
     "needsPhysio": true,
     "physioReason": "Pé",
     "createdAt": "2026-09-10T11:02:05.790Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-10T11:02:05.790Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   }
 ]
