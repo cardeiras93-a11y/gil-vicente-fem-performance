@@ -19,6 +19,7 @@ import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import { KioskModeView } from './KioskModeView';
 import { AdminMobilityManager } from './AdminMobilityManager';
 import { AdminNutritionManager } from './AdminNutritionManager';
+import { ErrorBoundary } from './ErrorBoundary';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
   CheckCircle2, LayoutGrid, HeartPulse, Dumbbell, Droplets, AlertTriangle,
@@ -740,24 +741,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   // Compute weight statistics for weight management sub-tab
   const weightAnalytics = useMemo(() => {
-    const allHydration = allHydrationList;
-    const monthPrefix = selectedDate.substring(0, 7);
+    const allHydration = allHydrationList || [];
+    const monthPrefix = (selectedDate || '').substring(0, 7);
 
     const initialWeights: number[] = [];
     const lastWeights: number[] = [];
     const preWeightsToday: number[] = [];
 
-    athletesList.forEach((ath) => {
+    (athletesList || []).forEach((ath) => {
+      if (!ath?.name) return;
+      const athNameLower = ath.name.toLowerCase();
+
       const monthEntries = allHydration
         .filter(
           (h) =>
-            h.athleteName.toLowerCase() === ath.name.toLowerCase() &&
-            h.date.startsWith(monthPrefix)
+            h?.athleteName &&
+            h.athleteName.toLowerCase() === athNameLower &&
+            h.date?.startsWith(monthPrefix)
         )
-        .sort((a, b) => a.date.localeCompare(b.date));
+        .sort((a, b) => (a?.date || '').localeCompare(b?.date || ''));
 
-      const todayEntry = hydrationList.find(
-        (h) => h.athleteName.toLowerCase() === ath.name.toLowerCase()
+      const todayEntry = (hydrationList || []).find(
+        (h) => h?.athleteName && h.athleteName.toLowerCase() === athNameLower
       );
 
       const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
@@ -1172,7 +1177,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   };
 
   const renderFatigueBadge = (postFatigue: number) => {
-    const label = t.rpe.fatigueDescriptors[postFatigue as keyof typeof t.rpe.fatigueDescriptors] || `${postFatigue}/10`;
+    const descriptors = t?.rpe?.fatigueDescriptors || {};
+    const label = descriptors[postFatigue as keyof typeof descriptors] || `${postFatigue || 0}/10`;
     const colorClass =
       postFatigue <= 3
         ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
@@ -1197,70 +1203,86 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     : 0;
 
   // Filtered roster status
-  const filteredAthletes = athletesList.filter((ath) =>
-    ath.name.toLowerCase().includes(searchFilter.toLowerCase())
-  );
+  const filteredAthletes = useMemo(() => {
+    const filterLower = (searchFilter || '').toLowerCase().trim();
+    return (athletesList || []).filter((ath) =>
+      ath && ath.name && ath.name.toLowerCase().includes(filterLower)
+    );
+  }, [athletesList, searchFilter]);
 
   // Wellness KPIs
   const totalWellness = wellnessList.length;
-  const lowSleepCount = wellnessList.filter((w) => w.sleepQuality <= 2).length;
-  const highStressCount = wellnessList.filter((w) => w.stress <= 2).length;
+  const lowSleepCount = wellnessList.filter((w) => (w?.sleepQuality || 0) <= 2).length;
+  const highStressCount = wellnessList.filter((w) => (w?.stress || 0) <= 2).length;
 
   // RPE KPIs & filtering by session type
-  const fieldRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))), [rpeList]);
-  const gymRpeList = useMemo(() => rpeList.filter((r) => r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))), [rpeList]);
+  const fieldRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'field' || (!r?.sessionType && !r?.id?.includes('gym_lower'))), [rpeList]);
+  const gymRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'gym_lower' || (r?.id && r.id.includes('gym_lower'))), [rpeList]);
 
   const activeRpeList = useMemo(() => {
     if (rpeSessionFilter === 'field') return fieldRpeList;
     if (rpeSessionFilter === 'gym_lower') return gymRpeList;
-    return rpeList;
+    return rpeList || [];
   }, [rpeList, fieldRpeList, gymRpeList, rpeSessionFilter]);
 
   const totalRPE = activeRpeList.length;
   const avgBorg = totalRPE
-    ? +(activeRpeList.reduce((acc, curr) => acc + curr.physicalDemand, 0) / totalRPE).toFixed(1)
+    ? +(activeRpeList.reduce((acc, curr) => acc + (curr?.physicalDemand || 0), 0) / totalRPE).toFixed(1)
     : 0;
   const avgPostFatigue = totalRPE
-    ? +(activeRpeList.reduce((acc, curr) => acc + curr.postFatigue, 0) / totalRPE).toFixed(1)
+    ? +(activeRpeList.reduce((acc, curr) => acc + (curr?.postFatigue || 0), 0) / totalRPE).toFixed(1)
     : 0;
-  const highBorgCount = activeRpeList.filter((r) => r.physicalDemand >= 7).length;
+  const highBorgCount = activeRpeList.filter((r) => (r?.physicalDemand || 0) >= 7).length;
 
   // Hydration KPIs
-  const completedHydrationList = hydrationList.filter((h) => Number(h.postWeight) > 0);
+  const completedHydrationList = (hydrationList || []).filter((h) => Number(h?.postWeight) > 0);
   const totalHydration = completedHydrationList.length;
   const avgDehydration = totalHydration
-    ? +(completedHydrationList.reduce((acc, curr) => acc + curr.dehydrationRate, 0) / totalHydration).toFixed(2)
+    ? +(completedHydrationList.reduce((acc, curr) => acc + (curr?.dehydrationRate || 0), 0) / totalHydration).toFixed(2)
     : 0;
-  const alertHydrationCount = completedHydrationList.filter((h) => h.status === 'Alerta' || h.dehydrationRate > 2.0).length;
+  const alertHydrationCount = completedHydrationList.filter((h) => h?.status === 'Alerta' || (h?.dehydrationRate || 0) > 2.0).length;
 
   // Helper for monthly weight tracking (1º peso pré-treino do mês, último peso pré-treino do mês, peso pré-treino hoje)
-  const getAthleteWeightMetrics = (athleteName: string) => {
-    const monthPrefix = selectedDate.substring(0, 7); // e.g. "2026-09"
-    const allHydration = getHydrationLocally();
+  const getAthleteWeightMetrics = (athleteName?: string) => {
+    if (!athleteName) {
+      return {
+        preWeightToday: null,
+        postWeightToday: null,
+        firstWeightMonth: null,
+        firstWeightDate: null,
+        lastWeightMonth: null,
+        lastWeightDate: null,
+        todayEntry: null,
+      };
+    }
+    const monthPrefix = (selectedDate || '').substring(0, 7); // e.g. "2026-09"
+    const allHydration = getHydrationLocally() || [];
+    const athNameLower = athleteName.toLowerCase().trim();
 
     const monthEntries = allHydration
       .filter(
         (h) =>
-          h.athleteName.toLowerCase() === athleteName.toLowerCase() &&
-          h.date.startsWith(monthPrefix)
+          h?.athleteName &&
+          h.athleteName.toLowerCase().trim() === athNameLower &&
+          h.date?.startsWith(monthPrefix)
       )
-      .sort((a, b) => a.date.localeCompare(b.date));
+      .sort((a, b) => (a?.date || '').localeCompare(b?.date || ''));
 
-    const todayEntry = hydrationList.find(
-      (h) => h.athleteName.toLowerCase() === athleteName.toLowerCase()
+    const todayEntry = (hydrationList || []).find(
+      (h) => h?.athleteName && h.athleteName.toLowerCase().trim() === athNameLower
     );
 
     // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna (baseline vs baseline)
-    const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+    const monthPreEntries = monthEntries.filter((h) => Number(h?.preWeight) > 0);
     const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
     const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
     const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
-    const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+    const firstWeightDate = firstEntry?.date ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
 
     // Ambos 1º e último peso do mês utilizam o peso pré-treino!
     const lastWeightMonth = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
-    const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+    const lastWeightDate = lastEntry?.date ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
 
     const preWeightToday = todayEntry ? todayEntry.preWeight : null;
     const postWeightToday = todayEntry ? todayEntry.postWeight : null;
@@ -1297,7 +1319,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-bg text-slate-100 p-3 pt-safe sm:p-6 sm:pt-safe animate-fade-in">
+    <ErrorBoundary fallbackTitle="Painel de Administração • Gil Vicente FC">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-bg text-slate-100 p-3 pt-safe sm:p-6 sm:pt-safe animate-fade-in">
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
         {/* Admin Header Bar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-red-900/60 pb-4 gap-3">
@@ -5324,5 +5347,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       )}
       </div>
     </div>
+    </ErrorBoundary>
   );
 };

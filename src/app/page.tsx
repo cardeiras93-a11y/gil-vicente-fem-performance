@@ -16,6 +16,7 @@ import { AppAccessGate } from '@/components/AppAccessGate';
 import { ReminderBanner } from '@/components/ReminderBanner';
 import { AthleteComplementaryWorkCard } from '@/components/AthleteComplementaryWorkCard';
 import { AthleteMobilityPlanCard } from '@/components/AthleteMobilityPlanCard';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { LanguageProvider, useLanguage } from '@/context/LanguageContext';
 import { MatchDashboard } from '@/components/MatchDashboard';
 import { MatchMinutesDashboard } from '@/components/MatchMinutesDashboard';
@@ -535,20 +536,24 @@ function MainAppContent() {
       </main>
 
       {/* Admin Dashboard Modal */}
-      <AdminDashboard
-        isOpen={isAdminOpen}
-        onClose={handleCloseAdmin}
-        onOpenAthleteSelector={() => {
-          handleCloseAdmin();
-          setIsChangingAthlete(true);
-        }}
-      />
+      <ErrorBoundary fallbackTitle="Painel de Administração • Gil Vicente FC" onReset={handleCloseAdmin}>
+        <AdminDashboard
+          isOpen={isAdminOpen}
+          onClose={handleCloseAdmin}
+          onOpenAthleteSelector={() => {
+            handleCloseAdmin();
+            setIsChangingAthlete(true);
+          }}
+        />
+      </ErrorBoundary>
 
       {/* Physiotherapist Dashboard Modal */}
-      <PhysioDashboard
-        isOpen={isPhysioOpen}
-        onClose={handleClosePhysio}
-      />
+      <ErrorBoundary fallbackTitle="Departamento Médico • Gil Vicente FC" onReset={handleClosePhysio}>
+        <PhysioDashboard
+          isOpen={isPhysioOpen}
+          onClose={handleClosePhysio}
+        />
+      </ErrorBoundary>
 
       {/* Athlete Profile & PIN Modal */}
       <AthleteProfileModal

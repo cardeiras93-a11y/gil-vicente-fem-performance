@@ -71,11 +71,12 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
         const dayStr = String(d.getDate()).padStart(2, '0');
         const dateStr = `${y}-${m}-${dayStr}`;
 
-        const realW = wellnessList.find(
-          (w) => w.athleteName.toLowerCase() === ath.name.toLowerCase() && w.date === dateStr
+        const athNameLower = (ath?.name || '').toLowerCase();
+        const realW = (wellnessList || []).find(
+          (w) => w?.athleteName && athNameLower && w.athleteName.toLowerCase() === athNameLower && w.date === dateStr
         );
-        const realR = rpeList.find(
-          (r) => r.athleteName.toLowerCase() === ath.name.toLowerCase() && r.date === dateStr
+        const realR = (rpeList || []).find(
+          (r) => r?.athleteName && athNameLower && r.athleteName.toLowerCase() === athNameLower && r.date === dateStr
         );
 
         const wTotal = realW

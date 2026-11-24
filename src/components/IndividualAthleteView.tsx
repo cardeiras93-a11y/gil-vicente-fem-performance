@@ -78,11 +78,12 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
       const dateStr = `${y}-${m}-${dayStr}`;
 
       // Check real entries stored locally
-      const realW = wellnessList.find(
-        (w) => w.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() && w.date === dateStr
+      const selNameLower = (selectedAthlete?.name || '').toLowerCase();
+      const realW = (wellnessList || []).find(
+        (w) => w?.athleteName && selNameLower && w.athleteName.toLowerCase() === selNameLower && w.date === dateStr
       );
-      const realR = rpeList.find(
-        (r) => r.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() && r.date === dateStr
+      const realR = (rpeList || []).find(
+        (r) => r?.athleteName && selNameLower && r.athleteName.toLowerCase() === selNameLower && r.date === dateStr
       );
 
       const hasRealData = Boolean(realW || realR);

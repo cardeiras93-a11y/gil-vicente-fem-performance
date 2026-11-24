@@ -164,7 +164,7 @@ export function setAllAthletesActive(): void {
 
 export function getDynamicAthletes(includeInactive: boolean = false): Athlete[] {
   if (typeof window === 'undefined') {
-    return includeInactive ? INITIAL_ATHLETES : INITIAL_ATHLETES.filter((a) => a.isActive !== false);
+    return includeInactive ? INITIAL_ATHLETES : INITIAL_ATHLETES.filter((a) => a && a.isActive !== false);
   }
   try {
     const editedMapRaw = localStorage.getItem(EDITED_PROFILES_KEY);
@@ -175,47 +175,49 @@ export function getDynamicAthletes(includeInactive: boolean = false): Athlete[] 
     const deletedIds = getDeletedAthleteIds();
     const inactiveIds = getInactiveAthleteIds();
 
-    const baseAthletes = INITIAL_ATHLETES.filter((a) => !deletedIds.includes(a.id)).map((ath) => {
+    const baseAthletes = INITIAL_ATHLETES.filter((a) => a && a.id && !deletedIds.includes(a.id)).map((ath) => {
       const edit = editedMap[ath.id] || {};
       const avatar = getAthleteAvatar(ath.id);
       const isInactive = inactiveIds.includes(ath.id);
       return {
         ...ath,
         ...edit,
+        name: (edit.name || ath.name || '').trim(),
         avatarUrl: avatar || edit.avatarUrl || ath.avatarUrl,
         isActive: !isInactive,
       };
     });
 
-    const customAthletes = customList.filter((a) => !deletedIds.includes(a.id)).map((ath) => {
+    const customAthletes = customList.filter((a) => a && a.id && !deletedIds.includes(a.id)).map((ath) => {
       const edit = editedMap[ath.id] || {};
       const avatar = getAthleteAvatar(ath.id);
       const isInactive = inactiveIds.includes(ath.id);
       return {
         ...ath,
         ...edit,
+        name: (edit.name || ath.name || '').trim(),
         avatarUrl: avatar || edit.avatarUrl || ath.avatarUrl,
         isActive: !isInactive,
       };
     });
 
-    let combined = [...baseAthletes, ...customAthletes];
+    let combined = [...baseAthletes, ...customAthletes].filter((a) => a && typeof a.name === 'string' && a.name.length > 0);
     if (!includeInactive) {
       combined = combined.filter((a) => a.isActive !== false);
     }
-    combined.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
+    combined.sort((a, b) => (a?.name || '').localeCompare(b?.name || '', 'pt', { sensitivity: 'base' }));
     return combined;
   } catch {
     const deletedIds = getDeletedAthleteIds();
     const inactiveIds = getInactiveAthleteIds();
-    let sortedInitial = INITIAL_ATHLETES.filter((a) => !deletedIds.includes(a.id)).map((a) => ({
+    let sortedInitial = INITIAL_ATHLETES.filter((a) => a && a.id && !deletedIds.includes(a.id)).map((a) => ({
       ...a,
       isActive: !inactiveIds.includes(a.id),
     }));
     if (!includeInactive) {
       sortedInitial = sortedInitial.filter((a) => a.isActive !== false);
     }
-    return sortedInitial.sort((a, b) => a.name.localeCompare(b.name, 'pt', { sensitivity: 'base' }));
+    return sortedInitial.sort((a, b) => (a?.name || '').localeCompare(b?.name || '', 'pt', { sensitivity: 'base' }));
   }
 }
 
