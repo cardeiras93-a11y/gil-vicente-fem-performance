@@ -13,9 +13,13 @@
     },
     "2026-11-23": {
       "date": "2026-11-23",
-      "dayType": "rest",
+      "dayType": "training",
       "matchDayOffset": "MD+1",
-      "focusNotes": "Descanso / Recuperação Ativa"
+      "focusNotes": "Descanso / Recuperação Ativa",
+      "durationMin": 90,
+      "startTime": "09:00",
+      "endTime": "10:30",
+      "updatedAt": 1795548293203
     },
     "2026-11-24": {
       "date": "2026-11-24",
@@ -7828,7 +7832,7 @@
   },
   "schedule": {
     "2026-10-25": "match",
-    "2026-11-23": "rest",
+    "2026-11-23": "training",
     "2026-11-24": "training",
     "2026-11-25": "training",
     "2026-11-26": "training",
@@ -7904,5 +7908,6 @@
     "2026-11-08": "rest",
     "2026-11-22": "rest",
     "2026-11-30": "rest"
-  }
+  },
+  "weeklyPlan": {}
 }
