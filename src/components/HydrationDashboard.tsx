@@ -132,7 +132,7 @@ export const HydrationDashboard: React.FC<HydrationDashboardProps> = ({ activeAt
       if (typeof document !== 'undefined' && !document.hidden) {
         fetchRemote();
       }
-    }, 5000);
+    }, 45000);
 
     window.addEventListener('femperf_data_updated', handleDataUpdate);
 

@@ -655,14 +655,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           setIsSyncingCloud(false);
         });
 
-      // Auto-poll cloud every 8 seconds to synchronize any updates made from other devices
+      // Auto-poll cloud every 45 seconds to preserve egress quota while syncing updates
       const intervalId = setInterval(() => {
         syncAllDataFromCloud().then(() => {
           loadAllData(selectedDate);
           loadAllPins();
           setLastSyncTime(new Date());
         });
-      }, 8000);
+      }, 45000);
 
       const onFocusOrResume = () => {
         setIsSyncingCloud(true);

@@ -154,12 +154,12 @@ function MainAppContent() {
       syncAllDataFromCloud();
     });
 
-    // 3. Fast fallback heartbeat poll (every 3.5s while active)
+    // 3. Fast fallback heartbeat poll (every 45s while active to preserve bandwidth)
     const intervalId = setInterval(() => {
       if (typeof document !== 'undefined' && !document.hidden) {
         syncAllDataFromCloud();
       }
-    }, 3500);
+    }, 45000);
 
     // 4. Instant sync on tab focus, visibility change, or device wake/resume (pageshow)
     const handleVisibilityChange = () => {
