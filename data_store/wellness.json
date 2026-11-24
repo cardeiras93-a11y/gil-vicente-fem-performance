@@ -27541,7 +27541,13 @@
     "needsPhysio": true,
     "physioReason": "gémeos massagem",
     "createdAt": "2026-09-12T10:08:44.816Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-12T10:08:44.816Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789206177619",
