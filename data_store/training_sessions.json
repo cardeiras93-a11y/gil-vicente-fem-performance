@@ -34,7 +34,7 @@
     "2026-11-24": {
       "date": "2026-11-24",
       "dayType": "training",
-      "matchDayOffset": "MD-5",
+      "matchDayOffset": "MD-2",
       "startTime": "09:00",
       "endTime": "10:30",
       "durationMin": 90,
@@ -47,7 +47,7 @@
         "lowerBody": true,
         "notes": "Ginásio de Equipa: Membros Inferiores"
       },
-      "updatedAt": 1795548357018,
+      "updatedAt": 1795548399202,
       "tempStart": 20,
       "tempEnd": 25,
       "tempDelta": 5,
