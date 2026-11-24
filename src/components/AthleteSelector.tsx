@@ -33,7 +33,7 @@ export const AthleteSelector: React.FC<AthleteSelectorProps> = ({
   }, []);
 
   const filteredAthletes = athletes.filter((ath) =>
-    ath.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (ath?.name || '').toLowerCase().includes((searchTerm || '').toLowerCase())
   );
 
   const handleAthleteClick = (athlete: Athlete) => {
@@ -69,11 +69,12 @@ export const AthleteSelector: React.FC<AthleteSelectorProps> = ({
           const customAvatar = getAthleteAvatar(athlete.id) || athlete.avatarUrl;
 
           // Initials for avatar
-          const initials = athlete.name
+          const initials = (athlete?.name || '')
             .split(' ')
+            .filter(Boolean)
             .map((n) => n[0])
             .join('')
-            .substring(0, 2);
+            .substring(0, 2) || 'GV';
 
           return (
             <button

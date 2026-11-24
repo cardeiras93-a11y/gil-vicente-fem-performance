@@ -295,6 +295,7 @@ function MainAppContent() {
 
       {/* Main Content Area */}
       <main className={`flex-1 px-3 sm:px-4 py-4 ${(activeTab === 'matchday' || activeTab === 'matchMinutes') ? 'max-w-5xl' : 'max-w-lg md:max-w-xl lg:max-w-2xl'} mx-auto w-full space-y-4`}>
+        <ErrorBoundary fallbackTitle="FemPerf • Gil Vicente FC">
         {/* Home Screen Quick Actions Bar: Limpar Cache */}
         <div className="flex justify-end">
           <button
@@ -533,6 +534,7 @@ function MainAppContent() {
             </div>
           </div>
         )}
+        </ErrorBoundary>
       </main>
 
       {/* Admin Dashboard Modal */}
