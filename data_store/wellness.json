@@ -28052,7 +28052,13 @@
     "needsPhysio": true,
     "physioReason": "gémeos",
     "createdAt": "2026-09-10T12:02:45.298Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-10T12:02:45.298Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789041281939",
