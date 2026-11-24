@@ -29,16 +29,20 @@
       "startTime": "10:00",
       "endTime": "11:45",
       "durationMin": 105,
-      "gymStartTime": "11:45",
+      "gymStartTime": "09:00",
       "gymEndTime": "12:30",
-      "gymDurationMin": 45,
+      "gymDurationMin": 210,
       "locationTime": "Estádio Cidade de Barcelos / Sintético",
       "focusNotes": "Treino de Campo + Ginásio de Equipa (Membros Inferiores)",
       "complementaryWork": {
         "lowerBody": true,
         "notes": "Ginásio de Equipa: Membros Inferiores"
       },
-      "updatedAt": 1795530000000
+      "updatedAt": 1795548329979,
+      "tempStart": 20,
+      "tempEnd": 25,
+      "tempDelta": 5,
+      "athleteStatuses": {}
     },
     "2026-11-25": {
       "date": "2026-11-25",
