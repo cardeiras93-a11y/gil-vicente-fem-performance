@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-20-2026-11-24-field",
+    "athleteId": "ath-20",
+    "athleteName": "SARA TEIXEIRA",
+    "date": "2026-11-24",
+    "sessionType": "field",
+    "physicalDemand": 6,
+    "postFatigue": 6,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T10:59:52.113Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T10:59:52.113Z"
+  },
+  {
     "id": "rpe-ath-5-2026-11-24-field",
     "athleteId": "ath-5",
     "athleteName": "FAITH",
