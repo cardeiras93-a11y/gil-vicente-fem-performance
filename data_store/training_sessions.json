@@ -9,7 +9,8 @@
       "endTime": "16:45",
       "durationMin": 94,
       "locationTime": "Campo do Sporting da Cruz",
-      "focusNotes": "Taça de Portugal Feminina (2ª Eliminatória) vs Sporting da Cruz (29-0)"
+      "focusNotes": "Taça de Portugal Feminina (2ª Eliminatória) vs Sporting da Cruz (29-0)",
+      "updatedAt": 1795548293910
     },
     "2026-11-23": {
       "date": "2026-11-23",
@@ -92,7 +93,7 @@
     },
     "2026-11-29": {
       "date": "2026-11-29",
-      "dayType": "match",
+      "dayType": "rest",
       "matchCategory": "championship",
       "matchDayOffset": "MD",
       "startTime": "15:00",
@@ -100,7 +101,7 @@
       "durationMin": 90,
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Campeonato Nacional Feminino / Liga BPI",
-      "updatedAt": 1795530000000
+      "updatedAt": 1795548305891
     },
     "2026-09-10": {
       "date": "2026-09-10",
@@ -7838,7 +7839,7 @@
     "2026-11-26": "training",
     "2026-11-27": "training",
     "2026-11-28": "training",
-    "2026-11-29": "match",
+    "2026-11-29": "rest",
     "2026-09-10": "match",
     "2026-09-06": "rest",
     "2026-09-12": "match",
