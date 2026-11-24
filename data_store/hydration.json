@@ -1,5 +1,26 @@
 [
   {
+    "id": "hyd-2026-11-24-ath-12",
+    "athleteId": "ath-12",
+    "athleteName": "MANU",
+    "date": "2026-11-24",
+    "durationMin": 90,
+    "preWeight": 58.75,
+    "postWeight": 58.4,
+    "fluidsIntake": 0.5,
+    "weightLoss": 0.35,
+    "dehydrationRate": 0.6,
+    "status": "Adequada",
+    "refillNeededLiters": 0.52,
+    "recommendation": "Manter hidratação regular e ingestão de água normal durante o resto do dia.",
+    "biologicalImpact": "Sem impacto significativo no rendimento desportivo nem no sistema termorregulador.",
+    "preWeightTime": "2026-11-24T21:14:13.199Z",
+    "postWeightTime": "2026-11-24T21:14:17.542Z",
+    "submittedAtPre": "2026-11-24T21:14:13.199Z",
+    "submittedAtPost": "2026-11-24T21:14:17.542Z",
+    "createdAt": "2026-11-24T21:14:13.199Z"
+  },
+  {
     "id": "hyd-2026-11-24-ath-11",
     "athleteId": "ath-11",
     "athleteName": "MALTA",
