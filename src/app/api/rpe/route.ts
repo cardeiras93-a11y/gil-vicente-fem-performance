@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { verifyApiAuth } from '@/lib/authGuard';
+import { getCloudEntries, saveCloudEntry } from '@/lib/cloudStore';
 import fs from 'fs';
 import path from 'path';
 
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
 
     const entryMap = new Map<string, any>();
 
-    // 1. Fetch from local file
+    // 1. Fetch from local file & persistent cloud store
     const localEntries = getStoredEntries();
     localEntries.forEach((e) => {
       if (e) {
@@ -72,6 +73,21 @@ export async function GET(request: Request) {
         e.sessionType = sType;
         e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
         entryMap.set(e.id || `${e.athleteId}-${e.date}-${sType}`, e);
+      }
+    });
+
+    const cloudEntries = await getCloudEntries('rpe.json');
+    cloudEntries.forEach((e) => {
+      if (e) {
+        if (dateParam && e.date !== dateParam) return;
+        if (athleteId && e.athleteId !== athleteId) return;
+        const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
+        e.sessionType = sType;
+        e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
+        const key = e.id || `${e.athleteId}-${e.date}-${sType}`;
+        if (!entryMap.has(key)) {
+          entryMap.set(key, e);
+        }
       }
     });
 
@@ -222,8 +238,9 @@ export async function POST(request: Request) {
       createdAt: body.createdAt || new Date().toISOString(),
     };
 
-    // 1. Save to local file backup
+    // 1. Save to local file backup and persistent cloud store
     saveEntryToFile(entryToSave);
+    await saveCloudEntry('rpe.json', entryToSave);
 
     // 2. Persist to Supabase
     if (isSupabaseConfigured && supabase) {

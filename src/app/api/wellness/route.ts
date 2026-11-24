@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { verifyApiAuth } from '@/lib/authGuard';
 import { calculateHydrationStatus } from '@/lib/data';
+import { getCloudEntries, saveCloudEntry } from '@/lib/cloudStore';
 import fs from 'fs';
 import path from 'path';
 
@@ -62,12 +63,22 @@ export async function GET(request: Request) {
 
     const entryMap = new Map<string, any>();
 
-    // 1. Fetch from local file
+    // 1. Fetch from local file & persistent cloud store
     const localEntries = getStoredEntries();
     localEntries.forEach((e) => {
       if (dateParam && e.date !== dateParam) return;
       if (athleteId && e.athleteId !== athleteId) return;
       entryMap.set(e.id || `${e.athleteId}-${e.date}`, e);
+    });
+
+    const cloudEntries = await getCloudEntries('wellness.json');
+    cloudEntries.forEach((e) => {
+      if (dateParam && e.date !== dateParam) return;
+      if (athleteId && e.athleteId !== athleteId) return;
+      const key = e.id || `${e.athleteId}-${e.date}`;
+      if (!entryMap.has(key)) {
+        entryMap.set(key, e);
+      }
     });
 
     if (isSupabaseConfigured && supabase) {
@@ -273,8 +284,9 @@ export async function POST(request: Request) {
       } catch {}
     }
 
-    // 1. Save to local JSON file backup
+    // 1. Save to local JSON file backup and persistent cloud store
     saveEntryToFile(entryToSave);
+    await saveCloudEntry('wellness.json', entryToSave);
 
     // 2. Persist to Supabase
     if (isSupabaseConfigured && supabase) {
