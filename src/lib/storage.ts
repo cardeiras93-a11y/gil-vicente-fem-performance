@@ -901,16 +901,9 @@ export interface DayFineConfig {
 
 export function normalizeDayFineConfig(
   rawVal: boolean | DayFineConfig | undefined,
-  dayType?: CalendarDayType
+  dayType?: CalendarDayType,
+  dateStr?: string
 ): DayFineConfig {
-  if (typeof rawVal === 'boolean') {
-    return {
-      wellness: rawVal,
-      rpe: rawVal,
-      rpeGym: rawVal,
-      hydration: rawVal,
-    };
-  }
   if (rawVal && typeof rawVal === 'object') {
     return {
       wellness: rawVal.wellness ?? true,
@@ -919,12 +912,29 @@ export function normalizeDayFineConfig(
       hydration: rawVal.hydration ?? true,
     };
   }
+
   const isActivity = dayType === 'training' || dayType === 'match';
+
+  // Opção B: Nos treinos até 24/11/2026 (inclusive), a rotina de balança diária não esteve em vigor na app,
+  // ficando isenta de multa de peso (hydration: false).
+  // A partir de 25/11/2026, a pesagem pré/pós treino é obrigatória e dá multa em dias de treino e jogo.
+  const isPastWithoutWeighIn = dateStr ? dateStr <= '2026-11-24' : false;
+  const defaultHydration = isPastWithoutWeighIn ? false : (typeof rawVal === 'boolean' ? rawVal : isActivity);
+
+  if (typeof rawVal === 'boolean') {
+    return {
+      wellness: rawVal,
+      rpe: rawVal,
+      rpeGym: rawVal,
+      hydration: defaultHydration,
+    };
+  }
+
   return {
     wellness: isActivity,
     rpe: isActivity,
     rpeGym: isActivity,
-    hydration: isActivity,
+    hydration: defaultHydration,
   };
 }
 
@@ -1055,7 +1065,7 @@ export async function waiveFineForAllAthletes(
     const currentDays = getStoredFinesEnabledDays();
     const schedule = getStoredCalendarSchedule();
     const dayType = schedule[date] || 'training';
-    const currentCfg = normalizeDayFineConfig(currentDays[date], dayType);
+    const currentCfg = normalizeDayFineConfig(currentDays[date], dayType, date);
 
     const updatedCfg: DayFineConfig = {
       wellness: (type === 'wellness' || type === 'all') ? false : currentCfg.wellness,

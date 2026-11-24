@@ -419,7 +419,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   const finesConfigMap = useMemo(() => {
     const map: Record<string, DayFineConfig> = {};
     datesInMonth.forEach((dateStr) => {
-      map[dateStr] = normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+      map[dateStr] = normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr], dateStr);
     });
     return map;
   }, [datesInMonth, finesEnabledDays, dayTypesMap]);
@@ -477,7 +477,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
   // Open fine configuration modal for a specific date
   const handleOpenConfigModal = (dateStr: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
-    const currentCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+    const currentCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr], dateStr);
     setModalFineConfig({
       ...currentCfg,
       rpeGym: currentCfg.rpeGym ?? currentCfg.rpe ?? true,
@@ -637,7 +637,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
       const failedDates: AthleteComplianceReport['failedDates'] = [];
 
       pastAndTodayFineActiveDates.forEach((dateStr) => {
-        const fineCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+        const fineCfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr], dateStr);
         const sess = sessionsMap[dateStr];
         const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
 
@@ -791,7 +791,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
 
   const totalPossibleSubmissions = useMemo(() => {
     return pastAndTodayFineActiveDates.reduce((sum, dateStr) => {
-      const cfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr]);
+      const cfg = finesConfigMap[dateStr] || normalizeDayFineConfig(finesEnabledDays[dateStr], dayTypesMap[dateStr], dateStr);
       const sess = sessionsMap[dateStr];
       const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
       const activeCount = (cfg.wellness ? 1 : 0) + (cfg.rpe ? 1 : 0) + (hasGymLower && (cfg.rpeGym ?? cfg.rpe) ? 1 : 0) + (cfg.hydration ? 1 : 0);
@@ -1171,7 +1171,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
               {/* Day cells */}
               {datesInMonth.map((dStr) => {
                 const dayType = dayTypesMap[dStr] || 'rest';
-                const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
+                const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType, dStr);
                 const sess = sessionsMap[dStr];
                 const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
                 const hasFine = isDayAnyFineActive(cfg, hasGymLower);
@@ -1266,7 +1266,7 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
           <div className="flex gap-1.5 overflow-x-auto pb-2 pt-1 scrollbar-thin">
             {datesInMonth.map((dStr) => {
               const dayType = dayTypesMap[dStr] || 'rest';
-              const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType);
+              const cfg = finesConfigMap[dStr] || normalizeDayFineConfig(finesEnabledDays[dStr], dayType, dStr);
               const sess = sessionsMap[dStr];
               const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
               const hasFine = isDayAnyFineActive(cfg, hasGymLower);
