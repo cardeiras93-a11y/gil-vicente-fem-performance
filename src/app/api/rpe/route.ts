@@ -77,19 +77,7 @@ export async function GET(request: Request) {
 
     const entryMap = new Map<string, any>();
 
-    // 1. Fetch from local file & persistent cloud store
-    const localEntries = getStoredEntries();
-    localEntries.forEach((e) => {
-      if (e) {
-        if (dateParam && e.date !== dateParam) return;
-        if (athleteId && e.athleteId !== athleteId) return;
-        const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
-        e.sessionType = sType;
-        e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
-        entryMap.set(e.id || `${e.athleteId}-${e.date}-${sType}`, e);
-      }
-    });
-
+    // 1. Fetch from persistent cloud store first, then merge with local
     const cloudEntries = await getCloudEntries('rpe.json');
     cloudEntries.forEach((e) => {
       if (e) {
@@ -99,8 +87,28 @@ export async function GET(request: Request) {
         e.sessionType = sType;
         e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
         const key = e.id || `${e.athleteId}-${e.date}-${sType}`;
-        if (!entryMap.has(key)) {
+        entryMap.set(key, e);
+      }
+    });
+
+    const localEntries = getStoredEntries();
+    localEntries.forEach((e) => {
+      if (e) {
+        if (dateParam && e.date !== dateParam) return;
+        if (athleteId && e.athleteId !== athleteId) return;
+        const sType = (e.id && e.id.includes('gym_lower')) ? 'gym_lower' : (e.sessionType || 'field');
+        e.sessionType = sType;
+        e.sessionDurationMin = Number(e.sessionDurationMin || (sType === 'gym_lower' ? 45 : 90));
+        const key = e.id || `${e.athleteId}-${e.date}-${sType}`;
+        const existing = entryMap.get(key);
+        if (!existing) {
           entryMap.set(key, e);
+        } else {
+          const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+          const localTime = new Date(e.updatedAt || e.createdAt || 0).getTime();
+          if (localTime > existingTime) {
+            entryMap.set(key, { ...existing, ...e });
+          }
         }
       }
     });

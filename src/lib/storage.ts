@@ -906,7 +906,7 @@ export function normalizeDayFineConfig(
       wellness: rawVal,
       rpe: rawVal,
       rpeGym: rawVal,
-      hydration: rawVal,
+      hydration: false,
     };
   }
   if (rawVal && typeof rawVal === 'object') {
@@ -914,7 +914,7 @@ export function normalizeDayFineConfig(
       wellness: rawVal.wellness ?? true,
       rpe: rawVal.rpe ?? true,
       rpeGym: rawVal.rpeGym ?? rawVal.rpe ?? true,
-      hydration: rawVal.hydration ?? true,
+      hydration: rawVal.hydration === true,
     };
   }
   const isActivity = dayType === 'training' || dayType === 'match';
@@ -922,7 +922,7 @@ export function normalizeDayFineConfig(
     wellness: isActivity,
     rpe: isActivity,
     rpeGym: isActivity,
-    hydration: isActivity,
+    hydration: false,
   };
 }
 

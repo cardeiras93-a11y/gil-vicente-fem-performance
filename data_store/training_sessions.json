@@ -3,329 +3,37 @@
     "2026-10-25": {
       "date": "2026-10-25",
       "dayType": "match",
-      "matchCategory": "championship",
+      "matchCategory": "cup",
       "matchDayOffset": "MD",
       "startTime": "15:00",
-      "endTime": "17:00",
-      "durationMin": 120,
-      "locationTime": "Campo de São Martinho - Barcelos",
-      "focusNotes": "",
-      "tempStart": 20,
-      "tempEnd": 25,
-      "tempDelta": 5,
-      "complementaryWork": {
-        "iceBath": false,
-        "notes": "Protocolo de gelo imediato pós-jogo",
-        "injuryPrevention": false,
-        "foamRoller": false,
-        "mobility": false
-      },
-      "athleteStatuses": {
-        "ath-1": {
-          "athleteId": "ath-1",
-          "athleteName": "CARLOTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-2": {
-          "athleteId": "ath-2",
-          "athleteName": "CAROL",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-3": {
-          "athleteId": "ath-3",
-          "athleteName": "CARTAXO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-27": {
-          "athleteId": "ath-27",
-          "athleteName": "CHELSEA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-4": {
-          "athleteId": "ath-4",
-          "athleteName": "EVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-5": {
-          "athleteId": "ath-5",
-          "athleteName": "FAITH",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-custom-1790842877064": {
-          "athleteId": "ath-custom-1790842877064",
-          "athleteName": "IZZY",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-10": {
-          "athleteId": "ath-10",
-          "athleteName": "MAGUI",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-11": {
-          "athleteId": "ath-11",
-          "athleteName": "MALTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-12": {
-          "athleteId": "ath-12",
-          "athleteName": "MANU",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-13": {
-          "athleteId": "ath-13",
-          "athleteName": "MARTHE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-14": {
-          "athleteId": "ath-14",
-          "athleteName": "MERIVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-15": {
-          "athleteId": "ath-15",
-          "athleteName": "NICOLE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-26": {
-          "athleteId": "ath-26",
-          "athleteName": "PAYTON",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-17": {
-          "athleteId": "ath-17",
-          "athleteName": "RIBEIRO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-19": {
-          "athleteId": "ath-19",
-          "athleteName": "SARA ALVES",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-20": {
-          "athleteId": "ath-20",
-          "athleteName": "SARA TEIXEIRA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-21": {
-          "athleteId": "ath-21",
-          "athleteName": "SERENA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-22": {
-          "athleteId": "ath-22",
-          "athleteName": "SIMÃES",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-23": {
-          "athleteId": "ath-23",
-          "athleteName": "TICHA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-24": {
-          "athleteId": "ath-24",
-          "athleteName": "TITA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-25": {
-          "athleteId": "ath-25",
-          "athleteName": "VERÓNICA",
-          "status": "normal",
-          "notes": ""
-        }
-      },
-      "updatedAt": 1792913830765,
-      "gymStartTime": "10:45",
-      "gymEndTime": "11:30",
-      "gymDurationMin": 45,
-      "customDeadline": ""
+      "endTime": "16:45",
+      "durationMin": 94,
+      "locationTime": "Campo do Sporting da Cruz",
+      "focusNotes": "Taça de Portugal Feminina (2ª Eliminatória) vs Sporting da Cruz (29-0)"
     },
     "2026-11-23": {
       "date": "2026-11-23",
       "dayType": "rest",
       "matchDayOffset": "MD+1",
-      "focusNotes": "Descanso / Recuperação Ativa",
-      "updatedAt": 1795534816347
+      "focusNotes": "Descanso / Recuperação Ativa"
     },
     "2026-11-24": {
       "date": "2026-11-24",
       "dayType": "training",
-      "matchDayOffset": "MD-2",
-      "startTime": "09:00",
-      "endTime": "10:30",
-      "durationMin": 90,
-      "gymStartTime": "13:15",
-      "gymEndTime": "15:00",
-      "gymDurationMin": 105,
-      "locationTime": "Campo de São Martinho - Barcelos",
-      "focusNotes": "",
+      "matchDayOffset": "MD-5",
+      "startTime": "10:00",
+      "endTime": "11:45",
+      "durationMin": 105,
+      "gymStartTime": "11:45",
+      "gymEndTime": "12:30",
+      "gymDurationMin": 45,
+      "locationTime": "Estádio Cidade de Barcelos / Sintético",
+      "focusNotes": "Treino de Campo + Ginásio de Equipa (Membros Inferiores)",
       "complementaryWork": {
-        "injuryPrevention": true,
-        "foamRoller": true,
-        "mobility": true,
-        "iceBath": true,
-        "sauna": true,
-        "cardioSubmax": true,
-        "lowerBody": true
+        "lowerBody": true,
+        "notes": "Ginásio de Equipa: Membros Inferiores"
       },
-      "updatedAt": 1795540964962,
-      "tempStart": 20,
-      "tempEnd": 25,
-      "tempDelta": 5,
-      "athleteStatuses": {
-        "ath-1": {
-          "athleteId": "ath-1",
-          "athleteName": "CARLOTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-2": {
-          "athleteId": "ath-2",
-          "athleteName": "CAROL",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-3": {
-          "athleteId": "ath-3",
-          "athleteName": "CARTAXO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-27": {
-          "athleteId": "ath-27",
-          "athleteName": "CHELSEA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-4": {
-          "athleteId": "ath-4",
-          "athleteName": "EVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-5": {
-          "athleteId": "ath-5",
-          "athleteName": "FAITH",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-custom-1790842877064": {
-          "athleteId": "ath-custom-1790842877064",
-          "athleteName": "IZZY",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-10": {
-          "athleteId": "ath-10",
-          "athleteName": "MAGUI",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-11": {
-          "athleteId": "ath-11",
-          "athleteName": "MALTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-12": {
-          "athleteId": "ath-12",
-          "athleteName": "MANU",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-13": {
-          "athleteId": "ath-13",
-          "athleteName": "MARTHE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-14": {
-          "athleteId": "ath-14",
-          "athleteName": "MERIVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-15": {
-          "athleteId": "ath-15",
-          "athleteName": "NICOLE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-26": {
-          "athleteId": "ath-26",
-          "athleteName": "PAYTON",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-17": {
-          "athleteId": "ath-17",
-          "athleteName": "RIBEIRO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-19": {
-          "athleteId": "ath-19",
-          "athleteName": "SARA A.",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-20": {
-          "athleteId": "ath-20",
-          "athleteName": "SARA T.",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-21": {
-          "athleteId": "ath-21",
-          "athleteName": "SERENA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-22": {
-          "athleteId": "ath-22",
-          "athleteName": "SIMÃES",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-23": {
-          "athleteId": "ath-23",
-          "athleteName": "TICHA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-24": {
-          "athleteId": "ath-24",
-          "athleteName": "TITA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-25": {
-          "athleteId": "ath-25",
-          "athleteName": "VERÓNICA",
-          "status": "normal",
-          "notes": ""
-        }
-      }
+      "updatedAt": 1795530000000
     },
     "2026-11-25": {
       "date": "2026-11-25",
@@ -354,145 +62,7 @@
         "lowerBody": true,
         "notes": "Ginásio de Equipa: Membros Inferiores / Força"
       },
-      "updatedAt": 1795530000000,
-      "matchCategory": "friendly",
-      "tempStart": 20,
-      "tempEnd": 25,
-      "tempDelta": 5,
-      "athleteStatuses": {
-        "ath-1": {
-          "athleteId": "ath-1",
-          "athleteName": "CARLOTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-2": {
-          "athleteId": "ath-2",
-          "athleteName": "CAROL",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-3": {
-          "athleteId": "ath-3",
-          "athleteName": "CARTAXO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-27": {
-          "athleteId": "ath-27",
-          "athleteName": "CHELSEA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-4": {
-          "athleteId": "ath-4",
-          "athleteName": "EVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-5": {
-          "athleteId": "ath-5",
-          "athleteName": "FAITH",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-custom-1790842877064": {
-          "athleteId": "ath-custom-1790842877064",
-          "athleteName": "IZZY",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-10": {
-          "athleteId": "ath-10",
-          "athleteName": "MAGUI",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-11": {
-          "athleteId": "ath-11",
-          "athleteName": "MALTA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-12": {
-          "athleteId": "ath-12",
-          "athleteName": "MANU",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-13": {
-          "athleteId": "ath-13",
-          "athleteName": "MARTHE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-14": {
-          "athleteId": "ath-14",
-          "athleteName": "MERIVA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-15": {
-          "athleteId": "ath-15",
-          "athleteName": "NICOLE",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-26": {
-          "athleteId": "ath-26",
-          "athleteName": "PAYTON",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-17": {
-          "athleteId": "ath-17",
-          "athleteName": "RIBEIRO",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-19": {
-          "athleteId": "ath-19",
-          "athleteName": "SARA A.",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-20": {
-          "athleteId": "ath-20",
-          "athleteName": "SARA T.",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-21": {
-          "athleteId": "ath-21",
-          "athleteName": "SERENA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-22": {
-          "athleteId": "ath-22",
-          "athleteName": "SIMÃES",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-23": {
-          "athleteId": "ath-23",
-          "athleteName": "TICHA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-24": {
-          "athleteId": "ath-24",
-          "athleteName": "TITA",
-          "status": "normal",
-          "notes": ""
-        },
-        "ath-25": {
-          "athleteId": "ath-25",
-          "athleteName": "VERÓNICA",
-          "status": "normal",
-          "notes": ""
-        }
-      }
+      "updatedAt": 1795530000000
     },
     "2026-11-27": {
       "date": "2026-11-27",
@@ -8328,8 +7898,11 @@
     "2026-11-18": "training",
     "2026-11-19": "training",
     "2026-11-20": "training",
-    "2026-11-21": "match",
-    "2026-11-16": "rest"
-  },
-  "weeklyPlan": {}
+    "2026-11-21": "training",
+    "2026-11-16": "rest",
+    "2026-11-01": "rest",
+    "2026-11-08": "rest",
+    "2026-11-22": "rest",
+    "2026-11-30": "rest"
+  }
 }

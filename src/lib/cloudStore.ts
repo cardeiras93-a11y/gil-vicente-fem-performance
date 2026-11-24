@@ -90,6 +90,26 @@ export async function getCloudEntries(filename: string): Promise<any[]> {
           writeLocalFallback(filename, parsed);
           return parsed;
         }
+      } else if (json.download_url) {
+        const rawRes = await fetch(json.download_url, {
+          headers: {
+            'Authorization': `token ${GITHUB_TOKEN}`,
+            'User-Agent': 'GVFC-Sync'
+          },
+          cache: 'no-store'
+        });
+        if (rawRes.ok) {
+          const parsed = await rawRes.json();
+          if (Array.isArray(parsed)) {
+            memoryCache.set(filename, {
+              data: parsed,
+              sha: json.sha,
+              timestamp: now
+            });
+            writeLocalFallback(filename, parsed);
+            return parsed;
+          }
+        }
       }
     }
   } catch (err) {

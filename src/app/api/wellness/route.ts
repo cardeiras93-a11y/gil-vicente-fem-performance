@@ -77,21 +77,29 @@ export async function GET(request: Request) {
 
     const entryMap = new Map<string, any>();
 
-    // 1. Fetch from local file & persistent cloud store
-    const localEntries = getStoredEntries();
-    localEntries.forEach((e) => {
-      if (dateParam && e.date !== dateParam) return;
-      if (athleteId && e.athleteId !== athleteId) return;
-      entryMap.set(e.id || `${e.athleteId}-${e.date}`, e);
-    });
-
+    // 1. Fetch from persistent cloud store first, then merge with local
     const cloudEntries = await getCloudEntries('wellness.json');
     cloudEntries.forEach((e) => {
       if (dateParam && e.date !== dateParam) return;
       if (athleteId && e.athleteId !== athleteId) return;
       const key = e.id || `${e.athleteId}-${e.date}`;
-      if (!entryMap.has(key)) {
+      entryMap.set(key, e);
+    });
+
+    const localEntries = getStoredEntries();
+    localEntries.forEach((e) => {
+      if (dateParam && e.date !== dateParam) return;
+      if (athleteId && e.athleteId !== athleteId) return;
+      const key = e.id || `${e.athleteId}-${e.date}`;
+      const existing = entryMap.get(key);
+      if (!existing) {
         entryMap.set(key, e);
+      } else {
+        const existingTime = new Date(existing.updatedAt || existing.createdAt || 0).getTime();
+        const localTime = new Date(e.updatedAt || e.createdAt || 0).getTime();
+        if (localTime > existingTime) {
+          entryMap.set(key, { ...existing, ...e });
+        }
       }
     });
 

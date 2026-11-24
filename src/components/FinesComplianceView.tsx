@@ -642,6 +642,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         const hasGymLower = Boolean(sess && sess.dayType !== 'rest' && sess.complementaryWork?.lowerBody === true);
 
         const athleteWellness = wellnessList.find(
+          (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name) && (
+            w.isAuthorizedLate ||
+            (w.approvalStatus === 'approved' && !w.keepFine) ||
+            (!w.isLate && w.approvalStatus !== 'rejected')
+          )
+        ) || wellnessList.find(
           (w) => w.date === dateStr && (w.athleteId === ath.id || w.athleteName === ath.name)
         );
         const hasWellness = athleteWellness ? (
@@ -651,6 +657,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         ) : false;
 
         const athleteRpeField = rpeList.find(
+          (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && (r.sessionType || 'field') === 'field' && (
+            r.isAuthorizedLate ||
+            (r.approvalStatus === 'approved' && !r.keepFine) ||
+            (!r.isLate && r.approvalStatus !== 'rejected')
+          )
+        ) || rpeList.find(
           (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && (r.sessionType || 'field') === 'field'
         );
         const hasRpeField = athleteRpeField ? (
@@ -660,6 +672,12 @@ export const FinesComplianceView: React.FC<FinesComplianceViewProps> = ({
         ) : false;
 
         const athleteRpeGym = rpeList.find(
+          (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && r.sessionType === 'gym_lower' && (
+            r.isAuthorizedLate ||
+            (r.approvalStatus === 'approved' && !r.keepFine) ||
+            (!r.isLate && r.approvalStatus !== 'rejected')
+          )
+        ) || rpeList.find(
           (r) => r.date === dateStr && (r.athleteId === ath.id || r.athleteName === ath.name) && r.sessionType === 'gym_lower'
         );
         const hasRpeGym = athleteRpeGym ? (
