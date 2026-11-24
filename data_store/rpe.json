@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-11-2026-11-24-gym_lower",
+    "athleteId": "ath-11",
+    "athleteName": "MALTA",
+    "date": "2026-11-24",
+    "sessionType": "gym_lower",
+    "physicalDemand": 4,
+    "postFatigue": 7,
+    "sessionDurationMin": 105,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T20:53:33.403Z",
+    "isLate": true,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": true,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T20:53:33.403Z"
+  },
+  {
     "id": "rpe-ath-19-2026-11-24-gym_lower",
     "athleteId": "ath-19",
     "athleteName": "SARA ALVES",
