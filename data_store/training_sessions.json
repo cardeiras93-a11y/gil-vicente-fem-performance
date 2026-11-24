@@ -82,14 +82,15 @@
     },
     "2026-11-28": {
       "date": "2026-11-28",
-      "dayType": "training",
-      "matchDayOffset": "MD-1",
+      "dayType": "match",
+      "matchDayOffset": "MD",
       "startTime": "10:00",
       "endTime": "11:00",
       "durationMin": 60,
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Ativação Pré-Jogo & Bolas Paradas",
-      "updatedAt": 1795530000000
+      "updatedAt": 1795548307031,
+      "matchCategory": "championship"
     },
     "2026-11-29": {
       "date": "2026-11-29",
@@ -7838,7 +7839,7 @@
     "2026-11-25": "training",
     "2026-11-26": "training",
     "2026-11-27": "training",
-    "2026-11-28": "training",
+    "2026-11-28": "rest",
     "2026-11-29": "rest",
     "2026-09-10": "match",
     "2026-09-06": "rest",
