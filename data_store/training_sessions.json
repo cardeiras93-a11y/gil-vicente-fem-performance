@@ -71,14 +71,14 @@
     },
     "2026-11-27": {
       "date": "2026-11-27",
-      "dayType": "match",
+      "dayType": "rest",
       "matchDayOffset": "MD",
       "startTime": "10:00",
       "endTime": "11:15",
       "durationMin": 75,
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Velocidade & Reação",
-      "updatedAt": 1795548309656,
+      "updatedAt": 1795548310211,
       "matchCategory": "championship"
     },
     "2026-11-28": {
@@ -7839,7 +7839,7 @@
     "2026-11-24": "training",
     "2026-11-25": "training",
     "2026-11-26": "training",
-    "2026-11-27": "match",
+    "2026-11-27": "rest",
     "2026-11-28": "rest",
     "2026-11-29": "rest",
     "2026-09-10": "match",
