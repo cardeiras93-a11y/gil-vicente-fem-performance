@@ -1,11 +1,11 @@
 import { Athlete, MenstrualCyclePhase, HydrationStatus } from './types';
 
-export const GOALKEEPER_NAMES: string[] = ['CAROL', 'LUANA MACEDO', 'LAURA', 'LAURA PATRÍCIO', 'PAYTON'];
+export const GOALKEEPER_NAMES: string[] = ['CAROL', 'PAYTON'];
 
 export const isGoalkeeper = (name: string): boolean => {
   if (!name) return false;
   const upper = name.toUpperCase().trim();
-  return GOALKEEPER_NAMES.some((gr) => upper === gr || upper.includes('LUANA MACEDO') || upper.includes('CAROL') || upper.includes('LAURA') || upper.includes('PAYTON'));
+  return GOALKEEPER_NAMES.some((gr) => upper === gr || upper.includes('CAROL') || upper.includes('PAYTON'));
 };
 
 export const INITIAL_ATHLETES: Athlete[] = [
@@ -14,19 +14,13 @@ export const INITIAL_ATHLETES: Athlete[] = [
   { id: 'ath-3', name: 'CARTAXO', position: 'Campo' },
   { id: 'ath-4', name: 'EVA', position: 'Campo' },
   { id: 'ath-5', name: 'FAITH', position: 'Campo' },
-  { id: 'ath-6', name: 'LARA', position: 'Campo' },
-  { id: 'ath-7', name: 'LAURA PATRÍCIO', position: 'GR' },
-  { id: 'ath-8', name: 'LUANA CORREIA', position: 'Campo' },
-  { id: 'ath-9', name: 'LUANA MACEDO', position: 'GR' },
   { id: 'ath-10', name: 'MAGUI', position: 'Campo' },
   { id: 'ath-11', name: 'MALTA', position: 'Campo' },
   { id: 'ath-12', name: 'MANU', position: 'Campo' },
   { id: 'ath-13', name: 'MARTHE', position: 'Campo' },
   { id: 'ath-14', name: 'MERIVA', position: 'Campo' },
   { id: 'ath-15', name: 'NICOLE', position: 'Campo' },
-  { id: 'ath-16', name: 'RAMOS', position: 'Campo' },
   { id: 'ath-17', name: 'RIBEIRO', position: 'Campo' },
-  { id: 'ath-18', name: 'RITA R.', position: 'Campo' },
   { id: 'ath-19', name: 'SARA ALVES', position: 'Campo' },
   { id: 'ath-20', name: 'SARA TEIXEIRA', position: 'Campo' },
   { id: 'ath-21', name: 'SERENA', position: 'Campo' },
