@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { verifyApiAuth } from '@/lib/authGuard';
+import { getCloudObject, saveCloudObject } from '@/lib/cloudStore';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,6 +11,7 @@ export const fetchCache = 'force-no-store';
 
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'training_sessions.json');
+const BUNDLED_PATH = path.join(process.cwd(), 'data', 'training_sessions.json');
 
 function ensureFileExists() {
   try {
@@ -17,7 +19,11 @@ function ensureFileExists() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (!fs.existsSync(FILE_PATH)) {
-      fs.writeFileSync(FILE_PATH, JSON.stringify({ sessions: {}, schedule: {} }, null, 2), 'utf-8');
+      if (fs.existsSync(BUNDLED_PATH)) {
+        fs.copyFileSync(BUNDLED_PATH, FILE_PATH);
+      } else {
+        fs.writeFileSync(FILE_PATH, JSON.stringify({ sessions: {}, schedule: {} }, null, 2), 'utf-8');
+      }
     }
   } catch (e) {
     console.warn('Ficheiro de sessões local indisponível:', e);
@@ -33,6 +39,36 @@ export async function GET(request: Request) {
     let schedule: Record<string, any> = {};
     let weeklyPlan: Record<string, any> = {};
 
+    // 0. Base layer: Bundled local file (authoritative base schedule)
+    try {
+      if (fs.existsSync(BUNDLED_PATH)) {
+        const raw = fs.readFileSync(BUNDLED_PATH, 'utf-8');
+        const bundledData = JSON.parse(raw);
+        if (bundledData.sessions) sessions = { ...bundledData.sessions };
+        if (bundledData.schedule) schedule = { ...bundledData.schedule };
+        if (bundledData.weeklyPlan) weeklyPlan = { ...bundledData.weeklyPlan };
+      }
+    } catch {}
+
+    // 0b. Persistent cloud store layer (cross-device sync even if Supabase is down)
+    try {
+      const cloudObj = await getCloudObject('training_sessions.json');
+      if (cloudObj?.sessions && typeof cloudObj.sessions === 'object') {
+        Object.keys(cloudObj.sessions).forEach((dateStr) => {
+          sessions[dateStr] = {
+            ...(sessions[dateStr] || {}),
+            ...cloudObj.sessions[dateStr],
+          };
+        });
+      }
+      if (cloudObj?.schedule && typeof cloudObj.schedule === 'object') {
+        schedule = { ...schedule, ...cloudObj.schedule };
+      }
+      if (cloudObj?.weeklyPlan && typeof cloudObj.weeklyPlan === 'object') {
+        weeklyPlan = { ...weeklyPlan, ...cloudObj.weeklyPlan };
+      }
+    } catch {}
+
     // 1. Fetch from Supabase if configured (global cross-device persistence)
     if (isSupabaseConfigured && supabase) {
       // 1a. Fallback row in athletes table is the authoritative rich store (full JSON object with exact match hours, deadlines, etc.)
@@ -46,13 +82,13 @@ export async function GET(request: Request) {
         if (!athError && athData?.name) {
           const fallbackData = JSON.parse(athData.name);
           if (fallbackData.sessions && typeof fallbackData.sessions === 'object') {
-            sessions = { ...fallbackData.sessions };
+            sessions = { ...sessions, ...fallbackData.sessions };
           }
           if (fallbackData.schedule && typeof fallbackData.schedule === 'object') {
-            schedule = { ...fallbackData.schedule };
+            schedule = { ...schedule, ...fallbackData.schedule };
           }
           if (fallbackData.weeklyPlan && typeof fallbackData.weeklyPlan === 'object') {
-            weeklyPlan = { ...fallbackData.weeklyPlan };
+            weeklyPlan = { ...weeklyPlan, ...fallbackData.weeklyPlan };
           }
         }
       } catch (e) {
@@ -276,6 +312,11 @@ export async function POST(request: Request) {
     try {
       ensureFileExists();
       fs.writeFileSync(FILE_PATH, JSON.stringify(currentData, null, 2), 'utf-8');
+    } catch {}
+
+    // 1b. Persist to cloud store (GitHub data_store)
+    try {
+      await saveCloudObject('training_sessions.json', currentData);
     } catch {}
 
     // 2. Persist to Supabase authoritative fallback row in athletes table

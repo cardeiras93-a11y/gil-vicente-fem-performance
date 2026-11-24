@@ -9,7 +9,7 @@ const GITHUB_REPO = 'cardeiras93-a11y/gil-vicente-fem-performance';
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 
 interface MemoryCacheItem {
-  data: any[];
+  data: any;
   sha: string;
   timestamp: number;
 }
@@ -24,28 +24,45 @@ function getLocalFilePath(filename: string): string {
   return path.join(DATA_DIR, filename);
 }
 
-function readLocalFallback(filename: string): any[] {
+function readLocalFallback(filename: string): any {
   try {
     const fPath = getLocalFilePath(filename);
     if (fs.existsSync(fPath)) {
       return JSON.parse(fs.readFileSync(fPath, 'utf-8'));
     }
+    const bundledPath = path.join(process.cwd(), 'data', filename);
+    if (fs.existsSync(bundledPath)) {
+      return JSON.parse(fs.readFileSync(bundledPath, 'utf-8'));
+    }
   } catch {}
-  return [];
+  return filename.includes('training_sessions') ? { sessions: {}, schedule: {} } : [];
 }
 
-function writeLocalFallback(filename: string, entries: any[]) {
+function writeLocalFallback(filename: string, entries: any) {
   try {
     const fPath = getLocalFilePath(filename);
     fs.writeFileSync(fPath, JSON.stringify(entries, null, 2), 'utf-8');
   } catch {}
 }
 
+function matchesEntry(e: any, target: any, filename: string): boolean {
+  if (e.id && target.id && e.id === target.id) return true;
+  if (e.date === target.date && e.athleteId === target.athleteId) {
+    if (filename === 'rpe.json') {
+      const eType = e.sessionType || (e.id && e.id.includes('gym_lower') ? 'gym_lower' : 'field');
+      const targetType = target.sessionType || (target.id && target.id.includes('gym_lower') ? 'gym_lower' : 'field');
+      return eType === targetType;
+    }
+    return true;
+  }
+  return false;
+}
+
 export async function getCloudEntries(filename: string): Promise<any[]> {
   const cached = memoryCache.get(filename);
   const now = Date.now();
   if (cached && (now - cached.timestamp < CACHE_TTL_MS)) {
-    return cached.data;
+    return Array.isArray(cached.data) ? cached.data : [];
   }
 
   try {
@@ -79,13 +96,15 @@ export async function getCloudEntries(filename: string): Promise<any[]> {
     console.warn(`[CloudStore] Erro ao ler ${filename} do GitHub:`, err);
   }
 
-  return readLocalFallback(filename);
+  const fallback = readLocalFallback(filename);
+  return Array.isArray(fallback) ? fallback : [];
 }
 
 export async function saveCloudEntry(filename: string, entry: any): Promise<boolean> {
   try {
-    const localEntries = readLocalFallback(filename);
-    const localIdx = localEntries.findIndex((e: any) => e.id === entry.id || (e.date === entry.date && e.athleteId === entry.athleteId));
+    const rawLocal = readLocalFallback(filename);
+    const localEntries = Array.isArray(rawLocal) ? rawLocal : [];
+    const localIdx = localEntries.findIndex((e: any) => matchesEntry(e, entry, filename));
     if (localIdx !== -1) {
       localEntries[localIdx] = { ...localEntries[localIdx], ...entry };
     } else {
@@ -118,7 +137,7 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
       }
     } catch {}
 
-    const idx = currentEntries.findIndex((e: any) => e.id === entry.id || (e.date === entry.date && e.athleteId === entry.athleteId));
+    const idx = currentEntries.findIndex((e: any) => matchesEntry(e, entry, filename));
     if (idx !== -1) {
       currentEntries[idx] = { ...currentEntries[idx], ...entry };
     } else {
@@ -160,3 +179,102 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
 
   return false;
 }
+
+export async function getCloudObject(filename: string): Promise<Record<string, any>> {
+  const cached = memoryCache.get(filename);
+  const now = Date.now();
+  if (cached && (now - cached.timestamp < CACHE_TTL_MS)) {
+    return (cached.data && typeof cached.data === 'object') ? cached.data : {};
+  }
+
+  try {
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main`;
+    const res = await fetch(url, {
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'GVFC-Sync',
+      },
+      cache: 'no-store'
+    });
+
+    if (res.ok) {
+      const json = await res.json();
+      if (json.content) {
+        const decoded = Buffer.from(json.content, 'base64').toString('utf-8');
+        const parsed = JSON.parse(decoded);
+        if (parsed && typeof parsed === 'object') {
+          memoryCache.set(filename, {
+            data: parsed,
+            sha: json.sha,
+            timestamp: now
+          });
+          writeLocalFallback(filename, parsed);
+          return parsed;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`[CloudStore] Erro ao ler objeto ${filename} do GitHub:`, err);
+  }
+
+  const local = readLocalFallback(filename);
+  return (local && typeof local === 'object' && !Array.isArray(local)) ? local : {};
+}
+
+export async function saveCloudObject(filename: string, obj: Record<string, any>): Promise<boolean> {
+  try {
+    writeLocalFallback(filename, obj);
+
+    let sha: string | undefined = memoryCache.get(filename)?.sha;
+
+    try {
+      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main`;
+      const getRes = await fetch(getUrl, {
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'GVFC-Sync',
+        },
+        cache: 'no-store'
+      });
+
+      if (getRes.ok) {
+        const json = await getRes.json();
+        sha = json.sha;
+      }
+    } catch {}
+
+    const updatedContentB64 = Buffer.from(JSON.stringify(obj, null, 2)).toString('base64');
+    const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}`;
+    const putRes = await fetch(putUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'User-Agent': 'GVFC-Sync',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `sync(${filename.replace('.json', '')}): update store`,
+        content: updatedContentB64,
+        sha: sha,
+        branch: 'main'
+      })
+    });
+
+    if (putRes.ok) {
+      const putData = await putRes.json();
+      memoryCache.set(filename, {
+        data: obj,
+        sha: putData.content?.sha || '',
+        timestamp: Date.now()
+      });
+      return true;
+    }
+  } catch (err) {
+    console.error(`[CloudStore] Exceção ao gravar objeto ${filename}:`, err);
+  }
+  return false;
+}
+

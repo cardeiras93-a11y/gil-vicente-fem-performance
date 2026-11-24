@@ -1,0 +1,112 @@
+{
+  "sessions": {
+    "2026-10-25": {
+      "date": "2026-10-25",
+      "dayType": "match",
+      "matchCategory": "cup",
+      "matchDayOffset": "MD",
+      "startTime": "15:00",
+      "endTime": "16:45",
+      "durationMin": 94,
+      "locationTime": "Campo do Sporting da Cruz",
+      "focusNotes": "Taça de Portugal Feminina (2ª Eliminatória) vs Sporting da Cruz (29-0)"
+    },
+    "2026-11-23": {
+      "date": "2026-11-23",
+      "dayType": "rest",
+      "matchDayOffset": "MD+1",
+      "focusNotes": "Descanso / Recuperação Ativa"
+    },
+    "2026-11-24": {
+      "date": "2026-11-24",
+      "dayType": "training",
+      "matchDayOffset": "MD-5",
+      "startTime": "10:00",
+      "endTime": "11:45",
+      "durationMin": 105,
+      "gymStartTime": "11:45",
+      "gymEndTime": "12:30",
+      "gymDurationMin": 45,
+      "locationTime": "Estádio Cidade de Barcelos / Sintético",
+      "focusNotes": "Treino de Campo + Ginásio de Equipa (Membros Inferiores)",
+      "complementaryWork": {
+        "lowerBody": true,
+        "notes": "Ginásio de Equipa: Membros Inferiores"
+      },
+      "updatedAt": 1795530000000
+    },
+    "2026-11-25": {
+      "date": "2026-11-25",
+      "dayType": "training",
+      "matchDayOffset": "MD-4",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMin": 90,
+      "locationTime": "Estádio Cidade de Barcelos",
+      "focusNotes": "Treino Técnico-Tático",
+      "updatedAt": 1795530000000
+    },
+    "2026-11-26": {
+      "date": "2026-11-26",
+      "dayType": "training",
+      "matchDayOffset": "MD-3",
+      "startTime": "10:00",
+      "endTime": "11:30",
+      "durationMin": 90,
+      "gymStartTime": "11:30",
+      "gymEndTime": "12:15",
+      "gymDurationMin": 45,
+      "locationTime": "Estádio Cidade de Barcelos",
+      "focusNotes": "Treino de Força / Carga + Ginásio",
+      "complementaryWork": {
+        "lowerBody": true,
+        "notes": "Ginásio de Equipa: Membros Inferiores / Força"
+      },
+      "updatedAt": 1795530000000
+    },
+    "2026-11-27": {
+      "date": "2026-11-27",
+      "dayType": "training",
+      "matchDayOffset": "MD-2",
+      "startTime": "10:00",
+      "endTime": "11:15",
+      "durationMin": 75,
+      "locationTime": "Estádio Cidade de Barcelos",
+      "focusNotes": "Velocidade & Reação",
+      "updatedAt": 1795530000000
+    },
+    "2026-11-28": {
+      "date": "2026-11-28",
+      "dayType": "training",
+      "matchDayOffset": "MD-1",
+      "startTime": "10:00",
+      "endTime": "11:00",
+      "durationMin": 60,
+      "locationTime": "Estádio Cidade de Barcelos",
+      "focusNotes": "Ativação Pré-Jogo & Bolas Paradas",
+      "updatedAt": 1795530000000
+    },
+    "2026-11-29": {
+      "date": "2026-11-29",
+      "dayType": "match",
+      "matchCategory": "championship",
+      "matchDayOffset": "MD",
+      "startTime": "15:00",
+      "endTime": "16:45",
+      "durationMin": 90,
+      "locationTime": "Estádio Cidade de Barcelos",
+      "focusNotes": "Campeonato Nacional Feminino / Liga BPI",
+      "updatedAt": 1795530000000
+    }
+  },
+  "schedule": {
+    "2026-10-25": "match",
+    "2026-11-23": "rest",
+    "2026-11-24": "training",
+    "2026-11-25": "training",
+    "2026-11-26": "training",
+    "2026-11-27": "training",
+    "2026-11-28": "training",
+    "2026-11-29": "match"
+  }
+}

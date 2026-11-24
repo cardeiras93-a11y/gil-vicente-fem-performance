@@ -76,10 +76,15 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   };
 
   const [selectedDate, setSelectedDateState] = useState<string>(() => {
+    const today = new Date().toISOString().split('T')[0];
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_physio_selected_date') || new Date().toISOString().split('T')[0];
+      const saved = localStorage.getItem('femperf_physio_selected_date');
+      if (saved && saved === today) {
+        return saved;
+      }
+      return today;
     }
-    return new Date().toISOString().split('T')[0];
+    return today;
   });
 
   const setSelectedDate = (date: string) => {

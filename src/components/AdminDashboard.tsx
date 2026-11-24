@@ -91,10 +91,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   });
 
   const [selectedDate, setSelectedDateState] = useState<string>(() => {
+    const today = getTodayLocalDateStr();
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_admin_selected_date') || getTodayLocalDateStr();
+      const saved = localStorage.getItem('femperf_admin_selected_date');
+      if (saved && saved === today) {
+        return saved;
+      }
+      return today;
     }
-    return getTodayLocalDateStr();
+    return today;
   });
 
   const loadAllData = (targetDate: string = selectedDate) => {
