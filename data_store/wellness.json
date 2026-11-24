@@ -1,5 +1,33 @@
 [
   {
+    "id": "wel-1795512764470",
+    "athleteId": "ath-28",
+    "athleteName": "IZZY",
+    "date": "2026-11-24",
+    "menstrualCycle": "3ª Semana após a menstruação",
+    "sleepQuality": 3,
+    "sleepDuration": 3,
+    "mood": 2,
+    "stress": 3,
+    "fatigue": 3,
+    "soreness": 3,
+    "heavyLegs": 4,
+    "wellnessTotal": 21,
+    "muscleFatigue": {
+      "Calcanhar / Aquiles D": 5
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-24T09:32:44.470Z",
+    "isLate": true,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": true,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T09:32:44.470Z"
+  },
+  {
     "id": "wel-1795507521703",
     "athleteId": "ath-11",
     "athleteName": "MALTA",
