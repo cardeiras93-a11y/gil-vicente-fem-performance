@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-26-2026-11-24-gym_lower",
+    "athleteId": "ath-26",
+    "athleteName": "PAYTON",
+    "date": "2026-11-24",
+    "sessionType": "gym_lower",
+    "physicalDemand": 4,
+    "postFatigue": 4,
+    "sessionDurationMin": 105,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-24T15:44:01.713Z",
+    "isLate": true,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": true,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-24T15:44:01.713Z"
+  },
+  {
     "id": "rpe-ath-4-2026-11-24-gym_lower",
     "athleteId": "ath-4",
     "athleteName": "EVA",
