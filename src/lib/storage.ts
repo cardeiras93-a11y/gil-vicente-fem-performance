@@ -749,13 +749,15 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         dispatchDataUpdatedEvent();
 
         if (unsyncedWellness.length > 0) {
-          unsyncedWellness.forEach((entry) => {
-            secureFetch('/api/wellness', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(entry),
-            }).catch(() => {});
-          });
+          for (const entry of unsyncedWellness) {
+            try {
+              await secureFetch('/api/wellness', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry),
+              });
+            } catch {}
+          }
         }
       }
     } catch {}
@@ -802,13 +804,15 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         dispatchDataUpdatedEvent();
 
         if (unsyncedRpe.length > 0) {
-          unsyncedRpe.forEach((entry) => {
-            secureFetch('/api/rpe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(entry),
-            }).catch(() => {});
-          });
+          for (const entry of unsyncedRpe) {
+            try {
+              await secureFetch('/api/rpe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry),
+              });
+            } catch {}
+          }
         }
       }
     } catch {}
@@ -847,13 +851,15 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         dispatchDataUpdatedEvent();
 
         if (unsyncedHyd.length > 0) {
-          unsyncedHyd.forEach((entry) => {
-            secureFetch('/api/hydration', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(entry),
-            }).catch(() => {});
-          });
+          for (const entry of unsyncedHyd) {
+            try {
+              await secureFetch('/api/hydration', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(entry),
+              });
+            } catch {}
+          }
         }
       }
     } catch {}
@@ -1479,7 +1485,7 @@ export function getWellnessLocally(athleteId?: string): WellnessEntry[] {
   }
 }
 
-export function saveRPELocally(entry: RPEEntry): void {
+export function saveRPELocally(entry: RPEEntry, skipApiSync: boolean = false): void {
   if (typeof window === 'undefined') return;
   try {
     if (!entry.sessionDurationMin || entry.sessionDurationMin <= 0) {
@@ -1499,11 +1505,13 @@ export function saveRPELocally(entry: RPEEntry): void {
       list.unshift(entry);
     }
     localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(list));
-    secureFetch('/api/rpe', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry),
-    }).catch(() => {});
+    if (!skipApiSync) {
+      secureFetch('/api/rpe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      }).catch(() => {});
+    }
     dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar RPE localmente:', e);
@@ -1534,7 +1542,7 @@ export function getRPELocally(athleteId?: string): RPEEntry[] {
   }
 }
 
-export function saveHydrationLocally(entry: HydrationEntry): void {
+export function saveHydrationLocally(entry: HydrationEntry, skipApiSync: boolean = false): void {
   if (typeof window === 'undefined') return;
   try {
     const list: HydrationEntry[] = JSON.parse(localStorage.getItem(HYDRATION_LOCAL_KEY) || '[]');
@@ -1546,11 +1554,13 @@ export function saveHydrationLocally(entry: HydrationEntry): void {
       list.unshift(entry);
     }
     localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(list));
-    secureFetch('/api/hydration', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(entry),
-    }).catch(() => {});
+    if (!skipApiSync) {
+      secureFetch('/api/hydration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry),
+      }).catch(() => {});
+    }
     dispatchDataUpdatedEvent();
   } catch (e) {
     console.error('Erro ao guardar Hidratação localmente:', e);

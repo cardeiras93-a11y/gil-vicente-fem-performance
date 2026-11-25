@@ -662,7 +662,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
           setIsSyncingCloud(false);
         });
 
-      // Auto-poll cloud every 120 seconds to preserve egress quota while syncing updates
+      // Auto-poll cloud every 20 seconds while dashboard is open for real-time visibility
       const intervalId = setInterval(() => {
         if (typeof document !== 'undefined' && !document.hidden) {
           syncAllDataFromCloud().then(() => {
@@ -671,7 +671,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
             setLastSyncTime(new Date());
           });
         }
-      }, 120000);
+      }, 20000);
 
       const onFocusOrResume = () => {
         setIsSyncingCloud(true);

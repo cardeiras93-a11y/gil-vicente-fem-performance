@@ -130,7 +130,16 @@ export async function getCloudEntries(filename: string): Promise<any[]> {
   return Array.isArray(fallback) ? fallback : [];
 }
 
-export async function saveCloudEntry(filename: string, entry: any): Promise<boolean> {
+const writeQueueMap = new Map<string, Promise<any>>();
+
+function queueCloudWrite<T>(filename: string, fn: () => Promise<T>): Promise<T> {
+  const current = writeQueueMap.get(filename) || Promise.resolve();
+  const next = current.then(fn, fn);
+  writeQueueMap.set(filename, next);
+  return next;
+}
+
+async function executeSaveCloudEntry(filename: string, entry: any): Promise<boolean> {
   const maxRetries = 5;
 
   // 1. Always update local fallback immediately
@@ -178,6 +187,21 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
 
       const idx = currentEntries.findIndex((e: any) => matchesEntry(e, entry, filename));
       if (idx !== -1) {
+        // Idempotency check: if all payload fields are already identical, skip redundant GitHub commit
+        const existing = currentEntries[idx];
+        const isIdentical = Object.keys(entry).every((k) => {
+          if (k === 'createdAt' || k === 'submittedAt' || k === 'updatedAt') return true;
+          return JSON.stringify(entry[k]) === JSON.stringify(existing[k]);
+        });
+        if (isIdentical) {
+          // Already synchronized and up to date
+          memoryCache.set(filename, {
+            data: currentEntries,
+            sha: sha || '',
+            timestamp: Date.now()
+          });
+          return true;
+        }
         currentEntries[idx] = { ...currentEntries[idx], ...entry };
       } else {
         currentEntries.unshift(entry);
@@ -232,6 +256,10 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
   return false;
 }
 
+export async function saveCloudEntry(filename: string, entry: any): Promise<boolean> {
+  return queueCloudWrite(filename, () => executeSaveCloudEntry(filename, entry));
+}
+
 export async function getCloudObject(filename: string): Promise<Record<string, any>> {
   const cached = memoryCache.get(filename);
   const now = Date.now();
@@ -274,7 +302,7 @@ export async function getCloudObject(filename: string): Promise<Record<string, a
   return (local && typeof local === 'object' && !Array.isArray(local)) ? local : {};
 }
 
-export async function saveCloudObject(filename: string, obj: Record<string, any>): Promise<boolean> {
+async function executeSaveCloudObject(filename: string, obj: Record<string, any>): Promise<boolean> {
   const maxRetries = 5;
   try {
     writeLocalFallback(filename, obj);
@@ -297,6 +325,21 @@ export async function saveCloudObject(filename: string, obj: Record<string, any>
       if (getRes.ok) {
         const json = await getRes.json();
         sha = json.sha;
+        if (json.content) {
+          const decoded = Buffer.from(json.content, 'base64').toString('utf-8');
+          try {
+            const remoteObj = JSON.parse(decoded);
+            if (JSON.stringify(remoteObj) === JSON.stringify(obj)) {
+              // Remote is already identical, no git commit needed
+              memoryCache.set(filename, {
+                data: obj,
+                sha: sha || '',
+                timestamp: Date.now()
+              });
+              return true;
+            }
+          } catch {}
+        }
       }
 
       const updatedContentB64 = Buffer.from(JSON.stringify(obj, null, 2)).toString('base64');
@@ -341,5 +384,9 @@ export async function saveCloudObject(filename: string, obj: Record<string, any>
     }
   }
   return false;
+}
+
+export async function saveCloudObject(filename: string, obj: Record<string, any>): Promise<boolean> {
+  return queueCloudWrite(filename, () => executeSaveCloudObject(filename, obj));
 }
 

@@ -6,6 +6,7 @@ import { MuscleFatigueSelector } from './MuscleFatigueSelector';
 import { saveRPELocally, getRPELocally, getStoredTrainingSessions, isSubmissionPastDeadline } from '@/lib/storage';
 import { secureFetch } from '@/lib/authGuard';
 import { translateTextToPortuguese } from '@/lib/translationUtils';
+import { getTodayLocalDateStr } from '@/lib/reminderUtils';
 import { Dumbbell, Activity, Check, AlertCircle, MessageSquare, Info, ChevronDown, ChevronUp, Lock, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 
 interface RPEFormProps {
@@ -25,13 +26,14 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [syncConfirmed, setSyncConfirmed] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   const [allowEdit, setAllowEdit] = useState<boolean>(false);
 
   const [showBorgLegend, setShowBorgLegend] = useState<boolean>(false);
   const [showFatigueLegend, setShowFatigueLegend] = useState<boolean>(false);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayLocalDateStr();
 
   // Identifica se hoje há Ginásio de Equipa: Membros Inferiores programado
   const [sessionsMap, setSessionsMap] = useState<Record<string, any>>(() => getStoredTrainingSessions());
@@ -167,7 +169,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
     setIsSubmitting(true);
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = getTodayLocalDateStr();
     const sessions = getStoredTrainingSessions();
     const currSession = sessions[today];
     const targetSessionType = sessionType;
@@ -209,47 +211,58 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
     const redirectDelay = 1800;
 
-    // 1. Guardar localmente de imediato para garantir persistência a 100% no dispositivo
-    saveRPELocally(newEntry);
+    // 1. Guardar localmente de imediato com skipApiSync=true (evita chamada dupla concorrente)
+    saveRPELocally(newEntry, true);
 
+    let serverConfirmed = false;
     try {
-      await secureFetch('/api/rpe', {
+      const res = await secureFetch('/api/rpe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry),
       });
-
-      secureFetch('/api/sync-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'rpe', entry: newEntry }),
-      }).catch(() => {});
-
-      setIsSubmitting(false);
-      setIsSuccess(true);
-
-      setTimeout(() => {
-        setIsSuccess(false);
-        // Se preencheu Campo e ainda tem Ginásio pendente, comuta para o Ginásio
-        if (targetSessionType === 'field' && hasGymLower && !gymEntry) {
-          handleSelectSessionType('gym_lower');
-        } else {
-          onSubmitSuccess();
-        }
-      }, redirectDelay);
+      if (res.ok) {
+        serverConfirmed = true;
+      }
     } catch (err) {
-      console.warn('Falha na API. Registo seguro localmente.');
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        setIsSuccess(false);
-        if (targetSessionType === 'field' && hasGymLower && !gymEntry) {
-          handleSelectSessionType('gym_lower');
-        } else {
-          onSubmitSuccess();
-        }
-      }, redirectDelay);
+      console.warn('1ª tentativa de envio falhou. A tentar 2ª vez...');
     }
+
+    if (!serverConfirmed) {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        const retryRes = await secureFetch('/api/rpe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newEntry),
+        });
+        if (retryRes.ok) {
+          serverConfirmed = true;
+        }
+      } catch (retryErr) {
+        console.warn('2ª tentativa de envio falhou. O registo será sincronizado pelo auto-sync.');
+      }
+    }
+
+    secureFetch('/api/sync-sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'rpe', entry: newEntry }),
+    }).catch(() => {});
+
+    setIsSubmitting(false);
+    setIsSuccess(true);
+    setSyncConfirmed(serverConfirmed);
+
+    setTimeout(() => {
+      setIsSuccess(false);
+      // Se preencheu Campo e ainda tem Ginásio pendente, comuta para o Ginásio
+      if (targetSessionType === 'field' && hasGymLower && !gymEntry) {
+        handleSelectSessionType('gym_lower');
+      } else {
+        onSubmitSuccess();
+      }
+    }, redirectDelay);
   };
 
   const selectedBorgObj = physicalDemand !== null ? (BORG_SCALE.find((b) => b.value === physicalDemand) || BORG_SCALE[5]) : null;
@@ -294,6 +307,19 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         <p className="text-xs text-slate-300">
           {activeAthlete.name} &bull; {sessionType === 'gym_lower' ? 'Força & Potência MMII' : 'Treino de Campo'}
         </p>
+
+        {syncConfirmed ? (
+          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            <span>Confirmado &amp; Sincronizado com o Clube</span>
+          </div>
+        ) : (
+          <div className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold">
+            <AlertCircle className="h-3.5 w-3.5" />
+            <span>Guardado no Dispositivo (A aguardar ligação ao clube)</span>
+          </div>
+        )}
+
         {sessionType === 'field' && hasGymLower && !gymEntry && (
           <p className="text-[11px] font-bold text-purple-300 animate-pulse bg-purple-950/60 border border-purple-500/30 px-3 py-1.5 rounded-xl">
             A comutar para a PSE de Ginásio (MMII)...
