@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-23-2026-11-25-field",
+    "athleteId": "ath-23",
+    "athleteName": "TICHA",
+    "date": "2026-11-25",
+    "sessionType": "field",
+    "physicalDemand": 4,
+    "postFatigue": 6,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-25T10:38:55.491Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T10:38:55.491Z"
+  },
+  {
     "id": "rpe-ath-11-2026-11-24-gym_lower",
     "athleteId": "ath-11",
     "athleteName": "MALTA",
