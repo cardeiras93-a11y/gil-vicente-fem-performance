@@ -1,5 +1,34 @@
 [
   {
+    "id": "wel-1795592227903",
+    "athleteId": "ath-10",
+    "athleteName": "MAGUI",
+    "date": "2026-11-25",
+    "menstrualCycle": "Menstruação",
+    "sleepQuality": 2,
+    "sleepDuration": 2,
+    "mood": 2,
+    "stress": 3,
+    "fatigue": 3,
+    "soreness": 3,
+    "heavyLegs": 3,
+    "wellnessTotal": 18,
+    "muscleFatigue": {
+      "Lombar": 4,
+      "Ísquiotibiais Direito": 4
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-25T07:37:07.903Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T07:37:07.903Z"
+  },
+  {
     "id": "wel-1795591609612",
     "athleteId": "ath-27",
     "athleteName": "CHELSEA",
