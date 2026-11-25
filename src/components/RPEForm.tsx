@@ -116,7 +116,15 @@ export const RPEForm: React.FC<RPEFormProps> = ({
     };
   }, [todayStr, activeAthlete.id]);
 
+  // Auto-revert to field session if lower body gym is not active
+  useEffect(() => {
+    if (!hasGymLower && sessionType === 'gym_lower') {
+      setSessionType('field');
+    }
+  }, [hasGymLower, sessionType]);
+
   const handleSelectSessionType = (type: 'field' | 'gym_lower') => {
+    if (type === 'gym_lower' && !hasGymLower) return;
     setSessionType(type);
     setAllowEdit(false);
     setError('');
@@ -297,91 +305,90 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
   return (
     <div className="space-y-4 pb-8">
-      {/* OPÇÃO 2: CARTÕES SEPARADOS DE SESSÃO QUANDO HÁ GINÁSIO DE EQUIPA MMII */}
-      {/* SELETOR DE SESSÕES: CAMPO vs GINÁSIO MMII */}
-      <div className="rounded-2xl bg-dark-card border border-purple-500/40 p-3 sm:p-4 shadow-xl space-y-3 animate-fade-in">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-950/90 border border-purple-500/50 text-base shadow-sm">
-              🏋️‍♀️
-            </span>
-            <div>
-              <h3 className="text-xs font-black uppercase text-purple-200 tracking-tight">
-                {hasGymLower ? 'Ginásio de Equipa • Membros Inferiores' : 'Avaliação de PSE • Campo & Ginásio'}
-              </h3>
-              <p className="text-[10px] text-slate-400">
-                {hasGymLower
-                  ? 'Dia com 2 avaliações separadas: após o campo e após o ginásio.'
-                  : 'Seleciona a sessão a avaliar: Treino de Campo ou Ginásio MMII.'}
-              </p>
+      {/* SELETOR DE SESSÕES: CAMPO vs GINÁSIO MMII — Apenas exibido quando Membros Inferiores está programado */}
+      {hasGymLower && (
+        <div className="rounded-2xl bg-dark-card border border-purple-500/40 p-3 sm:p-4 shadow-xl space-y-3 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-950/90 border border-purple-500/50 text-base shadow-sm">
+                🏋️‍♀️
+              </span>
+              <div>
+                <h3 className="text-xs font-black uppercase text-purple-200 tracking-tight">
+                  Ginásio de Equipa • Membros Inferiores
+                </h3>
+                <p className="text-[10px] text-slate-400">
+                  Dia com 2 avaliações separadas: após o campo e após o ginásio.
+                </p>
+              </div>
             </div>
+            <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 shrink-0">
+              2 PSEs Separadas
+            </span>
           </div>
-          <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/40 shrink-0">
-            {hasGymLower ? '2 PSEs Separadas' : 'Campo / Ginásio'}
-          </span>
-        </div>
 
-        <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-          {/* Cartão 1: PSE Treino de Campo */}
-          <button
-            type="button"
-            onClick={() => handleSelectSessionType('field')}
-            className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
-              sessionType === 'field'
-                ? 'border-brand-cyan bg-cyan-950/40 ring-2 ring-brand-cyan/40 shadow-lg'
-                : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-lg">⚽</span>
-              {fieldEntry ? (
-                <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
-                  <Check className="h-2.5 w-2.5 inline" />
-                  <span>Borg {fieldEntry.physicalDemand}/10</span>
-                </span>
-              ) : (
-                <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md animate-pulse">
-                  Pendente
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-black text-slate-100">1. Treino de Campo</span>
-            <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
-              {todaySession?.startTime && todaySession?.endTime ? `${todaySession.startTime} - ${todaySession.endTime}` : 'Campo / Relvado'}
-            </span>
-          </button>
+          <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+            {/* Cartão 1: PSE Treino de Campo */}
+            <button
+              type="button"
+              onClick={() => handleSelectSessionType('field')}
+              className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
+                sessionType === 'field'
+                  ? 'border-brand-cyan bg-cyan-950/40 ring-2 ring-brand-cyan/40 shadow-lg'
+                  : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-lg">⚽</span>
+                {fieldEntry ? (
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
+                    <Check className="h-2.5 w-2.5 inline" />
+                    <span>Borg {fieldEntry.physicalDemand}/10</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-md animate-pulse">
+                    Pendente
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-black text-slate-100">1. Treino de Campo</span>
+              <span className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                {todaySession?.startTime && todaySession?.endTime ? `${todaySession.startTime} - ${todaySession.endTime}` : 'Campo / Relvado'}
+              </span>
+            </button>
 
-          {/* Cartão 2: PSE Ginásio MMII */}
-          <button
-            type="button"
-            onClick={() => handleSelectSessionType('gym_lower')}
-            className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
-              sessionType === 'gym_lower'
-                ? 'border-purple-400 bg-purple-950/40 ring-2 ring-purple-500/40 shadow-lg'
-                : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
-            }`}
-          >
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-lg">🏋️‍♀️</span>
-              {gymEntry ? (
-                <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
-                  <Check className="h-2.5 w-2.5 inline" />
-                  <span>Borg {gymEntry.physicalDemand}/10</span>
-                </span>
-              ) : (
-                <span className="text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-md animate-pulse">
-                  Pendente
-                </span>
-              )}
-            </div>
-            <span className="text-xs font-black text-slate-100">2. Ginásio MMII</span>
-            <span className="text-[10px] text-purple-300/90 mt-0.5 font-bold flex items-center space-x-1">
-              <Clock className="h-2.5 w-2.5 inline" />
-              <span>{todaySession?.gymEndTime ? `Fim: ${todaySession.gymEndTime}` : 'Membros Inferiores'}</span>
-            </span>
-          </button>
+            {/* Cartão 2: PSE Ginásio MMII */}
+            <button
+              type="button"
+              onClick={() => handleSelectSessionType('gym_lower')}
+              className={`flex flex-col p-3 rounded-xl border text-left transition-all cursor-pointer relative ${
+                sessionType === 'gym_lower'
+                  ? 'border-purple-400 bg-purple-950/40 ring-2 ring-purple-500/40 shadow-lg'
+                  : 'border-slate-800 bg-slate-900/70 hover:bg-slate-800/70 opacity-90'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-lg">🏋️‍♀️</span>
+                {gymEntry ? (
+                  <span className="text-[9px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-md flex items-center space-x-1">
+                    <Check className="h-2.5 w-2.5 inline" />
+                    <span>Borg {gymEntry.physicalDemand}/10</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-md animate-pulse">
+                    Pendente
+                  </span>
+                )}
+              </div>
+              <span className="text-xs font-black text-slate-100">2. Ginásio MMII</span>
+              <span className="text-[10px] text-purple-300/90 mt-0.5 font-bold flex items-center space-x-1">
+                <Clock className="h-2.5 w-2.5 inline" />
+                <span>{todaySession?.gymEndTime ? `Fim: ${todaySession.gymEndTime}` : 'Membros Inferiores'}</span>
+              </span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ESTADO CONCLUÍDO DA SESSÃO SELECIONADA */}
       {existingActive && !allowEdit ? (
@@ -401,11 +408,17 @@ export const RPEForm: React.FC<RPEFormProps> = ({
               </div>
               <div>
                 <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                  sessionType === 'gym_lower' ? 'text-purple-300' : 'text-cyan-400'
+                  sessionType === 'gym_lower'
+                    ? 'text-purple-300'
+                    : hasGymLower
+                    ? 'text-cyan-400'
+                    : 'text-brand-cyan'
                 }`}>
                   {sessionType === 'gym_lower'
                     ? 'PSE Ginásio (MMII) Concluída'
-                    : 'PSE Treino de Campo Concluída'}
+                    : hasGymLower
+                    ? 'PSE Treino de Campo Concluída'
+                    : 'PSE do Treino Concluída'}
                 </span>
                 <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
               </div>
@@ -416,7 +429,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
                 ? 'bg-purple-950/80 border-purple-500/40 text-purple-200'
                 : 'bg-slate-900 border-slate-800 text-cyan-300'
             }`}>
-              {sessionType === 'gym_lower' ? '🏋️ Força MMII' : '⚽ Campo'}
+              {sessionType === 'gym_lower' ? '🏋️ Força MMII' : hasGymLower ? '⚽ Campo' : '⚽ Treino'}
             </span>
           </div>
 
@@ -481,7 +494,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
                 }`}>
                   {sessionType === 'gym_lower'
                     ? 'PSE GINÁSIO — MEMBROS INFERIORES'
-                    : 'PSE TREINO DE CAMPO'}
+                    : hasGymLower
+                    ? 'PSE TREINO DE CAMPO'
+                    : 'PERCEÇÃO SUBJETIVA DE ESFORÇO (PSE)'}
                 </span>
                 <h2 className="text-lg font-black text-slate-100">{activeAthlete.name}</h2>
               </div>

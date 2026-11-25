@@ -2401,17 +2401,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                     >
                       <span>⚽ Campo ({fieldRpeList.length})</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setRpeSessionFilter('gym_lower')}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1.5 cursor-pointer ${
-                        rpeSessionFilter === 'gym_lower'
-                          ? 'bg-purple-600 text-white border-purple-500 shadow-md font-extrabold ring-2 ring-purple-500/40'
-                          : 'bg-dark-bg text-purple-300 border-purple-900/40 hover:bg-purple-950/40'
-                      }`}
-                    >
-                      <span>🏋️ Ginásio MMII ({gymRpeList.length})</span>
-                    </button>
+                    {(() => {
+                      const allSessions = typeof window !== 'undefined' ? getStoredTrainingSessions() : {};
+                      const selSession = allSessions[selectedDate];
+                      const hasGymLowerToday = Boolean(
+                        selSession &&
+                        selSession.dayType !== 'rest' &&
+                        selSession.complementaryWork?.lowerBody === true
+                      );
+                      if (!hasGymLowerToday && gymRpeList.length === 0) return null;
+
+                      return (
+                        <button
+                          type="button"
+                          onClick={() => setRpeSessionFilter('gym_lower')}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border flex items-center space-x-1.5 cursor-pointer ${
+                            rpeSessionFilter === 'gym_lower'
+                              ? 'bg-purple-600 text-white border-purple-500 shadow-md font-extrabold ring-2 ring-purple-500/40'
+                              : 'bg-dark-bg text-purple-300 border-purple-900/40 hover:bg-purple-950/40'
+                          }`}
+                        >
+                          <span>🏋️ Ginásio MMII ({gymRpeList.length})</span>
+                        </button>
+                      );
+                    })()}
                   </div>
 
                   {activeRpeList.length === 0 ? (
