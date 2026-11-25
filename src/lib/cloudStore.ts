@@ -28,7 +28,17 @@ function readLocalFallback(filename: string): any {
   try {
     const fPath = getLocalFilePath(filename);
     if (fs.existsSync(fPath)) {
-      return JSON.parse(fs.readFileSync(fPath, 'utf-8'));
+      const parsed = JSON.parse(fs.readFileSync(fPath, 'utf-8'));
+      if (parsed && (Array.isArray(parsed) ? parsed.length > 0 : Object.keys(parsed).length > 0)) return parsed;
+    }
+    const storePath = path.join(process.cwd(), 'data_store', filename);
+    if (fs.existsSync(storePath)) {
+      const parsed = JSON.parse(fs.readFileSync(storePath, 'utf-8'));
+      if (parsed) return parsed;
+    }
+    const bundledEntriesPath = path.join(process.cwd(), 'data', filename.replace('.json', '_entries.json'));
+    if (fs.existsSync(bundledEntriesPath)) {
+      return JSON.parse(fs.readFileSync(bundledEntriesPath, 'utf-8'));
     }
     const bundledPath = path.join(process.cwd(), 'data', filename);
     if (fs.existsSync(bundledPath)) {

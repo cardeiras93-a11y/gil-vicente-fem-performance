@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
-import { BORG_SCALE } from '@/lib/data';
+import { BORG_SCALE, isAthleteMatch } from '@/lib/data';
+import { INITIAL_NUTRITION_RECORDS } from '@/lib/nutritionData';
 import { useLanguage } from '@/context/LanguageContext';
 import { getHydrationLocally, getDynamicAthletes, getStoredTrainingSessions } from '@/lib/storage';
 import { exportAllDataToExcel } from '@/lib/exportUtils';
@@ -239,14 +240,16 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
     const monthEntries = allHydration
       .filter(
         (h) =>
-          h.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() &&
+          h &&
+          isAthleteMatch(h, selectedAthlete) &&
           h.date.startsWith(monthPrefix)
       )
       .sort((a, b) => a.date.localeCompare(b.date));
 
     const todayEntry = allHydration.find(
       (h) =>
-        h.athleteName.toLowerCase() === selectedAthlete.name.toLowerCase() &&
+        h &&
+        isAthleteMatch(h, selectedAthlete) &&
         h.date === selectedDate
     );
 
@@ -255,12 +258,29 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
     const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
     const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
-    const firstWeight = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
-    const firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+    let firstWeight = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
+    let firstWeightDate = firstEntry ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    if (!firstWeight) {
+      const nutRec = INITIAL_NUTRITION_RECORDS.find((n) => isAthleteMatch({ athleteId: n.athleteId, athleteName: n.canonicalName }, selectedAthlete));
+      if (nutRec) {
+        firstWeight = nutRec.history.november?.weight ?? nutRec.augustWeightKg;
+        firstWeightDate = '01/11';
+      }
+    }
 
     // Ambos 1º e último peso do mês utilizam o peso pré-treino!
-    const lastWeight = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
-    const lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+    let lastWeight = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
+    let lastWeightDate = lastEntry ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    if (!lastWeight && todayEntry) {
+      lastWeight = todayEntry.preWeight || todayEntry.postWeight;
+      lastWeightDate = todayEntry.date ? todayEntry.date.split('-').slice(1).reverse().join('/') : null;
+    }
+    if (!lastWeight && firstWeight) {
+      lastWeight = firstWeight;
+      lastWeightDate = firstWeightDate;
+    }
 
     const preWeightToday = todayEntry ? todayEntry.preWeight : null;
     const postWeightToday = todayEntry ? todayEntry.postWeight : null;

@@ -19,6 +19,7 @@ import { MatchMinutesDashboard } from './MatchMinutesDashboard';
 import { KioskModeView } from './KioskModeView';
 import { AdminMobilityManager } from './AdminMobilityManager';
 import { AdminNutritionManager } from './AdminNutritionManager';
+import { INITIAL_NUTRITION_RECORDS } from '@/lib/nutritionData';
 import { ErrorBoundary } from './ErrorBoundary';
 import {
   Shield, Users, Stethoscope, Activity, Search, Lock, X, KeyRound,
@@ -750,33 +751,44 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
     (athletesList || []).forEach((ath) => {
       if (!ath?.name) return;
-      const athNameLower = ath.name.toLowerCase();
 
       const monthEntries = allHydration
         .filter(
           (h) =>
-            h?.athleteName &&
-            h.athleteName.toLowerCase() === athNameLower &&
+            h &&
+            isAthleteMatch(h, ath) &&
             h.date?.startsWith(monthPrefix)
         )
         .sort((a, b) => (a?.date || '').localeCompare(b?.date || ''));
 
       const todayEntry = (hydrationList || []).find(
-        (h) => h?.athleteName && h.athleteName.toLowerCase() === athNameLower
+        (h) => h && isAthleteMatch(h, ath)
       );
 
       const monthPreEntries = monthEntries.filter((h) => Number(h.preWeight) > 0);
+      let fw: number | null = null;
+      let lw: number | null = null;
+
       if (monthPreEntries.length > 0) {
-        const fw = monthPreEntries[0].preWeight;
-        const lw = monthPreEntries[monthPreEntries.length - 1].preWeight;
-        if (fw) initialWeights.push(fw);
-        if (lw) lastWeights.push(lw);
+        fw = monthPreEntries[0].preWeight;
+        lw = monthPreEntries[monthPreEntries.length - 1].preWeight;
       } else if (monthEntries.length > 0) {
-        const fw = monthEntries[0].preWeight || monthEntries[0].postWeight;
-        const lw = monthEntries[monthEntries.length - 1].preWeight || monthEntries[monthEntries.length - 1].postWeight;
-        if (fw) initialWeights.push(fw);
-        if (lw) lastWeights.push(lw);
+        fw = monthEntries[0].preWeight || monthEntries[0].postWeight;
+        lw = monthEntries[monthEntries.length - 1].preWeight || monthEntries[monthEntries.length - 1].postWeight;
       }
+
+      if (!fw) {
+        const nutRec = INITIAL_NUTRITION_RECORDS.find((n) => isAthleteMatch({ athleteId: n.athleteId, athleteName: n.canonicalName }, ath));
+        if (nutRec) {
+          fw = nutRec.history.november?.weight ?? nutRec.augustWeightKg;
+        }
+      }
+      if (!lw) {
+        lw = todayEntry && todayEntry.preWeight > 0 ? todayEntry.preWeight : fw;
+      }
+
+      if (fw) initialWeights.push(fw);
+      if (lw) lastWeights.push(lw);
 
       if (todayEntry && todayEntry.preWeight > 0) {
         preWeightsToday.push(todayEntry.preWeight);
@@ -1278,12 +1290,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     const firstEntry = monthPreEntries.length > 0 ? monthPreEntries[0] : (monthEntries.length > 0 ? monthEntries[0] : null);
     const lastEntry = monthPreEntries.length > 0 ? monthPreEntries[monthPreEntries.length - 1] : (monthEntries.length > 0 ? monthEntries[monthEntries.length - 1] : null);
 
-    const firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
-    const firstWeightDate = firstEntry?.date ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+    let firstWeightMonth = firstEntry ? (firstEntry.preWeight || firstEntry.postWeight) : null;
+    let firstWeightDate = firstEntry?.date ? firstEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    if (!firstWeightMonth && targetAth) {
+      const nutRec = INITIAL_NUTRITION_RECORDS.find((n) => isAthleteMatch({ athleteId: n.athleteId, athleteName: n.canonicalName }, targetAth));
+      if (nutRec) {
+        firstWeightMonth = nutRec.history.november?.weight ?? nutRec.augustWeightKg;
+        firstWeightDate = '01/11';
+      }
+    }
 
     // Ambos 1º e último peso do mês utilizam o peso pré-treino!
-    const lastWeightMonth = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
-    const lastWeightDate = lastEntry?.date ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+    let lastWeightMonth = lastEntry ? (lastEntry.preWeight || lastEntry.postWeight) : null;
+    let lastWeightDate = lastEntry?.date ? lastEntry.date.split('-').slice(1).reverse().join('/') : null;
+
+    if (!lastWeightMonth && todayEntry) {
+      lastWeightMonth = todayEntry.preWeight || todayEntry.postWeight;
+      lastWeightDate = todayEntry.date ? todayEntry.date.split('-').slice(1).reverse().join('/') : null;
+    }
+    if (!lastWeightMonth && firstWeightMonth) {
+      lastWeightMonth = firstWeightMonth;
+      lastWeightDate = firstWeightDate;
+    }
 
     const preWeightToday = todayEntry ? todayEntry.preWeight : null;
     const postWeightToday = todayEntry ? todayEntry.postWeight : null;
@@ -1927,6 +1956,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                       <thead>
                         <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
                           <th className="py-2.5 px-3">Atleta</th>
+                          <th className="py-2.5 px-3">Pesagem Pré-Treino</th>
                           <th className="py-2.5 px-3">Questionário Wellness</th>
                           <th className="py-2.5 px-3">Wellness Total</th>
                           <th className="py-2.5 px-3">Questionário PSE</th>
@@ -1941,11 +1971,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                           const rpeField = rpeList.find((r) => isAthleteMatch(r, ath) && (r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))));
                           const rpeGym = rpeList.find((r) => isAthleteMatch(r, ath) && (r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))));
                           const rpe = rpeField || rpeGym;
+                          const hydEntry = (hydrationList || []).find((h) => isAthleteMatch(h, ath));
 
                           return (
                             <tr key={name} className="hover:bg-slate-800/40">
                               {/* 1. Atleta */}
                               <td className="py-3 px-3 font-bold text-slate-100">{name}</td>
+
+                              {/* 2. Pesagem Pré-Treino */}
+                              <td className="py-3 px-3">
+                                {hydEntry && Number(hydEntry.preWeight) > 0 ? (
+                                  <div className="flex items-center space-x-1.5">
+                                    <span className="font-extrabold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-500/30 text-xs">
+                                      {hydEntry.preWeight} kg
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-500 italic">Pendente</span>
+                                )}
+                              </td>
 
                               {/* 5. Questionário Wellness Status */}
                               <td className="py-3 px-3">

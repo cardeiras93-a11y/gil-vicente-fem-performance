@@ -12,6 +12,7 @@ export const fetchCache = 'force-no-store';
 
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'hydration_entries.json');
+const BUNDLED_PATH = path.join(process.cwd(), 'data', 'hydration_entries.json');
 
 function ensureFileExists() {
   try {
@@ -19,7 +20,16 @@ function ensureFileExists() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (!fs.existsSync(FILE_PATH)) {
-      fs.writeFileSync(FILE_PATH, JSON.stringify([], null, 2), 'utf-8');
+      if (fs.existsSync(BUNDLED_PATH)) {
+        fs.copyFileSync(BUNDLED_PATH, FILE_PATH);
+      } else {
+        const storePath = path.join(process.cwd(), 'data_store', 'hydration.json');
+        if (fs.existsSync(storePath)) {
+          fs.copyFileSync(storePath, FILE_PATH);
+        } else {
+          fs.writeFileSync(FILE_PATH, JSON.stringify([], null, 2), 'utf-8');
+        }
+      }
     }
   } catch (e) {
     console.warn('Ficheiro de hidratação indisponível:', e);
@@ -29,8 +39,23 @@ function ensureFileExists() {
 function getStoredEntries(): any[] {
   try {
     ensureFileExists();
-    const raw = fs.readFileSync(FILE_PATH, 'utf-8');
-    return JSON.parse(raw);
+    if (fs.existsSync(FILE_PATH)) {
+      const raw = fs.readFileSync(FILE_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    const storePath = path.join(process.cwd(), 'data_store', 'hydration.json');
+    if (fs.existsSync(storePath)) {
+      const raw = fs.readFileSync(storePath, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    if (fs.existsSync(BUNDLED_PATH)) {
+      const raw = fs.readFileSync(BUNDLED_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+    return [];
   } catch {
     return [];
   }
@@ -263,7 +288,7 @@ export async function POST(request: Request) {
     };
 
     saveEntryToFile(entryToSave);
-    saveCloudEntry('hydration.json', entryToSave).catch(() => {});
+    await saveCloudEntry('hydration.json', entryToSave);
 
     // Send data to Google Sheets Webhook if configured
     const webhookUrl = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
