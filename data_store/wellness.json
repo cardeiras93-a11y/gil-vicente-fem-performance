@@ -1,5 +1,34 @@
 [
   {
+    "id": "wel-1795591239142",
+    "athleteId": "ath-20",
+    "athleteName": "SARA TEIXEIRA",
+    "date": "2026-11-25",
+    "menstrualCycle": "2ª Semana após a menstruação",
+    "sleepQuality": 4,
+    "sleepDuration": 4,
+    "mood": 4,
+    "stress": 4,
+    "fatigue": 3,
+    "soreness": 3,
+    "heavyLegs": 3,
+    "wellnessTotal": 25,
+    "muscleFatigue": {
+      "Gémeos Post. Direito": 7,
+      "Gémeos Post. Esquerdo": 7
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-25T07:20:39.142Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T07:20:39.142Z"
+  },
+  {
     "id": "wel-1795591240431",
     "athleteId": "ath-23",
     "athleteName": "TICHA",
