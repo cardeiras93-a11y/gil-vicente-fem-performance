@@ -27804,7 +27804,13 @@
     "needsPhysio": true,
     "physioReason": "joelho",
     "createdAt": "2026-09-12T09:24:14.903Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-12T09:24:14.903Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789203777206",
