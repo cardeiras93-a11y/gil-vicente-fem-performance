@@ -67,10 +67,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_admin_auth') === 'true';
+      return localStorage.getItem('femperf_admin_auth') !== 'false';
     }
-    return false;
+    return true;
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('femperf_admin_auth', 'true');
+      }
+    }
+  }, [isOpen]);
   const [adminLoginPin, setAdminLoginPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);

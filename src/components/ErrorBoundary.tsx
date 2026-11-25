@@ -28,6 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('ErrorBoundary apanhou um erro no cliente:', error, errorInfo);
   }
 
+  public componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
   private handleReset = () => {
     this.setState({ hasError: false, error: null });
     if (this.props.onReset) {
@@ -40,7 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-[280px] w-full flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in">
           <div className="w-full max-w-md rounded-2xl border border-red-500/40 bg-dark-card p-6 text-center shadow-2xl space-y-4 animate-fade-in">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-red-600/20 text-red-500 border border-red-500/40 shadow-lg">
               <Shield className="h-6 w-6 stroke-[2.5]" />

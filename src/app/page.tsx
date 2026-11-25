@@ -232,6 +232,7 @@ function MainAppContent() {
     setIsPhysioOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'admin');
+      localStorage.setItem('femperf_admin_auth', 'true');
     }
     syncAllDataFromCloud();
   };
@@ -248,6 +249,7 @@ function MainAppContent() {
     setIsAdminOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'physio');
+      localStorage.setItem('femperf_physio_auth', 'true');
     }
     syncAllDataFromCloud();
   };
@@ -538,7 +540,7 @@ function MainAppContent() {
       </main>
 
       {/* Admin Dashboard Modal */}
-      <ErrorBoundary fallbackTitle="Painel de Administração • Gil Vicente FC" onReset={handleCloseAdmin}>
+      <ErrorBoundary key={isAdminOpen ? 'admin-open' : 'admin-closed'} fallbackTitle="Painel de Administração • Gil Vicente FC" onReset={handleCloseAdmin}>
         <AdminDashboard
           isOpen={isAdminOpen}
           onClose={handleCloseAdmin}
@@ -550,7 +552,7 @@ function MainAppContent() {
       </ErrorBoundary>
 
       {/* Physiotherapist Dashboard Modal */}
-      <ErrorBoundary fallbackTitle="Departamento Médico • Gil Vicente FC" onReset={handleClosePhysio}>
+      <ErrorBoundary key={isPhysioOpen ? 'physio-open' : 'physio-closed'} fallbackTitle="Departamento Médico • Gil Vicente FC" onReset={handleClosePhysio}>
         <PhysioDashboard
           isOpen={isPhysioOpen}
           onClose={handleClosePhysio}

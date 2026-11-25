@@ -49,10 +49,19 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   }, []);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_physio_auth') === 'true';
+      return localStorage.getItem('femperf_physio_auth') !== 'false';
     }
-    return false;
+    return true;
   });
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsAuthenticated(true);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('femperf_physio_auth', 'true');
+      }
+    }
+  }, [isOpen]);
   const [physioPin, setPhysioPin] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
