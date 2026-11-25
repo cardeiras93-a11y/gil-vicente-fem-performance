@@ -100,9 +100,9 @@
     "isLate": true,
     "isAuthorizedLate": false,
     "approvalStatus": "approved",
-    "keepFine": true,
-    "reviewedAt": null,
-    "reviewedBy": null,
+    "keepFine": false,
+    "reviewedAt": "2026-11-25T08:48:16.453Z",
+    "reviewedBy": "Treinador",
     "createdAt": "2026-11-25T08:19:23.523Z"
   },
   {
