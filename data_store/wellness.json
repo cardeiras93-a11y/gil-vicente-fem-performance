@@ -1,5 +1,35 @@
 [
   {
+    "id": "wel-1795591405356",
+    "athleteId": "ath-17",
+    "athleteName": "RIBEIRO",
+    "date": "2026-11-25",
+    "menstrualCycle": "Menstruação",
+    "sleepQuality": 4,
+    "sleepDuration": 4,
+    "mood": 4,
+    "stress": 4,
+    "fatigue": 3,
+    "soreness": 3,
+    "heavyLegs": 3,
+    "wellnessTotal": 25,
+    "muscleFatigue": {
+      "Quadríceps Esquerdo": 1,
+      "Adutores (D/E)": 5,
+      "Lombar": 4
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-25T07:23:25.356Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T07:23:25.356Z"
+  },
+  {
     "id": "wel-1795591239142",
     "athleteId": "ath-20",
     "athleteName": "SARA TEIXEIRA",
