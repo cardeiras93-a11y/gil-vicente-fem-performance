@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-13-2026-11-25-field",
+    "athleteId": "ath-13",
+    "athleteName": "MARTHE",
+    "date": "2026-11-25",
+    "sessionType": "field",
+    "physicalDemand": 3,
+    "postFatigue": 3,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-25T11:00:19.299Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T11:00:19.299Z"
+  },
+  {
     "id": "rpe-ath-25-2026-11-25-field",
     "athleteId": "ath-25",
     "athleteName": "VERÓNICA",
