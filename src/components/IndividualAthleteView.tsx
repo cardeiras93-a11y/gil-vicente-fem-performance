@@ -1,15 +1,18 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset } from '@/lib/types';
+import { Athlete, WellnessEntry, RPEEntry, MatchDayOffset, MobilityPlan } from '@/lib/types';
 import { BORG_SCALE, isAthleteMatch } from '@/lib/data';
 import { INITIAL_NUTRITION_RECORDS } from '@/lib/nutritionData';
 import { useLanguage } from '@/context/LanguageContext';
 import { getHydrationLocally, getDynamicAthletes, getStoredTrainingSessions } from '@/lib/storage';
 import { exportAllDataToExcel } from '@/lib/exportUtils';
+import { getPlansForAthlete } from '@/lib/mobilityPlans';
+import { MobilityPlanModal } from './MobilityPlanModal';
 import {
   Activity, Calendar, TrendingUp, TrendingDown, AlertTriangle, ShieldCheck,
-  Dumbbell, HeartPulse, User, BarChart3, Clock, Scale, Zap, Info, ChevronDown, Filter, ChevronRight, FileSpreadsheet
+  Dumbbell, HeartPulse, User, BarChart3, Clock, Scale, Zap, Info, ChevronDown, Filter, ChevronRight, FileSpreadsheet,
+  Eye, Sparkles
 } from 'lucide-react';
 
 interface IndividualAthleteViewProps {
@@ -44,6 +47,12 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
   }, [selectedAthleteId]);
 
   const selectedAthlete = athletes.find((a) => a.id === selectedAthleteId) || athletes[0];
+  const [previewPlan, setPreviewPlan] = useState<MobilityPlan | null>(null);
+
+  const assignedPlans = useMemo(() => {
+    if (!selectedAthlete) return [];
+    return getPlansForAthlete(selectedAthlete);
+  }, [selectedAthlete]);
 
   // Build the 28-day history dataset
   const athleteHistory = useMemo(() => {
@@ -621,6 +630,74 @@ export const IndividualAthleteView: React.FC<IndividualAthleteViewProps> = ({
           ))}
         </div>
       </div>
+
+      {/* 5. Planos de Ginásio & Mobilidade Atribuídos */}
+      <div className="rounded-2xl border border-dark-border bg-dark-card p-4 space-y-4 shadow-lg">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div>
+            <h3 className="text-sm font-extrabold text-slate-100 uppercase flex items-center space-x-2">
+              <Dumbbell className="h-4 w-4 text-cyan-400" />
+              <span>Planos de Ginásio & Mobilidade Atribuídos a {selectedAthlete.name} ({assignedPlans.length})</span>
+            </h3>
+            <p className="text-xs text-slate-400">
+              Planos atualmente sincronizados e ativos na aplicação da atleta.
+            </p>
+          </div>
+        </div>
+
+        {assignedPlans.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-6 text-center text-slate-400 text-xs font-bold">
+            Nenhum plano atribuído a {selectedAthlete.name} no momento. Podes atribuir planos na aba "Mobilidade & Planos".
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {assignedPlans.map((plan) => (
+              <div
+                key={plan.id}
+                className="rounded-xl border border-slate-800 bg-slate-900/60 p-3.5 space-y-2 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-1 mb-1">
+                    <span className="text-[10px] font-black uppercase text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-md">
+                      {plan.categoryPt}
+                    </span>
+                    <span className="text-[11px] font-bold text-slate-400 flex items-center space-x-1">
+                      <Clock className="h-3 w-3" />
+                      <span>{plan.durationTextPt || `${plan.durationMinutes} Min`}</span>
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-black text-slate-100 uppercase">
+                    {plan.titlePt}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 italic line-clamp-1">
+                    {plan.titleEn}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-800/80 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setPreviewPlan(plan)}
+                    className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white border border-blue-500/30 text-xs font-black transition-all cursor-pointer active:scale-95"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+                    <span>Ver Plano & Exercícios</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {previewPlan && (
+        <MobilityPlanModal
+          plan={previewPlan}
+          athlete={selectedAthlete}
+          isOpen={Boolean(previewPlan)}
+          onClose={() => setPreviewPlan(null)}
+        />
+      )}
     </div>
   );
 };
