@@ -10,20 +10,37 @@ export const fetchCache = 'force-no-store';
 
 const DATA_DIR = process.env.VERCEL ? '/tmp/data' : path.join(process.cwd(), 'data');
 const FILE_PATH = path.join(DATA_DIR, 'credentials.json');
+const STORE_PATH = path.join(process.cwd(), 'data_store', 'credentials.json');
+const BUNDLED_PATH = path.join(process.cwd(), 'data', 'credentials.json');
 
 const KNOWN_BASELINE_ATHLETE_PINS: Record<string, string> = {
   'ath-1': '1101',
   'ath-2': '1976',
   'ath-3': '2724',
+  'ath-4': '1234',
+  'ath-5': '1234',
+  'ath-6': '1234',
+  'ath-7': '1234',
+  'ath-8': '1234',
+  'ath-9': '1234',
+  'ath-10': '1234',
   'ath-11': '2724',
+  'ath-12': '1234',
   'ath-13': '4993',
   'ath-14': '1215',
+  'ath-15': '1234',
+  'ath-16': '1234',
   'ath-17': '1402',
   'ath-18': '1905',
   'ath-19': '3218',
+  'ath-20': '1234',
+  'ath-21': '1234',
+  'ath-22': '1234',
   'ath-23': '0000',
   'ath-24': '1230',
+  'ath-25': '1234',
   'ath-26': '7656',
+  'ath-27': '1234',
   'ath-28': '1234',
   'ath-custom-1790842877064': '1234',
   'ath-custom-1789036116210': '0000',
@@ -36,18 +53,26 @@ function ensureFileExists() {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     if (!fs.existsSync(FILE_PATH)) {
-      const initial = {
-        activationCode: 'GVFC2026@',
-        adminPin: '2627',
-        physioPin: '1924',
-        athletePins: KNOWN_BASELINE_ATHLETE_PINS,
-        athleteAvatars: {},
-        finesEnabledDays: {},
-        individualFineExemptions: {},
-        editedProfiles: {},
-        customAthletes: [],
-      };
-      fs.writeFileSync(FILE_PATH, JSON.stringify(initial, null, 2), 'utf-8');
+      if (fs.existsSync(STORE_PATH)) {
+        fs.copyFileSync(STORE_PATH, FILE_PATH);
+      } else if (fs.existsSync(BUNDLED_PATH)) {
+        fs.copyFileSync(BUNDLED_PATH, FILE_PATH);
+      } else {
+        const initial = {
+          activationCode: 'GVFC2026@',
+          adminPin: '2627',
+          physioPin: '1924',
+          athletePins: KNOWN_BASELINE_ATHLETE_PINS,
+          athleteAvatars: {},
+          finesEnabledDays: {},
+          individualFineExemptions: {},
+          editedProfiles: {},
+          customAthletes: [],
+          deletedAthletes: [],
+          inactiveAthletes: [],
+        };
+        fs.writeFileSync(FILE_PATH, JSON.stringify(initial, null, 2), 'utf-8');
+      }
     }
   } catch (e) {
     console.warn('Ficheiro de credenciais indisponível:', e);
@@ -57,27 +82,48 @@ function ensureFileExists() {
 function getStoredCredentialsFile(): any {
   try {
     ensureFileExists();
-    const raw = fs.readFileSync(FILE_PATH, 'utf-8');
-    return JSON.parse(raw);
-  } catch {
-    return {
-      activationCode: 'GVFC2026@',
-      adminPin: '2627',
-      physioPin: '1924',
-      athletePins: KNOWN_BASELINE_ATHLETE_PINS,
-      athleteAvatars: {},
-      finesEnabledDays: {},
-      individualFineExemptions: {},
-      editedProfiles: {},
-      customAthletes: [],
-    };
-  }
+    if (fs.existsSync(FILE_PATH)) {
+      const raw = fs.readFileSync(FILE_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+    if (fs.existsSync(STORE_PATH)) {
+      const raw = fs.readFileSync(STORE_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+    if (fs.existsSync(BUNDLED_PATH)) {
+      const raw = fs.readFileSync(BUNDLED_PATH, 'utf-8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') return parsed;
+    }
+  } catch {}
+  return {
+    activationCode: 'GVFC2026@',
+    adminPin: '2627',
+    physioPin: '1924',
+    athletePins: KNOWN_BASELINE_ATHLETE_PINS,
+    athleteAvatars: {},
+    finesEnabledDays: {},
+    individualFineExemptions: {},
+    editedProfiles: {},
+    customAthletes: [],
+    deletedAthletes: [],
+    inactiveAthletes: [],
+  };
 }
 
 function saveCredentialsFile(data: any) {
   try {
     ensureFileExists();
-    fs.writeFileSync(FILE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+    const str = JSON.stringify(data, null, 2);
+    fs.writeFileSync(FILE_PATH, str, 'utf-8');
+    if (fs.existsSync(path.dirname(STORE_PATH))) {
+      try { fs.writeFileSync(STORE_PATH, str, 'utf-8'); } catch {}
+    }
+    if (fs.existsSync(path.dirname(BUNDLED_PATH))) {
+      try { fs.writeFileSync(BUNDLED_PATH, str, 'utf-8'); } catch {}
+    }
   } catch (e) {
     console.error('Erro ao guardar credenciais em ficheiro:', e);
   }

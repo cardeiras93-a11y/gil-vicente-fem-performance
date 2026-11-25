@@ -5,6 +5,21 @@ services:
     plan: free
     buildCommand: npm run build
     startCommand: npm start
+    buildFilter:
+      paths:
+        - src/**
+        - public/**
+        - package.json
+        - package-lock.json
+        - tsconfig.json
+        - next.config.js
+        - tailwind.config.js
+        - postcss.config.js
+        - render.yaml
+      ignoredPaths:
+        - data_store/**
+        - data/**
+        - README.md
     envVars:
       - key: NODE_ENV
         value: production
