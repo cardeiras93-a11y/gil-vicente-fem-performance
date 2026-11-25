@@ -35,6 +35,7 @@ import {
   Tag,
   AlertCircle,
   FolderPlus,
+  BookmarkCheck,
 } from 'lucide-react';
 
 export const AdminMobilityManager: React.FC = () => {
