@@ -7145,7 +7145,7 @@
     "athleteName": "MANU",
     "date": "2026-11-25",
     "durationMin": 90,
-    "preWeight": 58.2,
+    "preWeight": 58.75,
     "postWeight": 0,
     "fluidsIntake": 0,
     "weightLoss": 0,
@@ -7154,11 +7154,11 @@
     "refillNeededLiters": 0,
     "recommendation": "Peso pré-treino registado. Conclui a pesagem no final do treino.",
     "biologicalImpact": "Aguardando pesagem pós-treino para calcular a taxa de desidratação.",
-    "preWeightTime": "2026-11-25T07:36:00.000Z",
-    "submittedAtPre": "2026-11-25T07:36:00.000Z",
+    "preWeightTime": "2026-11-25T17:08:51.567Z",
+    "submittedAtPre": "2026-11-25T17:08:51.567Z",
     "postWeightTime": null,
     "submittedAtPost": null,
-    "createdAt": "2026-11-25T07:36:00.000Z"
+    "createdAt": "2026-11-25T17:08:51.567Z"
   },
   {
     "id": "hyd-2026-11-25-ath-13",
