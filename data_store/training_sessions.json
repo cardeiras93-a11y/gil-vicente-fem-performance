@@ -62,7 +62,7 @@
       "durationMin": 90,
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Treino Técnico-Tático",
-      "updatedAt": 1795612222797,
+      "updatedAt": 1795612231430,
       "gymStartTime": "10:45",
       "gymEndTime": "11:30",
       "gymDurationMin": 45,
@@ -70,7 +70,8 @@
       "tempEnd": 25,
       "tempDelta": 5,
       "complementaryWork": {
-        "sauna": true
+        "sauna": true,
+        "mobility": true
       },
       "athleteStatuses": {}
     },
@@ -87,10 +88,10 @@
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Treino de Força / Carga + Ginásio",
       "complementaryWork": {
-        "lowerBody": true,
+        "lowerBody": false,
         "notes": "Ginásio de Equipa: Membros Inferiores / Força"
       },
-      "updatedAt": 1795548382129,
+      "updatedAt": 1795612228513,
       "matchCategory": "friendly",
       "tempStart": 20,
       "tempEnd": 25,
