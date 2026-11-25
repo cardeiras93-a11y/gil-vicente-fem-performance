@@ -1,5 +1,28 @@
 [
   {
+    "id": "rpe-ath-10-2026-11-25-field",
+    "athleteId": "ath-10",
+    "athleteName": "MAGUI",
+    "date": "2026-11-25",
+    "sessionType": "field",
+    "physicalDemand": 4,
+    "postFatigue": 4,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {
+      "Ísquiotibiais Direito": 5
+    },
+    "preWorkoutPlans": [],
+    "comments": "condicionada por causa do isquio",
+    "submittedAt": "2026-11-25T17:18:14.793Z",
+    "isLate": true,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": true,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T17:18:14.793Z"
+  },
+  {
     "id": "rpe-ath-12-2026-11-25-field",
     "athleteId": "ath-12",
     "athleteName": "MANU",
