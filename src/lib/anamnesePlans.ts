@@ -4735,8 +4735,19 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "planId": "plan_indiv_ath-21_serena",
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
-    "active": true,
+    "active": false,
     "notes": "Prioridade Clínica: Mecanismo de screw-home e força isométrica anterior + Core Seg & Qua."
+  },
+  "athlete_ath-21_tratamento_tendinopatia_glutea_serena": {
+    "id": "athlete_ath-21_tratamento_tendinopatia_glutea_serena",
+    "targetType": "athlete",
+    "targetId": "ath-21",
+    "targetName": "SERENA",
+    "planId": "tratamento_tendinopatia_glutea_serena",
+    "assignedAt": "2026-11-25T20:00:00.000Z",
+    "assignedBy": "Fisioterapia / Performance GVFC",
+    "active": true,
+    "notes": "Protocolo Clínico 30 MIN: Reabilitação de Tendinopatia Glútea / GTPS (Analgesia Isométrica Cook & Rio, HSR em Abdução Neutra, Controlo Anti-Trendelenburg e Erradicação de Compressão Trocantérica)."
   },
   "athlete_ath-22_plan_indiv_ath-22_simães": {
     "id": "athlete_ath-22_plan_indiv_ath-22_simães",

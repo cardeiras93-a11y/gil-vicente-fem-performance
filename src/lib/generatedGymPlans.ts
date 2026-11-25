@@ -3241,4 +3241,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "tratamento_tendinopatia_glutea_serena",
+    titlePt: "Plano de Reabilita\u00e7\u00e3o: Tendinopatia Gl\u00fatea (GTPS) \u2014 SERENA (30 MIN)",
+    titleEn: "Gluteal Tendinopathy (GTPS) Rehabilitation Plan \u2014 SERENA (30 MIN)",
+    categoryPt: "Reabilita\u00e7\u00e3o & Fisioterapia \u2022 S\u00edndrome Dolorosa do Grande Troc\u00e2nter (GTPS)",
+    categoryEn: "Rehab & Physical Therapy \u2022 Greater Trochanteric Pain Syndrome (GTPS)",
+    group: "inferiores",
+    groupBadgePt: "\ud83c\udf51 Extrema \u2022 Reabilita\u00e7\u00e3o Tendinopatia Gl\u00fatea",
+    groupBadgeEn: "\ud83c\udf51 Winger \u2022 Gluteal Tendinopathy Rehab",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 DEPARTAMENTO DE PERFORMANCE & SA\u00daDE",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 PERFORMANCE & HEALTH DEPARTMENT",
+    targetPosition: "all",
+    durationMinutes: 30,
+    durationTextPt: "30 MIN",
+    durationTextEn: "30 MIN",
+    warmupPt: "Ativa\u00e7\u00e3o lombo-p\u00e9lvica em descarga: Basculamento p\u00e9lvico em dec\u00fabito dorsal (2x 15 reps) + Respira\u00e7\u00e3o diafragm\u00e1tica. REGRA DE OURO CL\u00cdNICA: Estritamente proibido cruzar as pernas ou alongar em addu\u00e7\u00e3o profunda (Pigeon Pose / 4 invertido proibidos).",
+    warmupEn: "Unloaded lumbo-pelvic activation: Supine pelvic tilts (2x 15 reps) + Diaphragmatic breathing. CLINICAL GOLDEN RULE: Strict prohibition of crossing legs or deep adduction stretching (Pigeon Pose / Figure-4 strictly forbidden).",
+    finisherPt: "Crioterapia lateral suave no troc\u00e2nter maior (12-15 MIN) sem cintas compressivas apertadas + Educa\u00e7\u00e3o postural: Dormir de costas ou de lado com almofada grossa entre joelhos e tornozelos para manter abdu\u00e7\u00e3o neutra.",
+    finisherEn: "Gentle lateral cryotherapy over greater trochanter (12-15 MIN) without tight compressive wraps + Postural education: Sleep supine or side-lying with thick pillow between knees and ankles to maintain neutral abduction.",
+    blocks: [
+      {
+        id: "tratamento_tendinopatia_glutea_serena_block_01",
+        number: "01",
+        titlePt: "Analgesia Isom\u00e9trica em Abdu\u00e7\u00e3o Neutra (Cook & Rio / LEAP)",
+        titleEn: "Isometric Analgesia in Neutral Abduction (Cook & Rio / LEAP)",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b01_ex1",
+            namePt: "1.1 Isometria de Abdu\u00e7\u00e3o em P\u00e9 contra a Parede (Wall Press)",
+            nameEn: "1.1 Standing Wall-Press Isometric Hip Abduction",
+            seriesRepsPt: "4x 45s isometria / perna",
+            seriesRepsEn: "4x 45s isometric hold / leg",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "De p\u00e9, de lado para a parede a 15 cm. Pressiona o joelho/coxa externa da perna fletida contra a parede a ~70% de esfor\u00e7o. A perna de apoio mant\u00e9m a bacia perfeitamente nivelada sem descaimento p\u00e9lvico (anti-Trendelenburg). Analgesia tenoc\u00edtica imediata sem compress\u00e3o trocant\u00e9rica.",
+            descriptionEn: "Stand sideways 15 cm from a wall. Press outer thigh/knee of flexed leg into the wall at ~70% MVC. Stance leg maintains a rock-solid, level pelvis without pelvic drop (anti-Trendelenburg). Provides immediate tenocyte analgesia without trochanteric compression.",
+            imageSrc: "/exercises/standing_leg_abduction_band_pro.svg"
+          },
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b01_ex2",
+            namePt: "1.2 Prancha Lateral Curta sobre Joelhos c/ Abdu\u00e7\u00e3o Neutra",
+            nameEn: "1.2 Short Knee Side Plank with Neutral Isometric Abduction",
+            seriesRepsPt: "4x 30-40s / lado",
+            seriesRepsEn: "4x 30-40s / side",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Apoiada no antebra\u00e7o com joelhos dobrados a 90\u00b0 para encurtar a alavanca e inibir o tensor da f\u00e1scia lata (TFL). Eleva a anca alinhando tronco e coxas, mantendo a perna de cima em ligeira abdu\u00e7\u00e3o isom\u00e9trica (15\u00b0). Recrutamento seletivo de gl\u00fateo m\u00e9dio posterior.",
+            descriptionEn: "Support on forearm with knees bent at 90\u00b0 to shorten lever arm and offload tensor fasciae latae (TFL). Lift hips into neutral alignment and hold top leg in slight isometric abduction (15\u00b0). Selective recruitment of posterior gluteus medius.",
+            imageSrc: "/exercises/side_plank_miniband_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "tratamento_tendinopatia_glutea_serena_block_02",
+        number: "02",
+        titlePt: "Carga Subm\u00e1xima em Alinhamento Axial (HSR Plano)",
+        titleEn: "Submaximal Axial Load (Flat Heavy Slow Resistance)",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b02_ex1",
+            namePt: "2.1 Ponte de Gl\u00fateos no Solo com Mini-Banda (P\u00e9s Afastados)",
+            nameEn: "2.1 Supine Glute Bridge with Mini-Band (Shoulder-Width Stance)",
+            seriesRepsPt: "3x 10-12 reps (2s pausa)",
+            seriesRepsEn: "3x 10-12 reps (2s hold)",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Mini-banda nos joelhos com p\u00e9s \u00e0 largura dos ombros mantendo tens\u00e3o lateral constante (ligeira abdu\u00e7\u00e3o protetora). Eleva a bacia contraindo ativamente os gl\u00fateos sem hiperextens\u00e3o lombar. A banda impede qualquer addu\u00e7\u00e3o compressiva e remodela o tend\u00e3o.",
+            descriptionEn: "Mini-band around knees with feet shoulder-width maintaining constant lateral tension (protective slight abduction). Drive through heels to lift hips, strongly engaging glutes without arching lumbar spine. Band prevents compressive adduction while remodeling tendon.",
+            imageSrc: "/exercises/glute_bridge_band_pro.svg"
+          },
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b02_ex2",
+            namePt: "2.2 Box Squat Controlado com Mini-Banda (Anti-Valgo & Alinhamento)",
+            nameEn: "2.2 Controlled Box Squat with Mini-Band (Anti-Valgus & Alignment)",
+            seriesRepsPt: "3x 10 reps (Tempo 3-1-2)",
+            seriesRepsEn: "3x 10 reps (Tempo 3-1-2)",
+            restPt: "60s",
+            restEn: "60s",
+            descriptionPt: "Mini-banda acima dos joelhos. Desce em 3 segundos at\u00e9 tocar suavemente no banco, mantendo os joelhos estritamente alinhados com o 2\u00ba dedo do p\u00e9 e bacia nivelada. Erradica o colapso em valgo din\u00e2mico e distribui a carga mec\u00e2nica pelo gl\u00fateo m\u00e1ximo e m\u00e9dio.",
+            descriptionEn: "Mini-band above knees. Descend for 3s to softly touch box, maintaining knees strictly tracking over 2nd toes with level hips. Eradicates dynamic valgus collapse and distributes mechanical load across gluteus maximus and medius.",
+            imageSrc: "/exercises/box_squat_miniband_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "tratamento_tendinopatia_glutea_serena_block_03",
+        number: "03",
+        titlePt: "Estabilidade Funcional & Controlo Anti-Trendelenburg",
+        titleEn: "Functional Stability & Anti-Trendelenburg Control",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b03_ex1",
+            namePt: "3.1 Monster Walk Lateral em Semi-Agachamento com Mini-Banda",
+            nameEn: "3.1 Lateral Monster Walk in Semi-Squat with Mini-Band",
+            seriesRepsPt: "3x 10 passos / dire\u00e7\u00e3o",
+            seriesRepsEn: "3x 10 steps / direction",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Semi-flex\u00e3o de joelhos e anca com mini-banda acima dos joelhos. Deslocamentos laterais curtos mantendo os p\u00e9s apontados para a frente e tronco ereto (sem inclina\u00e7\u00e3o lateral do tronco para compensar fraqueza do gl\u00fateo). Ativa\u00e7\u00e3o das fibras estabilizadoras abdutoras.",
+            descriptionEn: "Athletic semi-squat with band above knees. Short lateral steps keeping feet parallel and torso tall (no lateral trunk sway compensating for abductor weakness). Targets stabilizing abductor fibers in dynamic gait transfer.",
+            imageSrc: "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b03_ex2",
+            namePt: "3.2 Step-Down Controlado com Foco no Nivelamento P\u00e9lvico",
+            nameEn: "3.2 Controlled Step-Down with Strict Pelvic Leveling",
+            seriesRepsPt: "3x 8-10 reps / perna",
+            seriesRepsEn: "3x 8-10 reps / leg",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Em cima de degrau baixo (10-15 cm). Desce lentamente o calcanhar oposto at\u00e9 tocar o ch\u00e3o, mantendo as duas cristas il\u00edacas rigorosamente \u00e0 mesma altura. O gl\u00fateo m\u00e9dio da perna de apoio trabalha em cadeia cin\u00e9tica fechada prevenindo a queda contralateral da bacia.",
+            descriptionEn: "Standing on a low step (10-15 cm). Slowly lower opposite heel to touch floor while keeping iliac crests strictly horizontal. Stance gluteus medius works in closed kinetic chain to eliminate contralateral pelvic drop (Trendelenburg sign).",
+            imageSrc: "/exercises/poliquin_step_up_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "tratamento_tendinopatia_glutea_serena_block_04",
+        number: "04",
+        titlePt: "Estabilidade Sacroil\u00edaca & Liberta\u00e7\u00e3o Miofascial Segura",
+        titleEn: "Sacroiliac Stability & Safe Myofascial Release",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b04_ex1",
+            namePt: "4.1 Bird-Dog c/ Banda El\u00e1stica (Estabilidade Lombo-P\u00e9lvica Cruzada)",
+            nameEn: "4.1 Banded Bird-Dog (Cross-Body Lumbo-Pelvic Stability)",
+            seriesRepsPt: "3x 8 reps / lado",
+            seriesRepsEn: "3x 8 reps / side",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Em quatro apoios com el\u00e1stico entre a m\u00e3o e o p\u00e9 oposto. Estende o bra\u00e7o e a perna at\u00e9 ao alinhamento horizontal com a bacia perfeitamente im\u00f3vel e paralela ao ch\u00e3o. Ativa o subsistema obl\u00edquo posterior (gl\u00fateo m\u00e1ximo + grande dorsal), estabilizando a articula\u00e7\u00e3o sacroil\u00edaca.",
+            descriptionEn: "All-fours with resistance band looped between opposite hand and foot. Extend arm and leg to horizontal with pelvis completely stable and parallel to floor. Fires posterior oblique subsystem (glute max + latissimus dorsi) stabilizing sacroiliac complex.",
+            imageSrc: "/exercises/banded_bird_dog_core_pro.svg"
+          },
+          {
+            id: "tratamento_tendinopatia_glutea_serena_b04_ex2",
+            namePt: "4.2 Liberta\u00e7\u00e3o Miofascial no Ventre Gl\u00fateo (PROIBIDO Troc\u00e2nter)",
+            nameEn: "4.2 Safe Gluteal Belly Foam Rolling (FORBIDDEN on Trochanter)",
+            seriesRepsPt: "3x 45s / lado",
+            seriesRepsEn: "3x 45s / side",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Sentada sobre o rolo de espuma apoiada nas m\u00e3os, roda suavemente sobre a por\u00e7\u00e3o posterior carnuda do gl\u00fateo m\u00e1ximo. REGRA CL\u00cdNICA CAN\u00d3NICA: Estritamente proibido rolar sobre a face lateral da anca ou sobre a proemin\u00eancia do troc\u00e2nter maior para n\u00e3o esmagar a bursa e tend\u00e3o.",
+            descriptionEn: "Seated on foam roller supported by hands, gently oscillate over posterior meaty belly of gluteus maximus. CANONICAL CLINICAL RULE: Strictly forbidden to roll directly on lateral hip or greater trochanteric prominence to prevent bursal and tendon compression.",
+            imageSrc: "/exercises/foam_roller_glutes_piriformis_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];
