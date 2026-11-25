@@ -1,5 +1,26 @@
 [
   {
+    "id": "hyd-2026-11-25-ath-2",
+    "athleteId": "ath-2",
+    "athleteName": "CAROL",
+    "date": "2026-11-25",
+    "durationMin": 90,
+    "preWeight": 58.25,
+    "postWeight": 0,
+    "fluidsIntake": 0,
+    "weightLoss": 0,
+    "dehydrationRate": 0,
+    "status": "Pendente",
+    "refillNeededLiters": 0,
+    "recommendation": "Peso pré-treino registado. Conclui a pesagem no final do treino.",
+    "biologicalImpact": "Aguardando pesagem pós-treino para calcular a taxa de desidratação.",
+    "preWeightTime": "2026-11-25T08:43:24.829Z",
+    "postWeightTime": null,
+    "submittedAtPre": "2026-11-25T08:43:24.829Z",
+    "submittedAtPost": null,
+    "createdAt": "2026-11-25T08:43:24.829Z"
+  },
+  {
     "id": "hyd-2026-11-25-ath-11",
     "athleteId": "ath-11",
     "athleteName": "MALTA",
