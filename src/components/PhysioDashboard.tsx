@@ -49,17 +49,19 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   }, []);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_physio_auth') !== 'false';
+      return localStorage.getItem('femperf_physio_auth') === 'true';
     }
-    return true;
+    return false;
   });
 
   useEffect(() => {
-    if (isOpen) {
-      setIsAuthenticated(true);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('femperf_physio_auth', 'true');
-      }
+    if (!isOpen) {
+      setIsAuthenticated(false);
+      setPhysioPin('');
+      setPinError('');
+    } else {
+      const isAuth = typeof window !== 'undefined' && localStorage.getItem('femperf_physio_auth') === 'true';
+      setIsAuthenticated(isAuth);
     }
   }, [isOpen]);
   const [physioPin, setPhysioPin] = useState<string>('');
@@ -369,14 +371,18 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
     const cleanInput = physioPin.trim();
     const activationCode = getClubActivationCode();
     
+    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
+      setPinError('O Código de Ativação do clube não é válido para aceder ao Gabinete Médico. Introduza o PIN da Fisioterapia.');
+      setPhysioPin('');
+      setIsLoggingIn(false);
+      return;
+    }
+    
     const isMatch =
       Boolean(cleanInput) &&
       (cleanInput === storedPin.trim() ||
         cleanInput === '1924' ||
-        cleanInput === '2026' ||
-        cleanInput === '2627' ||
-        cleanInput.toUpperCase() === activationCode.toUpperCase() ||
-        cleanInput.toUpperCase() === 'GVFC2026@');
+        cleanInput === '2026');
 
     if (isMatch) {
       try {
@@ -390,7 +396,8 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
       }
       setPinError('');
     } else {
-      setPinError('PIN da Fisioterapia incorreto. (Dica: 1924 ou 2026)');
+      setPinError('PIN da Fisioterapia incorreto. Tente novamente.');
+      setPhysioPin('');
     }
     setIsLoggingIn(false);
   };
@@ -510,7 +517,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
                   maxLength={30}
                   value={physioPin}
                   onChange={(e) => setPhysioPin(e.target.value)}
-                  placeholder="Insira o PIN (ex: 1924 ou 2026)"
+                  placeholder="PIN da Fisioterapeuta"
                   autoFocus
                   className="w-full rounded-xl border border-slate-700 bg-dark-bg p-3 pr-10 text-center text-lg font-black tracking-wider text-slate-100 focus:border-teal-500 focus:outline-none"
                 />
@@ -522,26 +529,6 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
                 >
                   {showPhysioPinText ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium px-1 mt-2">
-                <span>PIN Departamento Médico:</span>
-                <div className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setPhysioPin('1924')}
-                    className="px-2.5 py-1 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-300 font-bold hover:bg-teal-900/60 transition-all cursor-pointer"
-                  >
-                    1924
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPhysioPin('2026')}
-                    className="px-2.5 py-1 rounded-lg bg-teal-950/60 border border-teal-500/40 text-teal-300 font-bold hover:bg-teal-900/60 transition-all cursor-pointer"
-                  >
-                    2026
-                  </button>
-                </div>
               </div>
 
               {pinError && <p className="text-xs font-bold text-rose-400 mt-2 text-center">{pinError}</p>}

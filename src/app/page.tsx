@@ -232,7 +232,6 @@ function MainAppContent() {
     setIsPhysioOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'admin');
-      localStorage.setItem('femperf_admin_auth', 'true');
     }
     syncAllDataFromCloud();
   };
@@ -241,6 +240,7 @@ function MainAppContent() {
     setIsAdminOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem(VIEW_MODE_KEY);
+      localStorage.removeItem('femperf_admin_auth');
     }
   };
 
@@ -249,7 +249,6 @@ function MainAppContent() {
     setIsAdminOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.setItem(VIEW_MODE_KEY, 'physio');
-      localStorage.setItem('femperf_physio_auth', 'true');
     }
     syncAllDataFromCloud();
   };
@@ -258,6 +257,7 @@ function MainAppContent() {
     setIsPhysioOpen(false);
     if (typeof window !== 'undefined') {
       localStorage.removeItem(VIEW_MODE_KEY);
+      localStorage.removeItem('femperf_physio_auth');
     }
   };
 

@@ -67,17 +67,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
-      return localStorage.getItem('femperf_admin_auth') !== 'false';
+      return localStorage.getItem('femperf_admin_auth') === 'true';
     }
-    return true;
+    return false;
   });
 
   useEffect(() => {
-    if (isOpen) {
-      setIsAuthenticated(true);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('femperf_admin_auth', 'true');
-      }
+    if (!isOpen) {
+      setIsAuthenticated(false);
+      setAdminLoginPin('');
+      setPinError('');
+    } else {
+      const isAuth = typeof window !== 'undefined' && localStorage.getItem('femperf_admin_auth') === 'true';
+      setIsAuthenticated(isAuth);
     }
   }, [isOpen]);
   const [adminLoginPin, setAdminLoginPin] = useState<string>('');
@@ -1006,14 +1008,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     const cleanInput = adminLoginPin.trim();
     const activationCode = getClubActivationCode();
 
+    if (cleanInput.toUpperCase() === activationCode.toUpperCase() || cleanInput.toUpperCase() === 'GVFC2026@') {
+      setPinError('O Código de Ativação do clube não é válido para a Administração. Introduza o PIN de Administrador.');
+      setAdminLoginPin('');
+      setIsLoggingIn(false);
+      return;
+    }
+
     const isMatch =
       Boolean(cleanInput) &&
       (cleanInput === storedPin.trim() ||
         cleanInput === '2627' ||
-        cleanInput === '2026' ||
-        cleanInput === '1924' ||
-        cleanInput.toUpperCase() === activationCode.toUpperCase() ||
-        cleanInput.toUpperCase() === 'GVFC2026@');
+        cleanInput === '2026');
 
     if (isMatch) {
       try {
@@ -1028,7 +1034,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       }
       setPinError('');
     } else {
-      setPinError('Palavra-passe / PIN de Administrador incorreto. (Dica: 2627 ou 2026)');
+      setPinError('Palavra-passe / PIN de Administrador incorreto. Tente novamente.');
       setAdminLoginPin('');
     }
     setIsLoggingIn(false);
@@ -1131,7 +1137,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               <input
                 type={showAdminPinText ? "text" : "password"}
                 maxLength={30}
-                placeholder="PIN Admin (ex: 2627 ou 2026)"
+                placeholder="PIN de Administrador"
                 value={adminLoginPin}
                 onChange={(e) => setAdminLoginPin(e.target.value)}
                 autoFocus
@@ -1145,26 +1151,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               >
                 {showAdminPinText ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] text-slate-400 font-medium px-1">
-              <span>PIN Equipa Técnica:</span>
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setAdminLoginPin('2627')}
-                  className="px-2.5 py-1 rounded-lg bg-red-950/60 border border-red-500/40 text-red-300 font-bold hover:bg-red-900/60 transition-all cursor-pointer"
-                >
-                  2627
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAdminLoginPin('2026')}
-                  className="px-2.5 py-1 rounded-lg bg-red-950/60 border border-red-500/40 text-red-300 font-bold hover:bg-red-900/60 transition-all cursor-pointer"
-                >
-                  2026
-                </button>
-              </div>
             </div>
 
             {pinError && <p className="text-xs font-bold text-rose-400">{pinError}</p>}
