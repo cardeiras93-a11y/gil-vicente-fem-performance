@@ -62,7 +62,7 @@
       "durationMin": 90,
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Treino Técnico-Tático",
-      "updatedAt": 1795612236029,
+      "updatedAt": 1795612236798,
       "gymStartTime": "10:45",
       "gymEndTime": "11:30",
       "gymDurationMin": 45,
@@ -74,7 +74,8 @@
         "mobility": true,
         "foamRoller": true,
         "injuryPrevention": true,
-        "cardioSubmax": true
+        "cardioSubmax": true,
+        "iceBath": true
       },
       "athleteStatuses": {}
     },
