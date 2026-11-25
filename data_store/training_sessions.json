@@ -87,10 +87,10 @@
       "locationTime": "Estádio Cidade de Barcelos",
       "focusNotes": "Treino de Força / Carga + Ginásio",
       "complementaryWork": {
-        "lowerBody": false,
+        "lowerBody": true,
         "notes": "Ginásio de Equipa: Membros Inferiores / Força"
       },
-      "updatedAt": 1795612228513,
+      "updatedAt": 1795548382129,
       "matchCategory": "friendly",
       "tempStart": 20,
       "tempEnd": 25,
