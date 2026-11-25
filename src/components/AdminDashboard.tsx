@@ -546,7 +546,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const handleSendWhatsAppReminder = (type: 'all' | 'wellness' | 'preHydration' | 'postTraining' | 'rpe', customName?: string) => {
     let message = '';
-    const appUrl = 'https://fem-performance-app.vercel.app';
+    const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gil-vicente-fem-performance.onrender.com';
     if (customName) {
       if (type === 'wellness') {
         message = `Olá ${customName}! 👋\nLembra-te de preencher o teu Questionário Wellness de hoje na app Gil Vicente FC:\n🔗 ${appUrl}\nObrigado! ⚽`;
@@ -3484,8 +3484,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         <button
                           type="button"
                           onClick={() => {
+                            const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://gil-vicente-fem-performance.onrender.com';
                             const names = unregisteredAthletes.map((a) => a.name).join(', ');
-                            const msg = `⚽ *GIL VICENTE FC • ATIVAÇÃO DE NOTIFICAÇÕES* ⚽\n\nMeninas, precisamos que ativem os alertas no telemóvel para receberem os lembretes com a app fechada:\n🔗 https://fem-performance-app.vercel.app\n\nJogadoras em falta: ${names}\n(No iPhone: Safari ➔ Partilhar ➔ Adicionar ao Ecrã Principal ➔ Ativar Alertas)`;
+                            const msg = `⚽ *GIL VICENTE FC • ATIVAÇÃO DE NOTIFICAÇÕES* ⚽\n\nMeninas, precisamos que ativem os alertas no telemóvel para receberem os lembretes com a app fechada:\n🔗 ${appUrl}\n\nJogadoras em falta: ${names}\n(No iPhone: Safari ➔ Partilhar ➔ Adicionar ao Ecrã Principal ➔ Ativar Alertas)`;
                             window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`, '_blank');
                           }}
                           className="inline-flex items-center space-x-1 text-[10px] font-black text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/90 px-2.5 py-1 rounded-lg border border-emerald-500/40 transition-all active:scale-95"

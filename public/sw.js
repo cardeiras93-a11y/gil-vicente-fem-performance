@@ -1,4 +1,4 @@
-const CACHE_NAME = 'femperf-v77-gym-plan-showcase-20261109';
+const CACHE_NAME = 'femperf-render-v1-20261125';
 const ASSETS_TO_CACHE = [
   '/manifest.json',
   '/favicon.ico',

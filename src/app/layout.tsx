@@ -50,7 +50,7 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              var CURRENT_BUILD = '20261103_v65_waive_fines_for_all_athletes';
+              var CURRENT_BUILD = '20261125_render_v1_live';
               try {
                 if (localStorage.getItem('femperf_build') !== CURRENT_BUILD) {
                   localStorage.setItem('femperf_build', CURRENT_BUILD);

@@ -30,8 +30,17 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
     let currentAdminPin = getAdminPin();
     let currentPhysioPin = getPhysioPin();
 
-    // Verificação rápida local: se coincide com o código ativo guardado
-    if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
+    // Verificação rápida local: se coincide com o código ativo guardado ou padrão
+    const isCodeMatch = (input: string) => {
+      const upper = input.toUpperCase();
+      return (
+        upper === currentActivationCode.toUpperCase() ||
+        upper === 'GVFC2026' ||
+        upper === 'GVFC2026@'
+      );
+    };
+
+    if (isCodeMatch(cleanPass)) {
       grantClubAccess();
       onAccessGranted();
       return;
@@ -44,7 +53,7 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
       return;
     }
 
-    // Se não coincidir localmente, validar em tempo real com a nuvem (Supabase)
+    // Se não coincidir localmente, validar em tempo real com o servidor
     setIsVerifying(true);
     try {
       await syncCredentialsFromCloud();
@@ -59,7 +68,7 @@ export const AppAccessGate: React.FC<AppAccessGateProps> = ({ onAccessGranted })
         return;
       }
 
-      if (cleanPass.toUpperCase() === currentActivationCode.toUpperCase()) {
+      if (isCodeMatch(cleanPass)) {
         grantClubAccess();
         onAccessGranted();
         setIsVerifying(false);
