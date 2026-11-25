@@ -2917,4 +2917,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "reforco_joelho_hiperextensao_carlota",
+    titlePt: "Plano de Refor\u00e7o de Joelho P\u00f3s-Hiperextens\u00e3o \u2014 CARLOTA (30 MIN)",
+    titleEn: "Knee Hyperextension Post-Trauma Rehab Plan \u2014 CARLOTA (30 MIN)",
+    categoryPt: "Reabilita\u00e7\u00e3o & Fisioterapia \u2022 Joelho P\u00f3s-Trauma Agudo",
+    categoryEn: "Rehab & Physical Therapy \u2022 Acute Knee Trauma Management",
+    group: "inferiores",
+    groupBadgePt: "\ud83e\uddb5 Lateral \u2022 Refor\u00e7o Joelho P\u00f3s-Hiperextens\u00e3o",
+    groupBadgeEn: "\ud83e\uddb5 Full-Back \u2022 Knee Hyperextension Rehab",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 DEPARTAMENTO DE PERFORMANCE & SA\u00daDE",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 PERFORMANCE & HEALTH DEPARTMENT",
+    targetPosition: "all",
+    durationMinutes: 30,
+    durationTextPt: "30 MIN",
+    durationTextEn: "30 MIN",
+    warmupPt: "Bomba muscular do tornozelo em supino c/ perna elevada (2x 20 flex\u00f5es plantares) + Drenagem linf\u00e1tica suave de distal para proximal. Proibida qualquer hiperextens\u00e3o ativa ou passiva.",
+    warmupEn: "Supine ankle pumps with elevated leg (2x 20 pumps) + Gentle distal-to-proximal lymphatic stroke. Strict avoidance of any active or passive hyperextension.",
+    finisherPt: "Crioterapia compressiva com joelho a 15\u00b0-20\u00b0 de flex\u00e3o suportada por almofada (15 MIN) + Perna elevada para facilita\u00e7\u00e3o da reabsor\u00e7\u00e3o do edema.",
+    finisherEn: "Compressive cryotherapy with knee supported in 15\u00b0-20\u00b0 gentle flexion (15 MIN) + Leg elevated to facilitate joint effusion reabsorption.",
+    blocks: [
+      {
+        id: "reforco_joelho_hiperextensao_carlota_block_01",
+        number: "01",
+        titlePt: "Drenagem de Edema & Descompress\u00e3o em Descarga",
+        titleEn: "Effusion Management & Unloaded Joint Decompression",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b01_ex1",
+            namePt: "1.1 Knee Gapping com Toalha Popl\u00edtea em Descarga",
+            nameEn: "1.1 Unloaded Knee Gapping with Popliteal Towel Roll",
+            seriesRepsPt: "3x 10 oscila\u00e7\u00f5es suaves",
+            seriesRepsEn: "3x 10 gentle oscillations",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Deitada de costas com toalha macia enrolada na prega popl\u00edtea. Flete o joelho com tra\u00e7\u00e3o suave das m\u00e3os para abrir espa\u00e7o articular f\u00e9moro-tibial e descomprimir a c\u00e1psula posterior sem dor. Al\u00edvio imediato da press\u00e3o intra-articular.",
+            descriptionEn: "Supine with a soft towel roll placed in the popliteal crease. Gently flex the knee with hands to open the tibiofemoral joint space and decompress the posterior capsule without pain. Immediate intra-articular pressure relief.",
+            imageSrc: "/exercises/knee_gapping_pro.svg"
+          },
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b01_ex2",
+            namePt: "1.2 Eleva\u00e7\u00e3o da Perna Reta em Supino (SLR Isom\u00e9trico)",
+            nameEn: "1.2 Straight Leg Raise (SLR) with Isometric Lock",
+            seriesRepsPt: "3x 10-12 reps (3s pausa)",
+            seriesRepsEn: "3x 10-12 reps (3s hold)",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Perna contralateral dobrada. Na perna lesionada, contrai ativamente o quadric\u00edpete at\u00e9 bloquear a 0\u00b0 (neutro \u2014 nunca hiperextender) e eleva 30 cm do solo, sustentando 3s. Combate a inibi\u00e7\u00e3o muscular reflexa (AMI) do vasto medial.",
+            descriptionEn: "Opposite knee bent. Actively contract quadriceps to lock at 0\u00b0 (neutral \u2014 never hyperextend) and lift 30 cm off ground, holding 3s at peak. Overcomes reflex arthrogenic muscle inhibition (AMI) of the VMO.",
+            imageSrc: "/exercises/straight_leg_raise_quad_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_joelho_hiperextensao_carlota_block_02",
+        number: "02",
+        titlePt: "Isometria Subm\u00e1xima & Co-Contra\u00e7\u00e3o Protetora",
+        titleEn: "Submaximal Isometrics & Protective Co-Contraction",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b02_ex1",
+            namePt: "2.1 Spanish Squat Isom\u00e9trico com Cinta Dupla (45\u00b0 Flex\u00e3o)",
+            nameEn: "2.1 Spanish Squat Isometric with Rigid Band (45\u00b0 Flexion)",
+            seriesRepsPt: "3x 30-40s isometria",
+            seriesRepsEn: "3x 30-40s isometric hold",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Banda resistente ancorada atr\u00e1s das t\u00edbias superiores. Desce em agachamento suave at\u00e9 40\u00b0-50\u00b0 de flex\u00e3o confort\u00e1vel, tronco perfeitamente ereto. A banda descarrega a c\u00e1psula e o tend\u00e3o, promovendo analgesia potente e ativa\u00e7\u00e3o segura.",
+            descriptionEn: "Heavy rigid band anchored behind upper shins. Squat to 40\u00b0-50\u00b0 comfortable flexion with an upright torso. The band offloads capsule and patellar tendon, inducing strong analgesic relief and safe muscle recruitment.",
+            imageSrc: "/exercises/spanish_squat_isometric_pro.svg"
+          },
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b02_ex2",
+            namePt: "2.2 Curl Isom\u00e9trico de Isquiotibiais em Prona\u00e7\u00e3o c/ Banda",
+            nameEn: "2.2 Prone Hamstring Isometric Curl with Mini-Band",
+            seriesRepsPt: "3x 8-10 reps (3s pausa)",
+            seriesRepsEn: "3x 8-10 reps (3s hold)",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Deitada de barriga para baixo com mini-banda el\u00e1stica leve nos tornozelos. Flete o joelho at\u00e9 35\u00b0-45\u00b0 e sustenta a contra\u00e7\u00e3o isom\u00e9trica durante 3s. Ativa os isquiotibiais como freio prim\u00e1rio e estabilizador contra a hiperextens\u00e3o.",
+            descriptionEn: "Prone on mat with light mini-band around ankles. Flex knee to 35\u00b0-45\u00b0 and hold isometric contraction for 3s. Activates hamstrings as the primary dynamic restraint against hyperextension.",
+            imageSrc: "/exercises/prone_leg_curl_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_joelho_hiperextensao_carlota_block_03",
+        number: "03",
+        titlePt: "Controlo Terminal Neutro & Estabilidade P\u00e9lvica",
+        titleEn: "Terminal Extension Control & Pelvic Stability",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b03_ex1",
+            namePt: "3.1 Extens\u00e3o Terminal com Banda (TKE nos 0\u00b0 Neutro Estrito)",
+            nameEn: "3.1 Terminal Knee Extension with Band (Strict 0\u00b0 Neutral)",
+            seriesRepsPt: "3x 12 reps lentas",
+            seriesRepsEn: "3x 12 slow reps",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Banda ancorada \u00e0 frente na altura do joelho. Inicia a 30\u00b0 de flex\u00e3o e estende o joelho terminando RIGOROSAMENTE na vertical neutra (0\u00b0). Proibido ultrapassar o neutro. Foco no recrutamento do vasto medial para controlo da marcha.",
+            descriptionEn: "Band anchored in front at knee level. Start at 30\u00b0 flexion and extend knee, stopping STRICTLY at vertical neutral (0\u00b0). Never hyperextend. Focus on vastus medialis recruitment to restore confident gait mechanics.",
+            imageSrc: "/exercises/terminal_knee_extension_band_pro.svg"
+          },
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b03_ex2",
+            namePt: "3.2 Ponte de Gl\u00fateo no Solo com Mini-Banda nos Joelhos",
+            nameEn: "3.2 Floor Glute Bridge with Mini-Band around Knees",
+            seriesRepsPt: "3x 12-15 repeti\u00e7\u00f5es",
+            seriesRepsEn: "3x 12-15 reps",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Deitada de costas com mini-banda acima dos joelhos fletidos a 90\u00b0. Eleva a bacia ativando intensamente gl\u00fateos e abdutores sem sobrecarga no joelho. Garante o controlo rotacional do f\u00e9mur e previne o colapso em valgo din\u00e2mico.",
+            descriptionEn: "Supine with mini-band above knees bent at 90\u00b0. Drive through heels to lift hips, strongly engaging glutes and abductors with zero knee stress. Secures femoral rotation control and prevents dynamic valgus collapse.",
+            imageSrc: "/exercises/glute_bridge_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_joelho_hiperextensao_carlota_block_04",
+        number: "04",
+        titlePt: "Drenagem Linf\u00e1tica Final & Marcha em Mini-Flex\u00e3o",
+        titleEn: "Lymphatic Drainage & Protected Mini-Flexion Gait",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b04_ex1",
+            namePt: "4.1 Passos Laterais c/ Mini-Banda em Mini-Flex\u00e3o (20\u00b0-30\u00b0)",
+            nameEn: "4.1 Mini-Band Lateral Steps in Protected Knee Flexion (20\u00b0-30\u00b0)",
+            seriesRepsPt: "3x 10 passos / lado",
+            seriesRepsEn: "3x 10 steps / side",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Mini-banda nos joelhos ou tornozelos. Postura atl\u00e9tica mantendo joelhos SEMPRE em ligeira flex\u00e3o cont\u00ednua (20\u00b0-30\u00b0 \u2014 proibido bloquear ou estender totalmente). Deslocamentos curtos que ativam o gl\u00fateo m\u00e9dio e absorvem impacto.",
+            descriptionEn: "Mini-band around knees or ankles. Athletic stance keeping knees CONTINUOUSLY in slight flexion (20\u00b0-30\u00b0 \u2014 never lockout or extend). Short controlled lateral steps firing gluteus medius and absorbing ground reaction.",
+            imageSrc: "/exercises/monster_walk_band_pro.svg"
+          },
+          {
+            id: "reforco_joelho_hiperextensao_carlota_b04_ex2",
+            namePt: "4.2 Bomba Muscular Gastrocn\u00e9mio-Solear com Perna Elevada",
+            nameEn: "4.2 Calf Pump Drainage with Elevated Lower Leg",
+            seriesRepsPt: "3x 20-25 impulsos",
+            seriesRepsEn: "3x 20-25 rhythmic pumps",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Deitada de costas com a perna lesionada apoiada numa cunha/rolo elevada a 30\u00b0-45\u00b0. Flex\u00f5es plantares e dorsiflex\u00f5es r\u00edtmicas com resist\u00eancia de el\u00e1stico leve. Aciona a bomba venosa e linf\u00e1tica dos g\u00e9meos para drenar o edema articular p\u00f3s-treino.",
+            descriptionEn: "Supine with the injured leg elevated on a bolster at 30\u00b0-45\u00b0. Rhythmic plantarflexion and dorsiflexion against light band resistance. Powers the calf muscle pump to drive lymphatic drainage and clear knee effusion.",
+            imageSrc: "/exercises/ankle_plantarflexion_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];

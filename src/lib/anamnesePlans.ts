@@ -4501,11 +4501,11 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetType": "athlete",
     "targetId": "ath-1",
     "targetName": "CARLOTA",
-    "planId": "plan_indiv_ath-1_carlota",
-    "assignedAt": "2026-10-25T00:00:00.000Z",
-    "assignedBy": "Sistema (Anamnese)",
+    "planId": "reforco_joelho_hiperextensao_carlota",
+    "assignedAt": "2026-11-25T18:40:00.000Z",
+    "assignedBy": "Fisioterapia / Performance GVFC",
     "active": true,
-    "notes": "Prioridade Clínica: Reforço bilateral de LCA e proteção meniscal pós-dupla cirurgia + Core Seg & Qua."
+    "notes": "Protocolo Agudo 30 MIN: Reforço e descompressão pós-trauma em hiperextensão do joelho (edema articular + dor suportável). Proibida hiperextensão."
   },
   "athlete_ath-3_plan_indiv_ath-3_cartaxo": {
     "id": "athlete_ath-3_plan_indiv_ath-3_cartaxo",
