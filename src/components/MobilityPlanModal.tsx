@@ -22,6 +22,7 @@ import {
   Dumbbell,
   Globe,
   Calendar,
+  ExternalLink,
 } from 'lucide-react';
 
 interface MobilityPlanModalProps {
@@ -118,6 +119,19 @@ export const MobilityPlanModal: React.FC<MobilityPlanModalProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            {plan.htmlUrl && (
+              <a
+                href={plan.htmlUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={isEn ? 'Open Interactive HTML Dossier' : 'Abrir Ficha Interativa / Dossiê Web'}
+                className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl border border-cyan-500/40 bg-cyan-950/60 text-cyan-300 hover:text-white hover:bg-cyan-900/80 text-xs font-bold transition-all flex items-center space-x-1.5"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="hidden sm:inline">{isEn ? 'Interactive HTML' : 'Dossiê Web'}</span>
+              </a>
+            )}
+
             <button
               type="button"
               onClick={handlePrint}

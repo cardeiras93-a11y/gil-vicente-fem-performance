@@ -9,6 +9,7 @@ import {
   togglePositionPlanAssignment,
   toggleAllSquadPlanAssignment,
   getPlansForAthlete,
+  syncMobilityLibraryWithCloud,
 } from '@/lib/mobilityPlans';
 import { getDynamicAthletes } from '@/lib/storage';
 import { MobilityPlanModal } from './MobilityPlanModal';
@@ -36,6 +37,9 @@ import {
   AlertCircle,
   FolderPlus,
   BookmarkCheck,
+  Cloud,
+  RefreshCw,
+  BookOpen,
 } from 'lucide-react';
 
 export const AdminMobilityManager: React.FC = () => {
@@ -67,6 +71,32 @@ export const AdminMobilityManager: React.FC = () => {
   // Shared preview & feedback
   const [selectedPlanForPreview, setSelectedPlanForPreview] = useState<MobilityPlan | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+
+  // Auto-sync library with cloud on mount
+  useEffect(() => {
+    syncMobilityLibraryWithCloud(false).catch(() => {});
+  }, []);
+
+  const handleManualSyncCloud = async () => {
+    setIsSyncingCloud(true);
+    try {
+      const res = await syncMobilityLibraryWithCloud(true);
+      setPlans(getStoredMobilityPlans());
+      setAssignments(getStoredAthletePlanAssignments());
+      setAthletes(getDynamicAthletes());
+      setFeedback(
+        res.success
+          ? `✓ Biblioteca sincronizada com sucesso! (${res.plansCount} planos e ${res.assignmentsCount} atribuições ativas)`
+          : 'Aviso: Nuvem temporariamente inacessível, dados locais preservados.'
+      );
+    } catch {
+      setFeedback('Erro ao sincronizar com a nuvem.');
+    } finally {
+      setIsSyncingCloud(false);
+      setTimeout(() => setFeedback(null), 4000);
+    }
+  };
 
   useEffect(() => {
     const refreshData = () => {
@@ -401,8 +431,37 @@ export const AdminMobilityManager: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Links Row */}
+        {/* Quick Links & Cloud Sync Row */}
         <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-slate-800/80 relative z-10 text-xs">
+          <button
+            type="button"
+            onClick={handleManualSyncCloud}
+            disabled={isSyncingCloud}
+            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl font-bold transition-all border cursor-pointer ${
+              isSyncingCloud
+                ? 'bg-blue-900/60 text-blue-200 border-blue-500/50 cursor-wait'
+                : 'bg-blue-950/70 hover:bg-blue-900/80 text-blue-300 border-blue-500/40 shadow-sm'
+            }`}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-blue-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
+            <span>{isSyncingCloud ? 'A Sincronizar Nuvem...' : 'Sincronizar Nuvem Agora'}</span>
+          </button>
+
+          <div className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-700/80 text-slate-300 font-semibold text-[11px]">
+            <Cloud className="h-3.5 w-3.5 text-emerald-400" />
+            <span>Auto-Sync Ativo • {plans.length} Planos</span>
+          </div>
+
+          <a
+            href="/planos/biblioteca_planos_gil_vicente_fc.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-purple-950/60 hover:bg-purple-900/70 text-purple-300 border border-purple-500/40 font-bold transition-all"
+          >
+            <BookOpen className="h-3.5 w-3.5 text-purple-400" />
+            <span>Biblioteca Completa HTML</span>
+          </a>
+
           <a
             href="/planos/plano_anamnese_preventivo_plantel.html"
             target="_blank"
@@ -412,6 +471,7 @@ export const AdminMobilityManager: React.FC = () => {
             <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
             <span>Dossiê Clínico Anamnese</span>
           </a>
+
           <a
             href="/planos/index.html"
             target="_blank"
@@ -419,7 +479,17 @@ export const AdminMobilityManager: React.FC = () => {
             className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 font-bold transition-all"
           >
             <ExternalLink className="h-3.5 w-3.5 text-cyan-400" />
-            <span>Máquinas de Ginásio A4</span>
+            <span>Máquinas Ginásio A4</span>
+          </a>
+
+          <a
+            href="/planos/video_reels_biblioteca.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-amber-950/60 hover:bg-amber-900/70 text-amber-300 border border-amber-500/40 font-bold transition-all"
+          >
+            <Zap className="h-3.5 w-3.5 text-amber-400" />
+            <span>Vídeos & Reels</span>
           </a>
         </div>
       </div>
