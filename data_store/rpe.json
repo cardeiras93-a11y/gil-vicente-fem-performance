@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-28-2026-11-25-field",
+    "athleteId": "ath-28",
+    "athleteName": "IZZY",
+    "date": "2026-11-25",
+    "sessionType": "field",
+    "physicalDemand": 2,
+    "postFatigue": 3,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-25T10:55:12.419Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T10:55:12.419Z"
+  },
+  {
     "id": "rpe-ath-10-2026-11-25-field",
     "athleteId": "ath-10",
     "athleteName": "MAGUI",
