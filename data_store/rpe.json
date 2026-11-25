@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-25-2026-11-25-field",
+    "athleteId": "ath-25",
+    "athleteName": "VERÓNICA",
+    "date": "2026-11-25",
+    "sessionType": "field",
+    "physicalDemand": 7,
+    "postFatigue": 6,
+    "sessionDurationMin": 90,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-25T10:54:38.458Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T10:54:38.458Z"
+  },
+  {
     "id": "rpe-ath-3-2026-11-25-field",
     "athleteId": "ath-3",
     "athleteName": "CARTAXO",
