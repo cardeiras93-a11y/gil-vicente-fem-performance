@@ -540,24 +540,28 @@ function MainAppContent() {
       </main>
 
       {/* Admin Dashboard Modal */}
-      <ErrorBoundary key={isAdminOpen ? 'admin-open' : 'admin-closed'} fallbackTitle="Painel de Administração • Gil Vicente FC" onReset={handleCloseAdmin}>
-        <AdminDashboard
-          isOpen={isAdminOpen}
-          onClose={handleCloseAdmin}
-          onOpenAthleteSelector={() => {
-            handleCloseAdmin();
-            setIsChangingAthlete(true);
-          }}
-        />
-      </ErrorBoundary>
+      {isAdminOpen && (
+        <ErrorBoundary key="admin-modal" fallbackTitle="Painel de Administração • Gil Vicente FC" onReset={handleCloseAdmin}>
+          <AdminDashboard
+            isOpen={isAdminOpen}
+            onClose={handleCloseAdmin}
+            onOpenAthleteSelector={() => {
+              handleCloseAdmin();
+              setIsChangingAthlete(true);
+            }}
+          />
+        </ErrorBoundary>
+      )}
 
       {/* Physiotherapist Dashboard Modal */}
-      <ErrorBoundary key={isPhysioOpen ? 'physio-open' : 'physio-closed'} fallbackTitle="Departamento Médico • Gil Vicente FC" onReset={handleClosePhysio}>
-        <PhysioDashboard
-          isOpen={isPhysioOpen}
-          onClose={handleClosePhysio}
-        />
-      </ErrorBoundary>
+      {isPhysioOpen && (
+        <ErrorBoundary key="physio-modal" fallbackTitle="Departamento Médico • Gil Vicente FC" onReset={handleClosePhysio}>
+          <PhysioDashboard
+            isOpen={isPhysioOpen}
+            onClose={handleClosePhysio}
+          />
+        </ErrorBoundary>
+      )}
 
       {/* Athlete Profile & PIN Modal */}
       <AthleteProfileModal

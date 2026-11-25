@@ -1103,6 +1103,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
   };
 
+  // Filtered roster status
+  const filteredAthletes = useMemo(() => {
+    const filterLower = (searchFilter || '').toLowerCase().trim();
+    return (athletesList || []).filter((ath) =>
+      ath && ath.name && ath.name.toLowerCase().includes(filterLower)
+    );
+  }, [athletesList, searchFilter]);
+
+  // RPE KPIs & filtering by session type
+  const fieldRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'field' || (!r?.sessionType && !r?.id?.includes('gym_lower'))), [rpeList]);
+  const gymRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'gym_lower' || (r?.id && r.id.includes('gym_lower'))), [rpeList]);
+
+  const activeRpeList = useMemo(() => {
+    if (rpeSessionFilter === 'field') return fieldRpeList;
+    if (rpeSessionFilter === 'gym_lower') return gymRpeList;
+    return rpeList || [];
+  }, [rpeList, fieldRpeList, gymRpeList, rpeSessionFilter]);
+
   if (!isOpen) return null;
 
   // PIN Authentication Screen for Admin Access
@@ -1241,28 +1259,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       ).toFixed(1)
     : 0;
 
-  // Filtered roster status
-  const filteredAthletes = useMemo(() => {
-    const filterLower = (searchFilter || '').toLowerCase().trim();
-    return (athletesList || []).filter((ath) =>
-      ath && ath.name && ath.name.toLowerCase().includes(filterLower)
-    );
-  }, [athletesList, searchFilter]);
-
   // Wellness KPIs
   const totalWellness = wellnessList.length;
   const lowSleepCount = wellnessList.filter((w) => (w?.sleepQuality || 0) <= 2).length;
   const highStressCount = wellnessList.filter((w) => (w?.stress || 0) <= 2).length;
-
-  // RPE KPIs & filtering by session type
-  const fieldRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'field' || (!r?.sessionType && !r?.id?.includes('gym_lower'))), [rpeList]);
-  const gymRpeList = useMemo(() => (rpeList || []).filter((r) => r?.sessionType === 'gym_lower' || (r?.id && r.id.includes('gym_lower'))), [rpeList]);
-
-  const activeRpeList = useMemo(() => {
-    if (rpeSessionFilter === 'field') return fieldRpeList;
-    if (rpeSessionFilter === 'gym_lower') return gymRpeList;
-    return rpeList || [];
-  }, [rpeList, fieldRpeList, gymRpeList, rpeSessionFilter]);
 
   const totalRPE = activeRpeList.length;
   const avgBorg = totalRPE
