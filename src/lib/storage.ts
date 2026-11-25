@@ -730,16 +730,33 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         items.forEach((item) => {
           map.set(getKey(item), item);
         });
-        // 2. Preserve local entries not yet in cloud or older historical records
+        // 2. Preserve local entries not yet in cloud and auto-push unsynced recent entries to cloud
+        const unsyncedWellness: WellnessEntry[] = [];
         local.forEach((localItem) => {
           const key = getKey(localItem);
           if (!map.has(key)) {
             map.set(key, localItem);
+            if (localItem.date) {
+              const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
+              if (diffMs <= 3 * 24 * 60 * 60 * 1000) {
+                unsyncedWellness.push(localItem);
+              }
+            }
           }
         });
         const merged = Array.from(map.values());
         localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
         dispatchDataUpdatedEvent();
+
+        if (unsyncedWellness.length > 0) {
+          unsyncedWellness.forEach((entry) => {
+            secureFetch('/api/wellness', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry),
+            }).catch(() => {});
+          });
+        }
       }
     } catch {}
 
@@ -764,6 +781,7 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
           }
           map.set(getKey(item), item);
         });
+        const unsyncedRpe: RPEEntry[] = [];
         local.forEach((localItem) => {
           if (!localItem.sessionType && localItem.id?.includes('gym_lower')) {
             localItem.sessionType = 'gym_lower';
@@ -771,11 +789,27 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
           const key = getKey(localItem);
           if (!map.has(key)) {
             map.set(key, localItem);
+            if (localItem.date) {
+              const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
+              if (diffMs <= 3 * 24 * 60 * 60 * 1000) {
+                unsyncedRpe.push(localItem);
+              }
+            }
           }
         });
         const merged = Array.from(map.values());
         localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
         dispatchDataUpdatedEvent();
+
+        if (unsyncedRpe.length > 0) {
+          unsyncedRpe.forEach((entry) => {
+            secureFetch('/api/rpe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry),
+            }).catch(() => {});
+          });
+        }
       }
     } catch {}
 
@@ -795,15 +829,32 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
         items.forEach((item) => {
           map.set(getKey(item), item);
         });
+        const unsyncedHyd: HydrationEntry[] = [];
         local.forEach((localItem) => {
           const key = getKey(localItem);
           if (!map.has(key)) {
             map.set(key, localItem);
+            if (localItem.date) {
+              const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
+              if (diffMs <= 3 * 24 * 60 * 60 * 1000) {
+                unsyncedHyd.push(localItem);
+              }
+            }
           }
         });
         const merged = Array.from(map.values());
         localStorage.setItem(HYDRATION_LOCAL_KEY, JSON.stringify(merged));
         dispatchDataUpdatedEvent();
+
+        if (unsyncedHyd.length > 0) {
+          unsyncedHyd.forEach((entry) => {
+            secureFetch('/api/hydration', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry),
+            }).catch(() => {});
+          });
+        }
       }
     } catch {}
 

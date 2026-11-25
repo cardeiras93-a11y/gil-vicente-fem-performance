@@ -121,6 +121,9 @@ export async function getCloudEntries(filename: string): Promise<any[]> {
 }
 
 export async function saveCloudEntry(filename: string, entry: any): Promise<boolean> {
+  const maxRetries = 5;
+
+  // 1. Always update local fallback immediately
   try {
     const rawLocal = readLocalFallback(filename);
     const localEntries = Array.isArray(rawLocal) ? rawLocal : [];
@@ -131,12 +134,17 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
       localEntries.unshift(entry);
     }
     writeLocalFallback(filename, localEntries);
+  } catch {}
 
-    let sha: string | undefined = memoryCache.get(filename)?.sha;
-    let currentEntries: any[] = localEntries;
-
+  // 2. Retry loop for GitHub commit with exponential backoff on 409 conflict
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main`;
+      let sha: string | undefined = undefined;
+      let currentEntries: any[] = readLocalFallback(filename);
+      if (!Array.isArray(currentEntries)) currentEntries = [];
+
+      // Always fetch the freshest sha and remote content directly
+      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main&t=${Date.now()}`;
       const getRes = await fetch(getUrl, {
         headers: {
           'Authorization': `token ${GITHUB_TOKEN}`,
@@ -149,52 +157,66 @@ export async function saveCloudEntry(filename: string, entry: any): Promise<bool
       if (getRes.ok) {
         const json = await getRes.json();
         sha = json.sha;
-        const decoded = Buffer.from(json.content, 'base64').toString('utf-8');
-        const remoteArr = JSON.parse(decoded);
-        if (Array.isArray(remoteArr)) {
-          currentEntries = remoteArr;
+        if (json.content) {
+          const decoded = Buffer.from(json.content, 'base64').toString('utf-8');
+          const remoteArr = JSON.parse(decoded);
+          if (Array.isArray(remoteArr)) {
+            currentEntries = remoteArr;
+          }
         }
       }
-    } catch {}
 
-    const idx = currentEntries.findIndex((e: any) => matchesEntry(e, entry, filename));
-    if (idx !== -1) {
-      currentEntries[idx] = { ...currentEntries[idx], ...entry };
-    } else {
-      currentEntries.unshift(entry);
-    }
+      const idx = currentEntries.findIndex((e: any) => matchesEntry(e, entry, filename));
+      if (idx !== -1) {
+        currentEntries[idx] = { ...currentEntries[idx], ...entry };
+      } else {
+        currentEntries.unshift(entry);
+      }
 
-    const updatedContentB64 = Buffer.from(JSON.stringify(currentEntries, null, 2)).toString('base64');
-    const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}`;
-    const putRes = await fetch(putUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'GVFC-Sync',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `sync(${filename.replace('.json', '')}): update entry for ${entry.athleteName || entry.athleteId || 'athlete'} (${entry.date})`,
-        content: updatedContentB64,
-        sha: sha,
-        branch: 'main'
-      })
-    });
-
-    if (putRes.ok) {
-      const putData = await putRes.json();
-      memoryCache.set(filename, {
-        data: currentEntries,
-        sha: putData.content?.sha || '',
-        timestamp: Date.now()
+      const updatedContentB64 = Buffer.from(JSON.stringify(currentEntries, null, 2)).toString('base64');
+      const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}`;
+      const putRes = await fetch(putUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'GVFC-Sync',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `sync(${filename.replace('.json', '')}): update entry for ${entry.athleteName || entry.athleteId || 'athlete'} (${entry.date})`,
+          content: updatedContentB64,
+          sha: sha,
+          branch: 'main'
+        })
       });
-      return true;
-    } else {
-      console.warn(`[CloudStore] Falha ao gravar ${filename} no GitHub (status ${putRes.status})`);
+
+      if (putRes.ok) {
+        const putData = await putRes.json();
+        memoryCache.set(filename, {
+          data: currentEntries,
+          sha: putData.content?.sha || '',
+          timestamp: Date.now()
+        });
+        writeLocalFallback(filename, currentEntries);
+        return true;
+      }
+
+      // If conflict (409) or bad request, back off and retry
+      if (putRes.status === 409 || putRes.status === 422) {
+        console.warn(`[CloudStore] Conflito (409) ao gravar ${filename} no GitHub (tentativa ${attempt}/${maxRetries}). A re-sincronizar...`);
+        const jitter = Math.floor(Math.random() * 300) + 150;
+        const delay = Math.min(attempt * 400 + jitter, 3000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      } else {
+        console.warn(`[CloudStore] Falha ao gravar ${filename} no GitHub (status ${putRes.status})`);
+      }
+    } catch (err) {
+      console.error(`[CloudStore] Exceção tentativa ${attempt} ao gravar ${filename}:`, err);
+      const delay = 300 + Math.floor(Math.random() * 300);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-  } catch (err) {
-    console.error(`[CloudStore] Exceção ao gravar ${filename}:`, err);
   }
 
   return false;
@@ -243,13 +265,16 @@ export async function getCloudObject(filename: string): Promise<Record<string, a
 }
 
 export async function saveCloudObject(filename: string, obj: Record<string, any>): Promise<boolean> {
+  const maxRetries = 5;
   try {
     writeLocalFallback(filename, obj);
+  } catch {}
 
-    let sha: string | undefined = memoryCache.get(filename)?.sha;
-
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main`;
+      let sha: string | undefined = undefined;
+
+      const getUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}?ref=main&t=${Date.now()}`;
       const getRes = await fetch(getUrl, {
         headers: {
           'Authorization': `token ${GITHUB_TOKEN}`,
@@ -263,37 +288,47 @@ export async function saveCloudObject(filename: string, obj: Record<string, any>
         const json = await getRes.json();
         sha = json.sha;
       }
-    } catch {}
 
-    const updatedContentB64 = Buffer.from(JSON.stringify(obj, null, 2)).toString('base64');
-    const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}`;
-    const putRes = await fetch(putUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${GITHUB_TOKEN}`,
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'GVFC-Sync',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        message: `sync(${filename.replace('.json', '')}): update store`,
-        content: updatedContentB64,
-        sha: sha,
-        branch: 'main'
-      })
-    });
-
-    if (putRes.ok) {
-      const putData = await putRes.json();
-      memoryCache.set(filename, {
-        data: obj,
-        sha: putData.content?.sha || '',
-        timestamp: Date.now()
+      const updatedContentB64 = Buffer.from(JSON.stringify(obj, null, 2)).toString('base64');
+      const putUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/data_store/${filename}`;
+      const putRes = await fetch(putUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'GVFC-Sync',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: `sync(${filename.replace('.json', '')}): update store`,
+          content: updatedContentB64,
+          sha: sha,
+          branch: 'main'
+        })
       });
-      return true;
+
+      if (putRes.ok) {
+        const putData = await putRes.json();
+        memoryCache.set(filename, {
+          data: obj,
+          sha: putData.content?.sha || '',
+          timestamp: Date.now()
+        });
+        return true;
+      }
+
+      if (putRes.status === 409 || putRes.status === 422) {
+        console.warn(`[CloudStore] Conflito (409) ao gravar objeto ${filename} no GitHub (tentativa ${attempt}/${maxRetries}). A re-sincronizar...`);
+        const jitter = Math.floor(Math.random() * 300) + 150;
+        const delay = Math.min(attempt * 400 + jitter, 3000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+    } catch (err) {
+      console.error(`[CloudStore] Exceção tentativa ${attempt} ao gravar objeto ${filename}:`, err);
+      const delay = 300 + Math.floor(Math.random() * 300);
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
-  } catch (err) {
-    console.error(`[CloudStore] Exceção ao gravar objeto ${filename}:`, err);
   }
   return false;
 }

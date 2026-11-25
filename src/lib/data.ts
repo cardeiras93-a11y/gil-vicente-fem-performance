@@ -187,3 +187,65 @@ export function calculateHydrationStatus(
     biologicalImpact,
   };
 }
+
+/**
+ * Normaliza e compara um registo de formulário com uma atleta do plantel,
+ * aceitando correspondência por ID único, nome exato, variações de acentuação
+ * ou alcunhas canónicas oficiais (ex.: SARA A. <-> SARA ALVES, TITA <-> PATRICIA DIAS, etc.).
+ */
+export function isAthleteMatch(
+  entry: { athleteId?: string; athleteName?: string } | null | undefined,
+  athlete: { id?: string; name?: string } | null | undefined
+): boolean {
+  if (!entry || !athlete) return false;
+
+  // 1. Correspondência exata por ID único
+  if (entry.athleteId && athlete.id && entry.athleteId === athlete.id) {
+    return true;
+  }
+
+  // Se não houver nomes para comparar, não é possível validar
+  if (!entry.athleteName || !athlete.name) return false;
+
+  const clean = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '')
+      .trim();
+
+  const eName = clean(entry.athleteName);
+  const aName = clean(athlete.name);
+
+  if (eName === aName) return true;
+
+  // 2. Mapeamento de alcunhas canónicas do Gil Vicente FC (22 atletas)
+  const canonicalAliases: Record<string, string[]> = {
+    'ath-3': ['cartaxo', 'saracartaxo'],
+    'ath-11': ['malta', 'mariamalta'],
+    'ath-17': ['ribeiro'],
+    'ath-18': ['ribeiro'],
+    'ath-19': ['saraalves', 'saraa', 'alves'],
+    'ath-20': ['sarateixeira', 'sarat', 'teixeira'],
+    'ath-22': ['simaes'],
+    'ath-24': ['tita', 'patriciadias'],
+    'ath-25': ['veronica'],
+    'ath-27': ['chelsea'],
+    'ath-28': ['izzy'],
+  };
+
+  if (athlete.id && canonicalAliases[athlete.id]?.includes(eName)) {
+    return true;
+  }
+
+  // Comparação cruzada de aliases entre entry e athlete
+  for (const [id, aliases] of Object.entries(canonicalAliases)) {
+    if ((athlete.id === id || aliases.includes(aName)) && aliases.includes(eName)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+

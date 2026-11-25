@@ -168,6 +168,9 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
 
     const redirectDelay = 1800;
 
+    // 1. Guardar localmente de imediato para garantir persistência a 100% no dispositivo
+    saveWellnessLocally(newEntry);
+
     try {
       await secureFetch('/api/wellness', {
         method: 'POST',
@@ -181,7 +184,6 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         body: JSON.stringify({ type: 'wellness', entry: newEntry }),
       }).catch(() => {});
 
-      saveWellnessLocally(newEntry);
       setIsSubmitting(false);
       setIsSuccess(true);
 
@@ -190,8 +192,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
         onSubmitSuccess();
       }, redirectDelay);
     } catch (err) {
-      console.warn('Falha no envio API. Guardado localmente.');
-      saveWellnessLocally(newEntry);
+      console.warn('Falha no envio API direto. Registo seguro localmente.');
       setIsSubmitting(false);
       setIsSuccess(true);
       setTimeout(() => {

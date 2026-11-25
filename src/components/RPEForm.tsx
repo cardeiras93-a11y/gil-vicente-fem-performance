@@ -201,6 +201,9 @@ export const RPEForm: React.FC<RPEFormProps> = ({
 
     const redirectDelay = 1800;
 
+    // 1. Guardar localmente de imediato para garantir persistência a 100% no dispositivo
+    saveRPELocally(newEntry);
+
     try {
       await secureFetch('/api/rpe', {
         method: 'POST',
@@ -214,7 +217,6 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         body: JSON.stringify({ type: 'rpe', entry: newEntry }),
       }).catch(() => {});
 
-      saveRPELocally(newEntry);
       setIsSubmitting(false);
       setIsSuccess(true);
 
@@ -228,8 +230,7 @@ export const RPEForm: React.FC<RPEFormProps> = ({
         }
       }, redirectDelay);
     } catch (err) {
-      console.warn('Falha na API. Guardado localmente.');
-      saveRPELocally(newEntry);
+      console.warn('Falha na API. Registo seguro localmente.');
       setIsSubmitting(false);
       setIsSuccess(true);
       setTimeout(() => {

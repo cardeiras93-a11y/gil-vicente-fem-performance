@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { WellnessEntry, RPEEntry, HydrationEntry, Athlete, AthletePosition, QuestionnaireDeadlinesConfig } from '@/lib/types';
-import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus } from '@/lib/data';
+import { INITIAL_ATHLETES, BORG_SCALE, calculateHydrationStatus, isAthleteMatch } from '@/lib/data';
 import { getWellnessLocally, getRPELocally, getHydrationLocally, getAthletePin, setAthletePin, getAthleteAvatar, saveBulkGsheetsData, deleteHydrationLocally, updateHydrationLocally, clearAllHistoricalData, clearSelectiveHistoricalData, getAdminPin, setAdminPin as saveAdminPinToStorage, getPhysioPin, setPhysioPin as savePhysioPinToStorage, getClubActivationCode, setClubActivationCode as saveClubActivationCodeToStorage, getDynamicAthletes, saveAthleteProfile, addNewAthlete, deleteAthlete, compressImageFile, setAthleteActiveStatus, setAllAthletesActive, syncAllDataFromCloud, syncCredentialsFromCloud, getStoredDeadlineConfig, saveDeadlineConfig, getStoredTrainingSessions, saveTrainingSessionInfo, grantAthleteLateAuthorization, revokeAthleteLateAuthorization, isAthleteAuthorizedForLateSubmission, formatSubmissionTime, approveWellnessSubmission, rejectWellnessSubmission, approveRPESubmission, rejectRPESubmission, approveAllPendingSubmissions } from '@/lib/storage';
 import { exportWellnessToExcel, exportRPEToExcel, exportHydrationToExcel, exportWeightToExcel, exportAllDataToExcel } from '@/lib/exportUtils';
 import { getStoredReminderConfig, saveReminderConfig, requestNotificationPermission, getNotificationPermission, sendMobileNotification, getPendingQuestionnairesStatus, ReminderConfig } from '@/lib/reminderUtils';
@@ -1257,19 +1257,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
     const monthPrefix = (selectedDate || '').substring(0, 7); // e.g. "2026-09"
     const allHydration = getHydrationLocally() || [];
-    const athNameLower = athleteName.toLowerCase().trim();
+    const athObj = athletesList.find((a) => a.name === athleteName || isAthleteMatch({ athleteName }, a));
+    const targetAth = athObj || { id: '', name: athleteName };
 
     const monthEntries = allHydration
       .filter(
         (h) =>
-          h?.athleteName &&
-          h.athleteName.toLowerCase().trim() === athNameLower &&
+          h &&
+          isAthleteMatch(h, targetAth) &&
           h.date?.startsWith(monthPrefix)
       )
       .sort((a, b) => (a?.date || '').localeCompare(b?.date || ''));
 
     const todayEntry = (hydrationList || []).find(
-      (h) => h?.athleteName && h.athleteName.toLowerCase().trim() === athNameLower
+      (h) => h && isAthleteMatch(h, targetAth)
     );
 
     // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna (baseline vs baseline)
@@ -1936,9 +1937,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                       <tbody className="divide-y divide-slate-800/60 font-medium">
                         {filteredAthletes.map((ath) => {
                           const name = ath.name;
-                          const wellness = wellnessList.find((w) => w.athleteName === name);
-                          const rpeField = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))));
-                          const rpeGym = rpeList.find((r) => r.athleteName === name && (r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))));
+                          const wellness = wellnessList.find((w) => isAthleteMatch(w, ath));
+                          const rpeField = rpeList.find((r) => isAthleteMatch(r, ath) && (r.sessionType === 'field' || (!r.sessionType && !r.id?.includes('gym_lower'))));
+                          const rpeGym = rpeList.find((r) => isAthleteMatch(r, ath) && (r.sessionType === 'gym_lower' || (r.id && r.id.includes('gym_lower'))));
                           const rpe = rpeField || rpeGym;
 
                           return (
