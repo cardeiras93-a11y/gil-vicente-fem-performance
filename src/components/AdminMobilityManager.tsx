@@ -136,7 +136,7 @@ export const AdminMobilityManager: React.FC = () => {
   // Plans assigned to the selected athlete
   const assignedPlansForSelectedAthlete = useMemo(() => {
     if (!selectedAthlete) return [];
-    return getPlansForAthlete(selectedAthlete);
+    return getPlansForAthlete(selectedAthlete, assignments);
   }, [selectedAthlete, plans, assignments]);
 
   // Helper to determine the origin of a plan assignment for an athlete

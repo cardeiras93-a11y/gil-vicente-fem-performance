@@ -249,6 +249,7 @@ export const PLAN_HTML_MAP: Record<string, string> = {
   'ativacao_maria_malta_bandas': '/planos/plano_ativacao_maria_malta_bandas.html',
   'ativacao_izzy_tendao_aquiles': '/planos/plano_ativacao_izzy_tendao_aquiles.html',
   'recuperacao_quadricep_casa_carol': '/planos/plano_recuperacao_quadricep_casa_carol.html',
+  'reforco_ombro_estabilidade_nicole': '/planos/plano_superiores_forca_pre_competitivo.html',
 
   // Planos Preventivos Anamnese (Dossiês dedicados ou seção no dossiê global)
   'plan_indiv_ath-1_carlota': '/planos/plano_reforco_joelho_hiperextensao_carlota.html',
@@ -594,21 +595,19 @@ export function toggleAthletePlanAssignment(
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
   const nowIso = new Date().toISOString();
 
-  // If setting to inactive (removing), ensure ALL legacy/candidate keys for this athlete & plan are deactivated
-  if (!nextActive) {
-    const cleanUpper = (athleteName || '').trim().toUpperCase();
-    for (const [key, asgn] of Object.entries(current)) {
-      if (asgn && asgn.planId === planId && asgn.targetType === 'athlete') {
-        const matchesTarget = asgn.targetId === athleteId ||
-          (asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanUpper);
-        if (matchesTarget) {
-          current[key] = {
-            ...asgn,
-            active: false,
-            assignedAt: nowIso,
-            assignedBy: 'Treinador',
-          };
-        }
+  // Synchronize ALL legacy/candidate keys for this athlete & plan to the new active state
+  const cleanUpper = (athleteName || '').trim().toUpperCase();
+  for (const [key, asgn] of Object.entries(current)) {
+    if (asgn && asgn.planId === planId && asgn.targetType === 'athlete') {
+      const matchesTarget = asgn.targetId === athleteId ||
+        (asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanUpper);
+      if (matchesTarget) {
+        current[key] = {
+          ...asgn,
+          active: nextActive,
+          assignedAt: nowIso,
+          assignedBy: 'Treinador',
+        };
       }
     }
   }
@@ -736,10 +735,13 @@ export function getCandidateAthleteIds(athlete: Athlete | null): string[] {
  * Returns all active plans assigned to an athlete (direct athlete match, position match, or 'all').
  * The coach's deliberate assignment or removal ALWAYS takes absolute priority.
  */
-export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
+export function getPlansForAthlete(
+  athlete: Athlete | null,
+  assignmentsOverride?: Record<string, AthletePlanAssignment>
+): MobilityPlan[] {
   if (!athlete) return [];
   const allPlans = getStoredMobilityPlans();
-  const assignments = getStoredAthletePlanAssignments();
+  const assignments = assignmentsOverride || getStoredAthletePlanAssignments();
 
   const isGk = athlete.position === 'GR' || (athlete.name ? isGoalkeeper(athlete.name) : false);
   const position = isGk ? 'GR' : 'Campo';
@@ -752,76 +754,45 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   const assignedPlans = allPlans.filter((plan) => {
     if (plan.id === 'mobility-gk-pre-training') return false;
 
-    // 1. Check for deliberate explicit REMOVAL (active === false):
-    // If the coach removed this plan for this athlete, it MUST NEVER BE RETURNED.
-    let explicitlyDisabled = false;
+    // Check direct coach decision for this athlete and plan:
+    // Gather all matching athlete assignment entries and pick the latest by assignedAt
+    let latestDirect: AthletePlanAssignment | undefined;
+
     for (const candId of candidateIds) {
-      const match = assignments[`athlete_${candId}_${plan.id}`];
-      if (match !== undefined && match.active === false) {
-        explicitlyDisabled = true;
-        break;
+      const direct = assignments[`athlete_${candId}_${plan.id}`];
+      if (direct) {
+        if (!latestDirect || new Date(direct.assignedAt || 0).getTime() >= new Date(latestDirect.assignedAt || 0).getTime()) {
+          latestDirect = direct;
+        }
       }
     }
 
-    if (!explicitlyDisabled && cleanName) {
+    if (cleanName) {
       for (const asgn of Object.values(assignments)) {
-        if (
-          asgn &&
-          asgn.planId === plan.id &&
-          asgn.targetType === 'athlete' &&
-          asgn.active === false
-        ) {
+        if (asgn && asgn.planId === plan.id && asgn.targetType === 'athlete') {
           const matchId = candidateIds.includes(asgn.targetId);
           const matchName = asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanName;
           if (matchId || matchName) {
-            explicitlyDisabled = true;
-            break;
+            if (!latestDirect || new Date(asgn.assignedAt || 0).getTime() >= new Date(latestDirect.assignedAt || 0).getTime()) {
+              latestDirect = asgn;
+            }
           }
         }
       }
     }
 
-    if (explicitlyDisabled) {
-      return false; // DELIBERATELY REMOVED BY COACH. Never show.
-    }
-
-    // 2. Check for deliberate explicit DIRECT ASSIGNMENT (active === true):
-    let directActive = false;
-    for (const candId of candidateIds) {
-      const match = assignments[`athlete_${candId}_${plan.id}`];
-      if (match !== undefined && match.active === true) {
-        directActive = true;
-        break;
-      }
-    }
-
-    if (!directActive && cleanName) {
-      for (const asgn of Object.values(assignments)) {
-        if (
-          asgn &&
-          asgn.planId === plan.id &&
-          asgn.targetType === 'athlete' &&
-          asgn.active === true
-        ) {
-          const matchId = candidateIds.includes(asgn.targetId);
-          const matchName = asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanName;
-          if (matchId || matchName) {
-            directActive = true;
-            break;
-          }
+    // Direct coach decision always takes absolute precedence:
+    if (latestDirect !== undefined) {
+      if (latestDirect.active === true) {
+        if (!seenIds.has(plan.id)) {
+          seenIds.add(plan.id);
+          return true;
         }
       }
+      return false; // Deliberately removed or inactive by latest coach decision
     }
 
-    if (directActive) {
-      if (!seenIds.has(plan.id)) {
-        seenIds.add(plan.id);
-        return true;
-      }
-      return false;
-    }
-
-    // 3. Position assignment (e.g. Campo or GR):
+    // Fall back to position assignment (e.g. Campo or GR):
     const posAsgn = assignments[`pos_${position}_${plan.id}`];
     if (posAsgn !== undefined && posAsgn.active === true) {
       if (!seenIds.has(plan.id)) {
@@ -831,7 +802,7 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
       return false;
     }
 
-    // 4. All-squad assignment:
+    // Fall back to all-squad assignment:
     const allAsgn = assignments[`all_all_${plan.id}`];
     if (allAsgn !== undefined && allAsgn.active === true) {
       if (!seenIds.has(plan.id)) {

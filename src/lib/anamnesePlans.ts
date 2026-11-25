@@ -4655,6 +4655,17 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetType": "athlete",
     "targetId": "ath-15",
     "targetName": "NICOLE",
+    "planId": "plan_indiv_ath-15_nicole",
+    "assignedAt": "2026-10-25T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Prioridade Clínica: Entorses Tornozelo + Joelho Dto. Mobilidade articular e ativação neuromuscular preventiva."
+  },
+  "athlete_ath-15_reforco_ombro_estabilidade_nicole": {
+    "id": "athlete_ath-15_reforco_ombro_estabilidade_nicole",
+    "targetType": "athlete",
+    "targetId": "ath-15",
+    "targetName": "NICOLE",
     "planId": "reforco_ombro_estabilidade_nicole",
     "assignedAt": "2026-11-25T19:10:00.000Z",
     "assignedBy": "Fisioterapia / Performance GVFC",
