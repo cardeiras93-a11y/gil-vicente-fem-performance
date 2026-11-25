@@ -541,6 +541,8 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       // 13. Athlete Plan Assignments: Cloud sync
       if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
+        localStorage.setItem('femperf_athlete_plan_assignments_v8', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(data.data.athletePlanAssignments));

@@ -4501,10 +4501,21 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetType": "athlete",
     "targetId": "ath-1",
     "targetName": "CARLOTA",
+    "planId": "plan_indiv_ath-1_carlota",
+    "assignedAt": "2026-10-25T00:00:00.000Z",
+    "assignedBy": "Sistema (Anamnese)",
+    "active": true,
+    "notes": "Cirurgias Bilaterais LCA + Meniscos: Reforço preventivo bilateral e estabilidade articular."
+  },
+  "athlete_ath-1_reforco_joelho_hiperextensao_carlota": {
+    "id": "athlete_ath-1_reforco_joelho_hiperextensao_carlota",
+    "targetType": "athlete",
+    "targetId": "ath-1",
+    "targetName": "CARLOTA",
     "planId": "reforco_joelho_hiperextensao_carlota",
     "assignedAt": "2026-11-25T18:40:00.000Z",
     "assignedBy": "Fisioterapia / Performance GVFC",
-    "active": true,
+    "active": false,
     "notes": "Protocolo Agudo 30 MIN: Reforço e descompressão pós-trauma em hiperextensão do joelho (edema articular + dor suportável). Proibida hiperextensão."
   },
   "athlete_ath-3_plan_indiv_ath-3_cartaxo": {
@@ -4975,10 +4986,10 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetId": "ath-28",
     "targetName": "IZZY",
     "planId": "ativacao_izzy_tendao_aquiles",
-    "assignedAt": "2026-11-11T00:00:00.000Z",
-    "assignedBy": "Sistema (Anamnese)",
+    "assignedAt": "2026-11-25T00:00:00.000Z",
+    "assignedBy": "Departamento de Performance (Fisioterapia)",
     "active": true,
-    "notes": "Plano de Ativação — IZZY (Tendão de Aquiles & Analgesia Isométrica)."
+    "notes": "Protocolo Clínico Deformidade de Haglund & Tendinopatia de Aquiles (30 Min • 4 Blocos • 8 Exercícios): Isometria Analgésica em Solo Plano (Cook & Rio), HSR Plano sem Défice de Dorsiflexão (<0° Proibido), Controlo de Pronação Subtalar / Tibial Posterior e Libertação Miofascial Exclusivamente Proximal (Proibido rolo no calcâneo)."
   },
   "athlete_ath-custom-1790842877064_ativacao_izzy_tendao_aquiles": {
     "id": "athlete_ath-custom-1790842877064_ativacao_izzy_tendao_aquiles",
@@ -4986,10 +4997,10 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetId": "ath-custom-1790842877064",
     "targetName": "IZZY",
     "planId": "ativacao_izzy_tendao_aquiles",
-    "assignedAt": "2026-11-11T00:00:00.000Z",
-    "assignedBy": "Sistema (Anamnese)",
+    "assignedAt": "2026-11-25T00:00:00.000Z",
+    "assignedBy": "Departamento de Performance (Fisioterapia)",
     "active": true,
-    "notes": "Plano de Ativação — IZZY (Tendão de Aquiles & Analgesia Isométrica)."
+    "notes": "Protocolo Clínico Deformidade de Haglund & Tendinopatia de Aquiles (30 Min • 4 Blocos • 8 Exercícios): Isometria Analgésica em Solo Plano (Cook & Rio), HSR Plano sem Défice de Dorsiflexão (<0° Proibido), Controlo de Pronação Subtalar / Tibial Posterior e Libertação Miofascial Exclusivamente Proximal (Proibido rolo no calcâneo)."
   },
   "athlete_ath-2_recuperacao_quadricep_casa_carol": {
     "id": "athlete_ath-2_recuperacao_quadricep_casa_carol",

@@ -364,9 +364,15 @@ export async function POST(request: Request) {
     if (isSupabaseConfigured && supabase) {
       // 1. Direct, guaranteed atomic save to __APP_CREDENTIALS__ in athletes table
       try {
+        // Strip bulky static plans to keep payload ultra-lean (<20KB) so Supabase upsert finishes in milliseconds
+        const dbPayload = { ...current };
+        if (dbPayload.mobilityPlans) {
+          delete dbPayload.mobilityPlans;
+        }
+
         const payload = {
           id: '__APP_CREDENTIALS__',
-          name: JSON.stringify(current),
+          name: JSON.stringify(dbPayload),
           created_at: new Date().toISOString(),
         };
         const { error: upsertErr } = await supabase.from('athletes').upsert(payload, { onConflict: 'id' });

@@ -3,7 +3,7 @@ import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
 export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v5';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v7';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v8';
 export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v3';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
@@ -340,10 +340,36 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
   }
 }
 
+/**
+ * Merges two assignment maps using timestamp (assignedAt) resolution.
+ * The more recently assigned or modified item ALWAYS wins.
+ */
+export function mergeAssignments(
+  older: Record<string, AthletePlanAssignment>,
+  newer: Record<string, AthletePlanAssignment>
+): Record<string, AthletePlanAssignment> {
+  const result: Record<string, AthletePlanAssignment> = { ...older };
+  for (const [key, item] of Object.entries(newer)) {
+    if (!item) continue;
+    const existing = result[key];
+    if (!existing) {
+      result[key] = item;
+      continue;
+    }
+    const existingTime = existing.assignedAt ? new Date(existing.assignedAt).getTime() : 0;
+    const incomingTime = item.assignedAt ? new Date(item.assignedAt).getTime() : 0;
+    if (incomingTime >= existingTime) {
+      result[key] = item;
+    }
+  }
+  return result;
+}
+
 export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAssignment> {
   if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
     let raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v7');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v6');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v5');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v4');
@@ -353,11 +379,8 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
     if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
-      const merged = { ...DEFAULT_PLAN_ASSIGNMENTS, ...parsed };
-      if (!merged['pos_GR_mobilidade_pre_treino_gr']) {
-        merged['pos_GR_mobilidade_pre_treino_gr'] = DEFAULT_PLAN_ASSIGNMENTS['pos_GR_mobilidade_pre_treino_gr'];
-      }
-      return merged;
+      // User modifications in localStorage take precedence over baseline defaults
+      return mergeAssignments(DEFAULT_PLAN_ASSIGNMENTS, parsed);
     }
     return { ...DEFAULT_PLAN_ASSIGNMENTS };
   } catch {
@@ -365,33 +388,38 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
   }
 }
 
-export function saveAthletePlanAssignments(assignments: Record<string, AthletePlanAssignment>): void {
-  if (typeof window === 'undefined') return;
+export async function saveAthletePlanAssignments(assignments: Record<string, AthletePlanAssignment>): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
   try {
+    // 1. Immediately persist synchronously to client localStorage across all version keys
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(assignments));
 
-    secureFetch('/api/credentials', {
+    window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+
+    // 2. Persist to cloud server & Supabase
+    const res = await secureFetch('/api/credentials', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ athletePlanAssignments: assignments }),
-    }).catch((err) => console.error('Erro ao sincronizar atribuições com nuvem:', err));
-
-    window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
-    window.dispatchEvent(new Event('femperf_credentials_updated'));
+    });
+    return res.ok;
   } catch (e) {
     console.error('Erro ao guardar atribuições de planos:', e);
+    return false;
   }
 }
 
 /**
  * Automatically and bidirectionally synchronizes the entire mobility & gym library
  * with the cloud (/api/credentials & Supabase), ensuring:
- * 1. All canonical 52+ plans from the codebase exist in both cloud and client.
+ * 1. All canonical 53+ plans from the codebase exist in both cloud and client.
  * 2. Coach customizations and assignments are permanently preserved.
  * 3. Fresh cloud plans and assignments are immediately written to all storage versions.
  * 4. Events are broadcast to all components and devices in real-time.
@@ -459,13 +487,11 @@ export async function syncMobilityLibraryWithCloud(force: boolean = false): Prom
 
     const mergedPlans = Array.from(planMap.values());
 
-    // 2. Merge Assignments: DEFAULT_PLAN_ASSIGNMENTS + cloudAssignments + local
+    // 2. Merge Assignments: DEFAULT_PLAN_ASSIGNMENTS -> cloudAssignments -> localAssignments
+    // Timestamp resolution guarantees that recent user actions on this device are NEVER overwritten by stale cloud data!
     const localAssignments = getStoredAthletePlanAssignments();
-    const mergedAssignments: Record<string, AthletePlanAssignment> = {
-      ...DEFAULT_PLAN_ASSIGNMENTS,
-      ...localAssignments,
-      ...cloudAssignments,
-    };
+    let mergedAssignments = mergeAssignments(DEFAULT_PLAN_ASSIGNMENTS, cloudAssignments);
+    mergedAssignments = mergeAssignments(mergedAssignments, localAssignments);
 
     // 3. Save to all client storage keys
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(mergedPlans));
@@ -475,25 +501,25 @@ export async function syncMobilityLibraryWithCloud(force: boolean = false): Prom
     localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(mergedPlans));
 
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(mergedAssignments));
 
-    // 4. If Cloud was lacking canonical plans or baseline assignments, push back to Cloud
+    // 4. If Cloud was lacking assignments or canonical plans, push back to Cloud
+    const assignmentsDifferent = JSON.stringify(cloudAssignments) !== JSON.stringify(mergedAssignments);
     const cloudMissingPlans = cloudPlans.length < mergedPlans.length;
-    const cloudMissingAssignments = Object.keys(cloudAssignments).length < Object.keys(mergedAssignments).length;
 
-    if (cloudMissingPlans || cloudMissingAssignments) {
+    if (assignmentsDifferent || cloudMissingPlans) {
       await secureFetch('/api/credentials', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          mobilityPlans: mergedPlans,
           athletePlanAssignments: mergedAssignments,
         }),
-      }).catch((e) => console.warn('Falha no auto-seed de planos para a nuvem:', e));
+      }).catch((e) => console.warn('Falha no auto-seed de atribuições para a nuvem:', e));
     }
 
     // 5. Broadcast update event so all UI components re-render immediately
@@ -542,6 +568,7 @@ export function unassignPlan(assignmentId: string): void {
   const current = { ...getStoredAthletePlanAssignments() };
   if (current[assignmentId]) {
     current[assignmentId].active = false;
+    current[assignmentId].assignedAt = new Date().toISOString();
   }
   saveAthletePlanAssignments(current);
 }
@@ -565,6 +592,26 @@ export function toggleAthletePlanAssignment(
   }
 
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
+  const nowIso = new Date().toISOString();
+
+  // If setting to inactive (removing), ensure ALL legacy/candidate keys for this athlete & plan are deactivated
+  if (!nextActive) {
+    const cleanUpper = (athleteName || '').trim().toUpperCase();
+    for (const [key, asgn] of Object.entries(current)) {
+      if (asgn && asgn.planId === planId && asgn.targetType === 'athlete') {
+        const matchesTarget = asgn.targetId === athleteId ||
+          (asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanUpper);
+        if (matchesTarget) {
+          current[key] = {
+            ...asgn,
+            active: false,
+            assignedAt: nowIso,
+            assignedBy: 'Treinador',
+          };
+        }
+      }
+    }
+  }
 
   current[id] = {
     id,
@@ -572,7 +619,7 @@ export function toggleAthletePlanAssignment(
     targetId: athleteId,
     targetName: athleteName,
     planId,
-    assignedAt: new Date().toISOString(),
+    assignedAt: nowIso,
     assignedBy: 'Treinador',
     active: nextActive,
   };
@@ -591,6 +638,7 @@ export function togglePositionPlanAssignment(
   const posKey = `pos_${position}_${planId}`;
   const isCurrentlyActive = Boolean(current[posKey]?.active);
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
+  const nowIso = new Date().toISOString();
 
   current[posKey] = {
     id: posKey,
@@ -598,7 +646,7 @@ export function togglePositionPlanAssignment(
     targetId: position,
     targetName: position === 'GR' ? 'Todas as Guarda-Redes (GR)' : 'Todas as Jogadoras de Campo',
     planId,
-    assignedAt: new Date().toISOString(),
+    assignedAt: nowIso,
     assignedBy: 'Treinador',
     active: nextActive,
   };
@@ -616,7 +664,7 @@ export function togglePositionPlanAssignment(
         targetId: ath.id,
         targetName: ath.name,
         planId,
-        assignedAt: new Date().toISOString(),
+        assignedAt: nowIso,
         assignedBy: 'Treinador',
         active: nextActive,
       };
@@ -636,14 +684,15 @@ export function toggleAllSquadPlanAssignment(
   const allKey = `all_all_${planId}`;
   const isCurrentlyActive = Boolean(current[allKey]?.active);
   const nextActive = forceState !== undefined ? forceState : !isCurrentlyActive;
+  const nowIso = new Date().toISOString();
 
   current[allKey] = {
     id: allKey,
     targetType: 'all',
     targetId: 'all',
-    targetName: 'Todo o Plantel',
+    targetName: 'Todo o Plantel (Campo + GR)',
     planId,
-    assignedAt: new Date().toISOString(),
+    assignedAt: nowIso,
     assignedBy: 'Treinador',
     active: nextActive,
   };
@@ -656,7 +705,7 @@ export function toggleAllSquadPlanAssignment(
       targetId: ath.id,
       targetName: ath.name,
       planId,
-      assignedAt: new Date().toISOString(),
+      assignedAt: nowIso,
       assignedBy: 'Treinador',
       active: nextActive,
     };
@@ -685,7 +734,7 @@ export function getCandidateAthleteIds(athlete: Athlete | null): string[] {
 
 /**
  * Returns all active plans assigned to an athlete (direct athlete match, position match, or 'all').
- * For Goalkeepers (GR), the baseline GK mobility plan is always included unless explicitly disabled.
+ * The coach's deliberate assignment or removal ALWAYS takes absolute priority.
  */
 export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   if (!athlete) return [];
@@ -703,42 +752,78 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
   const assignedPlans = allPlans.filter((plan) => {
     if (plan.id === 'mobility-gk-pre-training') return false;
 
-    // 1. Direct explicit athlete assignment across candidate IDs & targetName
-    let direct: AthletePlanAssignment | undefined;
+    // 1. Check for deliberate explicit REMOVAL (active === false):
+    // If the coach removed this plan for this athlete, it MUST NEVER BE RETURNED.
+    let explicitlyDisabled = false;
     for (const candId of candidateIds) {
       const match = assignments[`athlete_${candId}_${plan.id}`];
-      if (match !== undefined) {
-        direct = match;
-        if (match.active) break;
+      if (match !== undefined && match.active === false) {
+        explicitlyDisabled = true;
+        break;
       }
     }
 
-    if (!direct && cleanName) {
+    if (!explicitlyDisabled && cleanName) {
       for (const asgn of Object.values(assignments)) {
         if (
           asgn &&
           asgn.planId === plan.id &&
           asgn.targetType === 'athlete' &&
-          asgn.targetName &&
-          asgn.targetName.trim().toUpperCase() === cleanName
+          asgn.active === false
         ) {
-          direct = asgn;
-          if (asgn.active) break;
+          const matchId = candidateIds.includes(asgn.targetId);
+          const matchName = asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanName;
+          if (matchId || matchName) {
+            explicitlyDisabled = true;
+            break;
+          }
         }
       }
     }
 
-    if (direct !== undefined) {
-      if (direct.active && !seenIds.has(plan.id)) {
+    if (explicitlyDisabled) {
+      return false; // DELIBERATELY REMOVED BY COACH. Never show.
+    }
+
+    // 2. Check for deliberate explicit DIRECT ASSIGNMENT (active === true):
+    let directActive = false;
+    for (const candId of candidateIds) {
+      const match = assignments[`athlete_${candId}_${plan.id}`];
+      if (match !== undefined && match.active === true) {
+        directActive = true;
+        break;
+      }
+    }
+
+    if (!directActive && cleanName) {
+      for (const asgn of Object.values(assignments)) {
+        if (
+          asgn &&
+          asgn.planId === plan.id &&
+          asgn.targetType === 'athlete' &&
+          asgn.active === true
+        ) {
+          const matchId = candidateIds.includes(asgn.targetId);
+          const matchName = asgn.targetName && asgn.targetName.trim().toUpperCase() === cleanName;
+          if (matchId || matchName) {
+            directActive = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (directActive) {
+      if (!seenIds.has(plan.id)) {
         seenIds.add(plan.id);
         return true;
       }
-      return false; // Explicitly removed / unassigned by coach
+      return false;
     }
 
-    // 2. Position assignment
+    // 3. Position assignment (e.g. Campo or GR):
     const posAsgn = assignments[`pos_${position}_${plan.id}`];
-    if (posAsgn !== undefined && posAsgn.active) {
+    if (posAsgn !== undefined && posAsgn.active === true) {
       if (!seenIds.has(plan.id)) {
         seenIds.add(plan.id);
         return true;
@@ -746,32 +831,20 @@ export function getPlansForAthlete(athlete: Athlete | null): MobilityPlan[] {
       return false;
     }
 
-    // 3. All-squad assignment
+    // 4. All-squad assignment:
     const allAsgn = assignments[`all_all_${plan.id}`];
-    if (allAsgn !== undefined && allAsgn.active) {
+    if (allAsgn !== undefined && allAsgn.active === true) {
       if (!seenIds.has(plan.id)) {
         seenIds.add(plan.id);
         return true;
       }
       return false;
-    }
-
-    // 4. Dedicated individual plans: automatic fallback if not explicitly disabled
-    const isIzzyDedicatedPlan = isIzzy && (plan.id === 'plan_indiv_ath-28_izzy' || plan.id === 'ativacao_izzy_tendao_aquiles' || plan.id.includes('izzy'));
-    const isNamedDedicatedPlan = plan.id.startsWith('plan_indiv_') && candidateIds.some((cid) => plan.id.includes(cid));
-    const isTitleDedicatedPlan = cleanName.length > 2 && plan.titlePt.toUpperCase().includes(cleanName);
-
-    if (isIzzyDedicatedPlan || isNamedDedicatedPlan || isTitleDedicatedPlan) {
-      if (!seenIds.has(plan.id)) {
-        seenIds.add(plan.id);
-        return true;
-      }
     }
 
     return false;
   });
 
-  // Fallback for Goalkeepers: Always ensure the GK mobility plan is included if not explicitly disabled
+  // Fallback for Goalkeepers: Always ensure the GK mobility plan is included unless explicitly disabled
   if (isGk && !seenIds.has('mobilidade_pre_treino_gr')) {
     let directGkDisabled = false;
     for (const candId of candidateIds) {
