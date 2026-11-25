@@ -27973,7 +27973,13 @@
     "needsPhysio": true,
     "physioReason": "bolhas nos pés",
     "createdAt": "2026-09-12T09:26:46.010Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-12T09:26:46.010Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789205172561",
