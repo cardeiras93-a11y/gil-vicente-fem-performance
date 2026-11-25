@@ -3079,4 +3079,166 @@ export const ALL_NINE_PLANS: MobilityPlan[] = [
       },
     ]
   },
+  {
+    id: "reforco_ombro_estabilidade_nicole",
+    titlePt: "Plano de Refor\u00e7o de Ombro & Estabilidade Escapular \u2014 NICOLE (30 MIN)",
+    titleEn: "Shoulder Rehabilitation & Scapular Stability Plan \u2014 NICOLE (30 MIN)",
+    categoryPt: "Reabilita\u00e7\u00e3o & Fisioterapia \u2022 Ombro P\u00f3s-Les\u00e3o (Dor Ligeira)",
+    categoryEn: "Rehab & Physical Therapy \u2022 Post-Injury Shoulder Rehab (Mild Pain)",
+    group: "superiores",
+    groupBadgePt: "\ud83d\udcaa Lateral \u2022 Refor\u00e7o de Ombro & Estabilidade Escapular",
+    groupBadgeEn: "\ud83d\udcaa Full-Back \u2022 Shoulder Rehab & Scapular Stability",
+    seasonLinePt: "GIL VICENTE FUTEBOL CLUBE \u2022 \u00c9POCA 2026/2027 \u2022 DEPARTAMENTO DE PERFORMANCE & SA\u00daDE",
+    seasonLineEn: "GIL VICENTE FOOTBALL CLUB \u2022 2026/2027 SEASON \u2022 PERFORMANCE & HEALTH DEPARTMENT",
+    targetPosition: "all",
+    durationMinutes: 30,
+    durationTextPt: "30 MIN",
+    durationTextEn: "30 MIN",
+    warmupPt: "Desloca\u00e7\u00f5es suaves de ombros com banda el\u00e1stica longa (Shoulder Dislocates com pegada ampla sem dor) + Rota\u00e7\u00f5es escapulares ativas (Scapular CARs) 2x 10 repeti\u00e7\u00f5es lentas.",
+    warmupEn: "Gentle long-band shoulder pass-throughs (wide grip, pain-free range) + Active scapular CARs 2x 10 slow reps.",
+    finisherPt: "Crioterapia local com compressa fria (10-12 MIN) com bra\u00e7o apoiado em almofada a 30\u00b0 de abdu\u00e7\u00e3o + relaxamento cervical suave.",
+    finisherEn: "Local cold compression (10-12 MIN) with arm supported on pillow at 30\u00b0 abduction + gentle neck relaxation.",
+    blocks: [
+      {
+        id: "reforco_ombro_estabilidade_nicole_block_01",
+        number: "01",
+        titlePt: "Ativa\u00e7\u00e3o da Coifa dos Rotadores & Descompress\u00e3o Articular",
+        titleEn: "Rotator Cuff Activation & Subacromial Decompression",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "reforco_ombro_estabilidade_nicole_b01_ex1",
+            namePt: "1.1 Rota\u00e7\u00e3o Externa c/ Banda & Toalha Axilar (Cotovelo 90\u00b0)",
+            nameEn: "1.1 Banded External Rotation w/ Axillary Towel Roll",
+            seriesRepsPt: "3x 12-15 reps / lado",
+            seriesRepsEn: "3x 12-15 reps / side",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "De p\u00e9 com toalha enrolada entre o cotovelo e o tronco. Roda o antebra\u00e7o para fora contra a resist\u00eancia da banda sem afastar o cotovelo do corpo. Ativa\u00e7\u00e3o pura do infraespinhoso sem conflito subacromial.",
+            descriptionEn: "Standing with a rolled towel between elbow and ribs. Rotate forearm outward against band tension keeping elbow pinned. Selective infraspinatus recruitment preventing subacromial impingement.",
+            imageSrc: "/exercises/banded_shoulder_external_rotation_pro.svg"
+          },
+          {
+            id: "reforco_ombro_estabilidade_nicole_b01_ex2",
+            namePt: "1.2 Passagens Articulares Controladas c/ Banda Larga",
+            nameEn: "1.2 Controlled Band Shoulder Pass-Throughs",
+            seriesRepsPt: "3x 10 reps lentas",
+            seriesRepsEn: "3x 10 slow reps",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Pegada ampla na banda el\u00e1stica mantendo cotovelos esticados. Eleva os bra\u00e7os \u00e0 frente e passa acima da cabe\u00e7a em amplitude estritamente confort\u00e1vel e sem dor. Mobiliza a c\u00e1psula glenoumeral e abre a f\u00e1scia anterior.",
+            descriptionEn: "Wide grip on elastic band with straight arms. Raise arms forward and overhead within a strictly pain-free range. Gently mobilizes glenohumeral capsule and releases anterior chest wall.",
+            imageSrc: "/exercises/shoulder_dislocates_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_ombro_estabilidade_nicole_block_02",
+        number: "02",
+        titlePt: "Estabiliza\u00e7\u00e3o Escapulotor\u00e1cica & Serr\u00e1til Anterior",
+        titleEn: "Scapulothoracic Stability & Serratus Anterior",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "reforco_ombro_estabilidade_nicole_b02_ex1",
+            namePt: "2.1 Wall-Slide de W para Y com Mini-Banda nos Pulsos",
+            nameEn: "2.1 Wall-Slide from W to Y with Wrist Mini-Band",
+            seriesRepsPt: "3x 8-10 reps lentas",
+            seriesRepsEn: "3x 8-10 slow reps",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Antebra\u00e7os encostados \u00e0 parede com mini-banda el\u00e1stica. Desliza os bra\u00e7os para cima afastando em forma de Y enquanto empurras ativamente a parede. Ativa\u00e7\u00e3o potente do serr\u00e1til anterior para b\u00e1scula escapular segura.",
+            descriptionEn: "Forearms flush against wall with mini-band around wrists. Slide upward flaring into a Y shape while pushing through the wall. Strong serratus anterior recruitment for safe upward scapular rotation.",
+            imageSrc: "/exercises/wall_slide_w_to_y_miniband_pro.svg"
+          },
+          {
+            id: "reforco_ombro_estabilidade_nicole_b02_ex2",
+            namePt: "2.2 Toque no Ombro em Prancha com Joelhos / Inclinada",
+            nameEn: "2.2 Knee Plank / Incline Shoulder Tap w/ Mini-Band",
+            seriesRepsPt: "3x 8 reps / lado",
+            seriesRepsEn: "3x 8 reps / side",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Em prancha apoiada sobre os joelhos (ou banco inclinado para menor carga). Toca com a m\u00e3o no ombro oposto sem rodar a bacia nem perder estabilidade. For\u00e7a de co-contra\u00e7\u00e3o proprioceptiva da cabe\u00e7a do \u00famero.",
+            descriptionEn: "In kneeling plank (or incline bench to reduce load). Tap opposite shoulder without pelvic sway. Dynamic closed-chain co-contraction stabilizing the humeral head.",
+            imageSrc: "/exercises/plank_shoulder_tap_band_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_ombro_estabilidade_nicole_block_03",
+        number: "03",
+        titlePt: "Tra\u00e7\u00e3o Neutra & Cadeia Posterior Escapular",
+        titleEn: "Neutral Pull & Posterior Scapular Chain",
+        durationMinutes: 8,
+        durationTextPt: "8 MIN",
+        durationTextEn: "8 MIN",
+        exercises: [
+          {
+            id: "reforco_ombro_estabilidade_nicole_b03_ex1",
+            namePt: "3.1 Remada c/ Halteres Leves Apoiada no Banco 45\u00b0",
+            nameEn: "3.1 Chest-Supported Light Dumbbell Row at 45\u00b0",
+            seriesRepsPt: "3x 10-12 reps",
+            seriesRepsEn: "3x 10-12 reps",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "Peito totalmente apoiado no banco a 45\u00b0 com halteres leves e pega neutra. Puxa os cotovelos junto \u00e0s costelas, focando na aproxima\u00e7\u00e3o consciente das omoplatas (romboides e trap\u00e9zio m\u00e9dio) sem compensa\u00e7\u00e3o.",
+            descriptionEn: "Chest supported on 45\u00b0 bench holding light dumbbells with neutral grip. Row elbows along ribs, driving pure scapular retraction (rhomboids & mid-trap) without lumbar extension.",
+            imageSrc: "/exercises/chest_supported_dumbbell_row_pro.svg"
+          },
+          {
+            id: "reforco_ombro_estabilidade_nicole_b03_ex2",
+            namePt: "3.2 Face-Pull com Banda & Rota\u00e7\u00e3o Externa Final",
+            nameEn: "3.2 Band Face-Pull with Terminal External Rotation",
+            seriesRepsPt: "3x 12-15 reps",
+            seriesRepsEn: "3x 12-15 reps",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Banda ancorada ao n\u00edvel dos olhos. Puxa as m\u00e3os em dire\u00e7\u00e3o \u00e0 testa abrindo os cotovelos e rodando externamente as m\u00e3os no t\u00e9rmino. Corrige o desvio anterior do ombro e fortalece a cadeia posterior.",
+            descriptionEn: "Band anchored at eye level. Pull hands toward forehead with high elbows and finish with external rotation. Rebalances anterior shoulder tilt and builds rear shoulder endurance.",
+            imageSrc: "/exercises/band_face_pull_posture_pro.svg"
+          },
+        ]
+      },
+      {
+        id: "reforco_ombro_estabilidade_nicole_block_04",
+        number: "04",
+        titlePt: "Controlo no Plano Escapular & Estabilidade Core-Ombro",
+        titleEn: "Scaption Plane Control & Core-Shoulder Synergy",
+        durationMinutes: 7,
+        durationTextPt: "7 MIN",
+        durationTextEn: "7 MIN",
+        exercises: [
+          {
+            id: "reforco_ombro_estabilidade_nicole_b04_ex1",
+            namePt: "4.1 Eleva\u00e7\u00e3o no Plano Escapular (Scaption c/ Halteres 30\u00b0)",
+            nameEn: "4.1 Scaption Plane Elevation with Light Dumbbells (30\u00b0)",
+            seriesRepsPt: "3x 10-12 reps",
+            seriesRepsEn: "3x 10-12 reps",
+            restPt: "45s",
+            restEn: "45s",
+            descriptionPt: "De p\u00e9 com halteres muito leves. Eleva os bra\u00e7os a 30\u00b0 \u00e0 frente do plano do corpo (plano escapular natural) com polegares ligeiramente para cima at\u00e9 \u00e0 linha dos ombros. Ativa o supraespinhoso sem qualquer impacto acromial.",
+            descriptionEn: "Standing with light dumbbells. Elevate arms 30\u00b0 anterior to coronal plane with thumbs slightly angled upward to shoulder height. Activates supraspinatus without acromial friction.",
+            imageSrc: "/exercises/dumbbell_lateral_raise_pro.svg"
+          },
+          {
+            id: "reforco_ombro_estabilidade_nicole_b04_ex2",
+            namePt: "4.2 Pallof Press com Banda em Meio-Ajoelhado",
+            nameEn: "4.2 Half-Kneeling Band Pallof Press (Anti-Rotation)",
+            seriesRepsPt: "3x 8-10 reps / lado",
+            seriesRepsEn: "3x 8-10 reps / side",
+            restPt: "30s",
+            restEn: "30s",
+            descriptionPt: "Posi\u00e7\u00e3o de meio-ajoelhado perpendicular \u00e0 banda. Empurra as m\u00e3os \u00e0 frente do peito contra a rota\u00e7\u00e3o, segurando 2-3s. Integra a estabilidade escapular com o tronco, preparando o ombro para disputas f\u00edsicas de jogo.",
+            descriptionEn: "Half-kneeling perpendicular to band anchor. Press hands forward from sternum resisting torso rotation, holding 2-3s. Integrates scapular stability with core brace for match duels.",
+            imageSrc: "/exercises/pallof_press_band_rotation_pro.svg"
+          },
+        ]
+      },
+    ]
+  },
 ];

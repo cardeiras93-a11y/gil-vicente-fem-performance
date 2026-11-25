@@ -2,6 +2,7 @@ import { Athlete, AthletePosition, WellnessEntry, RPEEntry, HydrationEntry, Trai
 import { INITIAL_ATHLETES } from './data';
 import { secureFetch } from './authGuard';
 import { getAllMatches } from '@/data/matchRegistry';
+import { syncMobilityLibraryWithCloud } from './mobilityPlans';
 
 const ACTIVE_ATHLETE_KEY = 'femperf_active_athlete_id';
 const ATHLETE_PINS_KEY = 'femperf_athlete_pins';
@@ -532,17 +533,23 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       // 12. Mobility Plans: Cloud sync
       if (data.data.mobilityPlans && Array.isArray(data.data.mobilityPlans) && data.data.mobilityPlans.length > 0) {
-        localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(data.data.mobilityPlans));
-        localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(data.data.mobilityPlans));
+        localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(data.data.mobilityPlans));
         localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(data.data.mobilityPlans));
+        localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(data.data.mobilityPlans));
+        localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(data.data.mobilityPlans));
       }
 
       // 13. Athlete Plan Assignments: Cloud sync
       if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
-        localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(data.data.athletePlanAssignments));
-        localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(data.data.athletePlanAssignments));
+        localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(data.data.athletePlanAssignments));
       }
+
+      // Asynchronous continuous library sync
+      syncMobilityLibraryWithCloud().catch(() => {});
 
       window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
       window.dispatchEvent(new Event('femperf_credentials_updated'));
@@ -630,6 +637,9 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
 
     // 1b. Sync matches customizations (minutes, categories, custom matches across all devices)
     await syncMatchDataFromCloud();
+
+    // 1c. Sync entire mobility & gym library with cloud
+    await syncMobilityLibraryWithCloud();
 
     // 2. Sync training sessions & calendar schedule
     try {

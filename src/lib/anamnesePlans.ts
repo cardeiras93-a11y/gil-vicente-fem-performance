@@ -4644,11 +4644,11 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetType": "athlete",
     "targetId": "ath-15",
     "targetName": "NICOLE",
-    "planId": "plan_indiv_ath-15_nicole",
-    "assignedAt": "2026-10-25T00:00:00.000Z",
-    "assignedBy": "Sistema (Anamnese)",
+    "planId": "reforco_ombro_estabilidade_nicole",
+    "assignedAt": "2026-11-25T19:10:00.000Z",
+    "assignedBy": "Fisioterapia / Performance GVFC",
     "active": true,
-    "notes": "Prioridade Clínica: Estabilidade multiarticular joelho-tornozelo + Core Seg & Qua."
+    "notes": "Protocolo Clínico 30 MIN: Reforço da coifa dos rotadores e estabilidade escapulotorácica pós-lesão de ombro (dor ligeira residual). Sem impacto acromial."
   },
   "athlete_ath-16_plan_indiv_ath-16_ramos": {
     "id": "athlete_ath-16_plan_indiv_ath-16_ramos",

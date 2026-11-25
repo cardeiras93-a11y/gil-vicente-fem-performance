@@ -279,6 +279,7 @@ export interface MobilityPlan {
   finisherPt: string;
   finisherEn: string;
   blocks: MobilityBlock[];
+  htmlUrl?: string;
   updatedAt?: string;
 }
 

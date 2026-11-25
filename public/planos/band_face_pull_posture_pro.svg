@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <linearGradient id="gymFloor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8fafc" />
+      <stop offset="70%" stop-color="#e2e8f0" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+    <linearGradient id="kitGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fed7aa" />
+      <stop offset="100%" stop-color="#fba771" />
+    </linearGradient>
+    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.15" />
+    </filter>
+  </defs>
+
+  <!-- Ground plane -->
+  <rect width="320" height="180" fill="url(#gymFloor)" />
+  <ellipse cx="180" cy="168" rx="90" ry="8" fill="#94a3b8" opacity="0.4" filter="blur(2px)" />
+
+  <!-- Anchor post on left -->
+  <rect x="30" y="15" width="12" height="155" rx="3" fill="#334155" />
+  <rect x="28" y="58" width="16" height="8" rx="2" fill="#64748b" />
+
+  <!-- Dual Bands from anchor to hands -->
+  <path d="M 40 62 L 152 54" fill="none" stroke="#e11d48" stroke-width="3.5" stroke-linecap="round" />
+  <path d="M 40 62 L 152 70" fill="none" stroke="#e11d48" stroke-width="3.5" stroke-linecap="round" />
+
+  <!-- Athlete Figure (Standing, strong posture, pulling to face with high elbows) -->
+  <!-- Legs -->
+  <line x1="180" y1="115" x2="168" y2="164" stroke="#1e293b" stroke-width="12" stroke-linecap="round" />
+  <line x1="195" y1="115" x2="200" y2="164" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+  <!-- Shoes -->
+  <rect x="158" y="160" width="20" height="8" rx="4" fill="#e2e8f0" />
+  <rect x="192" y="160" width="20" height="8" rx="4" fill="#e2e8f0" />
+
+  <!-- Torso (athletic lean, GVFC kit) -->
+  <path d="M 175 62 L 202 62 L 196 116 L 175 116 Z" fill="url(#kitGrad)" filter="url(#dropShadow)" />
+
+  <!-- Scapular retraction target highlight on back -->
+  <ellipse cx="200" cy="74" rx="5" ry="12" fill="#38bdf8" opacity="0.7" />
+
+  <!-- Arms pulling back to eye/forehead level (W/High elbow shape) -->
+  <!-- Upper arms abducted ~80-90° pulled back -->
+  <path d="M 190 66 L 206 58 L 155 54" fill="none" stroke="url(#skinGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 188 72 L 204 74 L 155 70" fill="none" stroke="url(#skinGrad)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Hands gripping ends of band at eye level -->
+  <circle cx="154" cy="54" r="4.5" fill="#fba771" />
+  <circle cx="154" cy="70" r="4.5" fill="#fba771" />
+
+  <!-- Retraction Arrows -->
+  <path d="M 180 44 L 195 44" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" />
+  <polygon points="197,44 192,41 192,47" fill="#0284c7" />
+  <path d="M 180 84 L 195 84" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" />
+  <polygon points="197,84 192,81 192,87" fill="#0284c7" />
+
+  <!-- Neck & Head -->
+  <line x1="188" y1="62" x2="188" y2="52" stroke="url(#skinGrad)" stroke-width="7" stroke-linecap="round" />
+  <circle cx="188" cy="42" r="13" fill="url(#skinGrad)" filter="url(#dropShadow)" />
+  <circle cx="194" cy="37" r="8" fill="#475569" />
+
+  <!-- Badges / Indicators -->
+  <g transform="translate(10, 15)">
+    <rect width="115" height="22" rx="6" fill="#0284c7" fill-opacity="0.9" />
+    <text x="57" y="15" font-family="sans-serif" font-size="9" font-weight="800" fill="#ffffff" text-anchor="middle">FACE-PULL POSTURAL c/ BANDA</text>
+  </g>
+  <g transform="translate(210, 135)">
+    <rect width="100" height="28" rx="6" fill="#0f172a" fill-opacity="0.85" />
+    <text x="50" y="13" font-family="sans-serif" font-size="8" font-weight="700" fill="#38bdf8" text-anchor="middle">RETRAÇÃO ESCAPULAR</text>
+    <text x="50" y="23" font-family="sans-serif" font-size="7.5" font-weight="600" fill="#94a3b8" text-anchor="middle">Trapézio Médio & Romboides</text>
+  </g>
+</svg>

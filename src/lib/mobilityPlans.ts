@@ -3,7 +3,7 @@ import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
 export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v5';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v6';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v7';
 export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v3';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
@@ -228,26 +228,81 @@ export const DEFAULT_PLAN_ASSIGNMENTS: Record<string, AthletePlanAssignment> = {
   },
 };
 
+export const PLAN_HTML_MAP: Record<string, string> = {
+  // Planos de Ginásio & Mobilidade Geral
+  'competitivo_maquinas_pesos_livres': '/planos/plano_competitivo_maquinas_pesos_livres.html',
+  'competitivo_ginasio_potencia': '/planos/plano_competitivo_forca_ginasio.html',
+  'competitivo_ginasio_potencia_v2': '/planos/plano_competitivo_forca_ginasio_v2.html',
+  'competitivo_ginasio_potencia_v3': '/planos/plano_competitivo_forca_ginasio_v3.html',
+  'competitivo_ginasio_maquinas': '/planos/plano_competitivo_forca_ginasio_maquinas.html',
+  'membros_superiores_pre_competitivo': '/planos/plano_superiores_forca_pre_competitivo.html',
+  'forca_posterior_ginasio_controlo': '/planos/plano_forca_posterior_ginasio_sobrecarga.html',
+  'alongamentos_lombar_15min': '/planos/plano_alongamentos_lombar_15min.html',
+  'reforco_mobilidade_lombar_bandas': '/planos/plano_reforco_mobilidade_lombar_bandas.html',
+  'joelho_posterior_casa': '/planos/plano_reforco_joelho_cadeia_posterior_casa.html',
+  'tibiotarsica_banda_pt': '/planos/plano_tibiotarsica_banda_casa.html',
+  'patelar_gemeos_pt': '/planos/plano_patelar_gemeos_md1.html',
+  'adutores_quad_joelho_pt': '/planos/plano_adutores_joelho_md1.html',
+  'mobilidade_pre_treino_gr': '/planos/plano_mobilidade_pre_treino_gr.html',
+  'contusao_quadricep_estimulo_mi': '/planos/plano_contusao_quadricep_estimulo_mi.html',
+  'reforco_joelho_hiperextensao_carlota': '/planos/plano_reforco_joelho_hiperextensao_carlota.html',
+  'ativacao_maria_malta_bandas': '/planos/plano_ativacao_maria_malta_bandas.html',
+  'ativacao_izzy_tendao_aquiles': '/planos/plano_ativacao_izzy_tendao_aquiles.html',
+  'recuperacao_quadricep_casa_carol': '/planos/plano_recuperacao_quadricep_casa_carol.html',
+
+  // Planos Preventivos Anamnese (Dossiês dedicados ou seção no dossiê global)
+  'plan_indiv_ath-1_carlota': '/planos/plano_reforco_joelho_hiperextensao_carlota.html',
+  'plan_indiv_ath-10_magui': '/planos/plano_individual_magui.html',
+  'plan_indiv_ath-11_malta': '/planos/plano_ativacao_maria_malta_bandas.html',
+  'plan_indiv_ath-28_izzy': '/planos/plano_ativacao_izzy_tendao_aquiles.html',
+  'prev_joelho_lca_menisco': '/planos/plano_anamnese_preventivo_plantel.html#prev_joelho_lca_menisco',
+  'prev_tornozelo_sindesmose_peroneais': '/planos/plano_anamnese_preventivo_plantel.html#prev_tornozelo_sindesmose_peroneais',
+  'prev_isquios_quads_excentrico': '/planos/plano_anamnese_preventivo_plantel.html#prev_isquios_quads_excentrico',
+  'prev_rotuliano_patelar_bipartida': '/planos/plano_rotuliano_gemelos_md1.html',
+  'prev_adutores_virilha_copenhagen': '/planos/plano_adutores_joelho_md1.html',
+  'prev_ombro_cotovelo_cervical': '/planos/plano_anamnese_preventivo_plantel.html#prev_ombro_cotovelo_cervical',
+  'prev_core_anti_rotacao_extensao': '/planos/plano_reforco_mobilidade_lombar_bandas.html',
+};
+
+export function getPlanHtmlUrl(planId: string): string {
+  if (PLAN_HTML_MAP[planId]) return PLAN_HTML_MAP[planId];
+  if (planId.startsWith('plan_indiv_') || planId.startsWith('prev_')) {
+    return '/planos/plano_anamnese_preventivo_plantel.html';
+  }
+  return '/planos/biblioteca_planos_gil_vicente_fc.html';
+}
+
+function enrichPlanWithHtml(plan: MobilityPlan): MobilityPlan {
+  if (plan.htmlUrl) return plan;
+  return { ...plan, htmlUrl: getPlanHtmlUrl(plan.id) };
+}
+
 export function getStoredMobilityPlans(): MobilityPlan[] {
-  if (typeof window === 'undefined') return INITIAL_MOBILITY_PLANS;
+  if (typeof window === 'undefined') return INITIAL_MOBILITY_PLANS.map(enrichPlanWithHtml);
   try {
-    const raw = localStorage.getItem(MOBILITY_PLANS_KEY);
-    if (!raw) return INITIAL_MOBILITY_PLANS;
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      const planMap = new Map<string, MobilityPlan>();
-      INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, p));
-      parsed.forEach((p: MobilityPlan) => {
-        if (p && p.id && p.id !== 'mobility-gk-pre-training') {
-          const existing = planMap.get(p.id);
-          planMap.set(p.id, existing ? { ...p, ...existing } : p);
-        }
-      });
-      return Array.from(planMap.values());
+    const raw = localStorage.getItem(MOBILITY_PLANS_KEY) ||
+      localStorage.getItem('femperf_mobility_plans_v4') ||
+      localStorage.getItem('femperf_mobility_plans_v3') ||
+      localStorage.getItem('femperf_mobility_plans_v1');
+
+    const planMap = new Map<string, MobilityPlan>();
+    INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, enrichPlanWithHtml(p)));
+
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        parsed.forEach((p: MobilityPlan) => {
+          if (p && p.id && p.id !== 'mobility-gk-pre-training') {
+            const existing = planMap.get(p.id);
+            const merged = existing ? { ...p, ...existing } : p;
+            planMap.set(p.id, enrichPlanWithHtml(merged));
+          }
+        });
+      }
     }
-    return INITIAL_MOBILITY_PLANS;
+    return Array.from(planMap.values());
   } catch {
-    return INITIAL_MOBILITY_PLANS;
+    return INITIAL_MOBILITY_PLANS.map(enrichPlanWithHtml);
   }
 }
 
@@ -256,7 +311,7 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
   try {
     const current = getStoredMobilityPlans();
     const idx = current.findIndex((p) => p.id === plan.id);
-    const updatedPlan = { ...plan, updatedAt: new Date().toISOString() };
+    const updatedPlan = enrichPlanWithHtml({ ...plan, updatedAt: new Date().toISOString() });
 
     let updatedList: MobilityPlan[];
     if (idx !== -1) {
@@ -267,6 +322,8 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
     }
 
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(updatedList));
+    localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(updatedList));
+    localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(updatedList));
     localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(updatedList));
     localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(updatedList));
 
@@ -287,23 +344,16 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
   if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
     let raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
-    if (!raw) {
-      raw = localStorage.getItem('femperf_athlete_plan_assignments_v5');
-    }
-    if (!raw) {
-      raw = localStorage.getItem('femperf_athlete_plan_assignments_v4');
-    }
-    if (!raw) {
-      raw = localStorage.getItem('femperf_athlete_plan_assignments_v3');
-    }
-    if (!raw) {
-      raw = localStorage.getItem('femperf_athlete_plan_assignments_v1');
-    }
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v6');
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v5');
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v4');
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v3');
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v1');
+
     if (!raw) return { ...DEFAULT_PLAN_ASSIGNMENTS };
     const parsed = JSON.parse(raw);
     if (typeof parsed === 'object' && parsed !== null) {
       const merged = { ...DEFAULT_PLAN_ASSIGNMENTS, ...parsed };
-      // Always ensure the base GR position plan assignment exists unless explicitly set to false
       if (!merged['pos_GR_mobilidade_pre_treino_gr']) {
         merged['pos_GR_mobilidade_pre_treino_gr'] = DEFAULT_PLAN_ASSIGNMENTS['pos_GR_mobilidade_pre_treino_gr'];
       }
@@ -319,6 +369,9 @@ export function saveAthletePlanAssignments(assignments: Record<string, AthletePl
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(assignments));
 
@@ -332,6 +385,133 @@ export function saveAthletePlanAssignments(assignments: Record<string, AthletePl
     window.dispatchEvent(new Event('femperf_credentials_updated'));
   } catch (e) {
     console.error('Erro ao guardar atribuições de planos:', e);
+  }
+}
+
+/**
+ * Automatically and bidirectionally synchronizes the entire mobility & gym library
+ * with the cloud (/api/credentials & Supabase), ensuring:
+ * 1. All canonical 52+ plans from the codebase exist in both cloud and client.
+ * 2. Coach customizations and assignments are permanently preserved.
+ * 3. Fresh cloud plans and assignments are immediately written to all storage versions.
+ * 4. Events are broadcast to all components and devices in real-time.
+ */
+let isSyncingLibrary = false;
+let lastSyncTimestamp = 0;
+
+export async function syncMobilityLibraryWithCloud(force: boolean = false): Promise<{
+  success: boolean;
+  plansCount: number;
+  assignmentsCount: number;
+}> {
+  if (typeof window === 'undefined') {
+    return { success: false, plansCount: INITIAL_MOBILITY_PLANS.length, assignmentsCount: 0 };
+  }
+
+  // Throttle automatic background syncs to once every 10s unless forced
+  const now = Date.now();
+  if (!force && now - lastSyncTimestamp < 10000) {
+    const plans = getStoredMobilityPlans();
+    const asgns = getStoredAthletePlanAssignments();
+    return { success: true, plansCount: plans.length, assignmentsCount: Object.keys(asgns).length };
+  }
+
+  if (isSyncingLibrary) {
+    const plans = getStoredMobilityPlans();
+    const asgns = getStoredAthletePlanAssignments();
+    return { success: true, plansCount: plans.length, assignmentsCount: Object.keys(asgns).length };
+  }
+
+  isSyncingLibrary = true;
+  lastSyncTimestamp = now;
+
+  try {
+    const res = await secureFetch(`/api/credentials?sync_plans=true&t=${now}`, {
+      cache: 'no-store',
+    });
+    const json = await res.json();
+
+    if (!json.success || !json.data) {
+      isSyncingLibrary = false;
+      const plans = getStoredMobilityPlans();
+      const asgns = getStoredAthletePlanAssignments();
+      return { success: false, plansCount: plans.length, assignmentsCount: Object.keys(asgns).length };
+    }
+
+    const cloudPlans: MobilityPlan[] = Array.isArray(json.data.mobilityPlans) ? json.data.mobilityPlans : [];
+    const cloudAssignments: Record<string, AthletePlanAssignment> =
+      typeof json.data.athletePlanAssignments === 'object' && json.data.athletePlanAssignments !== null
+        ? json.data.athletePlanAssignments
+        : {};
+
+    // 1. Merge Plans: All INITIAL_MOBILITY_PLANS are seeded, enriched with HTML URL,
+    // combined with any custom or cloud plans
+    const planMap = new Map<string, MobilityPlan>();
+    INITIAL_MOBILITY_PLANS.forEach((p) => planMap.set(p.id, enrichPlanWithHtml(p)));
+
+    cloudPlans.forEach((cp) => {
+      if (cp && cp.id && cp.id !== 'mobility-gk-pre-training') {
+        const local = planMap.get(cp.id);
+        const merged = local ? { ...cp, ...local } : cp;
+        planMap.set(cp.id, enrichPlanWithHtml(merged));
+      }
+    });
+
+    const mergedPlans = Array.from(planMap.values());
+
+    // 2. Merge Assignments: DEFAULT_PLAN_ASSIGNMENTS + cloudAssignments + local
+    const localAssignments = getStoredAthletePlanAssignments();
+    const mergedAssignments: Record<string, AthletePlanAssignment> = {
+      ...DEFAULT_PLAN_ASSIGNMENTS,
+      ...localAssignments,
+      ...cloudAssignments,
+    };
+
+    // 3. Save to all client storage keys
+    localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(mergedPlans));
+    localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(mergedPlans));
+    localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(mergedPlans));
+    localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(mergedPlans));
+    localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(mergedPlans));
+
+    localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v4', JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v3', JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v1', JSON.stringify(mergedAssignments));
+
+    // 4. If Cloud was lacking canonical plans or baseline assignments, push back to Cloud
+    const cloudMissingPlans = cloudPlans.length < mergedPlans.length;
+    const cloudMissingAssignments = Object.keys(cloudAssignments).length < Object.keys(mergedAssignments).length;
+
+    if (cloudMissingPlans || cloudMissingAssignments) {
+      await secureFetch('/api/credentials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mobilityPlans: mergedPlans,
+          athletePlanAssignments: mergedAssignments,
+        }),
+      }).catch((e) => console.warn('Falha no auto-seed de planos para a nuvem:', e));
+    }
+
+    // 5. Broadcast update event so all UI components re-render immediately
+    window.dispatchEvent(new Event('femperf_mobility_plans_updated'));
+    window.dispatchEvent(new Event('femperf_credentials_updated'));
+
+    isSyncingLibrary = false;
+    return {
+      success: true,
+      plansCount: mergedPlans.length,
+      assignmentsCount: Object.keys(mergedAssignments).length,
+    };
+  } catch (err) {
+    console.warn('Erro ao sincronizar biblioteca de planos com a nuvem:', err);
+    isSyncingLibrary = false;
+    const plans = getStoredMobilityPlans();
+    const asgns = getStoredAthletePlanAssignments();
+    return { success: false, plansCount: plans.length, assignmentsCount: Object.keys(asgns).length };
   }
 }
 
