@@ -1,5 +1,35 @@
 [
   {
+    "id": "wel-1795592921746",
+    "athleteId": "ath-2",
+    "athleteName": "CAROL",
+    "date": "2026-11-25",
+    "menstrualCycle": "1ª Semana após a menstruação",
+    "sleepQuality": 2,
+    "sleepDuration": 3,
+    "mood": 1,
+    "stress": 1,
+    "fatigue": 3,
+    "soreness": 4,
+    "heavyLegs": 4,
+    "wellnessTotal": 18,
+    "muscleFatigue": {
+      "Pé Direito": 3,
+      "Quadríceps Direito": 2,
+      "Antebraço Direito": 2
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-25T07:48:41.746Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-25T07:48:41.746Z"
+  },
+  {
     "id": "wel-1795592841758",
     "athleteId": "ath-5",
     "athleteName": "FAITH",
