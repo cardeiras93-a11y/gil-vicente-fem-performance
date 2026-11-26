@@ -4504,7 +4504,7 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "planId": "plan_indiv_ath-1_carlota",
     "assignedAt": "2026-10-25T00:00:00.000Z",
     "assignedBy": "Sistema (Anamnese)",
-    "active": true,
+    "active": false,
     "notes": "Cirurgias Bilaterais LCA + Meniscos: Reforço preventivo bilateral e estabilidade articular."
   },
   "athlete_ath-1_reforco_joelho_hiperextensao_carlota": {
@@ -4513,9 +4513,9 @@ export const DEFAULT_ANAMNESE_ASSIGNMENTS: Record<string, AthletePlanAssignment>
     "targetId": "ath-1",
     "targetName": "CARLOTA",
     "planId": "reforco_joelho_hiperextensao_carlota",
-    "assignedAt": "2026-11-25T18:40:00.000Z",
+    "assignedAt": "2026-11-26T09:10:00.000Z",
     "assignedBy": "Fisioterapia / Performance GVFC",
-    "active": false,
+    "active": true,
     "notes": "Protocolo Agudo 30 MIN: Reforço e descompressão pós-trauma em hiperextensão do joelho (edema articular + dor suportável). Proibida hiperextensão."
   },
   "athlete_ath-3_plan_indiv_ath-3_cartaxo": {

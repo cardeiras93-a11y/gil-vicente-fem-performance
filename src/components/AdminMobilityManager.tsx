@@ -234,10 +234,18 @@ export const AdminMobilityManager: React.FC = () => {
   const availableLibraryPlans = useMemo(() => {
     const assignedIds = new Set(assignedPlansForSelectedAthlete.map((p) => p.id));
 
-    return plans.filter((p) => {
       let matchesCat = true;
-      if (assignGroupFilter === 'anamnese') matchesCat = p.id.startsWith('prev_') || p.id.startsWith('plan_indiv_');
-      else if (assignGroupFilter === 'ginasio') matchesCat = !p.id.startsWith('prev_') && !p.id.startsWith('plan_indiv_');
+      const isClinicalOrIndiv = (id: string) =>
+        id.startsWith('prev_') ||
+        id.startsWith('plan_indiv_') ||
+        id.startsWith('reforco_') ||
+        id.startsWith('tratamento_') ||
+        id.startsWith('ativacao_') ||
+        id.startsWith('recuperacao_') ||
+        id.startsWith('contusao_');
+
+      if (assignGroupFilter === 'anamnese') matchesCat = isClinicalOrIndiv(p.id);
+      else if (assignGroupFilter === 'ginasio') matchesCat = !isClinicalOrIndiv(p.id);
       else if (assignGroupFilter === 'rolo') matchesCat = p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo');
 
       const matchesSearch = !assignSearchQuery.trim() ||
@@ -252,9 +260,18 @@ export const AdminMobilityManager: React.FC = () => {
   // --- Plan-centric helpers ---
   const handleGroupFilterChange = (newGroup: 'all' | 'anamnese' | 'ginasio' | 'rolo' | 'superiores' | 'inferiores') => {
     setGroupFilter(newGroup);
+    const isClinicalOrIndiv = (id: string) =>
+      id.startsWith('prev_') ||
+      id.startsWith('plan_indiv_') ||
+      id.startsWith('reforco_') ||
+      id.startsWith('tratamento_') ||
+      id.startsWith('ativacao_') ||
+      id.startsWith('recuperacao_') ||
+      id.startsWith('contusao_');
+
     let subset: MobilityPlan[] = plans;
-    if (newGroup === 'anamnese') subset = plans.filter((p) => p.id.startsWith('prev_'));
-    else if (newGroup === 'ginasio') subset = plans.filter((p) => !p.id.startsWith('prev_'));
+    if (newGroup === 'anamnese') subset = plans.filter((p) => isClinicalOrIndiv(p.id));
+    else if (newGroup === 'ginasio') subset = plans.filter((p) => !isClinicalOrIndiv(p.id));
     else if (newGroup === 'rolo') subset = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
     else if (newGroup !== 'all') subset = plans.filter((p) => p.group === newGroup);
 
@@ -264,9 +281,18 @@ export const AdminMobilityManager: React.FC = () => {
   };
 
   const filteredPlans = useMemo(() => {
+    const isClinicalOrIndiv = (id: string) =>
+      id.startsWith('prev_') ||
+      id.startsWith('plan_indiv_') ||
+      id.startsWith('reforco_') ||
+      id.startsWith('tratamento_') ||
+      id.startsWith('ativacao_') ||
+      id.startsWith('recuperacao_') ||
+      id.startsWith('contusao_');
+
     if (groupFilter === 'all') return plans;
-    if (groupFilter === 'anamnese') return plans.filter((p) => p.id.startsWith('prev_') || p.id.startsWith('plan_indiv_'));
-    if (groupFilter === 'ginasio') return plans.filter((p) => !p.id.startsWith('prev_') && !p.id.startsWith('plan_indiv_'));
+    if (groupFilter === 'anamnese') return plans.filter((p) => isClinicalOrIndiv(p.id));
+    if (groupFilter === 'ginasio') return plans.filter((p) => !isClinicalOrIndiv(p.id));
     if (groupFilter === 'rolo') return plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
     return plans.filter((p) => p.group === groupFilter);
   }, [plans, groupFilter]);
@@ -294,6 +320,18 @@ export const AdminMobilityManager: React.FC = () => {
     }
 
     if (isIzzy && (activePlan.id === 'plan_indiv_ath-28_izzy' || activePlan.id === 'ativacao_izzy_tendao_aquiles')) {
+      return true;
+    }
+    if ((ath.id === 'ath-1' || cleanName.includes('CARLOTA')) && activePlan.id === 'reforco_joelho_hiperextensao_carlota') {
+      return true;
+    }
+    if ((ath.id === 'ath-21' || cleanName.includes('SERENA')) && activePlan.id === 'tratamento_tendinopatia_glutea_serena') {
+      return true;
+    }
+    if ((ath.id === 'ath-15' || cleanName.includes('NICOLE')) && activePlan.id === 'reforco_ombro_estabilidade_nicole') {
+      return true;
+    }
+    if ((ath.id === 'ath-2' || cleanName.includes('CAROL')) && activePlan.id === 'recuperacao_quadricep_casa_carol') {
       return true;
     }
     if (activePlan.id.startsWith('plan_indiv_') && activePlan.id.includes(ath.id)) {

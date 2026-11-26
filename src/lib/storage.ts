@@ -533,6 +533,7 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       // 12. Mobility Plans: Cloud sync
       if (data.data.mobilityPlans && Array.isArray(data.data.mobilityPlans) && data.data.mobilityPlans.length > 0) {
+        localStorage.setItem('femperf_mobility_plans_v6', JSON.stringify(data.data.mobilityPlans));
         localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(data.data.mobilityPlans));
         localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(data.data.mobilityPlans));
         localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(data.data.mobilityPlans));
@@ -541,6 +542,7 @@ export async function syncCredentialsFromCloud(): Promise<boolean> {
 
       // 13. Athlete Plan Assignments: Cloud sync
       if (data.data.athletePlanAssignments && typeof data.data.athletePlanAssignments === 'object') {
+        localStorage.setItem('femperf_athlete_plan_assignments_v9', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v8', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(data.data.athletePlanAssignments));
         localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(data.data.athletePlanAssignments));

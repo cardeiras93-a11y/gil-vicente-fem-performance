@@ -2,8 +2,8 @@ import { MobilityPlan, AthletePlanAssignment, Athlete } from './types';
 import { secureFetch } from './authGuard';
 import { isGoalkeeper } from './data';
 
-export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v5';
-export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v8';
+export const MOBILITY_PLANS_KEY = 'femperf_mobility_plans_v6';
+export const ATHLETE_PLAN_ASSIGNMENTS_KEY = 'femperf_athlete_plan_assignments_v9';
 export const MOBILITY_DAILY_COMPLETIONS_KEY = 'femperf_mobility_daily_completions_v3';
 
 export const DEFAULT_GK_MOBILITY_PLAN: MobilityPlan = {
@@ -247,15 +247,20 @@ export const PLAN_HTML_MAP: Record<string, string> = {
   'contusao_quadricep_estimulo_mi': '/planos/plano_contusao_quadricep_estimulo_mi.html',
   'reforco_joelho_hiperextensao_carlota': '/planos/plano_reforco_joelho_hiperextensao_carlota.html',
   'ativacao_maria_malta_bandas': '/planos/plano_ativacao_maria_malta_bandas.html',
-  'ativacao_izzy_tendao_aquiles': '/planos/plano_ativacao_izzy_tendao_aquiles.html',
+  'ativacao_izzy_tendao_aquiles': '/planos/plano_tratamento_aquiles_haglund_izzy.html',
+  'plano_tratamento_aquiles_haglund_izzy': '/planos/plano_tratamento_aquiles_haglund_izzy.html',
   'recuperacao_quadricep_casa_carol': '/planos/plano_recuperacao_quadricep_casa_carol.html',
-  'reforco_ombro_estabilidade_nicole': '/planos/plano_superiores_forca_pre_competitivo.html',
+  'reforco_ombro_estabilidade_nicole': '/planos/plano_reforco_ombro_nicole.html',
+  'tratamento_tendinopatia_glutea_serena': '/planos/plano_tratamento_tendinopatia_glutea_serena.html',
+  'reforco_gluteo_serena': '/planos/plano_tratamento_tendinopatia_glutea_serena.html',
 
   // Planos Preventivos Anamnese (Dossiês dedicados ou seção no dossiê global)
   'plan_indiv_ath-1_carlota': '/planos/plano_reforco_joelho_hiperextensao_carlota.html',
   'plan_indiv_ath-10_magui': '/planos/plano_individual_magui.html',
   'plan_indiv_ath-11_malta': '/planos/plano_ativacao_maria_malta_bandas.html',
-  'plan_indiv_ath-28_izzy': '/planos/plano_ativacao_izzy_tendao_aquiles.html',
+  'plan_indiv_ath-15_nicole': '/planos/plano_reforco_ombro_nicole.html',
+  'plan_indiv_ath-21_serena': '/planos/plano_tratamento_tendinopatia_glutea_serena.html',
+  'plan_indiv_ath-28_izzy': '/planos/plano_tratamento_aquiles_haglund_izzy.html',
   'prev_joelho_lca_menisco': '/planos/plano_anamnese_preventivo_plantel.html#prev_joelho_lca_menisco',
   'prev_tornozelo_sindesmose_peroneais': '/planos/plano_anamnese_preventivo_plantel.html#prev_tornozelo_sindesmose_peroneais',
   'prev_isquios_quads_excentrico': '/planos/plano_anamnese_preventivo_plantel.html#prev_isquios_quads_excentrico',
@@ -282,6 +287,7 @@ export function getStoredMobilityPlans(): MobilityPlan[] {
   if (typeof window === 'undefined') return INITIAL_MOBILITY_PLANS.map(enrichPlanWithHtml);
   try {
     const raw = localStorage.getItem(MOBILITY_PLANS_KEY) ||
+      localStorage.getItem('femperf_mobility_plans_v5') ||
       localStorage.getItem('femperf_mobility_plans_v4') ||
       localStorage.getItem('femperf_mobility_plans_v3') ||
       localStorage.getItem('femperf_mobility_plans_v1');
@@ -323,6 +329,7 @@ export function saveMobilityPlan(plan: MobilityPlan): void {
     }
 
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(updatedList));
+    localStorage.setItem('femperf_mobility_plans_v6', JSON.stringify(updatedList));
     localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(updatedList));
     localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(updatedList));
     localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(updatedList));
@@ -370,6 +377,7 @@ export function getStoredAthletePlanAssignments(): Record<string, AthletePlanAss
   if (typeof window === 'undefined') return { ...DEFAULT_PLAN_ASSIGNMENTS };
   try {
     let raw = localStorage.getItem(ATHLETE_PLAN_ASSIGNMENTS_KEY);
+    if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v8');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v7');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v6');
     if (!raw) raw = localStorage.getItem('femperf_athlete_plan_assignments_v5');
@@ -394,6 +402,8 @@ export async function saveAthletePlanAssignments(assignments: Record<string, Ath
   try {
     // 1. Immediately persist synchronously to client localStorage across all version keys
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v9', JSON.stringify(assignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v8', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(assignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(assignments));
@@ -496,12 +506,15 @@ export async function syncMobilityLibraryWithCloud(force: boolean = false): Prom
 
     // 3. Save to all client storage keys
     localStorage.setItem(MOBILITY_PLANS_KEY, JSON.stringify(mergedPlans));
+    localStorage.setItem('femperf_mobility_plans_v6', JSON.stringify(mergedPlans));
     localStorage.setItem('femperf_mobility_plans_v5', JSON.stringify(mergedPlans));
     localStorage.setItem('femperf_mobility_plans_v4', JSON.stringify(mergedPlans));
     localStorage.setItem('femperf_mobility_plans_v3', JSON.stringify(mergedPlans));
     localStorage.setItem('femperf_mobility_plans_v1', JSON.stringify(mergedPlans));
 
     localStorage.setItem(ATHLETE_PLAN_ASSIGNMENTS_KEY, JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v9', JSON.stringify(mergedAssignments));
+    localStorage.setItem('femperf_athlete_plan_assignments_v8', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v7', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v6', JSON.stringify(mergedAssignments));
     localStorage.setItem('femperf_athlete_plan_assignments_v5', JSON.stringify(mergedAssignments));
@@ -835,15 +848,20 @@ export function getPlansForAthlete(
   }
 
   // Prioritize dedicated individual plans so they always appear first and default selected!
-  assignedPlans.sort((a, b) => {
-    const aIsIzzy = isIzzy && (a.id === 'plan_indiv_ath-28_izzy' || a.id === 'ativacao_izzy_tendao_aquiles' || a.id.includes('izzy'));
-    const bIsIzzy = isIzzy && (b.id === 'plan_indiv_ath-28_izzy' || b.id === 'ativacao_izzy_tendao_aquiles' || b.id.includes('izzy'));
-    if (aIsIzzy && !bIsIzzy) return -1;
-    if (!aIsIzzy && bIsIzzy) return 1;
+  const matchesAthleteName = (planId: string) =>
+    Boolean(cleanName) && (
+      (cleanName.includes('CARLOTA') && planId.includes('carlota')) ||
+      (cleanName.includes('SERENA') && planId.includes('serena')) ||
+      (cleanName.includes('NICOLE') && planId.includes('nicole')) ||
+      (cleanName.includes('CAROL') && planId.includes('carol')) ||
+      (cleanName.includes('IZZY') && planId.includes('izzy')) ||
+      (cleanName.includes('MALTA') && planId.includes('malta'))
+    );
 
-    const aIsIndiv = a.id.startsWith('plan_indiv_') || candidateIds.some((cid) => a.id.includes(cid)) ? 1 : 0;
-    const bIsIndiv = b.id.startsWith('plan_indiv_') || candidateIds.some((cid) => b.id.includes(cid)) ? 1 : 0;
-    return bIsIndiv - aIsIndiv;
+  assignedPlans.sort((a, b) => {
+    const aIsDirect = matchesAthleteName(a.id) || a.id.startsWith('plan_indiv_') || candidateIds.some((cid) => a.id.includes(cid)) ? 1 : 0;
+    const bIsDirect = matchesAthleteName(b.id) || b.id.startsWith('plan_indiv_') || candidateIds.some((cid) => b.id.includes(cid)) ? 1 : 0;
+    return bIsDirect - aIsDirect;
   });
 
   return assignedPlans;
