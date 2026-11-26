@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-11-2026-11-26-field",
+    "athleteId": "ath-11",
+    "athleteName": "MALTA",
+    "date": "2026-11-26",
+    "sessionType": "field",
+    "physicalDemand": 6,
+    "postFatigue": 4,
+    "sessionDurationMin": 120,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-26T12:34:19.040Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-26T12:34:19.040Z"
+  },
+  {
     "id": "rpe-ath-3-2026-11-26-field",
     "athleteId": "ath-3",
     "athleteName": "CARTAXO",
