@@ -2167,7 +2167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-medium">
                           {wellnessList
-                            .filter((w) => w.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
+                            .filter((w) => (w?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase()))
                             .map((w) => {
                               const score = getWellnessTotalScore(w);
                               const subTime = formatSubmissionTime(w.submittedAt || w.createdAt);
@@ -2482,7 +2482,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-medium">
                           {activeRpeList
-                            .filter((r) => r.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
+                            .filter((r) => (r?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase()))
                             .map((r) => {
                               const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
                               const borgLabel = t.rpe.borgDescriptors[r.physicalDemand as keyof typeof t.rpe.borgDescriptors] || borgObj?.label;
@@ -2714,7 +2714,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-medium">
                           {hydrationList
-                            .filter((h) => h.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
+                            .filter((h) => (h?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase()))
                             .map((h) => {
                               return (
                                 <tr key={h.id} className="hover:bg-slate-800/40">
@@ -4465,7 +4465,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
                       <div className="max-h-48 overflow-y-auto space-y-1.5 pr-1 divide-y divide-slate-800/40">
                         {athletesList
-                          .filter((a) => !authSearchQuery || a.name.toLowerCase().includes(authSearchQuery.toLowerCase()))
+                          .filter((a) => !authSearchQuery || (a?.name || '').toLowerCase().includes((authSearchQuery || '').toLowerCase()))
                           .map((athlete) => {
                             const isAuthToday = isAthleteAuthorizedForLateSubmission(athlete.id, getTodayLocalDateStr());
                             const isAuthPermanent = isAthleteAuthorizedForLateSubmission(athlete.id);

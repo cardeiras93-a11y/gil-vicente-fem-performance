@@ -32,8 +32,9 @@ export function downloadExcelCSV(filename: string, headers: string[], rows: (str
 
 // 1. Export Wellness Entries
 export function exportWellnessToExcel(entries: WellnessEntry[], athleteFilter?: string, filenamePrefix: string = 'Wellness_PreTreino'): void {
+  const filterLower = (athleteFilter || '').toLowerCase();
   const filtered = athleteFilter && athleteFilter !== 'ALL'
-    ? entries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? entries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : entries;
 
   const headers = [
@@ -90,8 +91,9 @@ export function exportWellnessToExcel(entries: WellnessEntry[], athleteFilter?: 
 
 // 2. Export RPE Entries
 export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, filenamePrefix: string = 'PSE_PosTreino'): void {
+  const filterLower = (athleteFilter || '').toLowerCase();
   const filtered = athleteFilter && athleteFilter !== 'ALL'
-    ? entries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? entries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : entries;
 
   const headers = [
@@ -137,8 +139,9 @@ export function exportRPEToExcel(entries: RPEEntry[], athleteFilter?: string, fi
 
 // 3. Export Hydration Entries
 export function exportHydrationToExcel(entries: HydrationEntry[], athleteFilter?: string, filenamePrefix: string = 'Pesagem_Hidratacao'): void {
+  const filterLower = (athleteFilter || '').toLowerCase();
   const filtered = athleteFilter && athleteFilter !== 'ALL'
-    ? entries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? entries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : entries;
 
   const headers = [
@@ -205,8 +208,9 @@ export function exportAllDataToExcel(
   const rows: (string | number)[][] = [];
 
   // Add Wellness
+  const filterLower = (athleteFilter || '').toLowerCase();
   const filteredW = athleteFilter && athleteFilter !== 'ALL'
-    ? wellnessEntries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? wellnessEntries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : wellnessEntries;
 
   filteredW.forEach((e) => {
@@ -226,7 +230,7 @@ export function exportAllDataToExcel(
 
   // Add RPE
   const filteredR = athleteFilter && athleteFilter !== 'ALL'
-    ? rpeEntries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? rpeEntries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : rpeEntries;
 
   filteredR.forEach((e) => {
@@ -247,7 +251,7 @@ export function exportAllDataToExcel(
 
   // Add Hydration
   const filteredH = athleteFilter && athleteFilter !== 'ALL'
-    ? hydrationEntries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? hydrationEntries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : hydrationEntries;
 
   filteredH.forEach((e) => {
@@ -269,8 +273,9 @@ export function exportAllDataToExcel(
 
 // 5. Export Weight Control Entries (PESO)
 export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: string, filenamePrefix: string = 'Controlo_Ponderal_PESO'): void {
+  const filterLower = (athleteFilter || '').toLowerCase();
   const filtered = athleteFilter && athleteFilter !== 'ALL'
-    ? entries.filter((e) => e.athleteName.toLowerCase() === athleteFilter.toLowerCase() || e.athleteId === athleteFilter)
+    ? entries.filter((e) => (e?.athleteName || '').toLowerCase() === filterLower || e?.athleteId === athleteFilter)
     : entries;
 
   const headers = [
@@ -289,8 +294,9 @@ export function exportWeightToExcel(entries: HydrationEntry[], athleteFilter?: s
 
   const rows = filtered.map((e) => {
     const monthPrefix = e.date.substring(0, 7);
+    const eNameLower = (e?.athleteName || '').toLowerCase();
     const monthEntries = entries
-      .filter((h) => h.athleteName.toLowerCase() === e.athleteName.toLowerCase() && h.date.startsWith(monthPrefix))
+      .filter((h) => (h?.athleteName || '').toLowerCase() === eNameLower && h.date.startsWith(monthPrefix))
       .sort((a, b) => a.date.localeCompare(b.date));
 
     // Filtrar especificamente por pesagens pré-treino para garantir comparação 100% fidedigna

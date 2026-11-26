@@ -125,7 +125,7 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
 
       // Physio flag today
       const todayEntryW = wellnessList.find(
-        (w) => w.athleteName.toLowerCase() === ath.name.toLowerCase() && w.date === selectedDate
+        (w) => (w?.athleteName || '').toLowerCase() === (ath?.name || '').toLowerCase() && w.date === selectedDate
       );
       const needsPhysioToday = Boolean(todayEntryW?.needsPhysio);
 
@@ -178,7 +178,7 @@ export const CollectiveSquadView: React.FC<CollectiveSquadViewProps> = ({
   const filteredSquad = useMemo(() => {
     return squadMetrics
       .filter((item) => {
-        const matchesName = item.athlete.name.toLowerCase().includes(searchFilter.toLowerCase());
+        const matchesName = (item?.athlete?.name || '').toLowerCase().includes((searchFilter || '').toLowerCase());
         if (!matchesName) return false;
 
         if (riskFilter === 'DANGER') return item.riskCategory === 'DANGER';

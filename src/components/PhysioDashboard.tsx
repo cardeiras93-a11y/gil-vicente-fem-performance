@@ -605,7 +605,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
   const filteredHydration = hydrationList.filter(
     (h) =>
       h.date === selectedDate &&
-      h.athleteName.toLowerCase().includes(searchFilter.toLowerCase())
+      (h?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase())
   );
 
   return (
@@ -1027,7 +1027,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
                     </thead>
                     <tbody className="divide-y divide-slate-800/60 font-medium">
                       {todaysRpe
-                        .filter((r) => r.athleteName.toLowerCase().includes(searchFilter.toLowerCase()))
+                        .filter((r) => (r?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase()))
                         .map((r) => {
                           const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
                           const borgLabel =
@@ -1404,7 +1404,7 @@ export const PhysioDashboard: React.FC<PhysioDashboardProps> = ({ isOpen, onClos
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-48 overflow-y-auto p-1 scrollbar-thin">
                   {athletes.filter((ath) =>
-                    ath.name.toLowerCase().includes(weighingSearchFilter.toLowerCase())
+                    (ath?.name || '').toLowerCase().includes((weighingSearchFilter || '').toLowerCase())
                   ).map((ath) => {
                     const existing = hydrationList.find((h) => h.athleteId === ath.id && h.date === selectedDate);
                     const isSelected = selectedAthleteIdForWeighing === ath.id;

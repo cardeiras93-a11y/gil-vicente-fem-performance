@@ -220,7 +220,7 @@ export const AdminMobilityManager: React.FC = () => {
   // Filter athletes for the selector bar
   const filteredAthletesList = useMemo(() => {
     return athletes.filter((a) => {
-      const matchesSearch = !athleteSearchQuery.trim() || a.name.toLowerCase().includes(athleteSearchQuery.toLowerCase());
+      const matchesSearch = !athleteSearchQuery.trim() || (a?.name || '').toLowerCase().includes((athleteSearchQuery || '').toLowerCase());
       const isGk = a.position === 'GR' || isGoalkeeper(a.name);
       let matchesPos = true;
       if (athletePosFilter === 'GR') matchesPos = isGk;
@@ -246,12 +246,12 @@ export const AdminMobilityManager: React.FC = () => {
       let matchesCat = true;
       if (assignGroupFilter === 'anamnese') matchesCat = isClinicalOrIndiv(p.id);
       else if (assignGroupFilter === 'ginasio') matchesCat = !isClinicalOrIndiv(p.id);
-      else if (assignGroupFilter === 'rolo') matchesCat = p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo');
+      else if (assignGroupFilter === 'rolo') matchesCat = p.id === 'libertacao_miofascial_rolo' || (p?.titlePt || '').toLowerCase().includes('rolo');
 
       const matchesSearch = !assignSearchQuery.trim() ||
-        p.titlePt.toLowerCase().includes(assignSearchQuery.toLowerCase()) ||
-        p.titleEn.toLowerCase().includes(assignSearchQuery.toLowerCase()) ||
-        p.categoryPt.toLowerCase().includes(assignSearchQuery.toLowerCase());
+        (p?.titlePt || '').toLowerCase().includes((assignSearchQuery || '').toLowerCase()) ||
+        (p?.titleEn || '').toLowerCase().includes((assignSearchQuery || '').toLowerCase()) ||
+        (p?.categoryPt || '').toLowerCase().includes((assignSearchQuery || '').toLowerCase());
 
       return matchesCat && matchesSearch;
     });
@@ -272,7 +272,7 @@ export const AdminMobilityManager: React.FC = () => {
     let subset: MobilityPlan[] = plans;
     if (newGroup === 'anamnese') subset = plans.filter((p) => isClinicalOrIndiv(p.id));
     else if (newGroup === 'ginasio') subset = plans.filter((p) => !isClinicalOrIndiv(p.id));
-    else if (newGroup === 'rolo') subset = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
+    else if (newGroup === 'rolo') subset = plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || (p?.titlePt || '').toLowerCase().includes('rolo'));
     else if (newGroup !== 'all') subset = plans.filter((p) => p.group === newGroup);
 
     if (subset.length > 0 && !subset.some((p) => p.id === selectedPlanId)) {
@@ -293,7 +293,7 @@ export const AdminMobilityManager: React.FC = () => {
     if (groupFilter === 'all') return plans;
     if (groupFilter === 'anamnese') return plans.filter((p) => isClinicalOrIndiv(p.id));
     if (groupFilter === 'ginasio') return plans.filter((p) => !isClinicalOrIndiv(p.id));
-    if (groupFilter === 'rolo') return plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo'));
+    if (groupFilter === 'rolo') return plans.filter((p) => p.id === 'libertacao_miofascial_rolo' || (p?.titlePt || '').toLowerCase().includes('rolo'));
     return plans.filter((p) => p.group === groupFilter);
   }, [plans, groupFilter]);
 
