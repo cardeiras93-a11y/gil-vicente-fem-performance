@@ -233,17 +233,17 @@ export const AdminMobilityManager: React.FC = () => {
   // Available plans to assign in Athlete mode
   const availableLibraryPlans = useMemo(() => {
     const assignedIds = new Set(assignedPlansForSelectedAthlete.map((p) => p.id));
+    const isClinicalOrIndiv = (id: string) =>
+      id.startsWith('prev_') ||
+      id.startsWith('plan_indiv_') ||
+      id.startsWith('reforco_') ||
+      id.startsWith('tratamento_') ||
+      id.startsWith('ativacao_') ||
+      id.startsWith('recuperacao_') ||
+      id.startsWith('contusao_');
 
+    return plans.filter((p) => {
       let matchesCat = true;
-      const isClinicalOrIndiv = (id: string) =>
-        id.startsWith('prev_') ||
-        id.startsWith('plan_indiv_') ||
-        id.startsWith('reforco_') ||
-        id.startsWith('tratamento_') ||
-        id.startsWith('ativacao_') ||
-        id.startsWith('recuperacao_') ||
-        id.startsWith('contusao_');
-
       if (assignGroupFilter === 'anamnese') matchesCat = isClinicalOrIndiv(p.id);
       else if (assignGroupFilter === 'ginasio') matchesCat = !isClinicalOrIndiv(p.id);
       else if (assignGroupFilter === 'rolo') matchesCat = p.id === 'libertacao_miofascial_rolo' || p.titlePt.toLowerCase().includes('rolo');
