@@ -102,7 +102,7 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
   }, [isAthlete, athletePlayerIndex, selectedMatchId]);
 
   const [activePosFilter, setActivePosFilter] = useState<string>('ALL');
-  const [currentChartMetric, setCurrentChartMetric] = useState<'dist' | 'sprint' | 'sprint23'>('dist');
+  const [currentChartMetric, setCurrentChartMetric] = useState<'dist' | 'hsr' | 'sprint23' | 'sprint'>('dist');
   const [viewMode, setViewMode] = useState<'visual' | 'table' | 'compare' | 'minutes'>('visual');
   const [tableSortKey, setTableSortKey] = useState<keyof MatchPlayerGps | 'totalAcc'>('dist');
   const [tableSortOrder, setTableSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -145,6 +145,7 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
     : (rawPlayers[selectedPlayerIndex] || rawPlayers[0]);
 
   const maxDist = useMemo(() => Math.max(...rawPlayers.map((p) => p.dist), 1), [rawPlayers]);
+  const maxHsr = useMemo(() => Math.max(...rawPlayers.map((p) => (p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23))), 1), [rawPlayers]);
   const maxSprint = useMemo(() => Math.max(...rawPlayers.map((p) => p.sprint), 1), [rawPlayers]);
   const maxSprint23 = useMemo(() => Math.max(...rawPlayers.map((p) => p.sprint23), 1), [rawPlayers]);
   const maxSpeed = useMemo(() => Math.max(...rawPlayers.map((p) => p.topSpeed), 1), [rawPlayers]);
@@ -186,8 +187,15 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
   const deltaDistTeam = getDeltaPct(selectedPlayer.dist, teamKpis.avgDist);
   const deltaDistSector = getDeltaPct(selectedPlayer.dist, playerSectorAvg.avgDist);
 
+  const playerHsr = selectedPlayer.hsr != null ? selectedPlayer.hsr : Math.max(0, selectedPlayer.sprint - selectedPlayer.sprint23);
+  const deltaHsrTeam = getDeltaPct(playerHsr, teamKpis.avgHsr);
+  const deltaHsrSector = getDeltaPct(playerHsr, playerSectorAvg.avgHsr);
+
   const deltaSprintTeam = getDeltaPct(selectedPlayer.sprint, teamKpis.avgSprint);
   const deltaSprintSector = getDeltaPct(selectedPlayer.sprint, playerSectorAvg.avgSprint);
+
+  const deltaSprint23Team = getDeltaPct(selectedPlayer.sprint23, teamKpis.avgSprint23);
+  const deltaSprint23Sector = getDeltaPct(selectedPlayer.sprint23, playerSectorAvg.avgSprint23);
 
   const deltaSpeedTeam = getDeltaPct(selectedPlayer.topSpeed, avgSpeed);
   const deltaSpeedSector = getDeltaPct(selectedPlayer.topSpeed, playerSectorAvg.avgTopSpeed);
@@ -218,6 +226,9 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
       if (tableSortKey === 'totalAcc') {
         valA = a.acc + a.dec;
         valB = b.acc + b.dec;
+      } else if (tableSortKey === 'hsr') {
+        valA = a.hsr != null ? a.hsr : Math.max(0, a.sprint - a.sprint23);
+        valB = b.hsr != null ? b.hsr : Math.max(0, b.sprint - b.sprint23);
       } else {
         valA = (a[tableSortKey] as number) || 0;
         valB = (b[tableSortKey] as number) || 0;
@@ -440,7 +451,7 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
             </div>
 
             {/* Collective Metrics Strip */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-2.5">
               <div className="rounded-xl bg-[#0B1329]/80 border border-white/5 p-3 flex flex-col justify-between">
                 <span className="text-[10px] font-bold text-slate-400 uppercase">Distância Média</span>
                 <span className="text-sm sm:text-base font-black text-white mt-1">
@@ -458,9 +469,9 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
               </div>
 
               <div className="rounded-xl bg-[#0B1329]/80 border border-white/5 p-3 flex flex-col justify-between">
-                <span className="text-[10px] font-bold text-slate-400 uppercase">Alta Intens. (&gt;19)</span>
-                <span className="text-sm sm:text-base font-black text-emerald-400 mt-1">
-                  {teamKpis.avgSprint} m
+                <span className="text-[10px] font-bold text-slate-400 uppercase">HSR (19-23 km/h)</span>
+                <span className="text-sm sm:text-base font-black text-amber-400 mt-1">
+                  {teamKpis.avgHsr} m
                 </span>
                 <span className="text-[9px] text-slate-400 font-semibold">Média por atleta</span>
               </div>
@@ -471,6 +482,14 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                   {teamKpis.avgSprint23} m
                 </span>
                 <span className="text-[9px] text-slate-400 font-semibold">Pico coletivo</span>
+              </div>
+
+              <div className="rounded-xl bg-[#0B1329]/80 border border-white/5 p-3 flex flex-col justify-between">
+                <span className="text-[10px] font-bold text-slate-400 uppercase">Alta Intens. (&gt;19)</span>
+                <span className="text-sm sm:text-base font-black text-emerald-400 mt-1">
+                  {teamKpis.avgSprint} m
+                </span>
+                <span className="text-[9px] text-slate-400 font-semibold">HSR + Sprint</span>
               </div>
 
               <div className="rounded-xl bg-[#0B1329]/80 border border-white/5 p-3 flex flex-col justify-between">
@@ -671,22 +690,22 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                     </p>
                   </div>
 
-                  <div className="w-full grid grid-cols-2 gap-2 bg-[#0B1329]/80 p-3 rounded-xl border border-white/10">
+                  <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#0B1329]/80 p-3 rounded-xl border border-white/10">
                     <div className="flex flex-col items-center">
                       <span className="text-[10px] font-extrabold uppercase text-slate-400">Distância</span>
                       <span className="text-sm sm:text-base font-black text-white">{(selectedPlayer.dist / 1000).toFixed(2)} km</span>
                     </div>
                     <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400">Alta Intens. (&gt;19)</span>
+                      <span className="text-[10px] font-extrabold uppercase text-slate-400">HSR (19-23)</span>
+                      <span className="text-sm sm:text-base font-black text-amber-400">{playerHsr.toFixed(1)} m</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-[10px] font-extrabold uppercase text-slate-400">Sprint (&gt;23)</span>
+                      <span className="text-sm sm:text-base font-black text-rose-400">{selectedPlayer.sprint23.toFixed(1)} m</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-[10px] font-extrabold uppercase text-slate-400">Alta Int. (&gt;19)</span>
                       <span className="text-sm sm:text-base font-black text-emerald-400">{selectedPlayer.sprint.toFixed(1)} m</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400">Vel. Máxima</span>
-                      <span className="text-sm sm:text-base font-black text-amber-300">{selectedPlayer.topSpeed.toFixed(1)} km/h</span>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400">Ações ACC/DEC</span>
-                      <span className="text-sm sm:text-base font-black text-purple-300">{totalAcc}</span>
                     </div>
                   </div>
                 </div>
@@ -726,10 +745,42 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                       </div>
                     </div>
 
+                    {/* HSR 19-23 */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold">
+                        <span className="text-slate-400">🏃 HSR / Corrida Alta Vel. (19-23 km/h)</span>
+                        <span className="text-amber-400 font-black">
+                          {playerHsr.toFixed(1)} m
+                        </span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full bg-[#1E2D57] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-500"
+                          style={{ width: `${maxHsr > 0 ? (playerHsr / maxHsr) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Sprint >23 */}
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-bold">
+                        <span className="text-slate-400">🔥 Sprint Puro (&gt;23 km/h)</span>
+                        <span className="text-rose-400 font-black">
+                          {selectedPlayer.sprint23} m{sprint23EvoTxt}
+                        </span>
+                      </div>
+                      <div className="h-2.5 w-full rounded-full bg-[#1E2D57] overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-500"
+                          style={{ width: `${maxSprint23 > 0 ? (selectedPlayer.sprint23 / maxSprint23) * 100 : 0}%` }}
+                        />
+                      </div>
+                    </div>
+
                     {/* Sprint >19 */}
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs font-bold">
-                        <span className="text-slate-400">⚡ Alta Intensidade (&gt;19 km/h)</span>
+                        <span className="text-slate-400">⚡ Alta Intensidade Total (&gt;19 km/h)</span>
                         <span className="text-emerald-400 font-black">
                           {selectedPlayer.sprint} m{sprintEvoTxt}
                         </span>
@@ -1042,25 +1093,36 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCurrentChartMetric('sprint')}
+                  onClick={() => setCurrentChartMetric('hsr')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    currentChartMetric === 'sprint'
-                      ? 'bg-gradient-to-r from-sky-600 to-sky-400 text-white shadow-md'
+                    currentChartMetric === 'hsr'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-400 text-white shadow-md'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  ⚡ Alta Intensidade &gt;19km/h (m)
+                  🏃 HSR 19-23km/h (m)
                 </button>
                 <button
                   type="button"
                   onClick={() => setCurrentChartMetric('sprint23')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
                     currentChartMetric === 'sprint23'
-                      ? 'bg-gradient-to-r from-sky-600 to-sky-400 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-rose-600 to-rose-400 text-white shadow-md'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
                   🔥 Sprint &gt;23km/h (m)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCurrentChartMetric('sprint')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
+                    currentChartMetric === 'sprint'
+                      ? 'bg-gradient-to-r from-emerald-600 to-emerald-400 text-white shadow-md'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ⚡ Alta Intensidade &gt;19km/h (m)
                 </button>
               </div>
 
@@ -1092,8 +1154,20 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                 <div className="w-full overflow-x-auto pb-2">
                   <div className="flex items-end gap-4 h-64 min-w-[500px] px-4 pt-6 pb-2 border-b border-white/10">
                     {athleteMatchesEvolution.map(({ match: m, player: p, isCurrent }) => {
-                      let val = currentChartMetric === 'dist' ? p.dist : currentChartMetric === 'sprint' ? p.sprint : p.sprint23;
-                      let max = currentChartMetric === 'dist' ? 12000 : currentChartMetric === 'sprint' ? 600 : 250;
+                      let val = currentChartMetric === 'dist'
+                        ? p.dist
+                        : currentChartMetric === 'hsr'
+                        ? (p.hsr ?? Math.max(0, p.sprint - p.sprint23))
+                        : currentChartMetric === 'sprint23'
+                        ? p.sprint23
+                        : p.sprint;
+                      let max = currentChartMetric === 'dist'
+                        ? 12000
+                        : currentChartMetric === 'hsr'
+                        ? 600
+                        : currentChartMetric === 'sprint23'
+                        ? 250
+                        : 800;
                       let heightPct = Math.min(100, Math.max(8, (val / max) * 100));
 
                       return (
@@ -1145,7 +1219,13 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                       {currentChartMetric === 'dist' ? `${(playerSectorAvg.avgDist / 1000).toFixed(2)}k` : `${playerSectorAvg.avgSprint}m`}
                     </strong></span>
                     <span>Média Equipa: <strong className="text-sky-400">
-                      {currentChartMetric === 'dist' ? `${(teamKpis.avgDist / 1000).toFixed(2)}k` : `${teamKpis.avgSprint}m`}
+                      {currentChartMetric === 'dist'
+                        ? `${(teamKpis.avgDist / 1000).toFixed(2)}k`
+                        : currentChartMetric === 'hsr'
+                        ? `${teamKpis.avgHsr}m`
+                        : currentChartMetric === 'sprint23'
+                        ? `${teamKpis.avgSprint23}m`
+                        : `${teamKpis.avgSprint}m`}
                     </strong></span>
                   </div>
                 </div>
@@ -1165,14 +1245,18 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                       valCurrent = p.dist;
                       valPrev = p.prevDist || 0;
                       maxVal = maxDist;
-                    } else if (currentChartMetric === 'sprint') {
-                      valCurrent = p.sprint;
-                      valPrev = p.prevSprint || 0;
-                      maxVal = maxSprint;
-                    } else {
+                    } else if (currentChartMetric === 'hsr') {
+                      valCurrent = p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23);
+                      valPrev = p.prevSprint && p.prevSprint23 ? Math.max(0, p.prevSprint - p.prevSprint23) : 0;
+                      maxVal = maxHsr;
+                    } else if (currentChartMetric === 'sprint23') {
                       valCurrent = p.sprint23;
                       valPrev = p.prevSprint23 || 0;
                       maxVal = maxSprint23 || 1;
+                    } else {
+                      valCurrent = p.sprint;
+                      valPrev = p.prevSprint || 0;
+                      maxVal = maxSprint;
                     }
 
                     const pctCurrent = Math.min(100, Math.max(6, (valCurrent / maxVal) * 100));
@@ -1311,10 +1395,70 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                         </td>
                       </tr>
 
-                      {/* Row 2: Alta Intensidade >19km/h */}
+                      {/* Row 2: HSR (19-23 km/h) */}
                       <tr className="hover:bg-[#1E2D57]/60 transition-colors">
                         <td className="py-3 px-3 font-extrabold text-white flex items-center gap-2">
-                          <span>⚡ Alta Intensidade (&gt;19 km/h)</span>
+                          <span>🏃 HSR / Corrida Alta Vel. (19-23 km/h)</span>
+                        </td>
+                        <td className="py-3 px-3 text-right font-black text-amber-400 text-sm">
+                          {playerHsr.toFixed(1)} m
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-300">
+                          {playerSectorAvg.avgHsr} m
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-400">
+                          {teamKpis.avgHsr} m
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                            deltaHsrSector.isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {deltaHsrSector.isPositive ? `+${deltaHsrSector.pct}%` : `${deltaHsrSector.pct}%`}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                            deltaHsrTeam.isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {deltaHsrTeam.isPositive ? `+${deltaHsrTeam.pct}%` : `${deltaHsrTeam.pct}%`}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Row 3: Sprint Puro >23km/h */}
+                      <tr className="hover:bg-[#1E2D57]/60 transition-colors">
+                        <td className="py-3 px-3 font-extrabold text-white flex items-center gap-2">
+                          <span>🔥 Sprint Puro (&gt;23 km/h)</span>
+                        </td>
+                        <td className="py-3 px-3 text-right font-black text-rose-400 text-sm">
+                          {selectedPlayer.sprint23.toFixed(1)} m
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-300">
+                          {playerSectorAvg.avgSprint23} m
+                        </td>
+                        <td className="py-3 px-3 text-right font-bold text-slate-400">
+                          {teamKpis.avgSprint23} m
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                            deltaSprint23Sector.isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {deltaSprint23Sector.isPositive ? `+${deltaSprint23Sector.pct}%` : `${deltaSprint23Sector.pct}%`}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                            deltaSprint23Team.isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
+                          }`}>
+                            {deltaSprint23Team.isPositive ? `+${deltaSprint23Team.pct}%` : `${deltaSprint23Team.pct}%`}
+                          </span>
+                        </td>
+                      </tr>
+
+                      {/* Row 4: Alta Intensidade >19km/h */}
+                      <tr className="hover:bg-[#1E2D57]/60 transition-colors">
+                        <td className="py-3 px-3 font-extrabold text-white flex items-center gap-2">
+                          <span>⚡ Alta Intensidade Total (&gt;19 km/h)</span>
                         </td>
                         <td className="py-3 px-3 text-right font-black text-emerald-400 text-sm">
                           {selectedPlayer.sprint.toFixed(1)} m
@@ -1337,32 +1481,6 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                             deltaSprintTeam.isPositive ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300'
                           }`}>
                             {deltaSprintTeam.isPositive ? `+${deltaSprintTeam.pct}%` : `${deltaSprintTeam.pct}%`}
-                          </span>
-                        </td>
-                      </tr>
-
-                      {/* Row 3: Sprint >23km/h */}
-                      <tr className="hover:bg-[#1E2D57]/60 transition-colors">
-                        <td className="py-3 px-3 font-extrabold text-white flex items-center gap-2">
-                          <span>🔥 Sprint Puro (&gt;23 km/h)</span>
-                        </td>
-                        <td className="py-3 px-3 text-right font-black text-rose-400 text-sm">
-                          {selectedPlayer.sprint23.toFixed(1)} m
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold text-slate-300">
-                          {playerSectorAvg.avgSprint23} m
-                        </td>
-                        <td className="py-3 px-3 text-right font-bold text-slate-400">
-                          {teamKpis.avgSprint23} m
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-800 text-slate-300">
-                            {selectedPlayer.sprint23 >= playerSectorAvg.avgSprint23 ? '▲ Acima' : '▼ Abaixo'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-slate-800 text-slate-300">
-                            {selectedPlayer.sprint23 >= teamKpis.avgSprint23 ? '▲ Acima' : '▼ Abaixo'}
                           </span>
                         </td>
                       </tr>
@@ -1475,11 +1593,14 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                         <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('dist')}>
                           Distância (m) {tableSortKey === 'dist' && (tableSortOrder === 'asc' ? '▲' : '▼')}
                         </th>
-                        <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('sprint')}>
-                          &gt;19 km/h (m) {tableSortKey === 'sprint' && (tableSortOrder === 'asc' ? '▲' : '▼')}
+                        <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('hsr')}>
+                          HSR 19-23 (m) {tableSortKey === 'hsr' && (tableSortOrder === 'asc' ? '▲' : '▼')}
                         </th>
                         <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('sprint23')}>
-                          &gt;23 km/h (m) {tableSortKey === 'sprint23' && (tableSortOrder === 'asc' ? '▲' : '▼')}
+                          Sprint &gt;23 (m) {tableSortKey === 'sprint23' && (tableSortOrder === 'asc' ? '▲' : '▼')}
+                        </th>
+                        <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('sprint')}>
+                          Alta Int. &gt;19 (m) {tableSortKey === 'sprint' && (tableSortOrder === 'asc' ? '▲' : '▼')}
                         </th>
                         <th className="py-2.5 px-3 text-right cursor-pointer hover:text-white" onClick={() => handleSortTable('topSpeed')}>
                           Vel. Máx (km/h) {tableSortKey === 'topSpeed' && (tableSortOrder === 'asc' ? '▲' : '▼')}
@@ -1516,13 +1637,14 @@ export const MatchDashboard: React.FC<MatchDashboardProps> = ({
                                 {p.pos}
                               </span>
                             </td>
-                            <td className="py-2.5 px-3 text-center font-bold text-slate-500">
+                            <td className="py-2.5 px-3 text-center font-bold text-slate-400">
                               {p.min != null && p.min > 0 ? `${p.min}'` : '—'}
                             </td>
                             <td className="py-2.5 px-3 text-right font-black text-sky-400">{p.dist.toLocaleString('pt-PT')} m</td>
-                            <td className="py-2.5 px-3 text-right font-black text-emerald-400">{p.sprint.toFixed(1)} m</td>
+                            <td className="py-2.5 px-3 text-right font-black text-amber-400">{(p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23)).toFixed(1)} m</td>
                             <td className="py-2.5 px-3 text-right font-black text-rose-400">{p.sprint23.toFixed(1)} m</td>
-                            <td className="py-2.5 px-3 text-right font-black text-amber-400">{p.topSpeed.toFixed(2)}</td>
+                            <td className="py-2.5 px-3 text-right font-black text-emerald-400">{p.sprint.toFixed(1)} m</td>
+                            <td className="py-2.5 px-3 text-right font-black text-amber-300">{p.topSpeed.toFixed(2)}</td>
                             <td className="py-2.5 px-3 text-center font-bold text-purple-300">
                               {p.acc + p.dec} <span className="text-[10px] text-slate-500">({p.acc}/{p.dec})</span>
                             </td>

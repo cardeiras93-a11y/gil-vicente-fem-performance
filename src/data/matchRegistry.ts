@@ -66,8 +66,9 @@ export interface TeamKpis {
   totalDist: number;
   avgRunning: number;
   runningPct: number;
-  avgSprint: number;
-  avgSprint23: number;
+  avgHsr: number; // 19-23 km/h
+  avgSprint: number; // >19 km/h (Alta Intensidade)
+  avgSprint23: number; // >23 km/h (Sprint Puro)
   maxTopSpeed: number;
   topSpeedPlayer: string;
   totalAcc: number;
@@ -84,6 +85,7 @@ export interface SectorAverages {
   posName: string;
   count: number;
   avgDist: number;
+  avgHsr: number;
   avgSprint: number;
   avgSprint23: number;
   avgTopSpeed: number;
@@ -141,6 +143,9 @@ export function calculateTeamKpis(match: MatchInfo): TeamKpis {
   const avgRunning = Math.round(totalRunning / count);
   const runningPct = avgDist > 0 ? (avgRunning / avgDist) * 100 : 0;
 
+  const totalHsr = activePlayers.reduce((acc, p) => acc + (p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23)), 0);
+  const avgHsr = Math.round((totalHsr / count) * 10) / 10;
+
   const totalSprint = activePlayers.reduce((acc, p) => acc + p.sprint, 0);
   const avgSprint = Math.round((totalSprint / count) * 10) / 10;
 
@@ -182,6 +187,7 @@ export function calculateTeamKpis(match: MatchInfo): TeamKpis {
     totalDist,
     avgRunning,
     runningPct,
+    avgHsr,
     avgSprint,
     avgSprint23,
     maxTopSpeed,
@@ -222,6 +228,7 @@ export function calculateSectorAverages(match: MatchInfo): Record<string, Sector
       posName: data.posName,
       count: list.length,
       avgDist: list.length ? Math.round(list.reduce((acc, p) => acc + p.dist, 0) / count) : 0,
+      avgHsr: list.length ? Math.round((list.reduce((acc, p) => acc + (p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23)), 0) / count) * 10) / 10 : 0,
       avgSprint: list.length ? Math.round((list.reduce((acc, p) => acc + p.sprint, 0) / count) * 10) / 10 : 0,
       avgSprint23: list.length ? Math.round((list.reduce((acc, p) => acc + p.sprint23, 0) / count) * 10) / 10 : 0,
       avgTopSpeed: list.length ? Math.round((list.reduce((acc, p) => acc + p.topSpeed, 0) / count) * 10) / 10 : 0,
@@ -237,11 +244,13 @@ export function calculateSectorAverages(match: MatchInfo): Record<string, Sector
 export function calculateNormalizedStats(p: MatchPlayerGps, fallbackMin = 80) {
   const min = p.min && p.min > 0 ? p.min : fallbackMin;
   const mPerMin = p.dist > 0 ? Math.round((p.dist / min) * 10) / 10 : 0;
-  const hsrPerMin = p.sprint > 0 ? Math.round((p.sprint / min) * 10) / 10 : 0;
+  const playerHsr = p.hsr != null ? p.hsr : Math.max(0, p.sprint - p.sprint23);
+  const hsrPerMin = playerHsr > 0 ? Math.round((playerHsr / min) * 10) / 10 : 0;
   const sprint23PerMin = p.sprint23 > 0 ? Math.round((p.sprint23 / min) * 100) / 100 : 0;
+  const hiPerMin = p.sprint > 0 ? Math.round((p.sprint / min) * 10) / 10 : 0;
   const accPerMin = (p.acc + p.dec) > 0 ? Math.round(((p.acc + p.dec) / min) * 100) / 100 : 0;
 
-  return { min, mPerMin, hsrPerMin, sprint23PerMin, accPerMin };
+  return { min, mPerMin, hsrPerMin, sprint23PerMin, hiPerMin, accPerMin };
 }
 
 export function getDeltaPct(valCurrent: number, valBaseline: number): { diff: number; pct: number; isPositive: boolean } {

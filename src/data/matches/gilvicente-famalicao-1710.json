@@ -4,7 +4,7 @@
   "subtitle": "Relatório de Rendimento em Jogo (2026-10-17)",
   "matchDate": "2026-10-17",
   "opponent": "FC Famalicão",
-  "teamCategory": "Futebol Feminino Sub-15",
+  "teamCategory": "Futebol Feminino Sénior",
   "competition": "Campeonato Nacional II Divisão (3ª Jornada)",
   "score": "2 - 2",
   "location": "Campo n.º 1 da Academia do FC Famalicão",
@@ -28,7 +28,8 @@
       "acc": 0,
       "dec": 0,
       "rpe": 7,
-      "fatigue": 2
+      "fatigue": 2,
+      "hsr": 0.0
     },
     {
       "name": "Nicole",
@@ -47,7 +48,8 @@
       "fatigue": 3,
       "prevDist": 8499.2,
       "prevSprint": 378.7,
-      "prevSprint23": 67.4
+      "prevSprint23": 67.4,
+      "hsr": 426.4
     },
     {
       "name": "Ribeiro",
@@ -66,7 +68,8 @@
       "fatigue": 3,
       "prevDist": 4487.0,
       "prevSprint": 229.8,
-      "prevSprint23": 73.7
+      "prevSprint23": 73.7,
+      "hsr": 129.3
     },
     {
       "name": "Simães",
@@ -85,7 +88,8 @@
       "fatigue": 3,
       "prevDist": 4724.0,
       "prevSprint": 318.1,
-      "prevSprint23": 82.2
+      "prevSprint23": 82.2,
+      "hsr": 278.2
     },
     {
       "name": "Sara T.",
@@ -104,7 +108,8 @@
       "fatigue": 3,
       "prevDist": 9380.9,
       "prevSprint": 592.5,
-      "prevSprint23": 194.0
+      "prevSprint23": 194.0,
+      "hsr": 406.9
     },
     {
       "name": "Marthe",
@@ -123,7 +128,8 @@
       "fatigue": 3,
       "prevDist": 7952.9,
       "prevSprint": 410.4,
-      "prevSprint23": 153.2
+      "prevSprint23": 153.2,
+      "hsr": 212.7
     },
     {
       "name": "Magui",
@@ -142,7 +148,8 @@
       "fatigue": 3,
       "prevDist": 8354.5,
       "prevSprint": 224.3,
-      "prevSprint23": 46.6
+      "prevSprint23": 46.6,
+      "hsr": 253.0
     },
     {
       "name": "Ticha",
@@ -161,7 +168,8 @@
       "fatigue": 3,
       "prevDist": 7502.8,
       "prevSprint": 112.7,
-      "prevSprint23": 1.9
+      "prevSprint23": 1.9,
+      "hsr": 277.2
     },
     {
       "name": "Serena",
@@ -180,7 +188,8 @@
       "fatigue": 3,
       "prevDist": 7192.0,
       "prevSprint": 619.0,
-      "prevSprint23": 170.2
+      "prevSprint23": 170.2,
+      "hsr": 526.3
     },
     {
       "name": "Malta",
@@ -199,7 +208,8 @@
       "fatigue": 3,
       "prevDist": 7094.2,
       "prevSprint": 251.0,
-      "prevSprint23": 21.1
+      "prevSprint23": 21.1,
+      "hsr": 288.1
     },
     {
       "name": "Meriva",
@@ -215,7 +225,8 @@
       "acc": 26,
       "dec": 54,
       "rpe": 8,
-      "fatigue": 3
+      "fatigue": 3,
+      "hsr": 306.5
     },
     {
       "name": "Carlota",
@@ -234,7 +245,8 @@
       "fatigue": 3,
       "prevDist": 6693.1,
       "prevSprint": 315.4,
-      "prevSprint23": 34.2
+      "prevSprint23": 34.2,
+      "hsr": 278.1
     },
     {
       "name": "Verónica",
@@ -253,7 +265,8 @@
       "fatigue": 3,
       "prevDist": 7647.8,
       "prevSprint": 208.1,
-      "prevSprint23": 22.5
+      "prevSprint23": 22.5,
+      "hsr": 240.1
     },
     {
       "name": "Cartaxo",
@@ -272,7 +285,8 @@
       "fatigue": 3,
       "prevDist": 7389.7,
       "prevSprint": 227.7,
-      "prevSprint23": 34.8
+      "prevSprint23": 34.8,
+      "hsr": 102.8
     }
   ]
 }

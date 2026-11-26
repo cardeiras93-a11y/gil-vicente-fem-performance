@@ -4,7 +4,7 @@
   "subtitle": "Relatório de Rendimento em Jogo (2026-11-07) — 5ª Jornada vs SC Braga B",
   "matchDate": "2026-11-07",
   "opponent": "SC Braga B",
-  "teamCategory": "Futebol Feminino Sub-15",
+  "teamCategory": "Futebol Feminino Sénior",
   "competition": "Campeonato Nacional II Divisão (5ª Jornada)",
   "score": "2 - 2",
   "location": "Complexo Desportivo de São Martinho (Barcelos)",
@@ -31,7 +31,8 @@
       "fatigue": 2,
       "prevDist": 0.0,
       "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 0.0
     },
     {
       "name": "Magui",
@@ -50,7 +51,8 @@
       "fatigue": 3,
       "prevDist": 5600.0,
       "prevSprint": 197.0,
-      "prevSprint23": 32.0
+      "prevSprint23": 32.0,
+      "hsr": 441.0
     },
     {
       "name": "Simães",
@@ -69,7 +71,8 @@
       "fatigue": 3,
       "prevDist": 8280.0,
       "prevSprint": 412.0,
-      "prevSprint23": 82.0
+      "prevSprint23": 82.0,
+      "hsr": 492.0
     },
     {
       "name": "Serena",
@@ -88,7 +91,8 @@
       "fatigue": 3,
       "prevDist": 6250.0,
       "prevSprint": 510.0,
-      "prevSprint23": 165.0
+      "prevSprint23": 165.0,
+      "hsr": 644.0
     },
     {
       "name": "Meriva",
@@ -107,7 +111,8 @@
       "fatigue": 3,
       "prevDist": 8250.0,
       "prevSprint": 555.0,
-      "prevSprint23": 145.0
+      "prevSprint23": 145.0,
+      "hsr": 590.0
     },
     {
       "name": "Sara T.",
@@ -126,7 +131,8 @@
       "fatigue": 3,
       "prevDist": 9450.0,
       "prevSprint": 263.0,
-      "prevSprint23": 48.0
+      "prevSprint23": 48.0,
+      "hsr": 350.0
     },
     {
       "name": "Nicole",
@@ -145,7 +151,8 @@
       "fatigue": 3,
       "prevDist": 8650.0,
       "prevSprint": 297.0,
-      "prevSprint23": 52.0
+      "prevSprint23": 52.0,
+      "hsr": 380.0
     },
     {
       "name": "Carlota",
@@ -164,7 +171,8 @@
       "fatigue": 3,
       "prevDist": 6420.0,
       "prevSprint": 287.0,
-      "prevSprint23": 22.0
+      "prevSprint23": 22.0,
+      "hsr": 235.0
     },
     {
       "name": "Marthe",
@@ -183,7 +191,8 @@
       "fatigue": 3,
       "prevDist": 8350.0,
       "prevSprint": 200.0,
-      "prevSprint23": 45.0
+      "prevSprint23": 45.0,
+      "hsr": 242.0
     },
     {
       "name": "Malta",
@@ -202,7 +211,8 @@
       "fatigue": 3,
       "prevDist": 5695.0,
       "prevSprint": 93.0,
-      "prevSprint23": 32.0
+      "prevSprint23": 32.0,
+      "hsr": 358.0
     },
     {
       "name": "Izzy",
@@ -221,7 +231,8 @@
       "fatigue": 2,
       "prevDist": 9380.0,
       "prevSprint": 101.0,
-      "prevSprint23": 6.0
+      "prevSprint23": 6.0,
+      "hsr": 184.0
     },
     {
       "name": "Ticha",
@@ -240,7 +251,8 @@
       "fatigue": 2,
       "prevDist": 5695.0,
       "prevSprint": 708.0,
-      "prevSprint23": 93.0
+      "prevSprint23": 93.0,
+      "hsr": 192.0
     },
     {
       "name": "Chelsea",
@@ -256,7 +268,8 @@
       "acc": 34,
       "dec": 40,
       "rpe": 6,
-      "fatigue": 2
+      "fatigue": 2,
+      "hsr": 156.0
     },
     {
       "name": "Cartaxo",
@@ -275,7 +288,8 @@
       "fatigue": 2,
       "prevDist": 5825.0,
       "prevSprint": 773.0,
-      "prevSprint23": 123.0
+      "prevSprint23": 123.0,
+      "hsr": 55.0
     }
   ]
 }

@@ -28,7 +28,8 @@
       "acc": 0,
       "dec": 0,
       "rpe": 6,
-      "fatigue": 2
+      "fatigue": 2,
+      "hsr": 0.0
     },
     {
       "name": "Chelsea",
@@ -47,7 +48,8 @@
       "fatigue": 2,
       "prevDist": 9617.5,
       "prevSprint": 566.6,
-      "prevSprint23": 204.6
+      "prevSprint23": 204.6,
+      "hsr": 362.0
     },
     {
       "name": "Simães",
@@ -66,7 +68,8 @@
       "fatigue": 2,
       "prevDist": 5926.7,
       "prevSprint": 394.4,
-      "prevSprint23": 116.2
+      "prevSprint23": 116.2,
+      "hsr": 453.5
     },
     {
       "name": "Eva",
@@ -85,7 +88,8 @@
       "fatigue": 2,
       "prevDist": 4244.9,
       "prevSprint": 442.4,
-      "prevSprint23": 116.0
+      "prevSprint23": 116.0,
+      "hsr": 326.4
     },
     {
       "name": "Sara T.",
@@ -104,7 +108,8 @@
       "fatigue": 2,
       "prevDist": 9894.6,
       "prevSprint": 542.6,
-      "prevSprint23": 135.7
+      "prevSprint23": 135.7,
+      "hsr": 183.4
     },
     {
       "name": "Marthe",
@@ -123,7 +128,8 @@
       "fatigue": 2,
       "prevDist": 8878.3,
       "prevSprint": 303.0,
-      "prevSprint23": 90.3
+      "prevSprint23": 90.3,
+      "hsr": 75.2
     },
     {
       "name": "Izzy",
@@ -142,7 +148,8 @@
       "fatigue": 2,
       "prevDist": 9590.7,
       "prevSprint": 55.9,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 55.9
     },
     {
       "name": "Magui",
@@ -161,7 +168,8 @@
       "fatigue": 2,
       "prevDist": 11047.5,
       "prevSprint": 340.9,
-      "prevSprint23": 87.9
+      "prevSprint23": 87.9,
+      "hsr": 143.7
     },
     {
       "name": "Manu",
@@ -180,7 +188,8 @@
       "fatigue": 2,
       "prevDist": 4320.7,
       "prevSprint": 217.6,
-      "prevSprint23": 30.2
+      "prevSprint23": 30.2,
+      "hsr": 187.4
     },
     {
       "name": "Ticha",
@@ -199,7 +208,8 @@
       "fatigue": 2,
       "prevDist": 10032.0,
       "prevSprint": 314.6,
-      "prevSprint23": 37.4
+      "prevSprint23": 37.4,
+      "hsr": 70.4
     },
     {
       "name": "Serena",
@@ -218,7 +228,8 @@
       "fatigue": 2,
       "prevDist": 10449.0,
       "prevSprint": 785.1,
-      "prevSprint23": 258.8
+      "prevSprint23": 258.8,
+      "hsr": 333.6
     },
     {
       "name": "Cartaxo",
@@ -237,7 +248,8 @@
       "fatigue": 2,
       "prevDist": 3657.7,
       "prevSprint": 119.1,
-      "prevSprint23": 16.3
+      "prevSprint23": 16.3,
+      "hsr": 177.4
     },
     {
       "name": "Tita",
@@ -256,7 +268,8 @@
       "fatigue": 2,
       "prevDist": 4546.1,
       "prevSprint": 429.6,
-      "prevSprint23": 165.7
+      "prevSprint23": 165.7,
+      "hsr": 263.9
     },
     {
       "name": "Verónica",
@@ -275,7 +288,8 @@
       "fatigue": 2,
       "prevDist": 5669.2,
       "prevSprint": 285.6,
-      "prevSprint23": 45.5
+      "prevSprint23": 45.5,
+      "hsr": 200.7
     },
     {
       "name": "Meriva",
@@ -294,7 +308,8 @@
       "fatigue": 2,
       "prevDist": 5026.5,
       "prevSprint": 335.1,
-      "prevSprint23": 28.6
+      "prevSprint23": 28.6,
+      "hsr": 324.0
     },
     {
       "name": "Carlota",
@@ -313,7 +328,8 @@
       "fatigue": 2,
       "prevDist": 9799.1,
       "prevSprint": 320.7,
-      "prevSprint23": 42.6
+      "prevSprint23": 42.6,
+      "hsr": 251.8
     }
   ]
 }

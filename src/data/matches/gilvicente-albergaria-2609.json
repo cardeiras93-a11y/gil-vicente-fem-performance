@@ -4,7 +4,7 @@
   "subtitle": "Relatório de Rendimento em Jogo (2026-09-26)",
   "matchDate": "2026-09-26",
   "opponent": "Clube de Albergaria",
-  "teamCategory": "Futebol Feminino Sub-15",
+  "teamCategory": "Futebol Feminino Sénior",
   "competition": "Campeonato Nacional II Divisão (Jornada 2)",
   "score": "0 - 1",
   "location": "Estádio / Campo Oficial",
@@ -31,7 +31,8 @@
       "fatigue": 2,
       "prevDist": 3953.3,
       "prevSprint": 88.6,
-      "prevSprint23": 19.2
+      "prevSprint23": 19.2,
+      "hsr": 218.2
     },
     {
       "name": "Nicole",
@@ -50,7 +51,8 @@
       "fatigue": 2,
       "prevDist": 6325.6,
       "prevSprint": 123.2,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 199.8
     },
     {
       "name": "Chelsea",
@@ -69,7 +71,8 @@
       "fatigue": 2,
       "prevDist": 4583.0,
       "prevSprint": 154.4,
-      "prevSprint23": 25.4
+      "prevSprint23": 25.4,
+      "hsr": 90.9
     },
     {
       "name": "Simães",
@@ -88,7 +91,8 @@
       "fatigue": 2,
       "prevDist": 6466.9,
       "prevSprint": 354.8,
-      "prevSprint23": 71
+      "prevSprint23": 71,
+      "hsr": 0.0
     },
     {
       "name": "Sara T.",
@@ -107,7 +111,8 @@
       "fatigue": 2,
       "prevDist": 9096.6,
       "prevSprint": 158.2,
-      "prevSprint23": 21.2
+      "prevSprint23": 21.2,
+      "hsr": 220.3
     },
     {
       "name": "Faith",
@@ -126,7 +131,8 @@
       "fatigue": 2,
       "prevDist": 8699.9,
       "prevSprint": 153.0,
-      "prevSprint23": 29.0
+      "prevSprint23": 29.0,
+      "hsr": 190.8
     },
     {
       "name": "Sara Alves",
@@ -145,7 +151,8 @@
       "fatigue": 2,
       "prevDist": 143.4,
       "prevSprint": 0,
-      "prevSprint23": 0
+      "prevSprint23": 0,
+      "hsr": 0.0
     },
     {
       "name": "Marthe",
@@ -164,7 +171,8 @@
       "fatigue": 2,
       "prevDist": 292.9,
       "prevSprint": 0,
-      "prevSprint23": 0
+      "prevSprint23": 0,
+      "hsr": 0.0
     },
     {
       "name": "Ticha",
@@ -183,7 +191,8 @@
       "fatigue": 2,
       "prevDist": 9632.2,
       "prevSprint": 154.0,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 199.1
     },
     {
       "name": "Magui",
@@ -202,7 +211,8 @@
       "fatigue": 2,
       "prevDist": 10640.2,
       "prevSprint": 169.8,
-      "prevSprint23": 2.0
+      "prevSprint23": 2.0,
+      "hsr": 208.7
     },
     {
       "name": "Manu",
@@ -221,7 +231,8 @@
       "fatigue": 2,
       "prevDist": 3421.6,
       "prevSprint": 91.5,
-      "prevSprint23": 3.3
+      "prevSprint23": 3.3,
+      "hsr": 49.8
     },
     {
       "name": "Serena",
@@ -240,7 +251,8 @@
       "fatigue": 2,
       "prevDist": 10081.7,
       "prevSprint": 656.8,
-      "prevSprint23": 130.5
+      "prevSprint23": 130.5,
+      "hsr": 434.2
     },
     {
       "name": "Cartaxo",
@@ -259,7 +271,8 @@
       "fatigue": 2,
       "prevDist": 5081.1,
       "prevSprint": 108.5,
-      "prevSprint23": 10.4
+      "prevSprint23": 10.4,
+      "hsr": 188.4
     },
     {
       "name": "Tita",
@@ -278,7 +291,8 @@
       "fatigue": 2,
       "prevDist": 3072.6,
       "prevSprint": 124.9,
-      "prevSprint23": 29.3
+      "prevSprint23": 29.3,
+      "hsr": 53.7
     },
     {
       "name": "Carlota",
@@ -297,7 +311,8 @@
       "fatigue": 2,
       "prevDist": 4525.4,
       "prevSprint": 89.9,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 215.8
     },
     {
       "name": "Verónica",
@@ -316,7 +331,8 @@
       "fatigue": 2,
       "prevDist": 6566.3,
       "prevSprint": 129.8,
-      "prevSprint23": 9.7
+      "prevSprint23": 9.7,
+      "hsr": 234.6
     },
     {
       "name": "Malta",
@@ -335,7 +351,8 @@
       "fatigue": 2,
       "prevDist": 5114.5,
       "prevSprint": 82.5,
-      "prevSprint23": 17.5
+      "prevSprint23": 17.5,
+      "hsr": 220.5
     },
     {
       "name": "Meriva",
@@ -354,7 +371,8 @@
       "fatigue": 2,
       "prevDist": 4067.5,
       "prevSprint": 251.3,
-      "prevSprint23": 42.8
+      "prevSprint23": 42.8,
+      "hsr": 317.0
     }
   ]
 }

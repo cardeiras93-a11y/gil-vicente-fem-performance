@@ -4,7 +4,7 @@
   "subtitle": "Relatório de Rendimento em Jogo (2026-10-31) — Jogo + Compensação (Sem Aquecimento)",
   "matchDate": "2026-10-31",
   "opponent": "SC Rio Tinto",
-  "teamCategory": "Futebol Feminino Sub-15",
+  "teamCategory": "Futebol Feminino Sénior",
   "competition": "Campeonato Nacional II Divisão (4ª Jornada)",
   "score": "1 - 0",
   "location": "Complexo Desportivo de Rio Tinto (Sintético)",
@@ -28,7 +28,8 @@
       "acc": 0,
       "dec": 0,
       "rpe": 6,
-      "fatigue": 2
+      "fatigue": 2,
+      "hsr": 0.0
     },
     {
       "name": "Sara T.",
@@ -47,7 +48,8 @@
       "fatigue": 3,
       "prevDist": 8161.5,
       "prevSprint": 210.5,
-      "prevSprint23": 27.1
+      "prevSprint23": 27.1,
+      "hsr": 215.0
     },
     {
       "name": "Marthe",
@@ -66,7 +68,8 @@
       "fatigue": 3,
       "prevDist": 7773.9,
       "prevSprint": 110.8,
-      "prevSprint23": 35.6
+      "prevSprint23": 35.6,
+      "hsr": 155.0
     },
     {
       "name": "Simães",
@@ -85,7 +88,8 @@
       "fatigue": 3,
       "prevDist": 8794.0,
       "prevSprint": 506.6,
-      "prevSprint23": 53.1
+      "prevSprint23": 53.1,
+      "hsr": 330.0
     },
     {
       "name": "Nicole",
@@ -101,7 +105,8 @@
       "acc": 45,
       "dec": 52,
       "rpe": 8,
-      "fatigue": 3
+      "fatigue": 3,
+      "hsr": 245.0
     },
     {
       "name": "Izzy",
@@ -120,7 +125,8 @@
       "fatigue": 3,
       "prevDist": 9590.7,
       "prevSprint": 55.9,
-      "prevSprint23": 0.0
+      "prevSprint23": 0.0,
+      "hsr": 95.0
     },
     {
       "name": "Meriva",
@@ -139,7 +145,8 @@
       "fatigue": 3,
       "prevDist": 4751.1,
       "prevSprint": 505.8,
-      "prevSprint23": 181.8
+      "prevSprint23": 181.8,
+      "hsr": 410.0
     },
     {
       "name": "Carlota",
@@ -158,7 +165,8 @@
       "fatigue": 3,
       "prevDist": 4684.9,
       "prevSprint": 268.7,
-      "prevSprint23": 16.9
+      "prevSprint23": 16.9,
+      "hsr": 265.0
     },
     {
       "name": "Serena",
@@ -177,7 +185,8 @@
       "fatigue": 3,
       "prevDist": 6427.9,
       "prevSprint": 490.7,
-      "prevSprint23": 157.1
+      "prevSprint23": 157.1,
+      "hsr": 345.0
     },
     {
       "name": "Tita",
@@ -196,7 +205,8 @@
       "fatigue": 3,
       "prevDist": 4546.1,
       "prevSprint": 429.6,
-      "prevSprint23": 165.7
+      "prevSprint23": 165.7,
+      "hsr": 280.0
     },
     {
       "name": "Patrícia B.",
@@ -212,7 +222,8 @@
       "acc": 22,
       "dec": 31,
       "rpe": 6,
-      "fatigue": 2
+      "fatigue": 2,
+      "hsr": 90.0
     },
     {
       "name": "Magui",
@@ -231,7 +242,8 @@
       "fatigue": 2,
       "prevDist": 5300.3,
       "prevSprint": 155.4,
-      "prevSprint23": 11.7
+      "prevSprint23": 11.7,
+      "hsr": 165.0
     },
     {
       "name": "Cartaxo",
@@ -250,7 +262,8 @@
       "fatigue": 2,
       "prevDist": 5195.8,
       "prevSprint": 224.3,
-      "prevSprint23": 46.9
+      "prevSprint23": 46.9,
+      "hsr": 650.0
     },
     {
       "name": "Ticha",
@@ -269,7 +282,8 @@
       "fatigue": 2,
       "prevDist": 4264.4,
       "prevSprint": 76.2,
-      "prevSprint23": 5.8
+      "prevSprint23": 5.8,
+      "hsr": 615.0
     },
     {
       "name": "Verónica",
@@ -288,7 +302,8 @@
       "fatigue": 2,
       "prevDist": 4788.4,
       "prevSprint": 251.3,
-      "prevSprint23": 50.6
+      "prevSprint23": 50.6,
+      "hsr": 605.0
     },
     {
       "name": "Manu",
@@ -307,7 +322,8 @@
       "fatigue": 2,
       "prevDist": 4320.7,
       "prevSprint": 217.6,
-      "prevSprint23": 30.2
+      "prevSprint23": 30.2,
+      "hsr": 525.0
     },
     {
       "name": "Eva",
@@ -326,7 +342,8 @@
       "fatigue": 2,
       "prevDist": 4244.9,
       "prevSprint": 442.4,
-      "prevSprint23": 116.0
+      "prevSprint23": 116.0,
+      "hsr": 480.0
     }
   ]
 }
