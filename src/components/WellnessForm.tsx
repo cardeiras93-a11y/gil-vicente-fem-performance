@@ -185,7 +185,7 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
 
     if (!sent) {
       try {
-        const directRes = await fetch('https://gil-vicente-fem-performance.onrender.com/api/wellness', {
+        const netlifyRes = await fetch('https://gil-vicente-fem-performance.netlify.app/api/wellness', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -193,9 +193,9 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
           },
           body: JSON.stringify(newEntry),
         });
-        if (directRes.ok) sent = true;
+        if (netlifyRes.ok) sent = true;
       } catch (retryErr) {
-        console.warn('Falha no envio direto ao Render:', retryErr);
+        console.warn('Falha no envio direto ao Netlify:', retryErr);
       }
     }
 

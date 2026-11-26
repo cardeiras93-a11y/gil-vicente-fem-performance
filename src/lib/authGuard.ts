@@ -38,6 +38,7 @@ export function verifyApiAuth(request: Request): NextResponse | null {
   }
 }
 
+const NETLIFY_BASE = 'https://gil-vicente-fem-performance.netlify.app';
 const RENDER_FALLBACK_BASE = 'https://gil-vicente-fem-performance.onrender.com';
 
 export async function secureFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
@@ -58,15 +59,15 @@ export async function secureFetch(input: RequestInfo | URL, init?: RequestInit):
   const isVercelHost = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
   const isApiRelative = urlStr.startsWith('/api/');
 
-  // If on Vercel and calling /api/, directly route to Render because Vercel deployment is disabled (402)
+  // If on Vercel and calling /api/, directly route to Netlify because Vercel deployment is disabled (402)
   if (isVercelHost && isApiRelative) {
-    const targetUrl = `${RENDER_FALLBACK_BASE}${urlStr}`;
+    const targetUrl = `${NETLIFY_BASE}${urlStr}`;
     try {
-      const renderRes = await fetch(targetUrl, {
+      const netlifyRes = await fetch(targetUrl, {
         ...init,
         headers,
       });
-      if (renderRes.ok) return renderRes;
+      if (netlifyRes.ok) return netlifyRes;
     } catch {}
   }
 
@@ -80,33 +81,52 @@ export async function secureFetch(input: RequestInfo | URL, init?: RequestInit):
       return res;
     }
 
-    // If HTTP error (e.g. 402 Payment Required, 500, 502), fallback to Render
-    if (isApiRelative || !urlStr.includes('onrender.com')) {
-      const fallbackUrl = urlStr.startsWith('http')
-        ? urlStr.replace(/https:\/\/[^/]+/, RENDER_FALLBACK_BASE)
-        : `${RENDER_FALLBACK_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
+    // If HTTP error (e.g. 402 Payment Required, 500, 502), fallback to Netlify / Render
+    if (isApiRelative || !urlStr.includes('netlify.app')) {
+      const netlifyFallback = urlStr.startsWith('http')
+        ? urlStr.replace(/https:\/\/[^/]+/, NETLIFY_BASE)
+        : `${NETLIFY_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
       
       try {
-        const fallbackRes = await fetch(fallbackUrl, {
+        const fallbackRes = await fetch(netlifyFallback, {
           ...init,
           headers,
         });
-        if (fallbackRes.ok) {
-          return fallbackRes;
-        }
+        if (fallbackRes.ok) return fallbackRes;
+      } catch {}
+
+      const renderFallback = urlStr.startsWith('http')
+        ? urlStr.replace(/https:\/\/[^/]+/, RENDER_FALLBACK_BASE)
+        : `${RENDER_FALLBACK_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
+      try {
+        const renderRes = await fetch(renderFallback, {
+          ...init,
+          headers,
+        });
+        if (renderRes.ok) return renderRes;
       } catch {}
     }
 
     return res;
   } catch (networkErr) {
-    // If fetch failed completely, attempt Render fallback
-    if (isApiRelative || !urlStr.includes('onrender.com')) {
-      const fallbackUrl = urlStr.startsWith('http')
+    // If fetch failed completely, attempt Netlify then Render fallback
+    if (isApiRelative || !urlStr.includes('netlify.app')) {
+      const netlifyFallback = urlStr.startsWith('http')
+        ? urlStr.replace(/https:\/\/[^/]+/, NETLIFY_BASE)
+        : `${NETLIFY_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
+      try {
+        const netlifyRes = await fetch(netlifyFallback, {
+          ...init,
+          headers,
+        });
+        if (netlifyRes.ok) return netlifyRes;
+      } catch {}
+
+      const renderFallback = urlStr.startsWith('http')
         ? urlStr.replace(/https:\/\/[^/]+/, RENDER_FALLBACK_BASE)
         : `${RENDER_FALLBACK_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
-      
       try {
-        return await fetch(fallbackUrl, {
+        return await fetch(renderFallback, {
           ...init,
           headers,
         });
