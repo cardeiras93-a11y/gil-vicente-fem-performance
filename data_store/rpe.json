@@ -1,5 +1,26 @@
 [
   {
+    "id": "rpe-ath-3-2026-11-26-field",
+    "athleteId": "ath-3",
+    "athleteName": "CARTAXO",
+    "date": "2026-11-26",
+    "sessionType": "field",
+    "physicalDemand": 4,
+    "postFatigue": 3,
+    "sessionDurationMin": 120,
+    "muscleFatigue": {},
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-26T12:32:14.966Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-26T12:32:14.966Z"
+  },
+  {
     "id": "rpe-ath-27-2026-11-26-field",
     "athleteId": "ath-27",
     "athleteName": "CHELSEA",
