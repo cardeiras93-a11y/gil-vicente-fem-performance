@@ -729,107 +729,131 @@ export async function syncAllDataFromCloud(): Promise<boolean> {
 
     // 3. Sync Wellness Entries: Cloud is authoritative
     try {
-      const res = await secureFetch(`/api/wellness?t=${Date.now()}`, { cache: 'no-store' });
-      const data = await res.json();
-      const items = data?.entries || data?.data;
-      if (Array.isArray(items)) {
-        const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
-        const map = new Map<string, WellnessEntry>();
-        const getKey = (item: WellnessEntry) => {
-          if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
-          if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
-          return item.id || `wel_${Math.random()}`;
-        };
-        // 1. Cloud is authoritative for all existing records
+      let items: any[] = [];
+      try {
+        const res = await secureFetch(`/api/wellness?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          items = data?.entries || data?.data || [];
+        }
+      } catch (getErr) {
+        console.warn('Erro ao ler wellness da cloud:', getErr);
+      }
+
+      const local: WellnessEntry[] = JSON.parse(localStorage.getItem(WELLNESS_LOCAL_KEY) || '[]');
+      const map = new Map<string, WellnessEntry>();
+      const getKey = (item: WellnessEntry) => {
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}`;
+        return item.id || `wel_${Math.random()}`;
+      };
+
+      if (Array.isArray(items) && items.length > 0) {
         items.forEach((item) => {
           map.set(getKey(item), item);
         });
-        // 2. Preserve local entries not yet in cloud and auto-push unsynced recent entries to cloud
-        const unsyncedWellness: WellnessEntry[] = [];
-        local.forEach((localItem) => {
-          const key = getKey(localItem);
-          if (!map.has(key)) {
-            map.set(key, localItem);
-            if (localItem.date) {
-              const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
-              if (diffMs <= 3 * 24 * 60 * 60 * 1000) {
-                unsyncedWellness.push(localItem);
-              }
+      }
+
+      const unsyncedWellness: WellnessEntry[] = [];
+      local.forEach((localItem) => {
+        const key = getKey(localItem);
+        if (!map.has(key)) {
+          map.set(key, localItem);
+          if (localItem.date) {
+            const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
+            if (diffMs <= 7 * 24 * 60 * 60 * 1000) {
+              unsyncedWellness.push(localItem);
             }
           }
-        });
-        const merged = Array.from(map.values());
-        localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
-        dispatchDataUpdatedEvent();
+        }
+      });
 
-        if (unsyncedWellness.length > 0) {
-          for (const entry of unsyncedWellness) {
-            try {
-              await secureFetch('/api/wellness', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry),
-              });
-            } catch {}
-          }
+      const merged = Array.from(map.values());
+      localStorage.setItem(WELLNESS_LOCAL_KEY, JSON.stringify(merged));
+      dispatchDataUpdatedEvent();
+
+      if (unsyncedWellness.length > 0) {
+        for (const entry of unsyncedWellness) {
+          try {
+            await secureFetch('/api/wellness', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry),
+            });
+          } catch {}
         }
       }
-    } catch {}
+    } catch (e) {
+      console.warn('Erro geral no sync de wellness:', e);
+    }
 
     // 4. Sync RPE Entries: Cloud is authoritative
     try {
-      const res = await secureFetch(`/api/rpe?t=${Date.now()}`, { cache: 'no-store' });
-      const data = await res.json();
-      const items = data?.entries || data?.data;
-      if (Array.isArray(items)) {
-        const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
-        const map = new Map<string, RPEEntry>();
-        const getKey = (item: RPEEntry) => {
-          const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
-          if (item.id) return item.id;
-          if (item.athleteId && item.date) return `${item.athleteId}_${item.date}_${sType}`;
-          if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}_${sType}`;
-          return `rpe_${Math.random()}`;
-        };
+      let items: any[] = [];
+      try {
+        const res = await secureFetch(`/api/rpe?t=${Date.now()}`, { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          items = data?.entries || data?.data || [];
+        }
+      } catch (getErr) {
+        console.warn('Erro ao ler rpe da cloud:', getErr);
+      }
+
+      const local: RPEEntry[] = JSON.parse(localStorage.getItem(RPE_LOCAL_KEY) || '[]');
+      const map = new Map<string, RPEEntry>();
+      const getKey = (item: RPEEntry) => {
+        const sType = item.sessionType || (item.id && item.id.includes('gym_lower') ? 'gym_lower' : 'field');
+        if (item.id) return item.id;
+        if (item.athleteId && item.date) return `${item.athleteId}_${item.date}_${sType}`;
+        if (item.athleteName && item.date) return `${item.athleteName.toLowerCase().trim()}_${item.date}_${sType}`;
+        return `rpe_${Math.random()}`;
+      };
+
+      if (Array.isArray(items) && items.length > 0) {
         items.forEach((item) => {
           if (!item.sessionType && item.id?.includes('gym_lower')) {
             item.sessionType = 'gym_lower';
           }
           map.set(getKey(item), item);
         });
-        const unsyncedRpe: RPEEntry[] = [];
-        local.forEach((localItem) => {
-          if (!localItem.sessionType && localItem.id?.includes('gym_lower')) {
-            localItem.sessionType = 'gym_lower';
-          }
-          const key = getKey(localItem);
-          if (!map.has(key)) {
-            map.set(key, localItem);
-            if (localItem.date) {
-              const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
-              if (diffMs <= 3 * 24 * 60 * 60 * 1000) {
-                unsyncedRpe.push(localItem);
-              }
+      }
+
+      const unsyncedRpe: RPEEntry[] = [];
+      local.forEach((localItem) => {
+        if (!localItem.sessionType && localItem.id?.includes('gym_lower')) {
+          localItem.sessionType = 'gym_lower';
+        }
+        const key = getKey(localItem);
+        if (!map.has(key)) {
+          map.set(key, localItem);
+          if (localItem.date) {
+            const diffMs = Math.abs(Date.now() - new Date(localItem.date).getTime());
+            if (diffMs <= 7 * 24 * 60 * 60 * 1000) {
+              unsyncedRpe.push(localItem);
             }
           }
-        });
-        const merged = Array.from(map.values());
-        localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
-        dispatchDataUpdatedEvent();
+        }
+      });
 
-        if (unsyncedRpe.length > 0) {
-          for (const entry of unsyncedRpe) {
-            try {
-              await secureFetch('/api/rpe', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(entry),
-              });
-            } catch {}
-          }
+      const merged = Array.from(map.values());
+      localStorage.setItem(RPE_LOCAL_KEY, JSON.stringify(merged));
+      dispatchDataUpdatedEvent();
+
+      if (unsyncedRpe.length > 0) {
+        for (const entry of unsyncedRpe) {
+          try {
+            await secureFetch('/api/rpe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(entry),
+            });
+          } catch {}
         }
       }
-    } catch {}
+    } catch (e) {
+      console.warn('Erro geral no sync de rpe:', e);
+    }
 
     // 5. Sync Hydration Entries: Cloud is authoritative
     try {

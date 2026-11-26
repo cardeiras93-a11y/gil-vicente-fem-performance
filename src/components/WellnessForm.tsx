@@ -171,35 +171,47 @@ export const WellnessForm: React.FC<WellnessFormProps> = ({
     // 1. Guardar localmente de imediato para garantir persistência a 100% no dispositivo
     saveWellnessLocally(newEntry);
 
+    let sent = false;
     try {
-      await secureFetch('/api/wellness', {
+      const res = await secureFetch('/api/wellness', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newEntry),
       });
-
-      secureFetch('/api/sync-sheets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'wellness', entry: newEntry }),
-      }).catch(() => {});
-
-      setIsSubmitting(false);
-      setIsSuccess(true);
-
-      setTimeout(() => {
-        setIsSuccess(false);
-        onSubmitSuccess();
-      }, redirectDelay);
+      if (res.ok) sent = true;
     } catch (err) {
-      console.warn('Falha no envio API direto. Registo seguro localmente.');
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        setIsSuccess(false);
-        onSubmitSuccess();
-      }, redirectDelay);
+      console.warn('Falha na 1ª tentativa de envio API:', err);
     }
+
+    if (!sent) {
+      try {
+        const directRes = await fetch('https://gil-vicente-fem-performance.onrender.com/api/wellness', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-app-auth-token': 'GVFC_PERF_SECURE_2026_TOKEN'
+          },
+          body: JSON.stringify(newEntry),
+        });
+        if (directRes.ok) sent = true;
+      } catch (retryErr) {
+        console.warn('Falha no envio direto ao Render:', retryErr);
+      }
+    }
+
+    secureFetch('/api/sync-sheets', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'wellness', entry: newEntry }),
+    }).catch(() => {});
+
+    setIsSubmitting(false);
+    setIsSuccess(true);
+
+    setTimeout(() => {
+      setIsSuccess(false);
+      onSubmitSuccess();
+    }, redirectDelay);
   };
 
   // Helper for 1-5 circular touch rating with FULL SCALE LEGEND

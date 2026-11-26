@@ -38,13 +38,80 @@ export function verifyApiAuth(request: Request): NextResponse | null {
   }
 }
 
+const RENDER_FALLBACK_BASE = 'https://gil-vicente-fem-performance.onrender.com';
+
 export async function secureFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {
   const headers = new Headers(init?.headers || {});
   if (!headers.has(APP_AUTH_TOKEN_HEADER)) {
     headers.set(APP_AUTH_TOKEN_HEADER, DEFAULT_APP_SECURITY_TOKEN);
   }
-  return fetch(input, {
-    ...init,
-    headers,
-  });
+
+  let urlStr = '';
+  if (typeof input === 'string') {
+    urlStr = input;
+  } else if (input instanceof URL) {
+    urlStr = input.toString();
+  } else if (typeof Request !== 'undefined' && input instanceof Request) {
+    urlStr = input.url;
+  }
+
+  const isVercelHost = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+  const isApiRelative = urlStr.startsWith('/api/');
+
+  // If on Vercel and calling /api/, directly route to Render because Vercel deployment is disabled (402)
+  if (isVercelHost && isApiRelative) {
+    const targetUrl = `${RENDER_FALLBACK_BASE}${urlStr}`;
+    try {
+      const renderRes = await fetch(targetUrl, {
+        ...init,
+        headers,
+      });
+      if (renderRes.ok) return renderRes;
+    } catch {}
+  }
+
+  try {
+    const res = await fetch(input, {
+      ...init,
+      headers,
+    });
+
+    if (res.ok) {
+      return res;
+    }
+
+    // If HTTP error (e.g. 402 Payment Required, 500, 502), fallback to Render
+    if (isApiRelative || !urlStr.includes('onrender.com')) {
+      const fallbackUrl = urlStr.startsWith('http')
+        ? urlStr.replace(/https:\/\/[^/]+/, RENDER_FALLBACK_BASE)
+        : `${RENDER_FALLBACK_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
+      
+      try {
+        const fallbackRes = await fetch(fallbackUrl, {
+          ...init,
+          headers,
+        });
+        if (fallbackRes.ok) {
+          return fallbackRes;
+        }
+      } catch {}
+    }
+
+    return res;
+  } catch (networkErr) {
+    // If fetch failed completely, attempt Render fallback
+    if (isApiRelative || !urlStr.includes('onrender.com')) {
+      const fallbackUrl = urlStr.startsWith('http')
+        ? urlStr.replace(/https:\/\/[^/]+/, RENDER_FALLBACK_BASE)
+        : `${RENDER_FALLBACK_BASE}${urlStr.startsWith('/') ? '' : '/'}${urlStr}`;
+      
+      try {
+        return await fetch(fallbackUrl, {
+          ...init,
+          headers,
+        });
+      } catch {}
+    }
+    throw networkErr;
+  }
 }
