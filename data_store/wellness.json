@@ -103,7 +103,7 @@
     "muscleFatigue": {
       "Ísquiotibiais Direito": 2
     },
-    "needsPhysio": true,
+    "needsPhysio": false,
     "physioReason": null,
     "submittedAt": "2026-11-26T08:00:29.923Z",
     "isLate": false,
