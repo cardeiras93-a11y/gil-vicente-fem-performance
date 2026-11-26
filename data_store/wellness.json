@@ -28961,7 +28961,13 @@
     "needsPhysio": true,
     "physioReason": "Cotovelo",
     "createdAt": "2026-09-10T15:02:21.474Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-10T15:02:21.474Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789051249610",
