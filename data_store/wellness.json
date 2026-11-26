@@ -1,5 +1,34 @@
 [
   {
+    "id": "wel-1795680084062",
+    "athleteId": "ath-20",
+    "athleteName": "SARA TEIXEIRA",
+    "date": "2026-11-26",
+    "menstrualCycle": "2ª Semana após a menstruação",
+    "sleepQuality": 4,
+    "sleepDuration": 4,
+    "mood": 4,
+    "stress": 3,
+    "fatigue": 3,
+    "soreness": 3,
+    "heavyLegs": 3,
+    "wellnessTotal": 24,
+    "muscleFatigue": {
+      "Gémeos Post. Direito": 7,
+      "Gémeos Post. Esquerdo": 7
+    },
+    "needsPhysio": true,
+    "physioReason": null,
+    "submittedAt": "2026-11-26T08:01:24.062Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-26T08:01:24.062Z"
+  },
+  {
     "id": "wel-1795680029923",
     "athleteId": "ath-27",
     "athleteName": "CHELSEA",
