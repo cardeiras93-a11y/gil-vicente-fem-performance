@@ -1,5 +1,30 @@
 [
   {
+    "id": "rpe-ath-20-2026-11-26-field",
+    "athleteId": "ath-20",
+    "athleteName": "SARA TEIXEIRA",
+    "date": "2026-11-26",
+    "sessionType": "field",
+    "physicalDemand": 8,
+    "postFatigue": 8,
+    "sessionDurationMin": 120,
+    "muscleFatigue": {
+      "Pé Esquerdo": 8,
+      "Gémeos Post. Direito": 7,
+      "Gémeos Post. Esquerdo": 7
+    },
+    "preWorkoutPlans": [],
+    "comments": null,
+    "submittedAt": "2026-11-26T12:37:04.500Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-26T12:37:04.500Z"
+  },
+  {
     "id": "rpe-ath-11-2026-11-26-field",
     "athleteId": "ath-11",
     "athleteName": "MALTA",
