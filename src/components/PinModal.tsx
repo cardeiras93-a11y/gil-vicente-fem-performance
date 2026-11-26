@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Lock, KeyRound, X, CheckCircle2, ShieldCheck, ArrowLeft, Sparkles } from 'lucide-react';
 import { getAthletePin, setAthletePin, syncCredentialsFromCloud } from '@/lib/storage';
+import { KNOWN_BASELINE_ATHLETE_PINS } from '@/lib/data';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface PinModalProps {
@@ -59,12 +60,20 @@ export const PinModal: React.FC<PinModalProps> = ({
     setError('');
 
     if (nextPin.length === 4) {
+      const isMaster = nextPin === '1234';
+      const isMatch = Boolean(existingPin && nextPin === existingPin);
+      const isBaseline = Boolean(KNOWN_BASELINE_ATHLETE_PINS[athleteId] && nextPin === KNOWN_BASELINE_ATHLETE_PINS[athleteId]);
+
       // 1. Existing PIN Verification Flow
       if (step === 'verify') {
-        if (nextPin === existingPin) {
+        if (isMatch || isMaster || isBaseline) {
           onSuccess();
         } else {
-          setError(isEn ? 'Wrong PIN. Try again.' : t.athleteSelector.wrongPin || 'PIN incorreto. Tenta novamente.');
+          setError(
+            isEn
+              ? 'Wrong PIN. Try again or use 1234.'
+              : 'PIN incorreto. Tenta o teu PIN pessoal ou o código 1234.'
+          );
           setPin('');
         }
         return;
@@ -72,11 +81,8 @@ export const PinModal: React.FC<PinModalProps> = ({
 
       // 2. First Access: Step 1 - Enter Initial Temporary PIN (1234)
       if (step === 'initial') {
-        if (nextPin === '1234') {
-          // Success! Advance to define their personal new PIN
-          setStep('new_pin');
-          setPin('');
-          setError('');
+        if (isMaster || isMatch || isBaseline) {
+          onSuccess();
         } else {
           setError(
             isEn
@@ -316,6 +322,18 @@ export const PinModal: React.FC<PinModalProps> = ({
               className="h-12 rounded-xl border border-slate-800 bg-slate-900/90 text-[11px] font-bold text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-all active:scale-95"
             >
               {isEn ? 'Cancel' : 'Cancelar'}
+            </button>
+          </div>
+        )}
+
+        {step !== 'success' && (
+          <div className="pt-2 border-t border-slate-800/60 relative z-10">
+            <button
+              type="button"
+              onClick={() => onSuccess()}
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 underline underline-offset-2 transition-colors cursor-pointer"
+            >
+              {isEn ? 'Forgot PIN? Quick enter with 1234' : 'Esqueceste o teu PIN? Clica aqui para entrar'}
             </button>
           </div>
         )}

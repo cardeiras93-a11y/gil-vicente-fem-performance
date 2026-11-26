@@ -27,7 +27,7 @@ import {
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
   Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Tablet, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
-  Unlock, UserCheck, Apple, Eye, EyeOff
+  Unlock, UserCheck, Apple, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -145,6 +145,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
 
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [rpeSessionFilter, setRpeSessionFilter] = useState<'all' | 'field' | 'gym_lower'>('all');
+
+  type RpeSortField = 'athlete' | 'time' | 'borg' | 'fatigue' | 'prevWork' | 'soreness' | 'comments';
+  const [rpeSortField, setRpeSortField] = useState<RpeSortField>('time');
+  const [rpeSortDirection, setRpeSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  const handleRpeSort = (field: RpeSortField) => {
+    if (rpeSortField === field) {
+      setRpeSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setRpeSortField(field);
+      setRpeSortDirection(field === 'athlete' ? 'asc' : 'desc');
+    }
+  };
 
   const [activeTab, setActiveTabState] = useState<'schedule' | 'overview' | 'collective' | 'individual' | 'nutrition' | 'fines' | 'pins' | 'matchReport' | 'matchMinutes' | 'mobility'>(() => {
     if (typeof window !== 'undefined') {
@@ -752,6 +765,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
   };
 
+  const handleResetToAdminHome = () => {
+    setActiveTab('schedule');
+    setSubTab('general');
+    setSearchFilter('');
+    setRpeSessionFilter('all');
+    const today = getTodayLocalDateStr();
+    setSelectedDate(today);
+    loadAllData(today);
+    setRpeSortField('time');
+    setRpeSortDirection('desc');
+    setIsKioskOpen(false);
+    setIsExportModalOpen(false);
+    setIsClearModalOpen(false);
+  };
+
   // Compute weight statistics for weight management sub-tab
   const weightAnalytics = useMemo(() => {
     const allHydration = allHydrationList || [];
@@ -1121,6 +1149,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     return rpeList || [];
   }, [rpeList, fieldRpeList, gymRpeList, rpeSessionFilter]);
 
+  const sortedRpeList = useMemo(() => {
+    const list = (activeRpeList || []).filter((r) =>
+      (r?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase())
+    );
+
+    return [...list].sort((a, b) => {
+      let comp = 0;
+      if (rpeSortField === 'athlete') {
+        comp = (a?.athleteName || '').localeCompare(b?.athleteName || '', 'pt', { sensitivity: 'base' });
+      } else if (rpeSortField === 'time') {
+        const tA = new Date(a?.submittedAt || a?.createdAt || '').getTime() || 0;
+        const tB = new Date(b?.submittedAt || b?.createdAt || '').getTime() || 0;
+        comp = tA - tB;
+      } else if (rpeSortField === 'borg') {
+        comp = (Number(a?.physicalDemand) || 0) - (Number(b?.physicalDemand) || 0);
+      } else if (rpeSortField === 'fatigue') {
+        comp = (Number(a?.postFatigue) || 0) - (Number(b?.postFatigue) || 0);
+      } else if (rpeSortField === 'prevWork') {
+        const pwA = Array.isArray(a?.preWorkoutPlans) ? a.preWorkoutPlans.length : 0;
+        const pwB = Array.isArray(b?.preWorkoutPlans) ? b.preWorkoutPlans.length : 0;
+        comp = pwA - pwB;
+      } else if (rpeSortField === 'soreness') {
+        const countA = a?.muscleFatigue ? Object.keys(a.muscleFatigue).length : 0;
+        const countB = b?.muscleFatigue ? Object.keys(b.muscleFatigue).length : 0;
+        comp = countA - countB;
+      } else if (rpeSortField === 'comments') {
+        comp = (a?.comments || '').localeCompare(b?.comments || '', 'pt', { sensitivity: 'base' });
+      }
+      return rpeSortDirection === 'asc' ? comp : -comp;
+    });
+  }, [activeRpeList, searchFilter, rpeSortField, rpeSortDirection]);
+
   if (!isOpen) return null;
 
   // PIN Authentication Screen for Admin Access
@@ -1381,17 +1441,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
       <div className="mx-auto max-w-5xl space-y-6 pb-12">
         {/* Admin Header Bar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-red-900/60 pb-4 gap-3">
-          <div className="flex items-center space-x-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white font-black shadow-lg shadow-red-600/30">
+          <button
+            type="button"
+            onClick={handleResetToAdminHome}
+            className="flex items-center space-x-3 text-left group cursor-pointer focus:outline-none transition-all active:scale-98"
+            title="Voltar ao início do Painel Admin (Treino & Calendário)"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white font-black shadow-lg shadow-red-600/30 group-hover:bg-red-500 group-hover:scale-105 active:scale-95 transition-all">
               <Shield className="h-6 w-6 stroke-[2.5]" />
             </div>
             <div>
-              <h1 className="text-sm font-black uppercase tracking-tight text-slate-100">
+              <h1 className="text-sm font-black uppercase tracking-tight text-slate-100 group-hover:text-red-400 transition-colors">
                 Gil Vicente FC &bull; Painel da Equipa Técnica
               </h1>
               <p className="text-[11px] font-bold text-red-400">Departamento de Performance & Saúde</p>
             </div>
-          </div>
+          </button>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Quick Date Control Bar */}
@@ -2470,19 +2535,143 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs border-collapse">
                         <thead>
-                          <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold">
-                            <th className="py-2.5 px-3">Atleta</th>
-                            <th className="py-2.5 px-3 whitespace-nowrap">Hora Submissão</th>
-                            <th className="py-2.5 px-3">{rpeSessionFilter === 'gym_lower' ? 'Exigência Força MMII (Borg)' : 'Exigência Física (Borg)'}</th>
-                            <th className="py-2.5 px-3">{rpeSessionFilter === 'gym_lower' ? 'Fadiga Muscular Pós-Ginásio' : 'Fadiga Pós-Treino'}</th>
-                            <th className="py-2.5 px-3">Trabalho Prévio</th>
-                            <th className="py-2.5 px-3">Zonas c/ Dor (Body Chart)</th>
-                            <th className="py-2.5 px-3">Comentários</th>
+                          <tr className="border-b border-slate-800 text-[11px] uppercase text-slate-400 font-extrabold select-none">
+                            <th
+                              onClick={() => handleRpeSort('athlete')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Atleta"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>Atleta</span>
+                                {rpeSortField === 'athlete' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('time')}
+                              className="py-2.5 px-3 whitespace-nowrap cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Hora de Submissão"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>Hora Submissão</span>
+                                {rpeSortField === 'time' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('borg')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Exigência Borg"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>{rpeSessionFilter === 'gym_lower' ? 'Exigência Força MMII (Borg)' : 'Exigência Física (Borg)'}</span>
+                                {rpeSortField === 'borg' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('fatigue')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Nível de Fadiga"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>{rpeSessionFilter === 'gym_lower' ? 'Fadiga Muscular Pós-Ginásio' : 'Fadiga Pós-Treino'}</span>
+                                {rpeSortField === 'fatigue' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('prevWork')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Trabalho Prévio"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>Trabalho Prévio</span>
+                                {rpeSortField === 'prevWork' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('soreness')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Zonas de Dor"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>Zonas c/ Dor (Body Chart)</span>
+                                {rpeSortField === 'soreness' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
+
+                            <th
+                              onClick={() => handleRpeSort('comments')}
+                              className="py-2.5 px-3 cursor-pointer hover:text-white transition-colors group"
+                              title="Clique para ordenar por Comentários"
+                            >
+                              <div className="flex items-center space-x-1">
+                                <span>Comentários</span>
+                                {rpeSortField === 'comments' ? (
+                                  rpeSortDirection === 'asc' ? (
+                                    <ArrowUp className="h-3 w-3 text-brand-lime shrink-0" />
+                                  ) : (
+                                    <ArrowDown className="h-3 w-3 text-brand-lime shrink-0" />
+                                  )
+                                ) : (
+                                  <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                )}
+                              </div>
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800/60 font-medium">
-                          {activeRpeList
-                            .filter((r) => (r?.athleteName || '').toLowerCase().includes((searchFilter || '').toLowerCase()))
+                          {sortedRpeList
                             .map((r) => {
                               const borgObj = BORG_SCALE.find((b) => b.value === r.physicalDemand);
                               const borgLabel = t.rpe.borgDescriptors[r.physicalDemand as keyof typeof t.rpe.borgDescriptors] || borgObj?.label;

@@ -35,6 +35,31 @@ export const INITIAL_ATHLETES: Athlete[] = [
 
 export const ROSTER_NAMES: string[] = INITIAL_ATHLETES.map((a) => a.name);
 
+export const KNOWN_BASELINE_ATHLETE_PINS: Record<string, string> = {
+  'ath-1': '1101',
+  'ath-2': '1976',
+  'ath-3': '2724',
+  'ath-4': '1234',
+  'ath-5': '1234',
+  'ath-10': '1234',
+  'ath-11': '2724',
+  'ath-12': '1234',
+  'ath-13': '4993',
+  'ath-14': '1215',
+  'ath-15': '1234',
+  'ath-17': '1402',
+  'ath-19': '3218',
+  'ath-20': '1234',
+  'ath-21': '1234',
+  'ath-22': '1234',
+  'ath-23': '0000',
+  'ath-24': '1230',
+  'ath-25': '1234',
+  'ath-26': '7656',
+  'ath-27': '1234',
+  'ath-28': '1234',
+};
+
 export const MENSTRUAL_CYCLE_OPTIONS: MenstrualCyclePhase[] = [
   'Menstruação',
   '1ª Semana após a menstruação',

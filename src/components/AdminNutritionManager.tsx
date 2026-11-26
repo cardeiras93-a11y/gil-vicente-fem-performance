@@ -34,6 +34,9 @@ import {
   User,
   ShieldCheck,
   RefreshCw,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
 } from 'lucide-react';
 
 export const AdminNutritionManager: React.FC = () => {
@@ -43,6 +46,34 @@ export const AdminNutritionManager: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedAthlete, setSelectedAthlete] = useState<AthleteNutritionRecord | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+
+  type NutritionSortField =
+    | 'jogadora'
+    | 'pos'
+    | 'height'
+    | 'currentWeight'
+    | 'targetWeight'
+    | 'weightDiff'
+    | 'fatPct'
+    | 'muscle'
+    | 'ago'
+    | 'set'
+    | 'out'
+    | 'nov'
+    | 'status'
+    | 'evolution';
+
+  const [sortField, setSortField] = useState<NutritionSortField>('jogadora');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (field: NutritionSortField) => {
+    if (sortField === field) {
+      setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortField(field);
+      setSortDirection(field === 'jogadora' || field === 'pos' ? 'asc' : 'desc');
+    }
+  };
   const [editFormData, setEditFormData] = useState<{
     targetWeightKg: number;
     novWeight: number;
@@ -103,6 +134,70 @@ export const AdminNutritionManager: React.FC = () => {
       return true;
     });
   }, [records, searchQuery, positionFilter, statusFilter]);
+
+  const sortedRecords = useMemo(() => {
+    return [...filteredRecords].sort((a, b) => {
+      const novA = a.history.november;
+      const novB = b.history.november;
+      const curWeightA = novA?.weight ?? a.augustWeightKg;
+      const curWeightB = novB?.weight ?? b.augustWeightKg;
+      const diffA = curWeightA - a.targetWeightKg;
+      const diffB = curWeightB - b.targetWeightKg;
+      const fatA = novA?.fatMassPct !== undefined ? novA.fatMassPct * 100 : a.augustFatMassPct * 100;
+      const fatB = novB?.fatMassPct !== undefined ? novB.fatMassPct * 100 : b.augustFatMassPct * 100;
+      const muscleA = novA?.muscleMassKg ?? a.augustMuscleMassKg;
+      const muscleB = novB?.muscleMassKg ?? b.augustMuscleMassKg;
+      const agoA = a.history.august?.weight ?? a.augustWeightKg;
+      const agoB = b.history.august?.weight ?? b.augustWeightKg;
+      const setA = a.history.september?.weight ?? 0;
+      const setB = b.history.september?.weight ?? 0;
+      const outA = a.history.october?.weight ?? 0;
+      const outB = b.history.october?.weight ?? 0;
+      const statusWeight: Record<NutritionStatusLevel, number> = {
+        'Adequada': 1,
+        'Atenção': 2,
+        'Alerta': 3,
+        'Risco': 4,
+      };
+      const statusA = statusWeight[novA?.status || 'Adequada'] || 0;
+      const statusB = statusWeight[novB?.status || 'Adequada'] || 0;
+      const deltaA = (novA?.skf && a.history.august?.skf) ? novA.skf - a.history.august.skf : 0;
+      const deltaB = (novB?.skf && b.history.august?.skf) ? novB.skf - b.history.august.skf : 0;
+
+      let comp = 0;
+      if (sortField === 'jogadora') {
+        comp = (a.canonicalName || '').localeCompare(b.canonicalName || '', 'pt', { sensitivity: 'base' });
+      } else if (sortField === 'pos') {
+        comp = (a.position || '').localeCompare(b.position || '', 'pt', { sensitivity: 'base' });
+      } else if (sortField === 'height') {
+        comp = (a.heightCm || 0) - (b.heightCm || 0);
+      } else if (sortField === 'currentWeight') {
+        comp = curWeightA - curWeightB;
+      } else if (sortField === 'targetWeight') {
+        comp = (a.targetWeightKg || 0) - (b.targetWeightKg || 0);
+      } else if (sortField === 'weightDiff') {
+        comp = diffA - diffB;
+      } else if (sortField === 'fatPct') {
+        comp = fatA - fatB;
+      } else if (sortField === 'muscle') {
+        comp = muscleA - muscleB;
+      } else if (sortField === 'ago') {
+        comp = agoA - agoB;
+      } else if (sortField === 'set') {
+        comp = setA - setB;
+      } else if (sortField === 'out') {
+        comp = outA - outB;
+      } else if (sortField === 'nov') {
+        comp = (novA?.weight || 0) - (novB?.weight || 0);
+      } else if (sortField === 'status') {
+        comp = statusA - statusB;
+      } else if (sortField === 'evolution') {
+        comp = deltaA - deltaB;
+      }
+
+      return sortDirection === 'asc' ? comp : -comp;
+    });
+  }, [filteredRecords, sortField, sortDirection]);
 
   // Squad Summary Stats
   const squadStats = useMemo(() => {
@@ -502,26 +597,278 @@ export const AdminNutritionManager: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/80 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                <th className="py-3 px-3">Jogadora</th>
-                <th className="py-3 px-2 text-center">Pos</th>
-                <th className="py-3 px-2 text-center">Alt (cm)</th>
-                <th className="py-3 px-2 text-center">Peso Atual</th>
-                <th className="py-3 px-2 text-center">Alvo (kg)</th>
-                <th className="py-3 px-2 text-center">Dif.</th>
-                <th className="py-3 px-2 text-center">% MG</th>
-                <th className="py-3 px-2 text-center">MM (kg)</th>
-                <th className="py-3 px-2 text-center text-slate-500">Ago</th>
-                <th className="py-3 px-2 text-center text-slate-500">Set</th>
-                <th className="py-3 px-2 text-center text-slate-500">Out</th>
-                <th className="py-3 px-2 text-center text-emerald-400">Nov (Atual)</th>
-                <th className="py-3 px-2 text-center">Status</th>
-                <th className="py-3 px-2 text-center">Evolução</th>
+              <tr className="border-b border-slate-800 bg-slate-900/80 text-[10px] font-black uppercase tracking-wider text-slate-400 select-none">
+                <th
+                  onClick={() => handleSort('jogadora')}
+                  className="py-3 px-3 cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Nome da Jogadora"
+                >
+                  <div className="flex items-center space-x-1">
+                    <span>Jogadora</span>
+                    {sortField === 'jogadora' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('pos')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Posição"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Pos</span>
+                    {sortField === 'pos' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('height')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Altura"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Alt (cm)</span>
+                    {sortField === 'height' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('currentWeight')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Peso Atual"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Peso Atual</span>
+                    {sortField === 'currentWeight' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('targetWeight')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Alvo de Peso"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Alvo (kg)</span>
+                    {sortField === 'targetWeight' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('weightDiff')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Diferença para o Alvo"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Dif.</span>
+                    {sortField === 'weightDiff' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('fatPct')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por % Massa Gorda"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>% MG</span>
+                    {sortField === 'fatPct' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('muscle')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Massa Muscular"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>MM (kg)</span>
+                    {sortField === 'muscle' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('ago')}
+                  className="py-3 px-2 text-center text-slate-500 cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Peso em Agosto"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Ago</span>
+                    {sortField === 'ago' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('set')}
+                  className="py-3 px-2 text-center text-slate-500 cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Peso em Setembro"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Set</span>
+                    {sortField === 'set' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('out')}
+                  className="py-3 px-2 text-center text-slate-500 cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Peso em Outubro"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Out</span>
+                    {sortField === 'out' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('nov')}
+                  className="py-3 px-2 text-center text-emerald-400 cursor-pointer hover:text-emerald-300 transition-colors group"
+                  title="Ordenar por Peso em Novembro (Atual)"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Nov (Atual)</span>
+                    {sortField === 'nov' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-emerald-600 group-hover:text-emerald-400 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('status')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Status Nutricional"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Status</span>
+                    {sortField === 'status' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
+                <th
+                  onClick={() => handleSort('evolution')}
+                  className="py-3 px-2 text-center cursor-pointer hover:text-white transition-colors group"
+                  title="Ordenar por Evolução SKF"
+                >
+                  <div className="flex items-center justify-center space-x-1">
+                    <span>Evolução</span>
+                    {sortField === 'evolution' ? (
+                      sortDirection === 'asc' ? (
+                        <ArrowUp className="h-3 w-3 text-emerald-400 shrink-0" />
+                      ) : (
+                        <ArrowDown className="h-3 w-3 text-emerald-400 shrink-0" />
+                      )
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 text-slate-600 group-hover:text-slate-400 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                    )}
+                  </div>
+                </th>
+
                 <th className="py-3 px-3 text-right">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium text-slate-200">
-              {filteredRecords.map((r) => {
+              {sortedRecords.map((r) => {
                 const nov = r.history.november;
                 const out = r.history.october;
                 const set = r.history.september;
