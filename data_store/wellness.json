@@ -1,5 +1,33 @@
 [
   {
+    "id": "wel-1795681354205",
+    "athleteId": "ath-24",
+    "athleteName": "TITA",
+    "date": "2026-11-26",
+    "menstrualCycle": "1ª Semana após a menstruação",
+    "sleepQuality": 4,
+    "sleepDuration": 4,
+    "mood": 4,
+    "stress": 4,
+    "fatigue": 3,
+    "soreness": 4,
+    "heavyLegs": 4,
+    "wellnessTotal": 27,
+    "muscleFatigue": {
+      "Joelho Esquerdo": 3
+    },
+    "needsPhysio": false,
+    "physioReason": null,
+    "submittedAt": "2026-11-26T08:22:34.205Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "keepFine": false,
+    "reviewedAt": null,
+    "reviewedBy": null,
+    "createdAt": "2026-11-26T08:22:34.205Z"
+  },
+  {
     "id": "wel-1795680618610",
     "athleteId": "ath-19",
     "athleteName": "SARA ALVES",
