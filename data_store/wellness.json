@@ -26,7 +26,7 @@
     "createdAt": "2026-11-26T07:56:07.462Z"
   },
   {
-    "id": "wel-1795679802844",
+    "id": "wel-1795679813324",
     "athleteId": "ath-22",
     "athleteName": "SIMÃES",
     "date": "2026-11-26",
@@ -45,14 +45,14 @@
     },
     "needsPhysio": true,
     "physioReason": null,
-    "submittedAt": "2026-11-26T07:56:42.844Z",
+    "submittedAt": "2026-11-26T07:56:53.324Z",
     "isLate": false,
     "isAuthorizedLate": false,
     "approvalStatus": "approved",
     "keepFine": false,
     "reviewedAt": null,
     "reviewedBy": null,
-    "createdAt": "2026-11-26T07:56:42.844Z"
+    "createdAt": "2026-11-26T07:56:53.324Z"
   },
   {
     "id": "wel-1795679474119",
