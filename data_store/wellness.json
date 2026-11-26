@@ -28435,7 +28435,13 @@
     "needsPhysio": false,
     "physioReason": null,
     "createdAt": "2026-09-12T09:29:30.317Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-12T09:29:30.317Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789205206010",
