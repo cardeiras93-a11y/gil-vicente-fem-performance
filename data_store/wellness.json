@@ -29249,7 +29249,13 @@
     "needsPhysio": true,
     "physioReason": "ligar o pé",
     "createdAt": "2026-09-10T11:06:19.828Z",
-    "keepFine": false
+    "keepFine": false,
+    "submittedAt": "2026-09-10T11:06:19.828Z",
+    "isLate": false,
+    "isAuthorizedLate": false,
+    "approvalStatus": "approved",
+    "reviewedAt": null,
+    "reviewedBy": null
   },
   {
     "id": "wel-1789038343129",
