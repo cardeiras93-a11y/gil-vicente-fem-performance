@@ -1,4 +1,5 @@
 import vsc2611Match from './matches/gilvicente-vitoria-sc-2611.json';
+import juveforce2111Match from './matches/gilvicente-juveforce-2111.json';
 import braga1511Match from './matches/gilvicente-sc-braga-1511.json';
 import bragaB0711Match from './matches/gilvicente-sc-braga-b-0711.json';
 import rioTinto3110Match from './matches/gilvicente-rio-tinto-3110.json';
@@ -105,6 +106,7 @@ export const posColorClassMap: Record<string, { badge: string; text: string; bg:
 
 export const ALL_MATCHES: MatchInfo[] = [
   vsc2611Match as unknown as MatchInfo,
+  juveforce2111Match as unknown as MatchInfo,
   braga1511Match as unknown as MatchInfo,
   bragaB0711Match as unknown as MatchInfo,
   rioTinto3110Match as unknown as MatchInfo,

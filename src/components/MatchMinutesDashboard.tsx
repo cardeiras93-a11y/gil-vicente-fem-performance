@@ -214,57 +214,41 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
     const id = (m.id || '').toLowerCase();
     const text = `${comp} ${opp} ${id}`;
 
-    // 2. Training matches (Internal, Preparation, Sub-14, U14, U15, Friendly)
+    // 2. Taça de Portugal (3 Jogos Oficiais: Freiriz, Cruz, SC Braga)
     if (
-      text.includes('treino') ||
-      text.includes('jt') ||
-      text.includes('amigável') ||
-      text.includes('amigavel') ||
-      text.includes('sub-14') ||
-      text.includes('sub14') ||
-      text.includes('u14') ||
-      text.includes('u15') ||
-      text.includes('vila') ||
-      text.includes('romariz') ||
-      text.includes('braga') ||
-      text.includes('rio ave') ||
-      text.includes('valadares') ||
-      text.includes('vitória') ||
-      text.includes('vsc')
+      text.includes('taça') ||
+      text.includes('taca') ||
+      text.includes('eliminatória') ||
+      text.includes('eliminatoria') ||
+      text.includes('cup') ||
+      text.includes('freiriz') ||
+      text.includes('cruz')
     ) {
-      return 'friendly';
-    }
-
-    // 3. Taça de Portugal
-    if (text.includes('taça') || text.includes('taca') || text.includes('cup') || text.includes('freiriz')) {
       return 'cup';
     }
 
-    // 4. Campeonato Nacional
+    // 3. Campeonato Nacional (6 Jogos Oficiais: J1 Juve Force, J2 Albergaria, J3 Famalicão, J4 Rio Tinto, J5 SC Braga B, J6 Juveforce)
     if (
-      text.includes('campeonato') ||
-      text.includes('liga') ||
+      comp.includes('campeonato') ||
+      comp.includes('ii divisão') ||
+      comp.includes('ii divisao') ||
+      comp.includes('jornada') ||
       text.includes('jornada') ||
-      text.includes('fase regular') ||
       text.includes('albergaria') ||
+      text.includes('famalicão') ||
+      text.includes('famalicao') ||
+      text.includes('rio tinto') ||
+      text.includes('rio-tinto') ||
+      text.includes('braga b') ||
+      text.includes('sc_braga_b') ||
       text.includes('j1pv') ||
       text.includes('juveforce') ||
-      text.includes('juve force') ||
-      text.includes('juve') ||
-      text.includes('famalicão') ||
-      text.includes('famalicao')
+      text.includes('juve force')
     ) {
       return 'championship';
     }
 
-    // 5. Training session calendar classification as fallback
-    try {
-      const sessions = getStoredTrainingSessions();
-      if (sessions[m.matchDate]?.matchCategory) {
-        return sessions[m.matchDate].matchCategory as MatchCategory;
-      }
-    } catch {}
-
+    // 4. Jogos de Treino / Preparação
     return 'friendly';
   }, [categoryOverrides]);
 
