@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import defaultCustomizations from '@/data/defaultMatchCustomizations.json';
 import { getAllMatches, getMatchById, calculateTeamKpis, calculateSectorAverages } from '@/data/matchRegistry';
 import { normalizeAthleteName, sanitizeMatchForAthlete } from '@/lib/matchAcl';
 import { verifyApiAuth } from '@/lib/authGuard';
@@ -77,15 +78,15 @@ export async function GET(request: Request) {
       }
     }
 
-    // 2. Fallback to local file store if Supabase did not return data
+    // 2. Fallback to local file store or bundled defaults if Supabase did not return data
     if (!loadedFromDb) {
-      const fileData = loadCustomizationsFromFile();
+      const fileData = loadCustomizationsFromFile() || defaultCustomizations;
       if (fileData) {
         customizations = {
-          minutesOverrides: fileData.minutesOverrides || {},
-          categoryOverrides: fileData.categoryOverrides || {},
-          customMatches: fileData.customMatches || [],
-          updatedAt: fileData.updatedAt || 0,
+          minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(fileData.minutesOverrides || {}) },
+          categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(fileData.categoryOverrides || {}) },
+          customMatches: fileData.customMatches || defaultCustomizations.customMatches || [],
+          updatedAt: fileData.updatedAt || defaultCustomizations.updatedAt || 0,
         };
       }
     }
@@ -203,13 +204,13 @@ export async function POST(request: Request) {
     }
 
     if (!loadedFromDb) {
-      const fileData = loadCustomizationsFromFile();
+      const fileData = loadCustomizationsFromFile() || defaultCustomizations;
       if (fileData) {
         current = {
-          minutesOverrides: fileData.minutesOverrides || {},
-          categoryOverrides: fileData.categoryOverrides || {},
-          customMatches: fileData.customMatches || [],
-          updatedAt: fileData.updatedAt || 0,
+          minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(fileData.minutesOverrides || {}) },
+          categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(fileData.categoryOverrides || {}) },
+          customMatches: fileData.customMatches || defaultCustomizations.customMatches || [],
+          updatedAt: fileData.updatedAt || defaultCustomizations.updatedAt || 0,
         };
       }
     }
