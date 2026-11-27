@@ -27,7 +27,7 @@ import {
   MessageSquare, Tag, Info, AlertCircle, ArrowUpRight, User, RefreshCw,
   ChevronLeft, ChevronRight, Calendar, Sparkles, Euro, Trash2, Pencil,
   Download, FileSpreadsheet, FileText, Bell, BellRing, Send, Smartphone, Tablet, Scale, Plus, Camera, Copy, Check, Trophy, MessageCircle, Clock,
-  Unlock, UserCheck, Apple, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown
+  Unlock, UserCheck, Apple, Eye, EyeOff, ArrowUpDown, ArrowUp, ArrowDown, LogOut, Settings
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -187,7 +187,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     }
   };
 
-  const [pinsSubTab, setPinsSubTabState] = useState<'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'all'>(() => {
+  const [pinsSubTab, setPinsSubTabState] = useState<'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'maintenance' | 'all'>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('femperf_admin_pins_sub_tab');
       if (stored === 'notifications') return 'deadlines';
@@ -196,7 +196,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
     return 'deadlines';
   });
 
-  const setPinsSubTab = (tab: 'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'all') => {
+  const setPinsSubTab = (tab: 'deadlines' | 'authorizations' | 'playerPins' | 'credentials' | 'maintenance' | 'all') => {
     setPinsSubTabState(tab);
     if (typeof window !== 'undefined') {
       localStorage.setItem('femperf_admin_pins_sub_tab', tab);
@@ -1438,44 +1438,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
   return (
     <ErrorBoundary fallbackTitle="Painel de Administração • Gil Vicente FC">
       <div className="fixed inset-0 z-50 overflow-y-auto bg-dark-bg text-slate-100 p-3 pt-safe sm:p-6 sm:pt-safe animate-fade-in">
-      <div className="mx-auto max-w-5xl space-y-6 pb-12">
+      <div className="mx-auto max-w-7xl 2xl:max-w-[1520px] space-y-6 pb-12">
         {/* Admin Header Bar */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between border-b border-red-900/60 pb-4 gap-3">
-          <button
-            type="button"
-            onClick={handleResetToAdminHome}
-            className="flex items-center space-x-3 text-left group cursor-pointer focus:outline-none transition-all active:scale-98"
-            title="Voltar ao início do Painel Admin (Treino & Calendário)"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-white font-black shadow-lg shadow-red-600/30 group-hover:bg-red-500 group-hover:scale-105 active:scale-95 transition-all">
-              <Shield className="h-6 w-6 stroke-[2.5]" />
-            </div>
-            <div>
-              <h1 className="text-sm font-black uppercase tracking-tight text-slate-100 group-hover:text-red-400 transition-colors">
-                Gil Vicente FC &bull; Painel da Equipa Técnica
-              </h1>
-              <p className="text-[11px] font-bold text-red-400">Departamento de Performance & Saúde</p>
-            </div>
-          </button>
+        <header className="flex flex-col xl:flex-row xl:items-center justify-between gap-3.5 bg-slate-900/60 border border-slate-800/80 p-3 sm:p-4 rounded-2xl shadow-xl backdrop-blur-sm">
+          {/* Brand & Reset Home */}
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={handleResetToAdminHome}
+              className="flex items-center space-x-3 text-left group cursor-pointer focus:outline-none transition-all active:scale-98"
+              title="Voltar ao início do Painel Admin (Treino & Calendário)"
+            >
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-800 text-white font-black shadow-lg shadow-red-600/30 group-hover:scale-105 group-hover:from-red-500 group-hover:to-red-700 transition-all border border-red-500/30 shrink-0">
+                <Shield className="h-6 w-6 stroke-[2.3]" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-sm sm:text-base font-black uppercase tracking-tight text-slate-100 group-hover:text-red-400 transition-colors">
+                    Gil Vicente FC
+                  </h1>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-red-600/20 text-red-300 border border-red-500/30">
+                    Painel Técnico
+                  </span>
+                </div>
+                <p className="text-xs font-semibold text-slate-400">
+                  Departamento de Performance & Saúde
+                </p>
+              </div>
+            </button>
+          </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Quick Date Control Bar */}
-            <div className="flex items-center space-x-1 rounded-xl border border-slate-700 bg-dark-card p-1">
+          {/* Quick Date Control Bar */}
+          <div className="flex items-center justify-center sm:justify-start">
+            <div className="inline-flex items-center space-x-1 rounded-xl border border-slate-700/80 bg-slate-950/80 p-1 shadow-inner">
               <button
                 type="button"
                 onClick={() => shiftDate(-1)}
                 title="Dia Anterior"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-all cursor-pointer"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 onClick={setTodayDate}
-                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                className={`rounded-lg px-3 py-1.5 text-xs font-black transition-all cursor-pointer ${
                   selectedDate === getTodayLocalDateStr()
-                    ? 'bg-sky-600 text-white font-black shadow-sm'
-                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                    ? 'bg-sky-500 text-slate-950 shadow-sm'
+                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                 }`}
               >
                 Hoje
@@ -1483,10 +1493,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               <button
                 type="button"
                 onClick={setYesterdayDate}
-                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   selectedDate === getYesterdayLocalDateStr()
-                    ? 'bg-sky-600 text-white font-black shadow-sm'
-                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                    ? 'bg-sky-500 text-slate-950 font-black shadow-sm'
+                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                 }`}
               >
                 Ontem
@@ -1494,92 +1504,78 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
               <button
                 type="button"
                 onClick={setTomorrowDate}
-                className={`rounded-lg px-2.5 py-1 text-[11px] transition-all ${
+                className={`rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
                   selectedDate === getTomorrowLocalDateStr()
-                    ? 'bg-sky-600 text-white font-black shadow-sm'
-                    : 'bg-slate-800/60 text-slate-400 font-bold hover:bg-slate-700 hover:text-slate-200'
+                    ? 'bg-sky-500 text-slate-950 font-black shadow-sm'
+                    : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
                 }`}
               >
                 Amanhã
               </button>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="rounded-lg border-0 bg-transparent px-2 py-1 text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
-              />
+
+              <div className="h-4 w-px bg-slate-800 mx-1" />
+
+              <div className="relative flex items-center pr-1">
+                <Calendar className="h-3.5 w-3.5 text-slate-500 mr-1.5 shrink-0 pointer-events-none" />
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="rounded-lg border-0 bg-transparent py-1 text-xs font-bold text-slate-200 focus:outline-none cursor-pointer"
+                />
+              </div>
+
               <button
                 type="button"
                 onClick={() => shiftDate(1)}
                 title="Dia Seguinte"
-                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all"
+                className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-all cursor-pointer"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
+          </div>
 
-            {/* Kiosk Mode Button (iPad / Balneário) */}
+          {/* Action Tools & Session Controls */}
+          <div className="flex flex-wrap items-center justify-start xl:justify-end gap-2">
+            {/* Kiosk Mode Button */}
             <button
               type="button"
               onClick={() => setIsKioskOpen(true)}
-              className="flex items-center space-x-1.5 rounded-xl border border-amber-500/50 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/20 px-3.5 py-2 text-xs font-black text-amber-300 hover:from-amber-500/30 hover:to-orange-500/30 transition-all shadow-md active:scale-95 cursor-pointer"
-              title="Ativar Modo Quiosque para iPad / Balneário (Sem PIN)"
+              className="flex items-center space-x-1.5 rounded-xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs font-black text-amber-300 hover:bg-amber-500/20 transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Ativar Modo Quiosque para iPad / Tablet do Balneário"
             >
               <Tablet className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-              <span>📱 Modo Quiosque</span>
+              <span>Quiosque Balneário</span>
             </button>
 
-            {/* Sync Cloud Data Button & Status */}
+            {/* Settings & Options Button */}
             <button
               type="button"
-              onClick={handleManualSyncCloudData}
-              disabled={isSyncingCloud}
-              className={`flex items-center space-x-1.5 rounded-xl border px-3 py-2 text-xs font-black transition-all disabled:opacity-60 cursor-pointer ${
-                isSyncingCloud
-                  ? 'border-amber-500/50 bg-amber-500/15 text-amber-300'
-                  : 'border-sky-500/40 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20'
+              onClick={() => setActiveTab('pins')}
+              className={`flex items-center space-x-1.5 rounded-xl border px-3 py-2 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer ${
+                activeTab === 'pins'
+                  ? 'border-amber-500/60 bg-amber-500/20 text-amber-300 font-black'
+                  : 'border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
-              title="Sincronizar dados em tempo real com a nuvem (computadores, telemóveis e tablets)"
+              title="Opções de Conta, Segurança e Limpeza de Dados"
             >
-              <RefreshCw className={`h-3.5 w-3.5 text-sky-400 ${isSyncingCloud ? 'animate-spin' : ''}`} />
-              <span>
-                {isSyncingCloud
-                  ? 'A Sincronizar Nuvem...'
-                  : lastSyncTime
-                  ? `Nuvem OK (${lastSyncTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})`
-                  : 'Sincronizar Nuvem'}
-              </span>
+              <Settings className="h-3.5 w-3.5 text-amber-400" />
+              <span>Opções & Conta</span>
             </button>
 
-            {/* Clear Data Button */}
-            <button
-              type="button"
-              onClick={() => setIsClearModalOpen(true)}
-              className="flex items-center space-x-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs font-black text-rose-300 hover:bg-rose-500/20 transition-all"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              <span>Limpar Dados</span>
-            </button>
-
-            {/* Export Excel Button */}
-            <button
-              type="button"
-              onClick={() => setIsExportModalOpen(true)}
-              className="flex items-center space-x-1.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-black text-emerald-300 hover:bg-emerald-500/20 transition-all"
-            >
-              <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
-              <span>📊 Exportar Excel</span>
-            </button>
-
+            {/* Logout Button */}
             <button
               type="button"
               onClick={handleLogout}
-              className="rounded-xl bg-slate-800 px-3.5 py-2 text-xs font-bold text-slate-300 hover:bg-slate-700 transition-all"
+              className="flex items-center space-x-1.5 rounded-xl border border-slate-700 bg-slate-800/90 px-3 py-2 text-xs font-bold text-slate-300 hover:bg-slate-700 hover:text-white transition-all shadow-sm active:scale-95 cursor-pointer"
+              title="Terminar sessão de administrador"
             >
-              Sair
+              <LogOut className="h-3.5 w-3.5 text-slate-400" />
+              <span>Sair</span>
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Top-Level Navigation Tabs */}
         <div className="flex flex-wrap gap-1.5 sm:gap-2 border-b border-slate-800 pb-3">
@@ -1714,8 +1710,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 : 'text-slate-400 bg-slate-900/60 hover:bg-slate-800 hover:text-white border border-slate-800/80'
             }`}
           >
-            <KeyRound className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
-            <span>PINs & Acessos</span>
+            <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-amber-400 shrink-0" />
+            <span>Opções & Conta</span>
           </button>
         </div>
 
@@ -3359,7 +3355,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 }`}
               >
                 <KeyRound className="h-3.5 w-3.5 text-amber-400" />
-                <span>Credenciais Mestres</span>
+                <span>Opções de Conta & PINs</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPinsSubTab('maintenance')}
+                className={`flex items-center space-x-2 px-3.5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                  pinsSubTab === 'maintenance'
+                    ? 'bg-rose-600 text-white shadow-md font-extrabold ring-1 ring-rose-400'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+                <span>Limpar Dados & Manutenção</span>
               </button>
 
               <button
@@ -3570,6 +3579,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ isOpen, onClose,
                 )}
               </div>
             </div>
+            )}
+
+            {/* Maintenance & Data Reset Section (Limpar Dados) */}
+            {(pinsSubTab === 'maintenance' || pinsSubTab === 'all' || pinsSubTab === 'credentials') && (
+              <div className="rounded-2xl border border-rose-500/30 bg-dark-card p-5 space-y-4 shadow-lg animate-fade-in">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                      <Trash2 className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-black uppercase text-slate-100">
+                        Gestão e Limpeza de Dados
+                      </h4>
+                      <p className="text-xs text-slate-400">
+                        Opção de segurança para limpar histórico de questionários, pesagens ou repor a aplicação
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 px-2.5 py-1 rounded-lg">
+                    Zona de Manutenção
+                  </span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                  <div className="space-y-1">
+                    <h5 className="text-xs font-black text-slate-200 uppercase">
+                      Limpar Registos da Base de Dados & Cache Local
+                    </h5>
+                    <p className="text-xs text-slate-400 max-w-xl">
+                      Permite escolher o período exato (último dia, 7 dias, 15 dias, 30 dias ou todo o histórico) e os módulos específicos a apagar (Wellness, PSE, Hidratação e Treinos).
+                    </p>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsClearModalOpen(true)}
+                    className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl border border-rose-500/40 bg-gradient-to-r from-rose-500/20 to-red-600/20 hover:from-rose-500/30 hover:to-red-600/30 text-rose-300 font-black text-xs transition-all shadow-md active:scale-95 cursor-pointer shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4 text-rose-400" />
+                    <span>Limpar Dados</span>
+                  </button>
+                </div>
+              </div>
             )}
 
             {/* 2. Mobile Notification & Reminders Settings Section (Desativado a pedido do utilizador) */}

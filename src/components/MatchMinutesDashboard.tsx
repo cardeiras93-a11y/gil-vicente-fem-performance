@@ -30,6 +30,55 @@ export type SortOption = 'minutes_desc' | 'minutes_asc' | 'matches_desc' | 'avg_
 const CATEGORY_STORAGE_KEY = MATCH_CATEGORY_STORAGE_KEY;
 const MINUTES_STORAGE_KEY = MATCH_MINUTES_STORAGE_KEY;
 
+export const DEFAULT_MINUTES_OVERRIDES: Record<string, number> = {
+  // 21/11 vs Juveforce (6ª Jornada Campeonato Nacional II Divisão - 5-1)
+  'match_20261121_gvfc_juveforce__payton': 97,
+  'match_20261121_gvfc_juveforce__sara t.': 97,
+  'match_20261121_gvfc_juveforce__marthe': 97,
+  'match_20261121_gvfc_juveforce__faith': 97,
+  'match_20261121_gvfc_juveforce__ticha': 97,
+  'match_20261121_gvfc_juveforce__malta': 97,
+  'match_20261121_gvfc_juveforce__chelsea': 68,
+  'match_20261121_gvfc_juveforce__meriva': 68,
+  'match_20261121_gvfc_juveforce__simães': 58,
+  'match_20261121_gvfc_juveforce__carlota': 58,
+  'match_20261121_gvfc_juveforce__serena': 58,
+  'match_20261121_gvfc_juveforce__cartaxo': 39,
+  'match_20261121_gvfc_juveforce__verónica': 39,
+  'match_20261121_gvfc_juveforce__ribeiro': 39,
+  'match_20261121_gvfc_juveforce__manu': 29,
+  'match_20261121_gvfc_juveforce__tita': 29,
+  'match_20261121_gvfc_juveforce__eva': 0,
+  'match_20261121_gvfc_juveforce__sara alves': 0,
+  'match_20261121_gvfc_juveforce__magui': 0,
+  'match_20261121_gvfc_juveforce__nicole': 0,
+  'match_20261121_gvfc_juveforce__izzy': 0,
+  'match_20261121_gvfc_juveforce__carol': 0,
+  // 26/11 vs Vitória SC (Jogo Treino + Compensação - 1-1)
+  'match_20261126_gvfc_vsc__payton': 90,
+  'match_20261126_gvfc_vsc__marthe': 90,
+  'match_20261126_gvfc_vsc__sara t.': 90,
+  'match_20261126_gvfc_vsc__meriva': 70,
+  'match_20261126_gvfc_vsc__chelsea': 70,
+  'match_20261126_gvfc_vsc__cartaxo': 60,
+  'match_20261126_gvfc_vsc__ticha': 60,
+  'match_20261126_gvfc_vsc__magui': 60,
+  'match_20261126_gvfc_vsc__malta': 60,
+  'match_20261126_gvfc_vsc__manu': 60,
+  'match_20261126_gvfc_vsc__simães': 60,
+  'match_20261126_gvfc_vsc__tita': 60,
+  'match_20261126_gvfc_vsc__ribeiro': 60,
+  'match_20261126_gvfc_vsc__verónica': 50,
+  'match_20261126_gvfc_vsc__eva': 20,
+  'match_20261126_gvfc_vsc__sara alves': 20,
+  'match_20261126_gvfc_vsc__faith': 0,
+  'match_20261126_gvfc_vsc__nicole': 0,
+  'match_20261126_gvfc_vsc__serena': 0,
+  'match_20261126_gvfc_vsc__carlota': 0,
+  'match_20261126_gvfc_vsc__izzy': 0,
+  'match_20261126_gvfc_vsc__carol': 0,
+};
+
 interface PlayerMatchDetail {
   matchId: string;
   matchDate: string;
@@ -122,7 +171,7 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
 
   // Overrides States
   const [categoryOverrides, setCategoryOverrides] = useState<Record<string, MatchCategory>>({});
-  const [minutesOverrides, setMinutesOverrides] = useState<Record<string, number>>({});
+  const [minutesOverrides, setMinutesOverrides] = useState<Record<string, number>>(DEFAULT_MINUTES_OVERRIDES);
 
   // UI Modals / Drawers
   const [selectedPlayerForDetail, setSelectedPlayerForDetail] = useState<PlayerMinutesStats | null>(null);
@@ -163,9 +212,14 @@ export const MatchMinutesDashboard: React.FC<MatchMinutesDashboardProps> = ({
 
     try {
       const storedMin = localStorage.getItem(MINUTES_STORAGE_KEY) || localStorage.getItem('femperf_player_minutes_overrides');
-      if (storedMin) setMinutesOverrides(JSON.parse(storedMin));
+      if (storedMin) {
+        setMinutesOverrides({ ...DEFAULT_MINUTES_OVERRIDES, ...JSON.parse(storedMin) });
+      } else {
+        setMinutesOverrides(DEFAULT_MINUTES_OVERRIDES);
+      }
     } catch (e) {
       console.error('Error loading minutes overrides:', e);
+      setMinutesOverrides(DEFAULT_MINUTES_OVERRIDES);
     }
 
     try {

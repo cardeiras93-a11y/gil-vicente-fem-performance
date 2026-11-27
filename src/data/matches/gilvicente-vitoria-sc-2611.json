@@ -10,8 +10,8 @@
   "location": "Complexo Desportivo de São Martinho (Barcelos)",
   "weather": "14.0ºC | Céu nublado | Humidade 82%",
   "durationMin": 90,
-  "comparisonDate": "2026-11-15",
-  "comparisonLabel": "Jogo Anterior (vs SC Braga - 15/11)",
+  "comparisonDate": "2026-11-21",
+  "comparisonLabel": "Jogo Anterior (vs Juveforce - 21/11)",
   "monitoredCount": 16,
   "players": [
     {
@@ -50,9 +50,9 @@
       "dec": 64,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 10475.0,
-      "prevSprint": 473.0,
-      "prevSprint23": 151.0
+      "prevDist": 9809.0,
+      "prevSprint": 334.0,
+      "prevSprint23": 84.0
     },
     {
       "name": "Sara T.",
@@ -70,9 +70,9 @@
       "dec": 70,
       "rpe": 8,
       "fatigue": 8,
-      "prevDist": 10742.0,
-      "prevSprint": 422.0,
-      "prevSprint23": 49.0
+      "prevDist": 9278.0,
+      "prevSprint": 331.0,
+      "prevSprint23": 29.0
     },
     {
       "name": "Meriva",
@@ -90,9 +90,9 @@
       "dec": 81,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 9455.0,
-      "prevSprint": 698.0,
-      "prevSprint23": 138.0
+      "prevDist": 7260.0,
+      "prevSprint": 441.0,
+      "prevSprint23": 126.0
     },
     {
       "name": "Chelsea",
@@ -110,9 +110,9 @@
       "dec": 71,
       "rpe": 7,
       "fatigue": 8,
-      "prevDist": 6721.0,
-      "prevSprint": 444.0,
-      "prevSprint23": 108.0
+      "prevDist": 8000.0,
+      "prevSprint": 350.0,
+      "prevSprint23": 83.0
     },
     {
       "name": "Cartaxo",
@@ -130,9 +130,9 @@
       "dec": 83,
       "rpe": 4,
       "fatigue": 3,
-      "prevDist": 4592.0,
-      "prevSprint": 180.0,
-      "prevSprint23": 26.0
+      "prevDist": 4944.0,
+      "prevSprint": 296.0,
+      "prevSprint23": 110.0
     },
     {
       "name": "Ticha",
@@ -150,9 +150,9 @@
       "dec": 76,
       "rpe": 7,
       "fatigue": 7,
-      "prevDist": 4498.0,
-      "prevSprint": 110.0,
-      "prevSprint23": 3.0
+      "prevDist": 10396.0,
+      "prevSprint": 217.0,
+      "prevSprint23": 34.0
     },
     {
       "name": "Magui",
@@ -170,9 +170,9 @@
       "dec": 64,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 9475.0,
-      "prevSprint": 304.0,
-      "prevSprint23": 29.0
+      "prevDist": 0.0,
+      "prevSprint": 0.0,
+      "prevSprint23": 0.0
     },
     {
       "name": "Malta",
@@ -190,9 +190,9 @@
       "dec": 63,
       "rpe": 6,
       "fatigue": 4,
-      "prevDist": 6789.0,
-      "prevSprint": 166.0,
-      "prevSprint23": 23.0
+      "prevDist": 10193.0,
+      "prevSprint": 419.0,
+      "prevSprint23": 65.0
     },
     {
       "name": "Manu",
@@ -210,9 +210,9 @@
       "dec": 60,
       "rpe": 6,
       "fatigue": 8,
-      "prevDist": 2099.0,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 4167.0,
+      "prevSprint": 99.0,
+      "prevSprint23": 28.0
     },
     {
       "name": "Simães",
@@ -230,9 +230,9 @@
       "dec": 70,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 8855.0,
-      "prevSprint": 504.0,
-      "prevSprint23": 76.0
+      "prevDist": 6763.0,
+      "prevSprint": 445.0,
+      "prevSprint23": 64.0
     },
     {
       "name": "Tita",
@@ -250,9 +250,9 @@
       "dec": 56,
       "rpe": 5,
       "fatigue": 4,
-      "prevDist": 1882.0,
-      "prevSprint": 0.0,
-      "prevSprint23": 0.0
+      "prevDist": 4040.0,
+      "prevSprint": 280.0,
+      "prevSprint23": 119.0
     },
     {
       "name": "Ribeiro",
@@ -265,14 +265,14 @@
       "hsr": 306.0,
       "sprint": 369.0,
       "sprint23": 63.0,
-      "topSpeed": 25.90,
+      "topSpeed": 25.9,
       "acc": 36,
       "dec": 44,
       "rpe": 8,
       "fatigue": 8,
-      "prevDist": 4270.0,
-      "prevSprint": 204.0,
-      "prevSprint23": 58.0
+      "prevDist": 4498.0,
+      "prevSprint": 248.0,
+      "prevSprint23": 101.0
     },
     {
       "name": "Verónica",
@@ -290,9 +290,9 @@
       "dec": 38,
       "rpe": 8,
       "fatigue": 8,
-      "prevDist": 2013.0,
-      "prevSprint": 5.0,
-      "prevSprint23": 0.0
+      "prevDist": 4798.0,
+      "prevSprint": 153.0,
+      "prevSprint23": 40.0
     },
     {
       "name": "Eva",
@@ -305,7 +305,7 @@
       "hsr": 187.0,
       "sprint": 230.0,
       "sprint23": 43.0,
-      "topSpeed": 24.70,
+      "topSpeed": 24.7,
       "acc": 49,
       "dec": 49,
       "rpe": null,
@@ -325,7 +325,7 @@
       "hsr": 64.0,
       "sprint": 84.0,
       "sprint23": 20.0,
-      "topSpeed": 25.30,
+      "topSpeed": 25.3,
       "acc": 23,
       "dec": 15,
       "rpe": null,
@@ -350,9 +350,9 @@
       "dec": 9,
       "rpe": 1,
       "fatigue": 2,
-      "prevDist": 10293.0,
-      "prevSprint": 317.0,
-      "prevSprint23": 46.0
+      "prevDist": 9532.0,
+      "prevSprint": 236.0,
+      "prevSprint23": 49.0
     },
     {
       "name": "Nicole",
@@ -370,9 +370,9 @@
       "dec": 0,
       "rpe": 1,
       "fatigue": 1,
-      "prevDist": 10636.0,
-      "prevSprint": 389.0,
-      "prevSprint23": 73.0
+      "prevDist": 0.0,
+      "prevSprint": 0.0,
+      "prevSprint23": 0.0
     },
     {
       "name": "Serena",
@@ -390,9 +390,9 @@
       "dec": 0,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 11677.0,
-      "prevSprint": 864.0,
-      "prevSprint23": 174.0
+      "prevDist": 6943.0,
+      "prevSprint": 475.0,
+      "prevSprint23": 114.0
     },
     {
       "name": "Carlota",
@@ -410,9 +410,9 @@
       "dec": 0,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 10866.0,
-      "prevSprint": 261.0,
-      "prevSprint23": 47.0
+      "prevDist": 6096.0,
+      "prevSprint": 85.0,
+      "prevSprint23": 15.0
     },
     {
       "name": "Izzy",
@@ -430,7 +430,7 @@
       "dec": 0,
       "rpe": null,
       "fatigue": null,
-      "prevDist": 1830.0,
+      "prevDist": 0.0,
       "prevSprint": 0.0,
       "prevSprint23": 0.0
     },

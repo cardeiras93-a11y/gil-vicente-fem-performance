@@ -1,10 +1,38 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { getAllMatches, getMatchById, calculateTeamKpis, calculateSectorAverages } from '@/data/matchRegistry';
 import { normalizeAthleteName, sanitizeMatchForAthlete } from '@/lib/matchAcl';
 import { verifyApiAuth } from '@/lib/authGuard';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
+
+const STORE_PATH = path.join(process.cwd(), 'data_store', 'match_customizations.json');
+
+function loadCustomizationsFromFile() {
+  try {
+    if (fs.existsSync(STORE_PATH)) {
+      const content = fs.readFileSync(STORE_PATH, 'utf-8');
+      return JSON.parse(content);
+    }
+  } catch (e) {
+    console.warn('Erro ao ler match_customizations.json:', e);
+  }
+  return null;
+}
+
+function saveCustomizationsToFile(data: any) {
+  try {
+    const dir = path.dirname(STORE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(STORE_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    console.warn('Erro ao salvar match_customizations.json:', e);
+  }
+}
 
 export async function GET(request: Request) {
   // 1. Verify app security token
@@ -25,6 +53,8 @@ export async function GET(request: Request) {
       updatedAt: 0,
     };
 
+    // 1. Try Supabase
+    let loadedFromDb = false;
     if (isSupabaseConfigured && supabase) {
       try {
         const { data } = await supabase
@@ -40,9 +70,23 @@ export async function GET(request: Request) {
             customMatches: parsed.customMatches || [],
             updatedAt: parsed.updatedAt || 0,
           };
+          loadedFromDb = true;
         }
       } catch (e) {
         console.warn('Erro ao carregar __MATCH_CUSTOMIZATIONS__ do Supabase:', e);
+      }
+    }
+
+    // 2. Fallback to local file store if Supabase did not return data
+    if (!loadedFromDb) {
+      const fileData = loadCustomizationsFromFile();
+      if (fileData) {
+        customizations = {
+          minutesOverrides: fileData.minutesOverrides || {},
+          categoryOverrides: fileData.categoryOverrides || {},
+          customMatches: fileData.customMatches || [],
+          updatedAt: fileData.updatedAt || 0,
+        };
       }
     }
 
@@ -137,6 +181,7 @@ export async function POST(request: Request) {
       updatedAt: Date.now(),
     };
 
+    let loadedFromDb = false;
     if (isSupabaseConfigured && supabase) {
       try {
         const { data } = await supabase
@@ -152,8 +197,21 @@ export async function POST(request: Request) {
             customMatches: parsed.customMatches || [],
             updatedAt: parsed.updatedAt || 0,
           };
+          loadedFromDb = true;
         }
       } catch {}
+    }
+
+    if (!loadedFromDb) {
+      const fileData = loadCustomizationsFromFile();
+      if (fileData) {
+        current = {
+          minutesOverrides: fileData.minutesOverrides || {},
+          categoryOverrides: fileData.categoryOverrides || {},
+          customMatches: fileData.customMatches || [],
+          updatedAt: fileData.updatedAt || 0,
+        };
+      }
     }
 
     // Merge or replace minutes overrides
@@ -179,15 +237,22 @@ export async function POST(request: Request) {
 
     // Persist to Supabase
     if (isSupabaseConfigured && supabase) {
-      await supabase.from('athletes').upsert(
-        {
-          id: '__MATCH_CUSTOMIZATIONS__',
-          name: JSON.stringify(current),
-          created_at: new Date().toISOString(),
-        },
-        { onConflict: 'id' }
-      );
+      try {
+        await supabase.from('athletes').upsert(
+          {
+            id: '__MATCH_CUSTOMIZATIONS__',
+            name: JSON.stringify(current),
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: 'id' }
+        );
+      } catch (e) {
+        console.warn('Erro ao salvar no Supabase:', e);
+      }
     }
+
+    // Always persist to local file store
+    saveCustomizationsToFile(current);
 
     return NextResponse.json({
       success: true,
