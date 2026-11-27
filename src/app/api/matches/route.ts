@@ -66,10 +66,10 @@ export async function GET(request: Request) {
         if (data?.name) {
           const parsed = JSON.parse(data.name);
           customizations = {
-            minutesOverrides: parsed.minutesOverrides || {},
-            categoryOverrides: parsed.categoryOverrides || {},
-            customMatches: parsed.customMatches || [],
-            updatedAt: parsed.updatedAt || 0,
+            minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(parsed.minutesOverrides || {}) },
+            categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(parsed.categoryOverrides || {}) },
+            customMatches: parsed.customMatches || defaultCustomizations.customMatches || [],
+            updatedAt: parsed.updatedAt || defaultCustomizations.updatedAt || 0,
           };
           loadedFromDb = true;
         }
@@ -81,14 +81,12 @@ export async function GET(request: Request) {
     // 2. Fallback to local file store or bundled defaults if Supabase did not return data
     if (!loadedFromDb) {
       const fileData = loadCustomizationsFromFile() || defaultCustomizations;
-      if (fileData) {
-        customizations = {
-          minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(fileData.minutesOverrides || {}) },
-          categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(fileData.categoryOverrides || {}) },
-          customMatches: fileData.customMatches || defaultCustomizations.customMatches || [],
-          updatedAt: fileData.updatedAt || defaultCustomizations.updatedAt || 0,
-        };
-      }
+      customizations = {
+        minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(fileData?.minutesOverrides || {}) },
+        categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(fileData?.categoryOverrides || {}) },
+        customMatches: fileData?.customMatches || defaultCustomizations.customMatches || [],
+        updatedAt: fileData?.updatedAt || defaultCustomizations.updatedAt || 0,
+      };
     }
 
     return NextResponse.json(
@@ -193,10 +191,10 @@ export async function POST(request: Request) {
         if (data?.name) {
           const parsed = JSON.parse(data.name);
           current = {
-            minutesOverrides: parsed.minutesOverrides || {},
-            categoryOverrides: parsed.categoryOverrides || {},
-            customMatches: parsed.customMatches || [],
-            updatedAt: parsed.updatedAt || 0,
+            minutesOverrides: { ...(defaultCustomizations.minutesOverrides || {}), ...(parsed.minutesOverrides || {}) },
+            categoryOverrides: { ...(defaultCustomizations.categoryOverrides || {}), ...(parsed.categoryOverrides || {}) },
+            customMatches: parsed.customMatches || defaultCustomizations.customMatches || [],
+            updatedAt: parsed.updatedAt || defaultCustomizations.updatedAt || 0,
           };
           loadedFromDb = true;
         }
